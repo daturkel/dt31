@@ -1,0 +1,40 @@
+[project]
+name = "dt31"
+version = "0.1.0"
+description = "A toy computer in Python."
+readme = "README.md"
+requires-python = ">=3.8"
+authors = [{ name = "Dan Turkel", email = "daturkel@gmail.com" }]
+maintainers = [{ name = "Dan Turkel", email = "daaturkel@gmail.com" }]
+dependencies = []
+license = { text = "MIT License" }
+keywords = [
+    "emulator",
+    "assembly",
+    "computer",
+    "virtual-machine",
+    "instruction-set",
+    "toy-computer",
+    "cpu",
+    "interpreter",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Interpreters",
+]
+
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[dependency-groups]
+dev = ["invoke==2.2.0", "pytest>=8.3.4", "pytest-cov>=5.0.0"]

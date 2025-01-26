@@ -1,0 +1,83 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from .cpu import DT31  # pragma: no cover
+
+
+class Operand:
+    def resolve(self, cpu: DT31) -> int:
+        raise NotImplementedError()
+
+
+class Literal(Operand):
+    def __init__(self, value: int):
+        self.value = value
+
+    def resolve(self, cpu: DT31) -> int:
+        return self.value
+
+
+class _MetaLiteral(type):
+    def __getitem__(self, arg: int) -> Literal:
+        return Literal(arg)
+
+
+class L(metaclass=_MetaLiteral):
+    pass
+
+
+class MemoryReference(Operand):
+    def __init__(self, address: int | Operand):
+        self.address = address
+
+    def resolve_address(self, cpu: DT31) -> int:
+        if not isinstance(self.address, int):
+            return self.address.resolve(cpu)
+        else:
+            return self.address
+
+    def resolve(self, cpu: DT31) -> int:
+        return cpu.get_memory(self.resolve_address(cpu))
+
+
+class _MetaMemory(type):
+    def __getitem__(self, arg: int | Operand) -> MemoryReference:
+        return MemoryReference(arg)
+
+
+class M(metaclass=_MetaMemory):
+    pass
+
+
+class RegisterReference(Operand):
+    def __init__(self, register: str):
+        self.register = register
+
+    def resolve(self, cpu: DT31) -> int:
+        return cpu.get_register(self.register)
+
+
+class _MetaRegister(type):
+    def __getitem__(self, arg: str) -> RegisterReference:
+        return RegisterReference(arg)
+
+    def __getattr__(self, arg: str) -> RegisterReference:
+        return RegisterReference(arg)
+
+
+class R(metaclass=_MetaRegister):
+    pass
+
+
+Reference = RegisterReference | MemoryReference
+
+
+def as_op(arg: int | Operand):
+    if isinstance(arg, Operand):
+        return arg
+    elif isinstance(arg, int):
+        return Literal(arg)
+    else:
+        raise ValueError(f"can't coerce value {arg} into operand")
