@@ -1,6 +1,6 @@
 import dt31.instructions as I
 from dt31.cpu import DT31
-from dt31.operands import L, M
+from dt31.operands import M
 
 hello_world = [
     I.PUSH(33),  # populate stack with hello world backwards
