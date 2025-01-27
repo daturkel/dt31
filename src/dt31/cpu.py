@@ -9,6 +9,10 @@ if TYPE_CHECKING:
     from .instructions import Instruction  # pragma: no cover
 
 
+class EndOfProgram(Exception):
+    pass
+
+
 class DT31:
     def __init__(
         self,
@@ -33,6 +37,17 @@ class DT31:
         self.stack: deque[int] = deque()
         self.stack_size = stack_size
         self.wrap_memory = wrap_memory
+        self.instructions = []
+
+    @property
+    def state(self):
+        state = {}
+        for k, v in enumerate(self.memory):
+            if v != 0:
+                state[f"M[{k}]"] = v
+        state |= {f"R[{k}]": v for k, v in self.registers.items()}
+        state["stack"] = list(self.stack)
+        return state
 
     def pop(self) -> int:
         if len(self.stack) == 0:
@@ -84,13 +99,27 @@ class DT31:
         self.registers[register] = value
         return value
 
-    def run(self, instructions: list[Instruction]):
-        self.set_register("ip", 0)
-        num_instructions = len(instructions)
+    def run(self, instructions: list[Instruction], debug: bool = False):
+        self.load(instructions)
         while True:
-            if (
-                self.get_register("ip") >= num_instructions
-                or self.get_register("ip") < 0
-            ):
+            try:
+                self.step(debug)
+                if debug:
+                    input()
+            except EndOfProgram:
                 break
-            instructions[self.get_register("ip")](self)
+
+    def load(self, instructions: list[Instruction]):
+        self.set_register("ip", 0)
+        self.instructions = instructions
+
+    def step(self, debug: bool = False):
+        if self.get_register("ip") >= len(self.instructions):
+            raise EndOfProgram("No more instructions")
+        if self.get_register("ip") < 0:
+            raise EndOfProgram("Cannot load negative instructions")
+        instruction = self.instructions[self.get_register("ip")]
+        output = instruction(self)
+        if debug:
+            print(str(instruction) + " -> " + str(output))
+            print(self.state)

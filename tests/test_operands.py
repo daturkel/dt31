@@ -26,6 +26,8 @@ def test_l_shorthand():
 
 
 def test_m_shorthand():
+    assert str(M[3]) == "M[3]"
+    assert str(M[M[3]]) == "M[M[3]]"
     m1 = M[3]
     m2 = MemoryReference(3)
     assert isinstance(m1, MemoryReference)
@@ -37,6 +39,7 @@ def test_m_shorthand():
 
 
 def test_r_shorthand():
+    assert str(R["a"]) == "R[a]"
     r1 = R["a"]
     r2 = R.a
     r3 = RegisterReference("a")

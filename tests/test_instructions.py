@@ -269,6 +269,7 @@ def test_rjne(cpu):
 
 
 def test_jif(cpu):
+    assert str(I.JIF(M[1], 2)) == "JIF(dest=M[1], a=2)"
     assert cpu.get_register("ip") == 0
     I.JIF(M[1], 2)(cpu)
     assert cpu.get_register("ip") == 10
@@ -330,6 +331,8 @@ def test_rjge(cpu):
 
 
 def test_push_pop(cpu):
+    assert str(I.PUSH(2)) == "PUSH(a=2)"
+    assert str(I.POP()) == "POP(out=None)"
     I.PUSH(2)(cpu)
     assert cpu.stack == deque([2])
     I.PUSH(M[1])(cpu)
@@ -347,41 +350,72 @@ def test_push_pop(cpu):
     I.POP(M[20])(cpu)
     assert M[20].resolve(cpu) == 10
     assert cpu.stack == deque([2])
-    I.POP(M[20])(cpu)
-    assert M[20].resolve(cpu) == 2
+    I.POP()(cpu)
+    assert M[20].resolve(cpu) == 10
     assert cpu.stack == deque([])
 
 
 def test_cp(cpu):
-    I.CP(2, M[10])(cpu)
+    assert str(str(I.CP(2, M[10]))) == "CP(a=2, out=M[10])"
+    assert I.CP(2, M[10])(cpu) == 2
     assert cpu.get_memory(10) == 2
-    I.CP(R.a, M[20])(cpu)
+    assert I.CP(R.a, M[20])(cpu) == 30
     assert cpu.get_memory(20) == 30
-    I.CP(M[M[2]], M[M[5]])(cpu)
+    assert I.CP(M[M[2]], M[M[5]])(cpu) == 30
     assert cpu.get_memory(0) == 30
-    I.CP(M[10], R.b)(cpu)
+    assert I.CP(M[10], R.b)(cpu) == 2
     assert cpu.get_register("b") == 2
 
 
-def test_out_no_newline(cpu, capsys):
-    assert I.OUT(L[2])(cpu) == 0
+def test_nout_no_newline(cpu, capsys):
+    assert str(I.NOUT(L[1])) == "NOUT(a=1, b=0)"
+    assert I.NOUT(L[2])(cpu) == 0
     captured = capsys.readouterr()
     assert captured.out == "2"
 
 
-def test_out_newline(cpu, capsys):
-    assert I.OUT(L[2], L[1])(cpu) == 0
+def test_nout_newline(cpu, capsys):
+    assert str(I.NOUT(L[2], L[1])) == "NOUT(a=2, b=1)"
+    assert I.NOUT(L[2], L[1])(cpu) == 0
     captured = capsys.readouterr()
     assert captured.out == "2\n"
 
 
+def test_oout_no_newline(cpu, capsys):
+    assert str(I.OOUT(L[1])) == "OOUT(a=1, b=0)"
+    assert I.OOUT(L[65])(cpu) == 0
+    captured = capsys.readouterr()
+    assert captured.out == "A"
+
+
+def test_oout_newline(cpu, capsys):
+    assert str(I.OOUT(L[2], L[1])) == "OOUT(a=2, b=1)"
+    assert I.OOUT(L[65], L[1])(cpu) == 0
+    captured = capsys.readouterr()
+    assert captured.out == "A\n"
+
+
 def test_nin(cpu, monkeypatch):
+    assert str(I.NIN(M[10])) == "NIN(out=M[10])"
     monkeypatch.setattr("builtins.input", lambda: "31")
     assert I.NIN(R["a"])(cpu) == 31
     assert cpu.get_register("a") == 31
 
 
 def test_oin(cpu, monkeypatch):
+    assert str(I.OIN(M[10])) == "OIN(out=M[10])"
     monkeypatch.setattr("builtins.input", lambda: "A")
     assert I.OIN(R["a"])(cpu) == 65
     assert cpu.get_register("a") == 65
+
+
+def test_semp(cpu):
+    assert I.SEMP(M[0])(cpu) == 1
+    assert cpu.get_memory(0) == 1
+    I.PUSH(2)(cpu)
+    assert I.SEMP(M[0])(cpu) == 0
+    assert cpu.get_memory(0) == 0
+    I.POP()(cpu)
+    assert I.SEMP(M[0])(cpu) == 1
+    assert cpu.get_memory(0) == 1
+    assert str(I.SEMP(M[10])) == "SEMP(out=M[10])"

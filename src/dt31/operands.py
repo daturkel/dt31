@@ -18,6 +18,9 @@ class Literal(Operand):
     def resolve(self, cpu: DT31) -> int:
         return self.value
 
+    def __str__(self) -> str:
+        return str(self.value)
+
 
 class _MetaLiteral(type):
     def __getitem__(self, arg: int) -> Literal:
@@ -41,6 +44,9 @@ class MemoryReference(Operand):
     def resolve(self, cpu: DT31) -> int:
         return cpu.get_memory(self.resolve_address(cpu))
 
+    def __str__(self) -> str:
+        return f"M[{self.address}]"
+
 
 class _MetaMemory(type):
     def __getitem__(self, arg: int | Operand) -> MemoryReference:
@@ -57,6 +63,9 @@ class RegisterReference(Operand):
 
     def resolve(self, cpu: DT31) -> int:
         return cpu.get_register(self.register)
+
+    def __str__(self) -> str:
+        return f"R[{self.register}]"
 
 
 class _MetaRegister(type):

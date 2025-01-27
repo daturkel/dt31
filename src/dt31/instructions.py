@@ -23,6 +23,9 @@ class Instruction:
         self._advance(cpu, value)
         return value
 
+    def __str__(self) -> str:
+        return f"{self.name}()"
+
 
 class NOOP(Instruction):
     def __init__(self):
@@ -52,6 +55,9 @@ class UnaryOperation(Instruction):
         cpu[self.out] = value
         return value
 
+    def __str__(self) -> str:
+        return f"{self.name}(a={self.a}, out={self.out})"
+
 
 # ---------------------------------- bitwise and alu --------------------------------- #
 class BinaryOperation(Instruction):
@@ -76,6 +82,9 @@ class BinaryOperation(Instruction):
         value = super().__call__(cpu)
         cpu[self.out] = value
         return value
+
+    def __str__(self) -> str:
+        return f"{self.name}(a={self.a}, b={self.b}, out={self.out})"
 
 
 class ADD(BinaryOperation):
@@ -277,6 +286,9 @@ class UnaryJump(Jump):
         super().__init__(name, dest)
         self.a = as_op(a)
 
+    def __str__(self) -> str:
+        return f"{self.name}(dest={self.dest}, a={self.a})"
+
 
 class BinaryJump(Jump):
     def __init__(
@@ -285,6 +297,9 @@ class BinaryJump(Jump):
         super().__init__(name, dest)
         self.a = as_op(a)
         self.b = as_op(b)
+
+    def __str__(self) -> str:
+        return f"{self.name}(dest={self.dest}, a={self.a}, b={self.b})"
 
 
 class ExactJumpMixin(Jump):
@@ -399,46 +414,97 @@ class PUSH(Instruction):
         cpu.push(self.a.resolve(cpu))
         return 0
 
+    def __str__(self) -> str:
+        return f"{self.name}(a={self.a})"
+
 
 class POP(Instruction):
-    def __init__(self, out: Reference):
+    def __init__(self, out: Reference | None = None):
         super().__init__("POP")
-        self.out = out
+        if out is not None:
+            self.out = as_op(out)
+        else:
+            self.out = None
 
     def _calc(self, cpu: DT31) -> int:
-        cpu[self.out] = as_op(cpu.pop()).resolve(cpu)
+        value = as_op(cpu.pop()).resolve(cpu)
+        if self.out is not None:
+            cpu[self.out] = value
         return 0
 
-
-# --------------------------------------- other -------------------------------------- #
-
-
-class CP(Instruction):
-    def __init__(self, a: Operand | int, out: Reference):
-        self.a = as_op(a)
-        self.out = out
-
-    def _calc(self, cpu: DT31) -> int:
-        cpu[self.out] = self.a.resolve(cpu)
-        return 0
+    def __str__(self) -> str:
+        return f"{self.name}(out={self.out})"
 
 
-class OUT(Instruction):
-    def __init__(self, a: Operand, n: Operand = L[0]):
-        self.a = as_op(a)
-        self.n = as_op(n)
+class SEMP(Instruction):
+    def __init__(self, out: Reference):
+        super().__init__("SEMP")
+        self.out = as_op(out)
 
     def _calc(self, cpu: DT31) -> int:
-        if self.n.resolve(cpu) != 0:
+        if cpu.stack:
+            value = 0
+        else:
+            value = 1
+        cpu[self.out] = value
+        return value
+
+    def __str__(self) -> str:
+        return f"{self.name}(out={self.out})"
+
+
+# ---------------------------------------- I/O --------------------------------------- #
+
+
+class CP(UnaryOperation):
+    def __init__(self, a: Operand | int, out: Operand | None = None):
+        super().__init__("CP", a, out)
+
+    def _calc(self, cpu: DT31) -> int:
+        value = self.a.resolve(cpu)
+        cpu[self.out] = value
+        return value
+
+
+class NOUT(Instruction):
+    def __init__(self, a: Operand, b: Operand = L[0]):
+        super().__init__("NOUT")
+        self.a = as_op(a)
+        self.b = as_op(b)
+
+    def _calc(self, cpu: DT31) -> int:
+        if self.b.resolve(cpu) != 0:
             end = "\n"
         else:
             end = ""
         print(self.a.resolve(cpu), end=end)
         return 0
 
+    def __str__(self) -> str:
+        return f"{self.name}(a={self.a}, b={self.b})"
+
+
+class OOUT(Instruction):
+    def __init__(self, a: Operand, b: Operand = L[0]):
+        super().__init__("OOUT")
+        self.a = as_op(a)
+        self.b = as_op(b)
+
+    def _calc(self, cpu: DT31) -> int:
+        if self.b.resolve(cpu) != 0:
+            end = "\n"
+        else:
+            end = ""
+        print(chr(self.a.resolve(cpu)), end=end)
+        return 0
+
+    def __str__(self) -> str:
+        return f"{self.name}(a={self.a}, b={self.b})"
+
 
 class NIN(Instruction):
     def __init__(self, out: Reference):
+        super().__init__("NIN")
         self.out = as_op(out)
 
     def _calc(self, cpu: DT31) -> int:
@@ -447,9 +513,13 @@ class NIN(Instruction):
         cpu[self.out] = val_int
         return val_int
 
+    def __str__(self) -> str:
+        return f"{self.name}(out={self.out})"
+
 
 class OIN(Instruction):
     def __init__(self, out: Reference):
+        super().__init__("OIN")
         self.out = as_op(out)
 
     def _calc(self, cpu: DT31) -> int:
@@ -457,3 +527,6 @@ class OIN(Instruction):
         val_ord = ord(val)
         cpu[self.out] = val_ord
         return val_ord
+
+    def __str__(self) -> str:
+        return f"{self.name}(out={self.out})"
