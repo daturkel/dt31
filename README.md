@@ -20,6 +20,8 @@ computer = Computer()
 # Your code here
 ```
 
+For example programs, see the [examples](./examples/).
+
 ## Development
 
 ```bash
@@ -38,6 +40,7 @@ uv run invoke coverage
 - [ ] Parse and execute `.dt` files
 - [ ] Data handling
 - [ ] Macros
+- [ ] Character literals?
 
 ## License
 
