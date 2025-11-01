@@ -37,6 +37,7 @@ jobs:
   # Deploy the artifact to GitHub pages.
   # This is a separate job so that only actions/deploy-pages has the necessary permissions.
   deploy:
+    name: Push to Github Pages
     needs: build
     runs-on: ubuntu-latest
     permissions:
