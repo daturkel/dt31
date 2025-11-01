@@ -33,6 +33,12 @@ uv run invoke test
 uv run invoke coverage
 ```
 
+## Roadmap
+
+- [ ] Parse and execute `.dt` files
+- [ ] Data handling
+- [ ] Macros
+
 ## License
 
 MIT License
