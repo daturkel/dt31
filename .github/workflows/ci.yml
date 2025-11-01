@@ -21,5 +21,6 @@ jobs:
       - name: Install the project
         run: uv sync --frozen --group dev
       - name: Run tests
-        # For example, using `pytest`
-        run: uv run inv test
+        run: uv run inv test --ci
+      - name: Generate coverage badge
+        run: uv run inv coverage-badge

@@ -13,3 +13,4 @@ wheels/
 .envrc
 .python-version
 .coverage
+coverage.xml
