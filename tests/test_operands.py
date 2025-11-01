@@ -63,9 +63,20 @@ def test_as_op():
     assert o1.value == 4
     o2 = as_op(M[2])
     assert isinstance(o2, MemoryReference)
-    assert o2.address == 2
+    assert o2.address == L[2]
     o3 = as_op(R.a)
     assert isinstance(o3, RegisterReference)
     assert o3.register == "a"
     with pytest.raises(ValueError):
         as_op("asd")  # type: ignore
+
+
+def test_literal_equality():
+    a = L[2]
+    b = L[2]
+    assert a == b
+    assert a == 2
+    c = L[3]
+    assert c != b
+    assert c != 2
+    assert a != "2"
