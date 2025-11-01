@@ -21,6 +21,14 @@
             <input type="search" placeholder="Search..." role="searchbox" aria-label="search"
                    pattern=".+" required>
 
+            <h2>Contents</h2>
+            <ul>
+  <li><a href="#installation">Installation</a></li>
+  <li><a href="#usage">Usage</a></li>
+  <li><a href="#development">Development</a></li>
+  <li><a href="#license">License</a></li>
+</ul>
+
 
             <h2>Submodules</h2>
             <ul>
@@ -43,8 +51,55 @@
                     <h1 class="modulename">
 dt31    </h1>
 
+                        <div class="docstring"><p>A toy computer emulator in Python with a simple instruction set and virtual machine.</p>
 
+<h2 id="installation">Installation</h2>
 
+<div class="pdoc-code codehilite">
+<pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span>dt31
+</code></pre>
+</div>
+
+<h2 id="usage">Usage</h2>
+
+<div class="pdoc-code codehilite">
+<pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">dt31</span><span class="w"> </span><span class="kn">import</span> <span class="n">Computer</span>
+
+<span class="c1"># Create and run programs</span>
+<span class="n">computer</span> <span class="o">=</span> <span class="n">Computer</span><span class="p">()</span>
+<span class="c1"># Your code here</span>
+</code></pre>
+</div>
+
+<h2 id="development">Development</h2>
+
+<div class="pdoc-code codehilite">
+<pre><span></span><code><span class="c1"># Install dependencies</span>
+uv<span class="w"> </span>sync<span class="w"> </span>--dev
+
+<span class="c1"># Run tests</span>
+uv<span class="w"> </span>run<span class="w"> </span>invoke<span class="w"> </span><span class="nb">test</span>
+
+<span class="c1"># Run tests with coverage</span>
+uv<span class="w"> </span>run<span class="w"> </span>invoke<span class="w"> </span>coverage
+</code></pre>
+</div>
+
+<h2 id="license">License</h2>
+
+<p>MIT License</p>
+</div>
+
+                        <input id="mod-dt31-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
+
+                        <label class="view-source-button" for="mod-dt31-view-source"><span>View Source</span></label>
+
+                        <div class="pdoc-code codehilite"><pre><span></span><span id="L-1"><a href="#L-1"><span class="linenos">1</span></a><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="L-2"><a href="#L-2"><span class="linenos">2</span></a><span class="sd">.. include:: ../../README.md</span>
+</span><span id="L-3"><a href="#L-3"><span class="linenos">3</span></a><span class="sd">   :start-line: 3</span>
+</span><span id="L-4"><a href="#L-4"><span class="linenos">4</span></a>
+</span><span id="L-5"><a href="#L-5"><span class="linenos">5</span></a><span class="sd">&quot;&quot;&quot;</span>
+</span></pre></div>
 
 
             </section>
