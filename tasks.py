@@ -16,3 +16,15 @@ def test(c, html=False, ci=False):
 def coverage_badge(c):
     """Generate coverage badge from coverage.xml"""
     c.run("genbadge coverage -i coverage.xml -o coverage-badge.svg", pty=True)
+
+
+@task
+def docs(c):
+    """Update documentation files."""
+    c.run("pdoc --docformat google src/dt31 -o docs/site")
+
+
+@task
+def serve_docs(c):
+    """Serve the documentation website locally."""
+    c.run("pdoc --docformat google src/dt31")

@@ -72,7 +72,10 @@ class _MetaRegister(type):
     def __getitem__(self, arg: str) -> RegisterReference:
         return RegisterReference(arg)
 
-    def __getattr__(self, arg: str) -> RegisterReference:
+    def __getattribute__(self, arg: str):
+        # Don't intercept special attributes (dunder methods)
+        if arg.startswith("_"):
+            return super().__getattribute__(arg)
         return RegisterReference(arg)
 
 
