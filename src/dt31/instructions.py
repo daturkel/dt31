@@ -682,10 +682,6 @@ class ExactJumpMixin(Jump):
 
     This mixin class defines behavior for jumps where the destination is used directly as
     the new instruction pointer value, rather than relative to the current position.
-
-    Args:
-        name: The name of the jump instruction.
-        dest: The operand specifying the exact instruction pointer destination.
     """
 
     def _jump_destination(self, cpu: DT31) -> int:
@@ -697,10 +693,6 @@ class RelativeJumpMixin(Jump):
 
     This mixin class defines behavior for jumps where the destination is used as an offset
     relative to the current instruction pointer position, rather than an exact position.
-
-    Args:
-        name: The name of the jump instruction.
-        dest: The operand specifying the instruction pointer offset to jump by.
     """
 
     def _jump_destination(self, cpu: DT31) -> int:
