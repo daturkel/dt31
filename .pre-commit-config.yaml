@@ -5,9 +5,9 @@ repos:
       - id: check-added-large-files
         args: ['--maxkb=1000']
       - id: end-of-file-fixer
-        exclude: ^docs/
+        exclude: ^docs/|\.svg$
       - id: trailing-whitespace
-        exclude: ^docs/
+        exclude: ^docs/|\.svg$
       - id: check-toml
   - repo: https://github.com/astral-sh/ruff-pre-commit
     # Ruff version.
