@@ -150,7 +150,7 @@ class NOOP(Instruction):
 
 
 class UnaryOperation(Instruction):
-    """Base class for instructions which modify a single operand and optionally write
+    """Base class for instructions which utilize a single operand and optionally write
     to a separate operand."""
 
     def __init__(self, name: str, a: Operand | int, out: Reference | None = None):
@@ -178,6 +178,9 @@ class UnaryOperation(Instruction):
 
 # ---------------------------------- bitwise and alu --------------------------------- #
 class BinaryOperation(Instruction):
+    """Base class for instructions which utilize two operands and optionally write
+    to a separate operand."""
+
     def __init__(
         self,
         name: str,
@@ -970,8 +973,9 @@ class RCALL(RelativeJumpMixin, UnconditionalJumpMixin):
 
 
 class RET(Instruction):
+    """Return from function by popping return address from stack and jumping to it."""
+
     def __init__(self):
-        """Return from function by popping return address from stack and jumping to it."""
         super().__init__("RET")
 
     def _calc(self, cpu: DT31) -> int:
