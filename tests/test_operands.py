@@ -1,6 +1,7 @@
 import pytest
 
 from dt31.operands import (
+    LC,
     L,
     Literal,
     M,
@@ -80,3 +81,26 @@ def test_literal_equality():
     assert c != b
     assert c != 2
     assert a != "2"
+
+
+def test_lc_shorthand():
+    lc1 = LC["A"]
+    l1 = Literal(65)
+    assert isinstance(lc1, Literal)
+    assert lc1.value == l1.value
+    assert lc1.value == ord("A")
+
+
+def test_lc_equality():
+    assert LC["A"] == 65
+    assert LC["A"] == L[65]
+    assert LC["A"] == Literal(65)
+
+
+def test_lc_invalid_input():
+    with pytest.raises(ValueError, match="LC requires a single character"):
+        LC[""]
+    with pytest.raises(ValueError, match="LC requires a single character"):
+        LC["ab"]
+    with pytest.raises(ValueError, match="LC requires a single character"):
+        LC[123]  # type: ignore

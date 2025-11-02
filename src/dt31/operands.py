@@ -90,6 +90,37 @@ class L(metaclass=_MetaLiteral):
     pass
 
 
+class _MetaCharLiteral(type):
+    """Metaclass enabling bracket syntax for creating character Literal operands."""
+
+    def __getitem__(self, arg: str) -> Literal:
+        """Create a Literal operand from a character using bracket syntax.
+
+        Args:
+            arg: A single character string.
+
+        Returns:
+            A Literal operand with the character's ordinal value.
+
+        Raises:
+            ValueError: If arg is not a single character string.
+        """
+        if not isinstance(arg, str) or len(arg) != 1:
+            raise ValueError(f"LC requires a single character, got: {arg}")
+        return Literal(ord(arg))
+
+
+class LC(metaclass=_MetaCharLiteral):
+    """Convenience class for creating character Literal operands using bracket syntax.
+
+    Examples:
+        LC['A']  # Creates Literal(65)
+        LC['z']  # Creates Literal(122)
+    """
+
+    pass
+
+
 class MemoryReference(Operand):
     """An operand representing a memory address reference.
 

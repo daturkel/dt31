@@ -37,10 +37,10 @@ uv run invoke coverage
 
 ## Roadmap
 
+- [x] Character literals?
 - [ ] Parse and execute `.dt` files
 - [ ] Data handling
 - [ ] Macros
-- [ ] Character literals?
 
 ## License
 
