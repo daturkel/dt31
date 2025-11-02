@@ -33,3 +33,15 @@ repos:
         entry: uv run inv docs
         language: system
         pass_filenames: false
+      - id: run-tests
+        name: Run tests with coverage
+        entry: uv run inv test --ci
+        language: system
+        pass_filenames: false
+        stages: [pre-push]
+      - id: coverage-badge
+        name: Generate coverage badge
+        entry: uv run inv coverage_badge
+        language: system
+        pass_filenames: false
+        stages: [pre-push]
