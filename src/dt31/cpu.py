@@ -43,17 +43,25 @@ class DT31:
             raise ValueError("memory_size must be greater than 0")
         if (registers is not None) and ("ip" in registers):
             raise ValueError("register name 'ip' is reserved")
+        self.registers: dict[str, int]
+        """General-purpose registers for holding variables."""
         if registers is None:
             self.registers = {"a": 0, "b": 0, "c": 0}
         else:
             self.registers = {r: 0 for r in registers}
         self.registers["ip"] = 0
-        self.memory = [0] * memory_size
-        self.memory_size = memory_size
+        self.memory_size: int = memory_size
+        """The length of the built-in memory."""
+        self.memory: list[int] = [0] * self.memory_size
+        """A fixed-length array of memory."""
+        self.stack_size: int = stack_size
+        """The max length of the stack."""
         self.stack: deque[int] = deque()
-        self.stack_size = stack_size
-        self.wrap_memory = wrap_memory
-        self.instructions = []
+        """A stack to push or pop from."""
+        self.wrap_memory: bool = wrap_memory
+        """If `True`, memory wraps around using a modulo on the index."""
+        self.instructions: list[Instruction] = []
+        """Instructions currently loaded."""
 
     @property
     def state(self):
@@ -203,6 +211,8 @@ class DT31:
     def run(self, instructions: list[Instruction], debug: bool = False):
         """Load and execute a list of instructions until completion.
 
+        Assembly happens automatically during loading.
+
         Args:
             instructions: The list of instructions to execute.
             debug: If True, prints each instruction result and waits for user input
@@ -211,7 +221,7 @@ class DT31:
         Raises:
             EndOfProgram: When execution completes normally (caught internally).
         """
-        self.load(assemble(instructions))
+        self.load(instructions)
         while True:
             try:
                 self.step(debug)
@@ -221,13 +231,13 @@ class DT31:
                 break
 
     def load(self, instructions: list[Instruction]):
-        """Load instructions into the CPU and reset the instruction pointer.
+        """Assemble and load instructions into the DT31 and reset the instruction pointer.
 
         Args:
             instructions: The list of instructions to load.
         """
         self.set_register("ip", 0)
-        self.instructions = instructions
+        self.instructions = assemble(instructions)
 
     def step(self, debug: bool = False):
         """Execute a single instruction at the current instruction pointer.

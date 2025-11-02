@@ -33,6 +33,10 @@ def assemble(program: list[Instruction]) -> list[Instruction]:
         AssemblyError: If a label is defined multiple times or if an undefined label
             is referenced.
 
+    Note:
+        This function is run automatically when `DT31.run` is called, so it typically doesn't
+        need to be invoked manually.
+
     Examples:
         Simple loop with label:
         ```python
