@@ -41,7 +41,7 @@ repos:
         stages: [pre-push]
       - id: coverage-badge
         name: Generate coverage badge
-        entry: uv run inv coverage_badge
+        entry: uv run inv coverage-badge
         language: system
         pass_filenames: false
         stages: [pre-push]
