@@ -3,6 +3,7 @@ from __future__ import annotations
 from collections import deque
 from typing import TYPE_CHECKING
 
+from .assembler import assemble
 from .operands import MemoryReference, Operand, RegisterReference
 
 if TYPE_CHECKING:
@@ -210,7 +211,7 @@ class DT31:
         Raises:
             EndOfProgram: When execution completes normally (caught internally).
         """
-        self.load(instructions)
+        self.load(assemble(instructions))
         while True:
             try:
                 self.step(debug)

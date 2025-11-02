@@ -1,6 +1,7 @@
+from __future__ import annotations
+
 from typing import TYPE_CHECKING
 
-from .cpu import DT31
 from .operands import Destination, L, Label, Operand, Reference, as_op
 
 if TYPE_CHECKING:
