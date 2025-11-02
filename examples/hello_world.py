@@ -1,22 +1,22 @@
 import dt31.instructions as I
 from dt31.cpu import DT31
-from dt31.operands import L, M
+from dt31.operands import LC, L, M
 
 hello_world = [
     # populate stack with hello world backwards
-    I.PUSH(33),
-    I.PUSH(100),
-    I.PUSH(108),
-    I.PUSH(114),
-    I.PUSH(111),
-    I.PUSH(119),
-    I.PUSH(32),
-    I.PUSH(44),
-    I.PUSH(111),
-    I.PUSH(108),
-    I.PUSH(108),
-    I.PUSH(101),
-    I.PUSH(104),
+    I.PUSH(LC["!"]),
+    I.PUSH(LC["d"]),
+    I.PUSH(LC["l"]),
+    I.PUSH(LC["r"]),
+    I.PUSH(LC["o"]),
+    I.PUSH(LC["w"]),
+    I.PUSH(LC[" "]),
+    I.PUSH(LC[","]),
+    I.PUSH(LC["o"]),
+    I.PUSH(LC["l"]),
+    I.PUSH(LC["l"]),
+    I.PUSH(LC["e"]),
+    I.PUSH(LC["h"]),
     # Pop off the stack into M[1]
     I.POP(M[1]),
     # If stack is empty, set M[2] = 1, else 0
@@ -28,4 +28,4 @@ hello_world = [
 ]
 
 cpu = DT31(registers=[])
-cpu.run(hello_world, debug=True)
+cpu.run(hello_world, debug=False)
