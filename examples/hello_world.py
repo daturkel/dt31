@@ -1,6 +1,6 @@
 import dt31.instructions as I
 from dt31.cpu import DT31
-from dt31.operands import M
+from dt31.operands import L, M
 
 hello_world = [
     # populate stack with hello world backwards
@@ -24,7 +24,7 @@ hello_world = [
     # Print M[1]; add a newline if M[2] == 1 (i.e. if stack is empty)
     I.OOUT(M[1], M[2]),
     # if M[2] is 0 (i.e. stack is not empty), loop back
-    I.RJEQ(-3, M[2], 0),
+    I.RJEQ(L[-3], M[2], 0),
 ]
 
 cpu = DT31(registers=[])
