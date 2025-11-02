@@ -710,15 +710,15 @@ class JNE(ExactJumpMixin, IfUnequalJumpMixin):
 
 
 class RJNE(RelativeJumpMixin, IfUnequalJumpMixin):
-    def __init__(self, dest: Operand | int, a: Operand | int, b: Operand | int):
+    def __init__(self, delta: Operand | int, a: Operand | int, b: Operand | int):
         """Jump to relative destination if operands are not equal.
 
         Args:
-            dest: The relative instruction pointer offset to jump by.
+            delta: The relative instruction pointer offset to jump by.
             a: First operand to compare.
             b: Second operand to compare.
         """
-        super().__init__("RJNE", dest, a, b)
+        super().__init__("RJNE", delta, a, b)
 
 
 class JGT(ExactJumpMixin, IfGTJumpMixin):
@@ -734,15 +734,15 @@ class JGT(ExactJumpMixin, IfGTJumpMixin):
 
 
 class RJGT(RelativeJumpMixin, IfGTJumpMixin):
-    def __init__(self, dest: Operand | int, a: Operand | int, b: Operand | int):
+    def __init__(self, delta: Operand | int, a: Operand | int, b: Operand | int):
         """Jump to relative destination if first operand is greater than second operand.
 
         Args:
-            dest: The relative instruction pointer offset to jump by.
+            delta: The relative instruction pointer offset to jump by.
             a: First operand to compare.
             b: Second operand to compare.
         """
-        super().__init__("RJGT", dest, a, b)
+        super().__init__("RJGT", delta, a, b)
 
 
 class JGE(ExactJumpMixin, IfGEJumpMixin):
@@ -758,15 +758,15 @@ class JGE(ExactJumpMixin, IfGEJumpMixin):
 
 
 class RJGE(RelativeJumpMixin, IfGEJumpMixin):
-    def __init__(self, dest: Operand | int, a: Operand | int, b: Operand | int):
+    def __init__(self, delta: Operand | int, a: Operand | int, b: Operand | int):
         """Jump to relative destination if first operand is greater than or equal to second operand.
 
         Args:
-            dest: The relative instruction pointer offset to jump by.
+            delta: The relative instruction pointer offset to jump by.
             a: First operand to compare.
             b: Second operand to compare.
         """
-        super().__init__("RJGE", dest, a, b)
+        super().__init__("RJGE", delta, a, b)
 
 
 class JIF(ExactJumpMixin, IfJumpMixin):
@@ -781,14 +781,14 @@ class JIF(ExactJumpMixin, IfJumpMixin):
 
 
 class RJIF(RelativeJumpMixin, IfJumpMixin):
-    def __init__(self, dest: Operand | int, a: Operand | int):
+    def __init__(self, delta: Operand | int, a: Operand | int):
         """Jump to relative destination if operand is nonzero (truthy).
 
         Args:
-            dest: The relative instruction pointer offset to jump by.
+            delta: The relative instruction pointer offset to jump by.
             a: Operand to check for truthiness.
         """
-        super().__init__("RJIF", dest, a)
+        super().__init__("RJIF", delta, a)
 
 
 # --------------------------------------- stack -------------------------------------- #
