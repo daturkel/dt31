@@ -573,3 +573,30 @@ def test_multiple_rcall_ret(cpu):
     I.RET()(cpu)
     assert cpu.get_register("ip") == 1
     assert cpu.stack == deque([])
+
+
+def test_instruction_equality():
+    # Test instructions with no operands
+    assert I.NOOP() == I.NOOP()
+    assert I.NOOP() != I.RET()
+
+    # Test instructions with single operand
+    assert I.PUSH(5) == I.PUSH(5)
+    assert I.PUSH(5) != I.PUSH(6)
+    assert I.PUSH(5) != I.POP()
+
+    # Test instructions with multiple operands
+    assert I.ADD(R.a, L[5]) == I.ADD(R.a, L[5])
+    assert I.ADD(R.a, L[5]) != I.ADD(R.b, L[5])
+    assert I.ADD(R.a, L[5]) != I.ADD(R.a, L[6])
+    assert I.ADD(R.a, L[5]) != I.SUB(R.a, L[5])
+
+    # Test instructions with memory references
+    assert I.ADD(M[1], M[2]) == I.ADD(M[1], M[2])
+    assert I.ADD(M[1], M[2]) != I.ADD(M[1], M[3])
+
+    # Test jump instructions
+    assert I.JMP(100) == I.JMP(100)
+    assert I.JMP(100) != I.JMP(200)
+    assert I.JEQ(10, R.a, L[5]) == I.JEQ(10, R.a, L[5])
+    assert I.JEQ(10, R.a, L[5]) != I.JEQ(20, R.a, L[5])

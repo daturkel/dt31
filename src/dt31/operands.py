@@ -27,6 +27,11 @@ class Operand:
         """
         raise NotImplementedError()
 
+    def __eq__(self, other):
+        if type(self) is not type(other):
+            return False
+        return self.__dict__ == other.__dict__
+
 
 class Literal(Operand):
     """An operand representing a literal integer value.
@@ -395,6 +400,11 @@ class Label:
 
     def __str__(self) -> str:
         return f"{self.name}"
+
+    def __eq__(self, other):
+        if type(self) is not type(other):
+            return False
+        return self.name == other.name
 
 
 # Type alias for jump/call destination operands

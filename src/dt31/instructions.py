@@ -139,6 +139,11 @@ class Instruction:
         """
         return f"{self.name}()"
 
+    def __eq__(self, other):
+        if type(self) is not type(other):
+            return False
+        return self.__dict__ == other.__dict__
+
 
 class NOOP(Instruction):
     """Do nothing but advance instruction pointer."""

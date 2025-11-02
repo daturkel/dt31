@@ -130,3 +130,41 @@ def test_label_str():
     assert str(label1) == "start"
     label2 = Label("loop_begin")
     assert str(label2) == "loop_begin"
+
+
+def test_memory_reference_equality():
+    m1 = M[5]
+    m2 = M[5]
+    m3 = M[10]
+    assert m1 == m2
+    assert m1 != m3
+    # Test nested memory references
+    m4 = M[M[2]]
+    m5 = M[M[2]]
+    m6 = M[M[3]]
+    assert m4 == m5
+    assert m4 != m6
+    # Test memory references with register addresses
+    m7 = M[R.a]
+    m8 = M[R.a]
+    m9 = M[R.b]
+    assert m7 == m8
+    assert m7 != m9
+
+
+def test_register_reference_equality():
+    r1 = R.a
+    r2 = R["a"]
+    r3 = R.b
+    assert r1 == r2
+    assert r1 != r3
+    assert r1 != "a"
+
+
+def test_label_equality():
+    l1 = Label("start")
+    l2 = Label("start")
+    l3 = Label("end")
+    assert l1 == l2
+    assert l1 != l3
+    assert l1 != "start"
