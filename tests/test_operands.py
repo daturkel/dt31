@@ -110,7 +110,7 @@ def test_lc_invalid_input():
 def test_label_init():
     label = Label("my_function")
     assert label.name == "my_function"
-    assert str(label) == "my_function:"
+    assert str(label) == "my_function"
 
 
 def test_label_resolve_raises_error(cpu):
@@ -127,6 +127,6 @@ def test_label_resolve_raises_error(cpu):
 
 def test_label_str():
     label1 = Label("start")
-    assert str(label1) == "start:"
+    assert str(label1) == "start"
     label2 = Label("loop_begin")
-    assert str(label2) == "loop_begin:"
+    assert str(label2) == "loop_begin"

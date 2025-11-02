@@ -394,7 +394,7 @@ class Label:
         )
 
     def __str__(self) -> str:
-        return f"{self.name}:"
+        return f"{self.name}"
 
 
 # Type alias for jump/call destination operands

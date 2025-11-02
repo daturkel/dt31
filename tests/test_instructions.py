@@ -40,7 +40,7 @@ def test_unary_operation_writes_register(cpu):
 
 def test_unary_operation_validates_types(cpu):
     with pytest.raises(ValueError) as e1:
-        I.BNOT(1, L[1])
+        I.BNOT(1, L[1])  # type: ignore
     assert "must be a Reference or None" in str(e1.value)
     with pytest.raises(ValueError) as e2:
         I.BNOT(1)  # type: ignore
@@ -76,7 +76,7 @@ def test_binary_operation_writes_register(cpu):
 
 def test_binary_operation_validates_types(cpu):
     with pytest.raises(ValueError) as e1:
-        I.ADD(1, 1, L[1])
+        I.ADD(1, 1, L[1])  # type: ignore
     assert "must be a Reference or None" in str(e1.value)
     with pytest.raises(ValueError) as e2:
         I.ADD(1, 1)
