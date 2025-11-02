@@ -504,6 +504,9 @@ class Jump(Instruction):
         else:
             cpu.set_register("ip", cpu.get_register("ip") + 1)
 
+    def __str__(self) -> str:
+        return f"{self.name}(dest={self.dest})"
+
 
 class UnaryJump(Jump):
     def __init__(self, name: str, dest: Operand | int, a: Operand | int):
@@ -653,6 +656,9 @@ class JMP(ExactJumpMixin, UnconditionalJumpMixin):
         """
         super().__init__("JMP", dest)
 
+    def __str__(self) -> str:
+        return f"{self.name}(dest={self.dest})"
+
 
 class RJMP(RelativeJumpMixin, UnconditionalJumpMixin):
     def __init__(self, delta: Operand | int):
@@ -662,6 +668,9 @@ class RJMP(RelativeJumpMixin, UnconditionalJumpMixin):
             delta: The relative instruction pointer offset to jump by.
         """
         super().__init__("RJMP", delta)
+
+    def __str__(self) -> str:
+        return f"{self.name}(dest={self.dest})"
 
 
 class JEQ(ExactJumpMixin, IfEqualJumpMixin):
