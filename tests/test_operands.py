@@ -3,6 +3,7 @@ import pytest
 from dt31.operands import (
     LC,
     L,
+    Label,
     Literal,
     M,
     MemoryReference,
@@ -104,3 +105,28 @@ def test_lc_invalid_input():
         LC["ab"]
     with pytest.raises(ValueError, match="LC requires a single character"):
         LC[123]  # type: ignore
+
+
+def test_label_init():
+    label = Label("my_function")
+    assert label.name == "my_function"
+    assert str(label) == "my_function:"
+
+
+def test_label_resolve_raises_error(cpu):
+    label = Label("unresolved_label")
+    with pytest.raises(RuntimeError, match="Unresolved label 'unresolved_label'"):
+        label.resolve(cpu)
+    with pytest.raises(RuntimeError, match="must be assembled using assemble"):
+        label.resolve(cpu)
+    with pytest.raises(
+        RuntimeError, match="can only be used as jump/call destinations"
+    ):
+        label.resolve(cpu)
+
+
+def test_label_str():
+    label1 = Label("start")
+    assert str(label1) == "start:"
+    label2 = Label("loop_begin")
+    assert str(label2) == "loop_begin:"

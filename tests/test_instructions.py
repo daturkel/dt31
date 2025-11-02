@@ -204,6 +204,7 @@ def test_jump(cpu):
     inst = I.Jump("foo", M[10])
     assert isinstance(inst.dest, MemoryReference)
     assert inst.dest.address == 10
+    assert str(inst) == "foo(dest=M[10])"
     with pytest.raises(NotImplementedError):
         I.Jump("foo", M[10])(cpu)
 
@@ -211,6 +212,16 @@ def test_jump(cpu):
         inst = I.Jump("foo", M[10])
         inst._jump_condition = lambda x: True  # type: ignore
         inst(cpu)
+
+
+def test_jump_with_label(cpu):
+    from dt31.operands import Label
+
+    label = Label("my_label")
+    inst = I.Jump("foo", label)
+    assert isinstance(inst.dest, Label)
+    assert inst.dest.name == "my_label"
+    assert str(inst) == "foo(dest=my_label)"
 
 
 def test_binary_jump_sets_a_and_b(cpu):
@@ -222,11 +233,13 @@ def test_binary_jump_sets_a_and_b(cpu):
 
 
 def test_jmp(cpu):
+    assert str(I.JMP(10)) == "JMP(dest=10)"
     I.JMP(10)(cpu)
     assert cpu.get_register("ip") == 10
 
 
 def test_rjmp(cpu):
+    assert str(I.RJMP(10)) == "RJMP(dest=10)"
     I.NOOP()(cpu)
     I.NOOP()(cpu)
     assert cpu.get_register("ip") == 2
@@ -419,3 +432,144 @@ def test_semp(cpu):
     assert I.SEMP(M[0])(cpu) == 1
     assert cpu.get_memory(0) == 1
     assert str(I.SEMP(M[10])) == "SEMP(out=M[10])"
+
+
+def test_call_pushes_return_address(cpu):
+    assert str(I.CALL(100)) == "CALL(dest=100)"
+    assert cpu.get_register("ip") == 0
+    assert cpu.stack == deque([])
+    I.CALL(100)(cpu)
+    # Should push IP+1 (which is 1) and jump to 100
+    assert cpu.get_register("ip") == 100
+    assert cpu.stack == deque([1])
+
+
+def test_call_with_memory_reference(cpu):
+    # Set memory location to hold target address
+    cpu.set_memory(50, 200)
+    assert cpu.get_register("ip") == 0
+    I.CALL(M[50])(cpu)
+    # Should push IP+1 (which is 1) and jump to value at M[50] (200)
+    assert cpu.get_register("ip") == 200
+    assert cpu.stack == deque([1])
+
+
+def test_call_with_register(cpu):
+    # Set register to hold target address
+    cpu.set_register("a", 150)
+    assert cpu.get_register("ip") == 0
+    I.CALL(R.a)(cpu)
+    # Should push IP+1 (which is 1) and jump to value in R.a (150)
+    assert cpu.get_register("ip") == 150
+    assert cpu.stack == deque([1])
+
+
+def test_ret_pops_and_jumps(cpu):
+    assert str(I.RET()) == "RET()"
+    # Simulate a function call sequence
+    cpu.set_register("ip", 5)
+    I.CALL(100)(cpu)
+    assert cpu.get_register("ip") == 100
+    assert cpu.stack == deque([6])
+    # Now return
+    I.RET()(cpu)
+    assert cpu.get_register("ip") == 6
+    assert cpu.stack == deque([])
+
+
+def test_call_from_different_ip_positions(cpu):
+    # Test that return address changes based on current IP
+    I.NOOP()(cpu)
+    I.NOOP()(cpu)
+    I.NOOP()(cpu)
+    assert cpu.get_register("ip") == 3
+    I.CALL(100)(cpu)
+    # Should push IP+1 (which is 4) and jump to 100
+    assert cpu.get_register("ip") == 100
+    assert cpu.stack == deque([4])
+    I.RET()(cpu)
+    assert cpu.get_register("ip") == 4
+    assert cpu.stack == deque([])
+
+
+def test_call_ret_sequence(cpu):
+    # More complex sequence: call from different locations
+    assert cpu.get_register("ip") == 0
+    I.CALL(50)(cpu)
+    assert cpu.stack == deque([1])
+    assert cpu.get_register("ip") == 50
+    # Nested call
+    I.CALL(75)(cpu)
+    assert cpu.stack == deque([1, 51])
+    assert cpu.get_register("ip") == 75
+    # Return from nested call
+    I.RET()(cpu)
+    assert cpu.get_register("ip") == 51
+    assert cpu.stack == deque([1])
+    # Return from first call
+    I.RET()(cpu)
+    assert cpu.get_register("ip") == 1
+    assert cpu.stack == deque([])
+
+
+def test_rcall_relative_call(cpu):
+    assert str(I.RCALL(10)) == "RCALL(dest=10)"
+    assert cpu.get_register("ip") == 0
+    assert cpu.stack == deque([])
+    I.RCALL(10)(cpu)
+    # Should push IP+1 (which is 1) and jump to IP+10 (0+10=10)
+    assert cpu.get_register("ip") == 10
+    assert cpu.stack == deque([1])
+
+
+def test_rcall_with_operands(cpu):
+    # Set IP to 20
+    cpu.set_register("ip", 20)
+    # RCALL with offset in memory
+    cpu.set_memory(5, 15)
+    I.RCALL(M[5])(cpu)
+    # Should push IP+1 (which is 21) and jump to IP+offset (20+15=35)
+    assert cpu.get_register("ip") == 35
+    assert cpu.stack == deque([21])
+
+
+def test_rcall_negative_offset(cpu):
+    # Test relative call with negative offset
+    cpu.set_register("ip", 50)
+    I.RCALL(-10)(cpu)
+    # Should push IP+1 (which is 51) and jump to IP+(-10) (50-10=40)
+    assert cpu.get_register("ip") == 40
+    assert cpu.stack == deque([51])
+
+
+def test_rcall_ret_sequence(cpu):
+    # Test relative call and return
+    cpu.set_register("ip", 10)
+    I.RCALL(20)(cpu)
+    assert cpu.get_register("ip") == 30
+    assert cpu.stack == deque([11])
+    I.RET()(cpu)
+    assert cpu.get_register("ip") == 11
+    assert cpu.stack == deque([])
+
+
+def test_multiple_rcall_ret(cpu):
+    # Test multiple relative calls and returns
+    cpu.set_register("ip", 0)
+    I.RCALL(5)(cpu)
+    assert cpu.stack == deque([1])
+    assert cpu.get_register("ip") == 5
+    I.RCALL(10)(cpu)
+    assert cpu.stack == deque([1, 6])
+    assert cpu.get_register("ip") == 15
+    I.RCALL(5)(cpu)
+    assert cpu.stack == deque([1, 6, 16])
+    assert cpu.get_register("ip") == 20
+    # Return from all calls
+    I.RET()(cpu)
+    assert cpu.get_register("ip") == 16
+    I.RET()(cpu)
+    assert cpu.get_register("ip") == 6
+    I.RET()(cpu)
+    assert cpu.get_register("ip") == 1
+    assert cpu.stack == deque([])
