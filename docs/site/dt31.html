@@ -81,11 +81,12 @@ dt31    </h1>
 <pre><span></span><code><span class="c1"># Install dependencies</span>
 uv<span class="w"> </span>sync<span class="w"> </span>--dev
 
+<span class="c1"># Set up pre-commit hooks</span>
+pre-commit<span class="w"> </span>install
+pre-commit<span class="w"> </span>install<span class="w"> </span>--hook-type<span class="w"> </span>pre-push
+
 <span class="c1"># Run tests</span>
 uv<span class="w"> </span>run<span class="w"> </span>invoke<span class="w"> </span><span class="nb">test</span>
-
-<span class="c1"># Run tests with coverage</span>
-uv<span class="w"> </span>run<span class="w"> </span>invoke<span class="w"> </span>coverage
 </code></pre>
 </div>
 

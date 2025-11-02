@@ -28,11 +28,12 @@ For example programs, see the [examples](./examples/).
 # Install dependencies
 uv sync --dev
 
+# Set up pre-commit hooks
+pre-commit install
+pre-commit install --hook-type pre-push
+
 # Run tests
 uv run invoke test
-
-# Run tests with coverage
-uv run invoke coverage
 ```
 
 ## Roadmap
