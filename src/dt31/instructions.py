@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING
 
 from .cpu import DT31
-from .operands import L, Operand, Reference, as_op
+from .operands import Destination, L, Label, Operand, Reference, as_op
 
 if TYPE_CHECKING:
     from .cpu import DT31  # pragma: no cover
@@ -54,7 +54,7 @@ class Instruction:
     Jump instruction (custom `_advance`, `__str__`):
     ```python
     class JMP(Instruction):
-        def __init__(self, dest: Operand | int):
+        def __init__(self, dest: Destination):
             super().__init__("JMP")
             self.dest = as_op(dest)
 
@@ -614,14 +614,18 @@ class NOT(UnaryOperation):
 class Jump(Instruction):
     """Base class for various types of jump instruction."""
 
-    def __init__(self, name: str, dest: Operand | int):
+    def __init__(self, name: str, dest: Destination):
         """
         Args:
             name: The name of the jump instruction.
-            dest: The operand which will inform where to jump to.
+            dest: The destination to jump to (Label, Operand, or int).
         """
         super().__init__(name)
-        self.dest = as_op(dest)
+        # Handle Label separately since it's not an Operand
+        if isinstance(dest, Label):
+            self.dest = dest
+        else:
+            self.dest = as_op(dest)
 
     def _jump_condition(self, cpu: DT31) -> bool:
         raise NotImplementedError()
@@ -645,11 +649,11 @@ class Jump(Instruction):
 class UnaryJump(Jump):
     """Base class for conditions which use a single value to determine jumps."""
 
-    def __init__(self, name: str, dest: Operand | int, a: Operand | int):
+    def __init__(self, name: str, dest: Destination, a: Operand | int):
         """
         Args:
             name: The name of the jump instruction.
-            dest: The operand which will inform where to jump to.
+            dest: The destination to jump to (Label, Operand, or int).
             a: The operand used to determine if jump condition is met.
         """
         super().__init__(name, dest)
@@ -663,12 +667,12 @@ class BinaryJump(Jump):
     """Base class for conditions which use two values to determine jumps."""
 
     def __init__(
-        self, name: str, dest: Operand | int, a: Operand | int, b: Operand | int
+        self, name: str, dest: Destination, a: Operand | int, b: Operand | int
     ):
         """
         Args:
             name: The name of the jump instruction.
-            dest: The operand which will inform where to jump to.
+            dest: The destination to jump to (Label, Operand, or int).
             a: The first operand used to determine if jump condition is met.
             b: The second operand used to determine if jump condition is met.
         """
@@ -778,10 +782,10 @@ class IfJumpMixin(UnaryJump):
 class JMP(ExactJumpMixin, UnconditionalJumpMixin):
     """Unconditional jump instruction."""
 
-    def __init__(self, dest: Operand | int):
+    def __init__(self, dest: Destination):
         """
         Args:
-            dest: The exact instruction pointer destination to jump to.
+            dest: The destination to jump to (Label, Operand, or int).
         """
         super().__init__("JMP", dest)
 
@@ -792,10 +796,10 @@ class JMP(ExactJumpMixin, UnconditionalJumpMixin):
 class RJMP(RelativeJumpMixin, UnconditionalJumpMixin):
     """Relative unconditional jump instruction."""
 
-    def __init__(self, delta: Operand | int):
+    def __init__(self, delta: Destination):
         """
         Args:
-            delta: The relative instruction pointer offset to jump by.
+            delta: The destination to jump to (Label, Operand, or int).
         """
         super().__init__("RJMP", delta)
 
@@ -806,10 +810,10 @@ class RJMP(RelativeJumpMixin, UnconditionalJumpMixin):
 class JEQ(ExactJumpMixin, IfEqualJumpMixin):
     """Jump to exact destination if operands are equal."""
 
-    def __init__(self, dest: Operand | int, a: Operand | int, b: Operand | int):
+    def __init__(self, dest: Destination, a: Operand | int, b: Operand | int):
         """
         Args:
-            dest: The exact instruction pointer destination to jump to.
+            dest: The destination to jump to (Label, Operand, or int).
             a: First operand to compare.
             b: Second operand to compare.
         """
@@ -819,10 +823,10 @@ class JEQ(ExactJumpMixin, IfEqualJumpMixin):
 class RJEQ(RelativeJumpMixin, IfEqualJumpMixin):
     """Jump to relative destination if operands are equal."""
 
-    def __init__(self, delta: Operand | int, a: Operand | int, b: Operand | int):
+    def __init__(self, delta: Destination, a: Operand | int, b: Operand | int):
         """
         Args:
-            delta: The relative instruction pointer offset to jump by.
+            delta: The destination to jump to (Label, Operand, or int).
             a: First operand to compare.
             b: Second operand to compare.
         """
@@ -832,10 +836,10 @@ class RJEQ(RelativeJumpMixin, IfEqualJumpMixin):
 class JNE(ExactJumpMixin, IfUnequalJumpMixin):
     """Jump to exact destination if operands are not equal."""
 
-    def __init__(self, dest: Operand | int, a: Operand | int, b: Operand | int):
+    def __init__(self, dest: Destination, a: Operand | int, b: Operand | int):
         """
         Args:
-            dest: The exact instruction pointer destination to jump to.
+            dest: The destination to jump to (Label, Operand, or int).
             a: First operand to compare.
             b: Second operand to compare.
         """
@@ -845,10 +849,10 @@ class JNE(ExactJumpMixin, IfUnequalJumpMixin):
 class RJNE(RelativeJumpMixin, IfUnequalJumpMixin):
     """Jump to relative destination if operands are not equal."""
 
-    def __init__(self, delta: Operand | int, a: Operand | int, b: Operand | int):
+    def __init__(self, delta: Destination, a: Operand | int, b: Operand | int):
         """
         Args:
-            delta: The relative instruction pointer offset to jump by.
+            delta: The destination to jump to (Label, Operand, or int).
             a: First operand to compare.
             b: Second operand to compare.
         """
@@ -858,10 +862,10 @@ class RJNE(RelativeJumpMixin, IfUnequalJumpMixin):
 class JGT(ExactJumpMixin, IfGTJumpMixin):
     """Jump to exact destination if first operand is greater than second operand."""
 
-    def __init__(self, dest: Operand | int, a: Operand | int, b: Operand | int):
+    def __init__(self, dest: Destination, a: Operand | int, b: Operand | int):
         """
         Args:
-            dest: The exact instruction pointer destination to jump to.
+            dest: The destination to jump to (Label, Operand, or int).
             a: First operand to compare.
             b: Second operand to compare.
         """
@@ -871,10 +875,10 @@ class JGT(ExactJumpMixin, IfGTJumpMixin):
 class RJGT(RelativeJumpMixin, IfGTJumpMixin):
     """Jump to relative destination if first operand is greater than second operand."""
 
-    def __init__(self, delta: Operand | int, a: Operand | int, b: Operand | int):
+    def __init__(self, delta: Destination, a: Operand | int, b: Operand | int):
         """
         Args:
-            delta: The relative instruction pointer offset to jump by.
+            delta: The destination to jump to (Label, Operand, or int).
             a: First operand to compare.
             b: Second operand to compare.
         """
@@ -884,10 +888,10 @@ class RJGT(RelativeJumpMixin, IfGTJumpMixin):
 class JGE(ExactJumpMixin, IfGEJumpMixin):
     """Jump to exact destination if first operand is greater than or equal to second operand."""
 
-    def __init__(self, dest: Operand | int, a: Operand | int, b: Operand | int):
+    def __init__(self, dest: Destination, a: Operand | int, b: Operand | int):
         """
         Args:
-            dest: The exact instruction pointer destination to jump to.
+            dest: The destination to jump to (Label, Operand, or int).
             a: First operand to compare.
             b: Second operand to compare.
         """
@@ -897,10 +901,10 @@ class JGE(ExactJumpMixin, IfGEJumpMixin):
 class RJGE(RelativeJumpMixin, IfGEJumpMixin):
     """Jump to relative destination if first operand is greater than or equal to second operand."""
 
-    def __init__(self, delta: Operand | int, a: Operand | int, b: Operand | int):
+    def __init__(self, delta: Destination, a: Operand | int, b: Operand | int):
         """
         Args:
-            delta: The relative instruction pointer offset to jump by.
+            delta: The destination to jump to (Label, Operand, or int).
             a: First operand to compare.
             b: Second operand to compare.
         """
@@ -910,10 +914,10 @@ class RJGE(RelativeJumpMixin, IfGEJumpMixin):
 class JIF(ExactJumpMixin, IfJumpMixin):
     """Jump to exact destination if operand is nonzero (truthy)."""
 
-    def __init__(self, dest: Operand | int, a: Operand | int):
+    def __init__(self, dest: Destination, a: Operand | int):
         """
         Args:
-            dest: The exact instruction pointer destination to jump to.
+            dest: The destination to jump to (Label, Operand, or int).
             a: Operand to check for truthiness.
         """
         super().__init__("JIF", dest, a)
@@ -922,10 +926,10 @@ class JIF(ExactJumpMixin, IfJumpMixin):
 class RJIF(RelativeJumpMixin, IfJumpMixin):
     """Jump to relative destination if operand is nonzero (truthy)."""
 
-    def __init__(self, delta: Operand | int, a: Operand | int):
+    def __init__(self, delta: Destination, a: Operand | int):
         """
         Args:
-            delta: The relative instruction pointer offset to jump by.
+            delta: The destination to jump to (Label, Operand, or int).
             a: Operand to check for truthiness.
         """
         super().__init__("RJIF", delta, a)
@@ -937,10 +941,10 @@ class RJIF(RelativeJumpMixin, IfJumpMixin):
 class CALL(ExactJumpMixin, UnconditionalJumpMixin):
     """Call function at exact destination, pushing return address to stack."""
 
-    def __init__(self, dest: Operand | int):
+    def __init__(self, dest: Destination):
         """
         Args:
-            dest: The exact instruction pointer destination to call.
+            dest: The destination to call (Label, Operand, or int).
         """
         super().__init__("CALL", dest)
 
@@ -956,10 +960,10 @@ class CALL(ExactJumpMixin, UnconditionalJumpMixin):
 class RCALL(RelativeJumpMixin, UnconditionalJumpMixin):
     """Call function at relative destination, pushing return address to stack."""
 
-    def __init__(self, delta: Operand | int):
+    def __init__(self, delta: Destination):
         """
         Args:
-            delta: The relative instruction pointer offset to call.
+            delta: The destination to call (Label, Operand, or int).
         """
         super().__init__("RCALL", delta)
 

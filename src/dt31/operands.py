@@ -284,3 +284,118 @@ def as_op(arg: int | Operand):
         return Literal(arg)
     else:
         raise ValueError(f"can't coerce value {arg} into operand")
+
+
+class Label:
+    """A named label that marks a position in the program for jumps and calls.
+
+    Labels are assembly-time constructs used to mark instruction positions in a program.
+    They are removed during the assembly process and replaced with numeric instruction
+    indices. Labels can only be used as destinations for jump and call instructions.
+
+    Usage
+    -----
+    Labels are used in two contexts:
+
+    1. **Definition**: Place a Label directly in the program list to mark a position:
+       ```python
+       program = [
+           I.CP(R.a, L[0]),
+           Label("loop"),      # Marks this position
+           I.ADD(R.a, L[1]),
+       ]
+       ```
+
+    2. **Reference**: Use a Label as the destination operand in jump/call instructions:
+       ```python
+       I.JMP(Label("loop"))     # Jump to the position marked by "loop"
+       I.CALL(Label("func"))    # Call the function at "func"
+       I.RJGT(Label("start"), R.a, L[10])  # Conditional relative jump
+       ```
+
+    Valid Instructions for Labels
+    ------------------------------
+    Labels can ONLY be used as the `dest` parameter in these instructions:
+    - Absolute jumps: JMP, JEQ, JNE, JGT, JGE, JIF
+    - Relative jumps: RJMP, RJEQ, RJNE, RJGT, RJGE, RJIF
+    - Function calls: CALL, RCALL
+
+    Invalid Usage
+    -------------
+    Labels cannot be used in arithmetic, logic, or other operations:
+    ```python
+    I.ADD(R.a, Label("x"))      # INVALID - will cause runtime error
+    I.CP(Label("foo"), R.b)     # INVALID - will cause runtime error
+    M[Label("addr")]            # INVALID - will cause runtime error
+    ```
+
+    Examples
+    --------
+    Simple loop counting from 0 to 10:
+    ```python
+    from dt31 import DT31, I, R, L, Label
+    from dt31.assembler import assemble
+
+    loop = Label("loop")
+    program = [
+        I.CP(R.a, L[0]),
+        loop,                          # Mark loop start
+        I.NOUT(R.a, L[1]),             # Print counter
+        I.ADD(R.a, L[1]),              # Increment
+        I.JGT(loop, L[10], R.a),       # Continue if a <= 10
+    ]
+
+    cpu = DT31()
+    cpu.run(assemble(program))
+    ```
+
+    Function with label:
+    ```python
+    program = [
+        I.CALL(Label("greet")),
+        I.JMP(Label("end")),
+
+        Label("greet"),
+        I.OOUT(LC['H']),
+        I.OOUT(LC['i']),
+        I.RET(),
+
+        Label("end"),
+    ]
+    ```
+    """
+
+    def __init__(self, name: str):
+        """Initialize a label with a given name.
+
+        Args:
+            name: The symbolic name for this label.
+        """
+        self.name = name
+
+    def resolve(self, cpu: DT31) -> int:
+        """Resolve the label to an instruction position.
+
+        This method should never be called during normal execution. Labels must be
+        resolved during the assembly process before the program runs. If this method
+        is called, it indicates the program was not assembled or the label was used
+        incorrectly (e.g., in an arithmetic operation instead of a jump destination).
+
+        Args:
+            cpu: The DT31 CPU instance (unused).
+
+        Raises:
+            RuntimeError: Always raised, as labels must be resolved during assembly.
+        """
+        raise RuntimeError(
+            f"Unresolved label '{self.name}' encountered at runtime. "
+            "Programs containing labels must be assembled using assemble() before execution. "
+            "Labels can only be used as jump/call destinations, not in arithmetic or other operations."
+        )
+
+    def __str__(self) -> str:
+        return f"{self.name}:"
+
+
+# Type alias for jump/call destination operands
+Destination = Label | Operand | int

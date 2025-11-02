@@ -117,6 +117,24 @@
             <li>
                     <a class="function" href="#as_op">as_op</a>
             </li>
+            <li>
+                    <a class="class" href="#Label">Label</a>
+                            <ul class="memberlist">
+                        <li>
+                                <a class="function" href="#Label.__init__">Label</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#Label.name">name</a>
+                        </li>
+                        <li>
+                                <a class="function" href="#Label.resolve">resolve</a>
+                        </li>
+                </ul>
+
+            </li>
+            <li>
+                    <a class="variable" href="#Destination">Destination</a>
+            </li>
     </ul>
 
 
@@ -424,6 +442,121 @@
 </span><span id="L-284"><a href="#L-284"><span class="linenos">284</span></a>        <span class="k">return</span> <span class="n">Literal</span><span class="p">(</span><span class="n">arg</span><span class="p">)</span>
 </span><span id="L-285"><a href="#L-285"><span class="linenos">285</span></a>    <span class="k">else</span><span class="p">:</span>
 </span><span id="L-286"><a href="#L-286"><span class="linenos">286</span></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;can&#39;t coerce value </span><span class="si">{</span><span class="n">arg</span><span class="si">}</span><span class="s2"> into operand&quot;</span><span class="p">)</span>
+</span><span id="L-287"><a href="#L-287"><span class="linenos">287</span></a>
+</span><span id="L-288"><a href="#L-288"><span class="linenos">288</span></a>
+</span><span id="L-289"><a href="#L-289"><span class="linenos">289</span></a><span class="k">class</span><span class="w"> </span><span class="nc">Label</span><span class="p">:</span>
+</span><span id="L-290"><a href="#L-290"><span class="linenos">290</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;A named label that marks a position in the program for jumps and calls.</span>
+</span><span id="L-291"><a href="#L-291"><span class="linenos">291</span></a>
+</span><span id="L-292"><a href="#L-292"><span class="linenos">292</span></a><span class="sd">    Labels are assembly-time constructs used to mark instruction positions in a program.</span>
+</span><span id="L-293"><a href="#L-293"><span class="linenos">293</span></a><span class="sd">    They are removed during the assembly process and replaced with numeric instruction</span>
+</span><span id="L-294"><a href="#L-294"><span class="linenos">294</span></a><span class="sd">    indices. Labels can only be used as destinations for jump and call instructions.</span>
+</span><span id="L-295"><a href="#L-295"><span class="linenos">295</span></a>
+</span><span id="L-296"><a href="#L-296"><span class="linenos">296</span></a><span class="sd">    Usage</span>
+</span><span id="L-297"><a href="#L-297"><span class="linenos">297</span></a><span class="sd">    -----</span>
+</span><span id="L-298"><a href="#L-298"><span class="linenos">298</span></a><span class="sd">    Labels are used in two contexts:</span>
+</span><span id="L-299"><a href="#L-299"><span class="linenos">299</span></a>
+</span><span id="L-300"><a href="#L-300"><span class="linenos">300</span></a><span class="sd">    1. **Definition**: Place a Label directly in the program list to mark a position:</span>
+</span><span id="L-301"><a href="#L-301"><span class="linenos">301</span></a><span class="sd">       ```python</span>
+</span><span id="L-302"><a href="#L-302"><span class="linenos">302</span></a><span class="sd">       program = [</span>
+</span><span id="L-303"><a href="#L-303"><span class="linenos">303</span></a><span class="sd">           I.CP(R.a, L[0]),</span>
+</span><span id="L-304"><a href="#L-304"><span class="linenos">304</span></a><span class="sd">           Label(&quot;loop&quot;),      # Marks this position</span>
+</span><span id="L-305"><a href="#L-305"><span class="linenos">305</span></a><span class="sd">           I.ADD(R.a, L[1]),</span>
+</span><span id="L-306"><a href="#L-306"><span class="linenos">306</span></a><span class="sd">       ]</span>
+</span><span id="L-307"><a href="#L-307"><span class="linenos">307</span></a><span class="sd">       ```</span>
+</span><span id="L-308"><a href="#L-308"><span class="linenos">308</span></a>
+</span><span id="L-309"><a href="#L-309"><span class="linenos">309</span></a><span class="sd">    2. **Reference**: Use a Label as the destination operand in jump/call instructions:</span>
+</span><span id="L-310"><a href="#L-310"><span class="linenos">310</span></a><span class="sd">       ```python</span>
+</span><span id="L-311"><a href="#L-311"><span class="linenos">311</span></a><span class="sd">       I.JMP(Label(&quot;loop&quot;))     # Jump to the position marked by &quot;loop&quot;</span>
+</span><span id="L-312"><a href="#L-312"><span class="linenos">312</span></a><span class="sd">       I.CALL(Label(&quot;func&quot;))    # Call the function at &quot;func&quot;</span>
+</span><span id="L-313"><a href="#L-313"><span class="linenos">313</span></a><span class="sd">       I.RJGT(Label(&quot;start&quot;), R.a, L[10])  # Conditional relative jump</span>
+</span><span id="L-314"><a href="#L-314"><span class="linenos">314</span></a><span class="sd">       ```</span>
+</span><span id="L-315"><a href="#L-315"><span class="linenos">315</span></a>
+</span><span id="L-316"><a href="#L-316"><span class="linenos">316</span></a><span class="sd">    Valid Instructions for Labels</span>
+</span><span id="L-317"><a href="#L-317"><span class="linenos">317</span></a><span class="sd">    ------------------------------</span>
+</span><span id="L-318"><a href="#L-318"><span class="linenos">318</span></a><span class="sd">    Labels can ONLY be used as the `dest` parameter in these instructions:</span>
+</span><span id="L-319"><a href="#L-319"><span class="linenos">319</span></a><span class="sd">    - Absolute jumps: JMP, JEQ, JNE, JGT, JGE, JIF</span>
+</span><span id="L-320"><a href="#L-320"><span class="linenos">320</span></a><span class="sd">    - Relative jumps: RJMP, RJEQ, RJNE, RJGT, RJGE, RJIF</span>
+</span><span id="L-321"><a href="#L-321"><span class="linenos">321</span></a><span class="sd">    - Function calls: CALL, RCALL</span>
+</span><span id="L-322"><a href="#L-322"><span class="linenos">322</span></a>
+</span><span id="L-323"><a href="#L-323"><span class="linenos">323</span></a><span class="sd">    Invalid Usage</span>
+</span><span id="L-324"><a href="#L-324"><span class="linenos">324</span></a><span class="sd">    -------------</span>
+</span><span id="L-325"><a href="#L-325"><span class="linenos">325</span></a><span class="sd">    Labels cannot be used in arithmetic, logic, or other operations:</span>
+</span><span id="L-326"><a href="#L-326"><span class="linenos">326</span></a><span class="sd">    ```python</span>
+</span><span id="L-327"><a href="#L-327"><span class="linenos">327</span></a><span class="sd">    I.ADD(R.a, Label(&quot;x&quot;))      # INVALID - will cause runtime error</span>
+</span><span id="L-328"><a href="#L-328"><span class="linenos">328</span></a><span class="sd">    I.CP(Label(&quot;foo&quot;), R.b)     # INVALID - will cause runtime error</span>
+</span><span id="L-329"><a href="#L-329"><span class="linenos">329</span></a><span class="sd">    M[Label(&quot;addr&quot;)]            # INVALID - will cause runtime error</span>
+</span><span id="L-330"><a href="#L-330"><span class="linenos">330</span></a><span class="sd">    ```</span>
+</span><span id="L-331"><a href="#L-331"><span class="linenos">331</span></a>
+</span><span id="L-332"><a href="#L-332"><span class="linenos">332</span></a><span class="sd">    Examples</span>
+</span><span id="L-333"><a href="#L-333"><span class="linenos">333</span></a><span class="sd">    --------</span>
+</span><span id="L-334"><a href="#L-334"><span class="linenos">334</span></a><span class="sd">    Simple loop counting from 0 to 10:</span>
+</span><span id="L-335"><a href="#L-335"><span class="linenos">335</span></a><span class="sd">    ```python</span>
+</span><span id="L-336"><a href="#L-336"><span class="linenos">336</span></a><span class="sd">    from dt31 import DT31, I, R, L, Label</span>
+</span><span id="L-337"><a href="#L-337"><span class="linenos">337</span></a><span class="sd">    from dt31.assembler import assemble</span>
+</span><span id="L-338"><a href="#L-338"><span class="linenos">338</span></a>
+</span><span id="L-339"><a href="#L-339"><span class="linenos">339</span></a><span class="sd">    loop = Label(&quot;loop&quot;)</span>
+</span><span id="L-340"><a href="#L-340"><span class="linenos">340</span></a><span class="sd">    program = [</span>
+</span><span id="L-341"><a href="#L-341"><span class="linenos">341</span></a><span class="sd">        I.CP(R.a, L[0]),</span>
+</span><span id="L-342"><a href="#L-342"><span class="linenos">342</span></a><span class="sd">        loop,                          # Mark loop start</span>
+</span><span id="L-343"><a href="#L-343"><span class="linenos">343</span></a><span class="sd">        I.NOUT(R.a, L[1]),             # Print counter</span>
+</span><span id="L-344"><a href="#L-344"><span class="linenos">344</span></a><span class="sd">        I.ADD(R.a, L[1]),              # Increment</span>
+</span><span id="L-345"><a href="#L-345"><span class="linenos">345</span></a><span class="sd">        I.JGT(loop, L[10], R.a),       # Continue if a &lt;= 10</span>
+</span><span id="L-346"><a href="#L-346"><span class="linenos">346</span></a><span class="sd">    ]</span>
+</span><span id="L-347"><a href="#L-347"><span class="linenos">347</span></a>
+</span><span id="L-348"><a href="#L-348"><span class="linenos">348</span></a><span class="sd">    cpu = DT31()</span>
+</span><span id="L-349"><a href="#L-349"><span class="linenos">349</span></a><span class="sd">    cpu.run(assemble(program))</span>
+</span><span id="L-350"><a href="#L-350"><span class="linenos">350</span></a><span class="sd">    ```</span>
+</span><span id="L-351"><a href="#L-351"><span class="linenos">351</span></a>
+</span><span id="L-352"><a href="#L-352"><span class="linenos">352</span></a><span class="sd">    Function with label:</span>
+</span><span id="L-353"><a href="#L-353"><span class="linenos">353</span></a><span class="sd">    ```python</span>
+</span><span id="L-354"><a href="#L-354"><span class="linenos">354</span></a><span class="sd">    program = [</span>
+</span><span id="L-355"><a href="#L-355"><span class="linenos">355</span></a><span class="sd">        I.CALL(Label(&quot;greet&quot;)),</span>
+</span><span id="L-356"><a href="#L-356"><span class="linenos">356</span></a><span class="sd">        I.JMP(Label(&quot;end&quot;)),</span>
+</span><span id="L-357"><a href="#L-357"><span class="linenos">357</span></a>
+</span><span id="L-358"><a href="#L-358"><span class="linenos">358</span></a><span class="sd">        Label(&quot;greet&quot;),</span>
+</span><span id="L-359"><a href="#L-359"><span class="linenos">359</span></a><span class="sd">        I.OOUT(LC[&#39;H&#39;]),</span>
+</span><span id="L-360"><a href="#L-360"><span class="linenos">360</span></a><span class="sd">        I.OOUT(LC[&#39;i&#39;]),</span>
+</span><span id="L-361"><a href="#L-361"><span class="linenos">361</span></a><span class="sd">        I.RET(),</span>
+</span><span id="L-362"><a href="#L-362"><span class="linenos">362</span></a>
+</span><span id="L-363"><a href="#L-363"><span class="linenos">363</span></a><span class="sd">        Label(&quot;end&quot;),</span>
+</span><span id="L-364"><a href="#L-364"><span class="linenos">364</span></a><span class="sd">    ]</span>
+</span><span id="L-365"><a href="#L-365"><span class="linenos">365</span></a><span class="sd">    ```</span>
+</span><span id="L-366"><a href="#L-366"><span class="linenos">366</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="L-367"><a href="#L-367"><span class="linenos">367</span></a>
+</span><span id="L-368"><a href="#L-368"><span class="linenos">368</span></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+</span><span id="L-369"><a href="#L-369"><span class="linenos">369</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize a label with a given name.</span>
+</span><span id="L-370"><a href="#L-370"><span class="linenos">370</span></a>
+</span><span id="L-371"><a href="#L-371"><span class="linenos">371</span></a><span class="sd">        Args:</span>
+</span><span id="L-372"><a href="#L-372"><span class="linenos">372</span></a><span class="sd">            name: The symbolic name for this label.</span>
+</span><span id="L-373"><a href="#L-373"><span class="linenos">373</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="L-374"><a href="#L-374"><span class="linenos">374</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+</span><span id="L-375"><a href="#L-375"><span class="linenos">375</span></a>
+</span><span id="L-376"><a href="#L-376"><span class="linenos">376</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">resolve</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cpu</span><span class="p">:</span> <span class="n">DT31</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+</span><span id="L-377"><a href="#L-377"><span class="linenos">377</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Resolve the label to an instruction position.</span>
+</span><span id="L-378"><a href="#L-378"><span class="linenos">378</span></a>
+</span><span id="L-379"><a href="#L-379"><span class="linenos">379</span></a><span class="sd">        This method should never be called during normal execution. Labels must be</span>
+</span><span id="L-380"><a href="#L-380"><span class="linenos">380</span></a><span class="sd">        resolved during the assembly process before the program runs. If this method</span>
+</span><span id="L-381"><a href="#L-381"><span class="linenos">381</span></a><span class="sd">        is called, it indicates the program was not assembled or the label was used</span>
+</span><span id="L-382"><a href="#L-382"><span class="linenos">382</span></a><span class="sd">        incorrectly (e.g., in an arithmetic operation instead of a jump destination).</span>
+</span><span id="L-383"><a href="#L-383"><span class="linenos">383</span></a>
+</span><span id="L-384"><a href="#L-384"><span class="linenos">384</span></a><span class="sd">        Args:</span>
+</span><span id="L-385"><a href="#L-385"><span class="linenos">385</span></a><span class="sd">            cpu: The DT31 CPU instance (unused).</span>
+</span><span id="L-386"><a href="#L-386"><span class="linenos">386</span></a>
+</span><span id="L-387"><a href="#L-387"><span class="linenos">387</span></a><span class="sd">        Raises:</span>
+</span><span id="L-388"><a href="#L-388"><span class="linenos">388</span></a><span class="sd">            RuntimeError: Always raised, as labels must be resolved during assembly.</span>
+</span><span id="L-389"><a href="#L-389"><span class="linenos">389</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="L-390"><a href="#L-390"><span class="linenos">390</span></a>        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+</span><span id="L-391"><a href="#L-391"><span class="linenos">391</span></a>            <span class="sa">f</span><span class="s2">&quot;Unresolved label &#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; encountered at runtime. &quot;</span>
+</span><span id="L-392"><a href="#L-392"><span class="linenos">392</span></a>            <span class="s2">&quot;Programs containing labels must be assembled using assemble() before execution. &quot;</span>
+</span><span id="L-393"><a href="#L-393"><span class="linenos">393</span></a>            <span class="s2">&quot;Labels can only be used as jump/call destinations, not in arithmetic or other operations.&quot;</span>
+</span><span id="L-394"><a href="#L-394"><span class="linenos">394</span></a>        <span class="p">)</span>
+</span><span id="L-395"><a href="#L-395"><span class="linenos">395</span></a>
+</span><span id="L-396"><a href="#L-396"><span class="linenos">396</span></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+</span><span id="L-397"><a href="#L-397"><span class="linenos">397</span></a>        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">:&quot;</span>
+</span><span id="L-398"><a href="#L-398"><span class="linenos">398</span></a>
+</span><span id="L-399"><a href="#L-399"><span class="linenos">399</span></a>
+</span><span id="L-400"><a href="#L-400"><span class="linenos">400</span></a><span class="c1"># Type alias for jump/call destination operands</span>
+</span><span id="L-401"><a href="#L-401"><span class="linenos">401</span></a><span class="n">Destination</span> <span class="o">=</span> <span class="n">Label</span> <span class="o">|</span> <span class="n">Operand</span> <span class="o">|</span> <span class="nb">int</span>
 </span></pre></div>
 
 
@@ -1192,6 +1325,333 @@ resolves to an address (for indirect addressing).</li>
 </ul>
 </div>
 
+
+                </section>
+                <section id="Label">
+                            <input id="Label-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
+<div class="attr class">
+            
+    <span class="def">class</span>
+    <span class="name">Label</span>:
+
+                <label class="view-source-button" for="Label-view-source"><span>View Source</span></label>
+
+    </div>
+    <a class="headerlink" href="#Label"></a>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="Label-290"><a href="#Label-290"><span class="linenos">290</span></a><span class="k">class</span><span class="w"> </span><span class="nc">Label</span><span class="p">:</span>
+</span><span id="Label-291"><a href="#Label-291"><span class="linenos">291</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;A named label that marks a position in the program for jumps and calls.</span>
+</span><span id="Label-292"><a href="#Label-292"><span class="linenos">292</span></a>
+</span><span id="Label-293"><a href="#Label-293"><span class="linenos">293</span></a><span class="sd">    Labels are assembly-time constructs used to mark instruction positions in a program.</span>
+</span><span id="Label-294"><a href="#Label-294"><span class="linenos">294</span></a><span class="sd">    They are removed during the assembly process and replaced with numeric instruction</span>
+</span><span id="Label-295"><a href="#Label-295"><span class="linenos">295</span></a><span class="sd">    indices. Labels can only be used as destinations for jump and call instructions.</span>
+</span><span id="Label-296"><a href="#Label-296"><span class="linenos">296</span></a>
+</span><span id="Label-297"><a href="#Label-297"><span class="linenos">297</span></a><span class="sd">    Usage</span>
+</span><span id="Label-298"><a href="#Label-298"><span class="linenos">298</span></a><span class="sd">    -----</span>
+</span><span id="Label-299"><a href="#Label-299"><span class="linenos">299</span></a><span class="sd">    Labels are used in two contexts:</span>
+</span><span id="Label-300"><a href="#Label-300"><span class="linenos">300</span></a>
+</span><span id="Label-301"><a href="#Label-301"><span class="linenos">301</span></a><span class="sd">    1. **Definition**: Place a Label directly in the program list to mark a position:</span>
+</span><span id="Label-302"><a href="#Label-302"><span class="linenos">302</span></a><span class="sd">       ```python</span>
+</span><span id="Label-303"><a href="#Label-303"><span class="linenos">303</span></a><span class="sd">       program = [</span>
+</span><span id="Label-304"><a href="#Label-304"><span class="linenos">304</span></a><span class="sd">           I.CP(R.a, L[0]),</span>
+</span><span id="Label-305"><a href="#Label-305"><span class="linenos">305</span></a><span class="sd">           Label(&quot;loop&quot;),      # Marks this position</span>
+</span><span id="Label-306"><a href="#Label-306"><span class="linenos">306</span></a><span class="sd">           I.ADD(R.a, L[1]),</span>
+</span><span id="Label-307"><a href="#Label-307"><span class="linenos">307</span></a><span class="sd">       ]</span>
+</span><span id="Label-308"><a href="#Label-308"><span class="linenos">308</span></a><span class="sd">       ```</span>
+</span><span id="Label-309"><a href="#Label-309"><span class="linenos">309</span></a>
+</span><span id="Label-310"><a href="#Label-310"><span class="linenos">310</span></a><span class="sd">    2. **Reference**: Use a Label as the destination operand in jump/call instructions:</span>
+</span><span id="Label-311"><a href="#Label-311"><span class="linenos">311</span></a><span class="sd">       ```python</span>
+</span><span id="Label-312"><a href="#Label-312"><span class="linenos">312</span></a><span class="sd">       I.JMP(Label(&quot;loop&quot;))     # Jump to the position marked by &quot;loop&quot;</span>
+</span><span id="Label-313"><a href="#Label-313"><span class="linenos">313</span></a><span class="sd">       I.CALL(Label(&quot;func&quot;))    # Call the function at &quot;func&quot;</span>
+</span><span id="Label-314"><a href="#Label-314"><span class="linenos">314</span></a><span class="sd">       I.RJGT(Label(&quot;start&quot;), R.a, L[10])  # Conditional relative jump</span>
+</span><span id="Label-315"><a href="#Label-315"><span class="linenos">315</span></a><span class="sd">       ```</span>
+</span><span id="Label-316"><a href="#Label-316"><span class="linenos">316</span></a>
+</span><span id="Label-317"><a href="#Label-317"><span class="linenos">317</span></a><span class="sd">    Valid Instructions for Labels</span>
+</span><span id="Label-318"><a href="#Label-318"><span class="linenos">318</span></a><span class="sd">    ------------------------------</span>
+</span><span id="Label-319"><a href="#Label-319"><span class="linenos">319</span></a><span class="sd">    Labels can ONLY be used as the `dest` parameter in these instructions:</span>
+</span><span id="Label-320"><a href="#Label-320"><span class="linenos">320</span></a><span class="sd">    - Absolute jumps: JMP, JEQ, JNE, JGT, JGE, JIF</span>
+</span><span id="Label-321"><a href="#Label-321"><span class="linenos">321</span></a><span class="sd">    - Relative jumps: RJMP, RJEQ, RJNE, RJGT, RJGE, RJIF</span>
+</span><span id="Label-322"><a href="#Label-322"><span class="linenos">322</span></a><span class="sd">    - Function calls: CALL, RCALL</span>
+</span><span id="Label-323"><a href="#Label-323"><span class="linenos">323</span></a>
+</span><span id="Label-324"><a href="#Label-324"><span class="linenos">324</span></a><span class="sd">    Invalid Usage</span>
+</span><span id="Label-325"><a href="#Label-325"><span class="linenos">325</span></a><span class="sd">    -------------</span>
+</span><span id="Label-326"><a href="#Label-326"><span class="linenos">326</span></a><span class="sd">    Labels cannot be used in arithmetic, logic, or other operations:</span>
+</span><span id="Label-327"><a href="#Label-327"><span class="linenos">327</span></a><span class="sd">    ```python</span>
+</span><span id="Label-328"><a href="#Label-328"><span class="linenos">328</span></a><span class="sd">    I.ADD(R.a, Label(&quot;x&quot;))      # INVALID - will cause runtime error</span>
+</span><span id="Label-329"><a href="#Label-329"><span class="linenos">329</span></a><span class="sd">    I.CP(Label(&quot;foo&quot;), R.b)     # INVALID - will cause runtime error</span>
+</span><span id="Label-330"><a href="#Label-330"><span class="linenos">330</span></a><span class="sd">    M[Label(&quot;addr&quot;)]            # INVALID - will cause runtime error</span>
+</span><span id="Label-331"><a href="#Label-331"><span class="linenos">331</span></a><span class="sd">    ```</span>
+</span><span id="Label-332"><a href="#Label-332"><span class="linenos">332</span></a>
+</span><span id="Label-333"><a href="#Label-333"><span class="linenos">333</span></a><span class="sd">    Examples</span>
+</span><span id="Label-334"><a href="#Label-334"><span class="linenos">334</span></a><span class="sd">    --------</span>
+</span><span id="Label-335"><a href="#Label-335"><span class="linenos">335</span></a><span class="sd">    Simple loop counting from 0 to 10:</span>
+</span><span id="Label-336"><a href="#Label-336"><span class="linenos">336</span></a><span class="sd">    ```python</span>
+</span><span id="Label-337"><a href="#Label-337"><span class="linenos">337</span></a><span class="sd">    from dt31 import DT31, I, R, L, Label</span>
+</span><span id="Label-338"><a href="#Label-338"><span class="linenos">338</span></a><span class="sd">    from dt31.assembler import assemble</span>
+</span><span id="Label-339"><a href="#Label-339"><span class="linenos">339</span></a>
+</span><span id="Label-340"><a href="#Label-340"><span class="linenos">340</span></a><span class="sd">    loop = Label(&quot;loop&quot;)</span>
+</span><span id="Label-341"><a href="#Label-341"><span class="linenos">341</span></a><span class="sd">    program = [</span>
+</span><span id="Label-342"><a href="#Label-342"><span class="linenos">342</span></a><span class="sd">        I.CP(R.a, L[0]),</span>
+</span><span id="Label-343"><a href="#Label-343"><span class="linenos">343</span></a><span class="sd">        loop,                          # Mark loop start</span>
+</span><span id="Label-344"><a href="#Label-344"><span class="linenos">344</span></a><span class="sd">        I.NOUT(R.a, L[1]),             # Print counter</span>
+</span><span id="Label-345"><a href="#Label-345"><span class="linenos">345</span></a><span class="sd">        I.ADD(R.a, L[1]),              # Increment</span>
+</span><span id="Label-346"><a href="#Label-346"><span class="linenos">346</span></a><span class="sd">        I.JGT(loop, L[10], R.a),       # Continue if a &lt;= 10</span>
+</span><span id="Label-347"><a href="#Label-347"><span class="linenos">347</span></a><span class="sd">    ]</span>
+</span><span id="Label-348"><a href="#Label-348"><span class="linenos">348</span></a>
+</span><span id="Label-349"><a href="#Label-349"><span class="linenos">349</span></a><span class="sd">    cpu = DT31()</span>
+</span><span id="Label-350"><a href="#Label-350"><span class="linenos">350</span></a><span class="sd">    cpu.run(assemble(program))</span>
+</span><span id="Label-351"><a href="#Label-351"><span class="linenos">351</span></a><span class="sd">    ```</span>
+</span><span id="Label-352"><a href="#Label-352"><span class="linenos">352</span></a>
+</span><span id="Label-353"><a href="#Label-353"><span class="linenos">353</span></a><span class="sd">    Function with label:</span>
+</span><span id="Label-354"><a href="#Label-354"><span class="linenos">354</span></a><span class="sd">    ```python</span>
+</span><span id="Label-355"><a href="#Label-355"><span class="linenos">355</span></a><span class="sd">    program = [</span>
+</span><span id="Label-356"><a href="#Label-356"><span class="linenos">356</span></a><span class="sd">        I.CALL(Label(&quot;greet&quot;)),</span>
+</span><span id="Label-357"><a href="#Label-357"><span class="linenos">357</span></a><span class="sd">        I.JMP(Label(&quot;end&quot;)),</span>
+</span><span id="Label-358"><a href="#Label-358"><span class="linenos">358</span></a>
+</span><span id="Label-359"><a href="#Label-359"><span class="linenos">359</span></a><span class="sd">        Label(&quot;greet&quot;),</span>
+</span><span id="Label-360"><a href="#Label-360"><span class="linenos">360</span></a><span class="sd">        I.OOUT(LC[&#39;H&#39;]),</span>
+</span><span id="Label-361"><a href="#Label-361"><span class="linenos">361</span></a><span class="sd">        I.OOUT(LC[&#39;i&#39;]),</span>
+</span><span id="Label-362"><a href="#Label-362"><span class="linenos">362</span></a><span class="sd">        I.RET(),</span>
+</span><span id="Label-363"><a href="#Label-363"><span class="linenos">363</span></a>
+</span><span id="Label-364"><a href="#Label-364"><span class="linenos">364</span></a><span class="sd">        Label(&quot;end&quot;),</span>
+</span><span id="Label-365"><a href="#Label-365"><span class="linenos">365</span></a><span class="sd">    ]</span>
+</span><span id="Label-366"><a href="#Label-366"><span class="linenos">366</span></a><span class="sd">    ```</span>
+</span><span id="Label-367"><a href="#Label-367"><span class="linenos">367</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="Label-368"><a href="#Label-368"><span class="linenos">368</span></a>
+</span><span id="Label-369"><a href="#Label-369"><span class="linenos">369</span></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+</span><span id="Label-370"><a href="#Label-370"><span class="linenos">370</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize a label with a given name.</span>
+</span><span id="Label-371"><a href="#Label-371"><span class="linenos">371</span></a>
+</span><span id="Label-372"><a href="#Label-372"><span class="linenos">372</span></a><span class="sd">        Args:</span>
+</span><span id="Label-373"><a href="#Label-373"><span class="linenos">373</span></a><span class="sd">            name: The symbolic name for this label.</span>
+</span><span id="Label-374"><a href="#Label-374"><span class="linenos">374</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="Label-375"><a href="#Label-375"><span class="linenos">375</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+</span><span id="Label-376"><a href="#Label-376"><span class="linenos">376</span></a>
+</span><span id="Label-377"><a href="#Label-377"><span class="linenos">377</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">resolve</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cpu</span><span class="p">:</span> <span class="n">DT31</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+</span><span id="Label-378"><a href="#Label-378"><span class="linenos">378</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Resolve the label to an instruction position.</span>
+</span><span id="Label-379"><a href="#Label-379"><span class="linenos">379</span></a>
+</span><span id="Label-380"><a href="#Label-380"><span class="linenos">380</span></a><span class="sd">        This method should never be called during normal execution. Labels must be</span>
+</span><span id="Label-381"><a href="#Label-381"><span class="linenos">381</span></a><span class="sd">        resolved during the assembly process before the program runs. If this method</span>
+</span><span id="Label-382"><a href="#Label-382"><span class="linenos">382</span></a><span class="sd">        is called, it indicates the program was not assembled or the label was used</span>
+</span><span id="Label-383"><a href="#Label-383"><span class="linenos">383</span></a><span class="sd">        incorrectly (e.g., in an arithmetic operation instead of a jump destination).</span>
+</span><span id="Label-384"><a href="#Label-384"><span class="linenos">384</span></a>
+</span><span id="Label-385"><a href="#Label-385"><span class="linenos">385</span></a><span class="sd">        Args:</span>
+</span><span id="Label-386"><a href="#Label-386"><span class="linenos">386</span></a><span class="sd">            cpu: The DT31 CPU instance (unused).</span>
+</span><span id="Label-387"><a href="#Label-387"><span class="linenos">387</span></a>
+</span><span id="Label-388"><a href="#Label-388"><span class="linenos">388</span></a><span class="sd">        Raises:</span>
+</span><span id="Label-389"><a href="#Label-389"><span class="linenos">389</span></a><span class="sd">            RuntimeError: Always raised, as labels must be resolved during assembly.</span>
+</span><span id="Label-390"><a href="#Label-390"><span class="linenos">390</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="Label-391"><a href="#Label-391"><span class="linenos">391</span></a>        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+</span><span id="Label-392"><a href="#Label-392"><span class="linenos">392</span></a>            <span class="sa">f</span><span class="s2">&quot;Unresolved label &#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; encountered at runtime. &quot;</span>
+</span><span id="Label-393"><a href="#Label-393"><span class="linenos">393</span></a>            <span class="s2">&quot;Programs containing labels must be assembled using assemble() before execution. &quot;</span>
+</span><span id="Label-394"><a href="#Label-394"><span class="linenos">394</span></a>            <span class="s2">&quot;Labels can only be used as jump/call destinations, not in arithmetic or other operations.&quot;</span>
+</span><span id="Label-395"><a href="#Label-395"><span class="linenos">395</span></a>        <span class="p">)</span>
+</span><span id="Label-396"><a href="#Label-396"><span class="linenos">396</span></a>
+</span><span id="Label-397"><a href="#Label-397"><span class="linenos">397</span></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+</span><span id="Label-398"><a href="#Label-398"><span class="linenos">398</span></a>        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">:&quot;</span>
+</span></pre></div>
+
+
+            <div class="docstring"><p>A named label that marks a position in the program for jumps and calls.</p>
+
+<p>Labels are assembly-time constructs used to mark instruction positions in a program.
+They are removed during the assembly process and replaced with numeric instruction
+indices. Labels can only be used as destinations for jump and call instructions.</p>
+
+<h2 id="usage">Usage</h2>
+
+<p>Labels are used in two contexts:</p>
+
+<ol>
+<li><p><strong>Definition</strong>: Place a Label directly in the program list to mark a position:</p>
+
+<div class="pdoc-code codehilite">
+<pre><span></span><code><span class="n">program</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="n">I</span><span class="o">.</span><span class="n">CP</span><span class="p">(</span><span class="n">R</span><span class="o">.</span><span class="n">a</span><span class="p">,</span> <span class="n">L</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span>
+    <span class="n">Label</span><span class="p">(</span><span class="s2">&quot;loop&quot;</span><span class="p">),</span>      <span class="c1"># Marks this position</span>
+    <span class="n">I</span><span class="o">.</span><span class="n">ADD</span><span class="p">(</span><span class="n">R</span><span class="o">.</span><span class="n">a</span><span class="p">,</span> <span class="n">L</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span>
+<span class="p">]</span>
+</code></pre>
+</div></li>
+
+<li><p><strong>Reference</strong>: Use a Label as the destination operand in jump/call instructions:</p>
+
+<div class="pdoc-code codehilite">
+<pre><span></span><code><span class="n">I</span><span class="o">.</span><span class="n">JMP</span><span class="p">(</span><span class="n">Label</span><span class="p">(</span><span class="s2">&quot;loop&quot;</span><span class="p">))</span>     <span class="c1"># Jump to the position marked by &quot;loop&quot;</span>
+<span class="n">I</span><span class="o">.</span><span class="n">CALL</span><span class="p">(</span><span class="n">Label</span><span class="p">(</span><span class="s2">&quot;func&quot;</span><span class="p">))</span>    <span class="c1"># Call the function at &quot;func&quot;</span>
+<span class="n">I</span><span class="o">.</span><span class="n">RJGT</span><span class="p">(</span><span class="n">Label</span><span class="p">(</span><span class="s2">&quot;start&quot;</span><span class="p">),</span> <span class="n">R</span><span class="o">.</span><span class="n">a</span><span class="p">,</span> <span class="n">L</span><span class="p">[</span><span class="mi">10</span><span class="p">])</span>  <span class="c1"># Conditional relative jump</span>
+</code></pre>
+</div></li>
+</ol>
+
+<h2 id="valid-instructions-for-labels">Valid Instructions for Labels</h2>
+
+<p>Labels can ONLY be used as the <code>dest</code> parameter in these instructions:</p>
+
+<ul>
+<li>Absolute jumps: JMP, JEQ, JNE, JGT, JGE, JIF</li>
+<li>Relative jumps: RJMP, RJEQ, RJNE, RJGT, RJGE, RJIF</li>
+<li>Function calls: CALL, RCALL</li>
+</ul>
+
+<h2 id="invalid-usage">Invalid Usage</h2>
+
+<p>Labels cannot be used in arithmetic, logic, or other operations:</p>
+
+<div class="pdoc-code codehilite">
+<pre><span></span><code><span class="n">I</span><span class="o">.</span><span class="n">ADD</span><span class="p">(</span><span class="n">R</span><span class="o">.</span><span class="n">a</span><span class="p">,</span> <span class="n">Label</span><span class="p">(</span><span class="s2">&quot;x&quot;</span><span class="p">))</span>      <span class="c1"># INVALID - will cause runtime error</span>
+<span class="n">I</span><span class="o">.</span><span class="n">CP</span><span class="p">(</span><span class="n">Label</span><span class="p">(</span><span class="s2">&quot;foo&quot;</span><span class="p">),</span> <span class="n">R</span><span class="o">.</span><span class="n">b</span><span class="p">)</span>     <span class="c1"># INVALID - will cause runtime error</span>
+<span class="n">M</span><span class="p">[</span><span class="n">Label</span><span class="p">(</span><span class="s2">&quot;addr&quot;</span><span class="p">)]</span>            <span class="c1"># INVALID - will cause runtime error</span>
+</code></pre>
+</div>
+
+<h2 id="examples">Examples</h2>
+
+<p>Simple loop counting from 0 to 10:</p>
+
+<div class="pdoc-code codehilite">
+<pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">dt31</span><span class="w"> </span><span class="kn">import</span> <span class="n">DT31</span><span class="p">,</span> <span class="n">I</span><span class="p">,</span> <span class="n">R</span><span class="p">,</span> <span class="n">L</span><span class="p">,</span> <span class="n">Label</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn"><a href="assembler.html">dt31.assembler</a></span><span class="w"> </span><span class="kn">import</span> <span class="n">assemble</span>
+
+<span class="n">loop</span> <span class="o">=</span> <span class="n">Label</span><span class="p">(</span><span class="s2">&quot;loop&quot;</span><span class="p">)</span>
+<span class="n">program</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="n">I</span><span class="o">.</span><span class="n">CP</span><span class="p">(</span><span class="n">R</span><span class="o">.</span><span class="n">a</span><span class="p">,</span> <span class="n">L</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span>
+    <span class="n">loop</span><span class="p">,</span>                          <span class="c1"># Mark loop start</span>
+    <span class="n">I</span><span class="o">.</span><span class="n">NOUT</span><span class="p">(</span><span class="n">R</span><span class="o">.</span><span class="n">a</span><span class="p">,</span> <span class="n">L</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span>             <span class="c1"># Print counter</span>
+    <span class="n">I</span><span class="o">.</span><span class="n">ADD</span><span class="p">(</span><span class="n">R</span><span class="o">.</span><span class="n">a</span><span class="p">,</span> <span class="n">L</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span>              <span class="c1"># Increment</span>
+    <span class="n">I</span><span class="o">.</span><span class="n">JGT</span><span class="p">(</span><span class="n">loop</span><span class="p">,</span> <span class="n">L</span><span class="p">[</span><span class="mi">10</span><span class="p">],</span> <span class="n">R</span><span class="o">.</span><span class="n">a</span><span class="p">),</span>       <span class="c1"># Continue if a &lt;= 10</span>
+<span class="p">]</span>
+
+<span class="n">cpu</span> <span class="o">=</span> <span class="n">DT31</span><span class="p">()</span>
+<span class="n">cpu</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">assemble</span><span class="p">(</span><span class="n">program</span><span class="p">))</span>
+</code></pre>
+</div>
+
+<p>Function with label:</p>
+
+<div class="pdoc-code codehilite">
+<pre><span></span><code><span class="n">program</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="n">I</span><span class="o">.</span><span class="n">CALL</span><span class="p">(</span><span class="n">Label</span><span class="p">(</span><span class="s2">&quot;greet&quot;</span><span class="p">)),</span>
+    <span class="n">I</span><span class="o">.</span><span class="n">JMP</span><span class="p">(</span><span class="n">Label</span><span class="p">(</span><span class="s2">&quot;end&quot;</span><span class="p">)),</span>
+
+    <span class="n">Label</span><span class="p">(</span><span class="s2">&quot;greet&quot;</span><span class="p">),</span>
+    <span class="n">I</span><span class="o">.</span><span class="n">OOUT</span><span class="p">(</span><span class="n">LC</span><span class="p">[</span><span class="s1">&#39;H&#39;</span><span class="p">]),</span>
+    <span class="n">I</span><span class="o">.</span><span class="n">OOUT</span><span class="p">(</span><span class="n">LC</span><span class="p">[</span><span class="s1">&#39;i&#39;</span><span class="p">]),</span>
+    <span class="n">I</span><span class="o">.</span><span class="n">RET</span><span class="p">(),</span>
+
+    <span class="n">Label</span><span class="p">(</span><span class="s2">&quot;end&quot;</span><span class="p">),</span>
+<span class="p">]</span>
+</code></pre>
+</div>
+</div>
+
+
+                            <div id="Label.__init__" class="classattr">
+                                        <input id="Label.__init__-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
+<div class="attr function">
+            
+        <span class="name">Label</span><span class="signature pdoc-code condensed">(<span class="param"><span class="n">name</span><span class="p">:</span> <span class="nb">str</span></span>)</span>
+
+                <label class="view-source-button" for="Label.__init__-view-source"><span>View Source</span></label>
+
+    </div>
+    <a class="headerlink" href="#Label.__init__"></a>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="Label.__init__-369"><a href="#Label.__init__-369"><span class="linenos">369</span></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+</span><span id="Label.__init__-370"><a href="#Label.__init__-370"><span class="linenos">370</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize a label with a given name.</span>
+</span><span id="Label.__init__-371"><a href="#Label.__init__-371"><span class="linenos">371</span></a>
+</span><span id="Label.__init__-372"><a href="#Label.__init__-372"><span class="linenos">372</span></a><span class="sd">        Args:</span>
+</span><span id="Label.__init__-373"><a href="#Label.__init__-373"><span class="linenos">373</span></a><span class="sd">            name: The symbolic name for this label.</span>
+</span><span id="Label.__init__-374"><a href="#Label.__init__-374"><span class="linenos">374</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="Label.__init__-375"><a href="#Label.__init__-375"><span class="linenos">375</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+</span></pre></div>
+
+
+            <div class="docstring"><p>Initialize a label with a given name.</p>
+
+<h6 id="arguments">Arguments:</h6>
+
+<ul>
+<li><strong>name:</strong>  The symbolic name for this label.</li>
+</ul>
+</div>
+
+
+                            </div>
+                            <div id="Label.name" class="classattr">
+                                <div class="attr variable">
+            <span class="name">name</span>
+
+        
+    </div>
+    <a class="headerlink" href="#Label.name"></a>
+    
+    
+
+                            </div>
+                            <div id="Label.resolve" class="classattr">
+                                        <input id="Label.resolve-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
+<div class="attr function">
+            
+        <span class="def">def</span>
+        <span class="name">resolve</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span>, </span><span class="param"><span class="n">cpu</span><span class="p">:</span> <span class="n"><a href="cpu.html#DT31">dt31.cpu.DT31</a></span></span><span class="return-annotation">) -> <span class="nb">int</span>:</span></span>
+
+                <label class="view-source-button" for="Label.resolve-view-source"><span>View Source</span></label>
+
+    </div>
+    <a class="headerlink" href="#Label.resolve"></a>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="Label.resolve-377"><a href="#Label.resolve-377"><span class="linenos">377</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">resolve</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cpu</span><span class="p">:</span> <span class="n">DT31</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+</span><span id="Label.resolve-378"><a href="#Label.resolve-378"><span class="linenos">378</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Resolve the label to an instruction position.</span>
+</span><span id="Label.resolve-379"><a href="#Label.resolve-379"><span class="linenos">379</span></a>
+</span><span id="Label.resolve-380"><a href="#Label.resolve-380"><span class="linenos">380</span></a><span class="sd">        This method should never be called during normal execution. Labels must be</span>
+</span><span id="Label.resolve-381"><a href="#Label.resolve-381"><span class="linenos">381</span></a><span class="sd">        resolved during the assembly process before the program runs. If this method</span>
+</span><span id="Label.resolve-382"><a href="#Label.resolve-382"><span class="linenos">382</span></a><span class="sd">        is called, it indicates the program was not assembled or the label was used</span>
+</span><span id="Label.resolve-383"><a href="#Label.resolve-383"><span class="linenos">383</span></a><span class="sd">        incorrectly (e.g., in an arithmetic operation instead of a jump destination).</span>
+</span><span id="Label.resolve-384"><a href="#Label.resolve-384"><span class="linenos">384</span></a>
+</span><span id="Label.resolve-385"><a href="#Label.resolve-385"><span class="linenos">385</span></a><span class="sd">        Args:</span>
+</span><span id="Label.resolve-386"><a href="#Label.resolve-386"><span class="linenos">386</span></a><span class="sd">            cpu: The DT31 CPU instance (unused).</span>
+</span><span id="Label.resolve-387"><a href="#Label.resolve-387"><span class="linenos">387</span></a>
+</span><span id="Label.resolve-388"><a href="#Label.resolve-388"><span class="linenos">388</span></a><span class="sd">        Raises:</span>
+</span><span id="Label.resolve-389"><a href="#Label.resolve-389"><span class="linenos">389</span></a><span class="sd">            RuntimeError: Always raised, as labels must be resolved during assembly.</span>
+</span><span id="Label.resolve-390"><a href="#Label.resolve-390"><span class="linenos">390</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="Label.resolve-391"><a href="#Label.resolve-391"><span class="linenos">391</span></a>        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+</span><span id="Label.resolve-392"><a href="#Label.resolve-392"><span class="linenos">392</span></a>            <span class="sa">f</span><span class="s2">&quot;Unresolved label &#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; encountered at runtime. &quot;</span>
+</span><span id="Label.resolve-393"><a href="#Label.resolve-393"><span class="linenos">393</span></a>            <span class="s2">&quot;Programs containing labels must be assembled using assemble() before execution. &quot;</span>
+</span><span id="Label.resolve-394"><a href="#Label.resolve-394"><span class="linenos">394</span></a>            <span class="s2">&quot;Labels can only be used as jump/call destinations, not in arithmetic or other operations.&quot;</span>
+</span><span id="Label.resolve-395"><a href="#Label.resolve-395"><span class="linenos">395</span></a>        <span class="p">)</span>
+</span></pre></div>
+
+
+            <div class="docstring"><p>Resolve the label to an instruction position.</p>
+
+<p>This method should never be called during normal execution. Labels must be
+resolved during the assembly process before the program runs. If this method
+is called, it indicates the program was not assembled or the label was used
+incorrectly (e.g., in an arithmetic operation instead of a jump destination).</p>
+
+<h6 id="arguments">Arguments:</h6>
+
+<ul>
+<li><strong>cpu:</strong>  The DT31 CPU instance (unused).</li>
+</ul>
+
+<h6 id="raises">Raises:</h6>
+
+<ul>
+<li><strong>RuntimeError:</strong>  Always raised, as labels must be resolved during assembly.</li>
+</ul>
+</div>
+
+
+                            </div>
+                </section>
+                <section id="Destination">
+                    <div class="attr variable">
+            <span class="name">Destination</span>        =
+<span class="default_value"><a href="#Label">Label</a> | <a href="#Operand">Operand</a> | int</span>
+
+        
+    </div>
+    <a class="headerlink" href="#Destination"></a>
+    
+    
 
                 </section>
     </main>

@@ -1,0 +1,98 @@
+from copy import deepcopy
+
+from .instructions import Instruction, RelativeJumpMixin
+from .operands import Label, Literal
+
+
+def assemble(program: list[Instruction]) -> list[Instruction]:
+    """Assemble a program by resolving labels to instruction positions.
+
+    This function performs a two-pass assembly process:
+
+    **Pass 1 - Symbol Table Construction:**
+    - Scans through the program to find all Label definitions
+    - Records each label's name and its corresponding instruction pointer (IP)
+    - Removes labels from the instruction list (they're assembly-time only)
+    - Validates that labels are not defined multiple times
+
+    **Pass 2 - Label Resolution:**
+    - For each jump/call instruction that references a label:
+      - Replaces the label with the actual instruction position
+      - For absolute jumps/calls (JMP, CALL, etc.): uses direct IP
+      - For relative jumps/calls (RJMP, RCALL, etc.): calculates offset from current position
+    - Validates that all referenced labels are defined
+
+    Args:
+        program: List of instructions and labels in source order.
+
+    Returns:
+        A new list of instructions with all labels removed and all label references
+        resolved to numeric instruction positions (Literal operands).
+
+    Raises:
+        AssemblyError: If a label is defined multiple times or if an undefined label
+            is referenced.
+
+    Examples:
+        Simple loop with label:
+        ```python
+        from dt31 import I, R, L, Label
+
+        program = [
+            I.CP(R.a, L[0]),
+            Label("loop"),
+            I.ADD(R.a, L[1]),
+            I.JGT(Label("loop"), R.a, L[10]),
+        ]
+
+        assembled = assemble(program)
+        # Label removed, JGT now jumps to IP 1
+        ```
+
+        Relative vs absolute jumps:
+        ```python
+        program = [
+            Label("start"),           # IP 0
+            I.NOOP(),                 # IP 0
+            I.JMP(Label("start")),    # IP 1 - becomes JMP(Literal(0))
+            I.RJMP(Label("start")),   # IP 2 - becomes RJMP(Literal(-2))
+        ]
+        ```
+    """
+    new_program = []
+    used_labels = set()
+    label_to_ip = {}
+
+    # First pass populates label_to_ip
+    ip = 0
+    for inst in program:
+        if isinstance(inst, Label):
+            if inst.name in used_labels:
+                raise AssemblyError(f"Label {inst.name} used more than once.")
+            used_labels.add(inst.name)
+            label_to_ip[inst.name] = ip
+        else:
+            new_program.append(deepcopy(inst))
+            ip += 1
+
+    # Second pass to replace label references
+    for ip, inst in enumerate(new_program):
+        if hasattr(inst, "dest") and isinstance(inst.dest, Label):
+            try:
+                target_ip = label_to_ip[inst.dest.name]
+            except KeyError:
+                raise AssemblyError(f"Undefined label: {inst.dest.name}")
+
+            if isinstance(inst, RelativeJumpMixin):
+                delta = target_ip - ip
+                inst.dest = Literal(delta)
+            else:
+                inst.dest = Literal(target_ip)
+
+    return new_program
+
+
+class AssemblyError(Exception):
+    """An exception to throw when the assembler encounters something wrong with a program."""
+
+    pass
