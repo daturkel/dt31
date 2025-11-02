@@ -8,27 +8,131 @@ if TYPE_CHECKING:
 
 
 class Instruction:
+    """Base class for all DT31 instructions.
+
+    Instructions are the fundamental building blocks of DT31 programs. Each instruction
+    performs a specific operation when executed by the CPU, such as arithmetic, logic,
+    memory manipulation, or control flow.
+
+    Execution Model
+    ---------------
+    When an instruction is executed (via `__call__`), it follows a two-phase process:
+
+    1. **Calculation phase** (`_calc`): Computes the instruction's result value and
+       performs any side effects (e.g., writing to memory, pushing to stack).
+    2. **Advance phase** (`_advance`): Updates the instruction pointer (IP) to determine
+       which instruction executes next. By default, increments IP by 1, but jump
+       instructions override this to change control flow.
+
+    Implementing New Instructions
+    ------------------------------
+    To create a new instruction, subclass `Instruction` and implement:
+
+    - `_calc(cpu)`: Perform the instruction's operation and return a result value.
+      This value is available to the instruction but typically only used for operations
+      that need to store results (via `BinaryOperation` or `UnaryOperation` base classes).
+
+    - `_advance(cpu)` (optional): Override to customize how the instruction pointer moves.
+      Default behavior increments IP by 1. Jump instructions override this to modify
+      control flow.
+
+    - `__str__()` (optional): Return a human-readable representation showing the
+      instruction name and operands for debugging and display purposes.
+
+    Examples
+    --------
+    Simple instruction (no operands, no special `_advance` behavior):
+    ```python
+    class NOOP(Instruction):
+        def __init__(self):
+            super().__init__("NOOP")
+
+        def _calc(self, cpu: DT31) -> int:
+            return 0  # Do nothing
+    ```
+
+    Jump instruction (custom `_advance`, `__str__`):
+    ```python
+    class JMP(Instruction):
+        def __init__(self, dest: Operand | int):
+            super().__init__("JMP")
+            self.dest = as_op(dest)
+
+        def _calc(self, cpu: DT31) -> int:
+            return 0
+
+        def _advance(self, cpu: DT31):
+            cpu.set_register("ip", self.dest.resolve(cpu))
+
+        def __str__(self) -> str:
+            return f"{self.name}(dest={self.dest})"
+    ```
+    """
+
     def __init__(self, name: str):
         """Initialize an Instruction.
 
         Args:
-            name: The name of the instruction.
+            name: The name of the instruction (e.g., "ADD", "JMP", "PUSH").
         """
         self.name = name
 
     def _calc(self, cpu: DT31) -> int:
+        """Perform the instruction's operation and return a result value.
+
+        This method must be implemented by subclasses to define the instruction's
+        behavior. It performs the core operation (arithmetic, comparison, I/O, etc.)
+        and returns an integer result.
+
+        Args:
+            cpu: The DT31 CPU instance executing this instruction.
+
+        Returns:
+            The computed result value. For instructions that write to operands
+            (via `BinaryOperation` or `UnaryOperation`), this value is stored
+            in the output location. For other instructions, the return value
+            may be unused.
+
+        Raises:
+            NotImplementedError: Must be implemented by subclasses.
+        """
         raise NotImplementedError()
 
-    def _advance(self, cpu: DT31, value: int):
+    def _advance(self, cpu: DT31):
+        """Update the instruction pointer to determine the next instruction.
+
+        By default, increments the instruction pointer by 1 to execute the next
+        sequential instruction. Jump instructions override this method to modify
+        control flow (e.g., jumping to a different location or returning from a call).
+
+        Args:
+            cpu: The DT31 CPU instance executing this instruction.
+        """
         # default behavior is to increment the instruction register by 1
         cpu.set_register("ip", cpu.get_register("ip") + 1)
 
     def __call__(self, cpu: DT31) -> int:
+        """Execute the instruction on the given CPU.
+
+        This is the main entry point for instruction execution. It orchestrates
+        the two-phase execution model by calling `_calc` followed by `_advance`.
+
+        Args:
+            cpu: The DT31 CPU instance to execute this instruction on.
+
+        Returns:
+            The result value computed by `_calc`.
+        """
         value = self._calc(cpu)
-        self._advance(cpu, value)
+        self._advance(cpu)
         return value
 
     def __str__(self) -> str:
+        """Return a string representation of the instruction.
+
+        Returns:
+            A string showing the instruction name and any operands for debugging.
+        """
         return f"{self.name}()"
 
 
@@ -159,7 +263,7 @@ class DIV(BinaryOperation):
     def __init__(
         self, a: Operand | int, b: Operand | int, out: Reference | None = None
     ):
-        """Add operands a and b.
+        """Divide operand a by b (using floor division).
 
         Args:
             a: First operand of the addition.
@@ -498,7 +602,7 @@ class Jump(Instruction):
     def _calc(self, cpu: DT31) -> int:
         return 0
 
-    def _advance(self, cpu: DT31, value: int):
+    def _advance(self, cpu: DT31):
         if self._jump_condition(cpu):
             cpu.set_register("ip", self._jump_destination(cpu))
         else:
@@ -706,7 +810,7 @@ class JNE(ExactJumpMixin, IfUnequalJumpMixin):
             a: First operand to compare.
             b: Second operand to compare.
         """
-        super().__init__("RNE", dest, a, b)
+        super().__init__("JNE", dest, a, b)
 
 
 class RJNE(RelativeJumpMixin, IfUnequalJumpMixin):
@@ -789,6 +893,62 @@ class RJIF(RelativeJumpMixin, IfJumpMixin):
             a: Operand to check for truthiness.
         """
         super().__init__("RJIF", delta, a)
+
+
+# ---------------------------------- function calls ---------------------------------- #
+
+
+class CALL(ExactJumpMixin, UnconditionalJumpMixin):
+    def __init__(self, dest: Operand | int):
+        """Call function at exact destination, pushing return address to stack.
+
+        Args:
+            dest: The exact instruction pointer destination to call.
+        """
+        super().__init__("CALL", dest)
+
+    def _calc(self, cpu: DT31) -> int:
+        # Push return address (next instruction) onto stack
+        cpu.push(cpu.get_register("ip") + 1)
+        return 0
+
+    def __str__(self) -> str:
+        return f"{self.name}(dest={self.dest})"
+
+
+class RCALL(RelativeJumpMixin, UnconditionalJumpMixin):
+    def __init__(self, delta: Operand | int):
+        """Call function at relative destination, pushing return address to stack.
+
+        Args:
+            delta: The relative instruction pointer offset to call.
+        """
+        super().__init__("RCALL", delta)
+
+    def _calc(self, cpu: DT31) -> int:
+        # Push return address (next instruction) onto stack
+        cpu.push(cpu.get_register("ip") + 1)
+        return 0
+
+    def __str__(self) -> str:
+        return f"{self.name}(dest={self.dest})"
+
+
+class RET(Instruction):
+    def __init__(self):
+        """Return from function by popping return address from stack and jumping to it."""
+        super().__init__("RET")
+
+    def _calc(self, cpu: DT31) -> int:
+        return 0
+
+    def _advance(self, cpu: DT31):
+        # Pop return address from stack and set IP to it
+        return_address = cpu.pop()
+        cpu.set_register("ip", return_address)
+
+    def __str__(self) -> str:
+        return f"{self.name}()"
 
 
 # --------------------------------------- stack -------------------------------------- #
