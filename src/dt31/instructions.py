@@ -117,6 +117,9 @@ class Instruction:
         This is the main entry point for instruction execution. It orchestrates
         the two-phase execution model by calling `_calc` followed by `_advance`.
 
+        This function is overridden in some of the subclasses like `UnaryOperation` and
+        `BinaryOperation` to handle storing results.
+
         Args:
             cpu: The DT31 CPU instance to execute this instruction on.
 
@@ -137,8 +140,9 @@ class Instruction:
 
 
 class NOOP(Instruction):
+    """Do nothing but advance instruction pointer."""
+
     def __init__(self):
-        """Do nothing but advance instruction pointer."""
         super().__init__("NOOP")
 
     def _calc(self, cpu: DT31) -> int:
@@ -146,9 +150,10 @@ class NOOP(Instruction):
 
 
 class UnaryOperation(Instruction):
+    """Base class for instructions which modify a single operand and optionally write
+    to a separate operand."""
+
     def __init__(self, name: str, a: Operand | int, out: Reference | None = None):
-        """Base class for instructions which modify a single operand and optionally write
-        to a separate operand."""
         super().__init__(name)
         self.a = as_op(a)
         if not isinstance(out, (type(None), Reference)):
@@ -206,11 +211,12 @@ class BinaryOperation(Instruction):
 
 
 class ADD(BinaryOperation):
+    """Add operands a and b."""
+
     def __init__(
         self, a: Operand | int, b: Operand | int, out: Reference | None = None
     ):
-        """Add operands a and b.
-
+        """
         Args:
             a: First operand of the addition.
             b: Second operand of the addition.
@@ -224,11 +230,12 @@ class ADD(BinaryOperation):
 
 
 class SUB(BinaryOperation):
+    """Subtracts operand b from operand a."""
+
     def __init__(
         self, a: Operand | int, b: Operand | int, out: Reference | None = None
     ):
-        """Subtracts operand b from operand a.
-
+        """
         Args:
             a: First operand of the subtraction.
             b: Second operand of the subtraction.
@@ -242,11 +249,12 @@ class SUB(BinaryOperation):
 
 
 class MUL(BinaryOperation):
+    """Multiplies operands a and b."""
+
     def __init__(
         self, a: Operand | int, b: Operand | int, out: Reference | None = None
     ):
-        """Multiplies operands a and b.
-
+        """
         Args:
             a: First operand of the multiplication.
             b: Second operand of the multiplication.
@@ -260,11 +268,12 @@ class MUL(BinaryOperation):
 
 
 class DIV(BinaryOperation):
+    """Divide operand a by b (using floor division)."""
+
     def __init__(
         self, a: Operand | int, b: Operand | int, out: Reference | None = None
     ):
-        """Divide operand a by b (using floor division).
-
+        """
         Args:
             a: First operand of the addition.
             b: Second operand of the addition.
@@ -278,11 +287,12 @@ class DIV(BinaryOperation):
 
 
 class MOD(BinaryOperation):
+    """Calculate operand a modulo operand b."""
+
     def __init__(
         self, a: Operand | int, b: Operand | int, out: Reference | None = None
     ):
-        """Calculate operand a modulo operand b.
-
+        """
         Args:
             a: First operand of the modulus.
             b: Second operand of the modulus.
@@ -296,11 +306,12 @@ class MOD(BinaryOperation):
 
 
 class BSL(BinaryOperation):
+    """Shift operand a left by operand b bits."""
+
     def __init__(
         self, a: Operand | int, b: Operand | int, out: Reference | None = None
     ):
-        """Shift operand a left by operand b bits.
-
+        """
         Args:
             a: First operand of the bit shift.
             b: Second operand of the bit shift.
@@ -314,11 +325,12 @@ class BSL(BinaryOperation):
 
 
 class BSR(BinaryOperation):
+    """Shift operand a right by operand b bits."""
+
     def __init__(
         self, a: Operand | int, b: Operand | int, out: Reference | None = None
     ):
-        """Shift operand a right by operand b bits.
-
+        """
         Args:
             a: First operand of the bit shift.
             b: Second operand of the bit shift.
@@ -332,11 +344,12 @@ class BSR(BinaryOperation):
 
 
 class BAND(BinaryOperation):
+    """Take the bitwise and of operands a and b."""
+
     def __init__(
         self, a: Operand | int, b: Operand | int, out: Reference | None = None
     ):
-        """Take the bitwise and of operands a and b.
-
+        """
         Args:
             a: First operand of the bitwise and.
             b: Second operand of the bitwise and.
@@ -350,11 +363,12 @@ class BAND(BinaryOperation):
 
 
 class BOR(BinaryOperation):
+    """Take the bitwise or of operands a and b."""
+
     def __init__(
         self, a: Operand | int, b: Operand | int, out: Reference | None = None
     ):
-        """Take the bitwise or of operands a and b.
-
+        """
         Args:
             a: First operand of the bitwise or.
             b: Second operand of the bitwise or.
@@ -368,11 +382,12 @@ class BOR(BinaryOperation):
 
 
 class BXOR(BinaryOperation):
+    """Take the bitwise xor of operands a and b."""
+
     def __init__(
         self, a: Operand | int, b: Operand | int, out: Reference | None = None
     ):
-        """Take the bitwise xor of operands a and b.
-
+        """
         Args:
             a: First operand of the bitwise xor.
             b: Second operand of the bitwise xor.
@@ -386,9 +401,10 @@ class BXOR(BinaryOperation):
 
 
 class BNOT(UnaryOperation):
-    def __init__(self, a: Operand | int, out: Reference | None = None):
-        """Take the bitwise negation operand a.
+    """Take the bitwise negation operand a."""
 
+    def __init__(self, a: Operand | int, out: Reference | None = None):
+        """
         Args:
             a: Operand to be negated.
             out: Optional output reference for result. If not provided, result stored in
@@ -402,11 +418,12 @@ class BNOT(UnaryOperation):
 
 # ------------------------------------ comparisons ----------------------------------- #
 class LT(BinaryOperation):
+    """Store 1 if operand a is less than operand b else 0."""
+
     def __init__(
         self, a: Operand | int, b: Operand | int, out: Reference | None = None
     ):
-        """Store 1 if operand a is less than operand b else 0.
-
+        """
         Args:
             a: First operand of the comparison.
             b: Second operand of the comparison.
@@ -420,11 +437,12 @@ class LT(BinaryOperation):
 
 
 class GT(BinaryOperation):
+    """Store 1 if operand a is greater than operand b else 0."""
+
     def __init__(
         self, a: Operand | int, b: Operand | int, out: Reference | None = None
     ):
-        """Store 1 if operand a is greater than operand b else 0.
-
+        """
         Args:
             a: First operand of the comparison.
             b: Second operand of the comparison.
@@ -438,11 +456,12 @@ class GT(BinaryOperation):
 
 
 class LE(BinaryOperation):
+    """Store 1 if operand a is less than or equal to operand b else 0."""
+
     def __init__(
         self, a: Operand | int, b: Operand | int, out: Reference | None = None
     ):
-        """Store 1 if operand a is less than or equal to operand b else 0.
-
+        """
         Args:
             a: First operand of the comparison.
             b: Second operand of the comparison.
@@ -456,11 +475,12 @@ class LE(BinaryOperation):
 
 
 class GE(BinaryOperation):
+    """Store 1 if operand a is greater than or equal to operand b else 0."""
+
     def __init__(
         self, a: Operand | int, b: Operand | int, out: Reference | None = None
     ):
-        """Store 1 if operand a is greater than or equal to operand b else 0.
-
+        """
         Args:
             a: First operand of the comparison.
             b: Second operand of the comparison.
@@ -474,11 +494,12 @@ class GE(BinaryOperation):
 
 
 class EQ(BinaryOperation):
+    """Store 1 if operand a is equal to operand b else 0."""
+
     def __init__(
         self, a: Operand | int, b: Operand | int, out: Reference | None = None
     ):
-        """Store 1 if operand a is equal to operand b else 0.
-
+        """
         Args:
             a: First operand of the comparison.
             b: Second operand of the comparison.
@@ -492,11 +513,12 @@ class EQ(BinaryOperation):
 
 
 class NE(BinaryOperation):
+    """Store 1 if operand a is not equal to operand b else 0."""
+
     def __init__(
         self, a: Operand | int, b: Operand | int, out: Reference | None = None
     ):
-        """Store 1 if operand a is not equal to operand b else 0.
-
+        """
         Args:
             a: First operand of the comparison.
             b: Second operand of the comparison.
@@ -511,11 +533,12 @@ class NE(BinaryOperation):
 
 # ---------------------------------- pythonic logic ---------------------------------- #
 class AND(BinaryOperation):
+    """Store 1 if both operands are nonzero (truthy) else 0."""
+
     def __init__(
         self, a: Operand | int, b: Operand | int, out: Reference | None = None
     ):
-        """Store 1 if both operands are nonzero (truthy) else 0.
-
+        """
         Args:
             a: First operand of the logical and.
             b: Second operand of the logical and.
@@ -529,11 +552,12 @@ class AND(BinaryOperation):
 
 
 class OR(BinaryOperation):
+    """Store 1 if either operand is nonzero (truthy) else 0."""
+
     def __init__(
         self, a: Operand | int, b: Operand | int, out: Reference | None = None
     ):
-        """Store 1 if either operand is nonzero (truthy) else 0.
-
+        """
         Args:
             a: First operand of the logical or.
             b: Second operand of the logical or.
@@ -547,11 +571,12 @@ class OR(BinaryOperation):
 
 
 class XOR(BinaryOperation):
+    """Store 1 if exactly one operand is nonzero (truthy) else 0."""
+
     def __init__(
         self, a: Operand | int, b: Operand | int, out: Reference | None = None
     ):
-        """Store 1 if exactly one operand is nonzero (truthy) else 0.
-
+        """
         Args:
             a: First operand of the logical xor.
             b: Second operand of the logical xor.
@@ -567,9 +592,10 @@ class XOR(BinaryOperation):
 
 
 class NOT(UnaryOperation):
-    def __init__(self, a: Operand | int, out: Reference | None = None):
-        """Store 1 if operand is zero (falsy) else 0.
+    """Store 1 if operand is zero (falsy) else 0."""
 
+    def __init__(self, a: Operand | int, out: Reference | None = None):
+        """
         Args:
             a: Operand to be negated.
             out: Optional output reference for result. If not provided, result stored in
@@ -583,9 +609,10 @@ class NOT(UnaryOperation):
 
 # --------------------------------------- jumps -------------------------------------- #
 class Jump(Instruction):
-    def __init__(self, name: str, dest: Operand | int):
-        """Base class for various types of jump instruction.
+    """Base class for various types of jump instruction."""
 
+    def __init__(self, name: str, dest: Operand | int):
+        """
         Args:
             name: The name of the jump instruction.
             dest: The operand which will inform where to jump to.
@@ -613,9 +640,10 @@ class Jump(Instruction):
 
 
 class UnaryJump(Jump):
-    def __init__(self, name: str, dest: Operand | int, a: Operand | int):
-        """Base class for conditions which use a single value to determine jumps.
+    """Base class for conditions which use a single value to determine jumps."""
 
+    def __init__(self, name: str, dest: Operand | int, a: Operand | int):
+        """
         Args:
             name: The name of the jump instruction.
             dest: The operand which will inform where to jump to.
@@ -629,11 +657,12 @@ class UnaryJump(Jump):
 
 
 class BinaryJump(Jump):
+    """Base class for conditions which use two values to determine jumps."""
+
     def __init__(
         self, name: str, dest: Operand | int, a: Operand | int, b: Operand | int
     ):
-        """Base class for conditions which use two values to determine jumps.
-
+        """
         Args:
             name: The name of the jump instruction.
             dest: The operand which will inform where to jump to.
@@ -752,9 +781,10 @@ class IfJumpMixin(UnaryJump):
 
 
 class JMP(ExactJumpMixin, UnconditionalJumpMixin):
-    def __init__(self, dest: Operand | int):
-        """Unconditional jump instruction.
+    """Unconditional jump instruction."""
 
+    def __init__(self, dest: Operand | int):
+        """
         Args:
             dest: The exact instruction pointer destination to jump to.
         """
@@ -765,9 +795,10 @@ class JMP(ExactJumpMixin, UnconditionalJumpMixin):
 
 
 class RJMP(RelativeJumpMixin, UnconditionalJumpMixin):
-    def __init__(self, delta: Operand | int):
-        """Relative unconditional jump instruction.
+    """Relative unconditional jump instruction."""
 
+    def __init__(self, delta: Operand | int):
+        """
         Args:
             delta: The relative instruction pointer offset to jump by.
         """
@@ -778,9 +809,10 @@ class RJMP(RelativeJumpMixin, UnconditionalJumpMixin):
 
 
 class JEQ(ExactJumpMixin, IfEqualJumpMixin):
-    def __init__(self, dest: Operand | int, a: Operand | int, b: Operand | int):
-        """Jump to exact destination if operands are equal.
+    """Jump to exact destination if operands are equal."""
 
+    def __init__(self, dest: Operand | int, a: Operand | int, b: Operand | int):
+        """
         Args:
             dest: The exact instruction pointer destination to jump to.
             a: First operand to compare.
@@ -790,9 +822,10 @@ class JEQ(ExactJumpMixin, IfEqualJumpMixin):
 
 
 class RJEQ(RelativeJumpMixin, IfEqualJumpMixin):
-    def __init__(self, delta: Operand | int, a: Operand | int, b: Operand | int):
-        """Jump to relative destination if operands are equal.
+    """Jump to relative destination if operands are equal."""
 
+    def __init__(self, delta: Operand | int, a: Operand | int, b: Operand | int):
+        """
         Args:
             delta: The relative instruction pointer offset to jump by.
             a: First operand to compare.
@@ -802,9 +835,10 @@ class RJEQ(RelativeJumpMixin, IfEqualJumpMixin):
 
 
 class JNE(ExactJumpMixin, IfUnequalJumpMixin):
-    def __init__(self, dest: Operand | int, a: Operand | int, b: Operand | int):
-        """Jump to exact destination if operands are not equal.
+    """Jump to exact destination if operands are not equal."""
 
+    def __init__(self, dest: Operand | int, a: Operand | int, b: Operand | int):
+        """
         Args:
             dest: The exact instruction pointer destination to jump to.
             a: First operand to compare.
@@ -814,9 +848,10 @@ class JNE(ExactJumpMixin, IfUnequalJumpMixin):
 
 
 class RJNE(RelativeJumpMixin, IfUnequalJumpMixin):
-    def __init__(self, delta: Operand | int, a: Operand | int, b: Operand | int):
-        """Jump to relative destination if operands are not equal.
+    """Jump to relative destination if operands are not equal."""
 
+    def __init__(self, delta: Operand | int, a: Operand | int, b: Operand | int):
+        """
         Args:
             delta: The relative instruction pointer offset to jump by.
             a: First operand to compare.
@@ -826,9 +861,10 @@ class RJNE(RelativeJumpMixin, IfUnequalJumpMixin):
 
 
 class JGT(ExactJumpMixin, IfGTJumpMixin):
-    def __init__(self, dest: Operand | int, a: Operand | int, b: Operand | int):
-        """Jump to exact destination if first operand is greater than second operand.
+    """Jump to exact destination if first operand is greater than second operand."""
 
+    def __init__(self, dest: Operand | int, a: Operand | int, b: Operand | int):
+        """
         Args:
             dest: The exact instruction pointer destination to jump to.
             a: First operand to compare.
@@ -838,9 +874,10 @@ class JGT(ExactJumpMixin, IfGTJumpMixin):
 
 
 class RJGT(RelativeJumpMixin, IfGTJumpMixin):
-    def __init__(self, delta: Operand | int, a: Operand | int, b: Operand | int):
-        """Jump to relative destination if first operand is greater than second operand.
+    """Jump to relative destination if first operand is greater than second operand."""
 
+    def __init__(self, delta: Operand | int, a: Operand | int, b: Operand | int):
+        """
         Args:
             delta: The relative instruction pointer offset to jump by.
             a: First operand to compare.
@@ -850,9 +887,10 @@ class RJGT(RelativeJumpMixin, IfGTJumpMixin):
 
 
 class JGE(ExactJumpMixin, IfGEJumpMixin):
-    def __init__(self, dest: Operand | int, a: Operand | int, b: Operand | int):
-        """Jump to exact destination if first operand is greater than or equal to second operand.
+    """Jump to exact destination if first operand is greater than or equal to second operand."""
 
+    def __init__(self, dest: Operand | int, a: Operand | int, b: Operand | int):
+        """
         Args:
             dest: The exact instruction pointer destination to jump to.
             a: First operand to compare.
@@ -862,9 +900,10 @@ class JGE(ExactJumpMixin, IfGEJumpMixin):
 
 
 class RJGE(RelativeJumpMixin, IfGEJumpMixin):
-    def __init__(self, delta: Operand | int, a: Operand | int, b: Operand | int):
-        """Jump to relative destination if first operand is greater than or equal to second operand.
+    """Jump to relative destination if first operand is greater than or equal to second operand."""
 
+    def __init__(self, delta: Operand | int, a: Operand | int, b: Operand | int):
+        """
         Args:
             delta: The relative instruction pointer offset to jump by.
             a: First operand to compare.
@@ -874,9 +913,10 @@ class RJGE(RelativeJumpMixin, IfGEJumpMixin):
 
 
 class JIF(ExactJumpMixin, IfJumpMixin):
-    def __init__(self, dest: Operand | int, a: Operand | int):
-        """Jump to exact destination if operand is nonzero (truthy).
+    """Jump to exact destination if operand is nonzero (truthy)."""
 
+    def __init__(self, dest: Operand | int, a: Operand | int):
+        """
         Args:
             dest: The exact instruction pointer destination to jump to.
             a: Operand to check for truthiness.
@@ -885,9 +925,10 @@ class JIF(ExactJumpMixin, IfJumpMixin):
 
 
 class RJIF(RelativeJumpMixin, IfJumpMixin):
-    def __init__(self, delta: Operand | int, a: Operand | int):
-        """Jump to relative destination if operand is nonzero (truthy).
+    """Jump to relative destination if operand is nonzero (truthy)."""
 
+    def __init__(self, delta: Operand | int, a: Operand | int):
+        """
         Args:
             delta: The relative instruction pointer offset to jump by.
             a: Operand to check for truthiness.
@@ -899,9 +940,10 @@ class RJIF(RelativeJumpMixin, IfJumpMixin):
 
 
 class CALL(ExactJumpMixin, UnconditionalJumpMixin):
-    def __init__(self, dest: Operand | int):
-        """Call function at exact destination, pushing return address to stack.
+    """Call function at exact destination, pushing return address to stack."""
 
+    def __init__(self, dest: Operand | int):
+        """
         Args:
             dest: The exact instruction pointer destination to call.
         """
@@ -917,9 +959,10 @@ class CALL(ExactJumpMixin, UnconditionalJumpMixin):
 
 
 class RCALL(RelativeJumpMixin, UnconditionalJumpMixin):
-    def __init__(self, delta: Operand | int):
-        """Call function at relative destination, pushing return address to stack.
+    """Call function at relative destination, pushing return address to stack."""
 
+    def __init__(self, delta: Operand | int):
+        """
         Args:
             delta: The relative instruction pointer offset to call.
         """
@@ -955,9 +998,10 @@ class RET(Instruction):
 
 
 class PUSH(Instruction):
-    def __init__(self, a: Operand | int):
-        """Push operand value onto the stack.
+    """Push operand value onto the stack."""
 
+    def __init__(self, a: Operand | int):
+        """
         Args:
             a: Operand value to push onto the stack.
         """
@@ -973,9 +1017,10 @@ class PUSH(Instruction):
 
 
 class POP(Instruction):
-    def __init__(self, out: Reference | None = None):
-        """Pop value from the stack.
+    """Pop value from the stack."""
 
+    def __init__(self, out: Reference | None = None):
+        """
         Args:
             out: Optional output reference to store the popped value. If not provided, value
                 is popped but not stored.
@@ -997,9 +1042,10 @@ class POP(Instruction):
 
 
 class SEMP(Instruction):
-    def __init__(self, out: Reference):
-        """Check if stack is empty and store result.
+    """Check if stack is empty and store result."""
 
+    def __init__(self, out: Reference):
+        """
         Args:
             out: Output reference to store the result (1 if empty, 0 if not empty).
         """
@@ -1022,9 +1068,10 @@ class SEMP(Instruction):
 
 
 class CP(UnaryOperation):
-    def __init__(self, a: Operand | int, out: Reference | None = None):
-        """Copy operand value to output reference.
+    """Copy operand value to output reference."""
 
+    def __init__(self, a: Operand | int, out: Reference | None = None):
+        """
         Args:
             a: Source operand to copy from.
             out: Optional output reference for result. If not provided, result stored in
@@ -1039,9 +1086,10 @@ class CP(UnaryOperation):
 
 
 class NOUT(Instruction):
-    def __init__(self, a: Operand, b: Operand = L[0]):
-        """Output operand as a number.
+    """Output operand as a number."""
 
+    def __init__(self, a: Operand, b: Operand = L[0]):
+        """
         Args:
             a: Operand value to output as a number.
             b: If nonzero, append newline after output. Defaults to L[0] (no newline).
@@ -1063,9 +1111,10 @@ class NOUT(Instruction):
 
 
 class OOUT(Instruction):
-    def __init__(self, a: Operand, b: Operand = L[0]):
-        """Output operand as a character (using chr()).
+    """Output operand as a character (using chr())."""
 
+    def __init__(self, a: Operand, b: Operand = L[0]):
+        """
         Args:
             a: Operand value to output as a character.
             b: If nonzero, append newline after output. Defaults to L[0] (no newline).
@@ -1087,9 +1136,10 @@ class OOUT(Instruction):
 
 
 class NIN(Instruction):
-    def __init__(self, out: Reference):
-        """Read number input from user.
+    """Read number input from user."""
 
+    def __init__(self, out: Reference):
+        """
         Args:
             out: Output reference to store the input number.
         """
@@ -1107,9 +1157,10 @@ class NIN(Instruction):
 
 
 class OIN(Instruction):
-    def __init__(self, out: Reference):
-        """Read character input from user and store as ordinal value.
+    """Read character input from user and store as ordinal value."""
 
+    def __init__(self, out: Reference):
+        """
         Args:
             out: Output reference to store the ordinal value of the input character.
         """
