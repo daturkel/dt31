@@ -5,7 +5,9 @@ repos:
       - id: check-added-large-files
         args: ['--maxkb=1000']
       - id: end-of-file-fixer
+        exclude: ^docs/
       - id: trailing-whitespace
+        exclude: ^docs/
       - id: check-toml
   - repo: https://github.com/astral-sh/ruff-pre-commit
     # Ruff version.
@@ -24,3 +26,10 @@ repos:
       - id: uv-export
       - id: uv-sync
         args: ["--locked", "--group=dev"]
+  - repo: local
+    hooks:
+      - id: generate-docs
+        name: Generate documentation
+        entry: uv run inv docs
+        language: system
+        pass_filenames: false

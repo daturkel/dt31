@@ -133,7 +133,7 @@
                     <h1 class="modulename">
 <a href="./../dt31.html">dt31</a><wbr>.operands    </h1>
 
-
+                
                         <input id="mod-operands-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
 
                         <label class="view-source-button" for="mod-operands-view-source"><span>View Source</span></label>
@@ -431,7 +431,7 @@
                 <section id="Operand">
                             <input id="Operand-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
 <div class="attr class">
-
+            
     <span class="def">class</span>
     <span class="name">Operand</span>:
 
@@ -472,7 +472,7 @@ All operands must implement the resolve method to return their value.</p>
                             <div id="Operand.resolve" class="classattr">
                                         <input id="Operand.resolve-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
 <div class="attr function">
-
+            
         <span class="def">def</span>
         <span class="name">resolve</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span>, </span><span class="param"><span class="n">cpu</span><span class="p">:</span> <span class="n"><a href="cpu.html#DT31">dt31.cpu.DT31</a></span></span><span class="return-annotation">) -> <span class="nb">int</span>:</span></span>
 
@@ -523,7 +523,7 @@ All operands must implement the resolve method to return their value.</p>
                 <section id="Literal">
                             <input id="Literal-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
 <div class="attr class">
-
+            
     <span class="def">class</span>
     <span class="name">Literal</span><wbr>(<span class="base"><a href="#Operand">Operand</a></span>):
 
@@ -577,7 +577,7 @@ All operands must implement the resolve method to return their value.</p>
                             <div id="Literal.__init__" class="classattr">
                                         <input id="Literal.__init__-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
 <div class="attr function">
-
+            
         <span class="name">Literal</span><span class="signature pdoc-code condensed">(<span class="param"><span class="n">value</span><span class="p">:</span> <span class="nb">int</span></span>)</span>
 
                 <label class="view-source-button" for="Literal.__init__-view-source"><span>View Source</span></label>
@@ -609,17 +609,17 @@ All operands must implement the resolve method to return their value.</p>
                                 <div class="attr variable">
             <span class="name">value</span>
 
-
+        
     </div>
     <a class="headerlink" href="#Literal.value"></a>
-
-
+    
+    
 
                             </div>
                             <div id="Literal.resolve" class="classattr">
                                         <input id="Literal.resolve-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
 <div class="attr function">
-
+            
         <span class="def">def</span>
         <span class="name">resolve</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span>, </span><span class="param"><span class="n">cpu</span><span class="p">:</span> <span class="n"><a href="cpu.html#DT31">dt31.cpu.DT31</a></span></span><span class="return-annotation">) -> <span class="nb">int</span>:</span></span>
 
@@ -661,7 +661,7 @@ All operands must implement the resolve method to return their value.</p>
                 <section id="L">
                             <input id="L-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
 <div class="attr class">
-
+            
     <span class="def">class</span>
     <span class="name">L</span>:
 
@@ -696,7 +696,7 @@ All operands must implement the resolve method to return their value.</p>
                 <section id="LC">
                             <input id="LC-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
 <div class="attr class">
-
+            
     <span class="def">class</span>
     <span class="name">LC</span>:
 
@@ -731,7 +731,7 @@ All operands must implement the resolve method to return their value.</p>
                 <section id="MemoryReference">
                             <input id="MemoryReference-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
 <div class="attr class">
-
+            
     <span class="def">class</span>
     <span class="name">MemoryReference</span><wbr>(<span class="base"><a href="#Operand">Operand</a></span>):
 
@@ -792,7 +792,7 @@ The address itself can be a constant or another operand (indirect addressing).</
                             <div id="MemoryReference.__init__" class="classattr">
                                         <input id="MemoryReference.__init__-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
 <div class="attr function">
-
+            
         <span class="name">MemoryReference</span><span class="signature pdoc-code condensed">(<span class="param"><span class="n">address</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="n"><a href="#Operand">Operand</a></span></span>)</span>
 
                 <label class="view-source-button" for="MemoryReference.__init__-view-source"><span>View Source</span></label>
@@ -826,17 +826,17 @@ resolves to an address (for indirect addressing).</li>
                                 <div class="attr variable">
             <span class="name">address</span>
 
-
+        
     </div>
     <a class="headerlink" href="#MemoryReference.address"></a>
-
-
+    
+    
 
                             </div>
                             <div id="MemoryReference.resolve" class="classattr">
                                         <input id="MemoryReference.resolve-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
 <div class="attr function">
-
+            
         <span class="def">def</span>
         <span class="name">resolve</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span>, </span><span class="param"><span class="n">cpu</span><span class="p">:</span> <span class="n"><a href="cpu.html#DT31">dt31.cpu.DT31</a></span></span><span class="return-annotation">) -> <span class="nb">int</span>:</span></span>
 
@@ -877,7 +877,7 @@ resolves to an address (for indirect addressing).</li>
                             <div id="MemoryReference.resolve_address" class="classattr">
                                         <input id="MemoryReference.resolve_address-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
 <div class="attr function">
-
+            
         <span class="def">def</span>
         <span class="name">resolve_address</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span>, </span><span class="param"><span class="n">cpu</span><span class="p">:</span> <span class="n"><a href="cpu.html#DT31">dt31.cpu.DT31</a></span></span><span class="return-annotation">) -> <span class="nb">int</span>:</span></span>
 
@@ -919,7 +919,7 @@ resolves to an address (for indirect addressing).</li>
                 <section id="M">
                             <input id="M-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
 <div class="attr class">
-
+            
     <span class="def">class</span>
     <span class="name">M</span>:
 
@@ -956,7 +956,7 @@ resolves to an address (for indirect addressing).</li>
                 <section id="RegisterReference">
                             <input id="RegisterReference-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
 <div class="attr class">
-
+            
     <span class="def">class</span>
     <span class="name">RegisterReference</span><wbr>(<span class="base"><a href="#Operand">Operand</a></span>):
 
@@ -1003,7 +1003,7 @@ resolves to an address (for indirect addressing).</li>
                             <div id="RegisterReference.__init__" class="classattr">
                                         <input id="RegisterReference.__init__-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
 <div class="attr function">
-
+            
         <span class="name">RegisterReference</span><span class="signature pdoc-code condensed">(<span class="param"><span class="n">register</span><span class="p">:</span> <span class="nb">str</span></span>)</span>
 
                 <label class="view-source-button" for="RegisterReference.__init__-view-source"><span>View Source</span></label>
@@ -1035,17 +1035,17 @@ resolves to an address (for indirect addressing).</li>
                                 <div class="attr variable">
             <span class="name">register</span>
 
-
+        
     </div>
     <a class="headerlink" href="#RegisterReference.register"></a>
-
-
+    
+    
 
                             </div>
                             <div id="RegisterReference.resolve" class="classattr">
                                         <input id="RegisterReference.resolve-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
 <div class="attr function">
-
+            
         <span class="def">def</span>
         <span class="name">resolve</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span>, </span><span class="param"><span class="n">cpu</span><span class="p">:</span> <span class="n"><a href="cpu.html#DT31">dt31.cpu.DT31</a></span></span><span class="return-annotation">) -> <span class="nb">int</span>:</span></span>
 
@@ -1087,7 +1087,7 @@ resolves to an address (for indirect addressing).</li>
                 <section id="R">
                             <input id="R-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
 <div class="attr class">
-
+            
     <span class="def">class</span>
     <span class="name">R</span>:
 
@@ -1128,17 +1128,17 @@ resolves to an address (for indirect addressing).</li>
             <span class="name">Reference</span>        =
 <span class="default_value"><a href="#RegisterReference">RegisterReference</a> | <a href="#MemoryReference">MemoryReference</a></span>
 
-
+        
     </div>
     <a class="headerlink" href="#Reference"></a>
-
-
+    
+    
 
                 </section>
                 <section id="as_op">
                             <input id="as_op-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
 <div class="attr function">
-
+            
         <span class="def">def</span>
         <span class="name">as_op</span><span class="signature pdoc-code condensed">(<span class="param"><span class="n">arg</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="n"><a href="#Operand">Operand</a></span></span><span class="return-annotation">):</span></span>
 
