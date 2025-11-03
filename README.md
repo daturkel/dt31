@@ -243,8 +243,9 @@ DT31 is open-source and contributors are welcome on [Github](https://github.com/
 
 - [x] Character literals?
 - [ ] Parse and execute `.dt` files
-- [ ] Data handling
 - [ ] Macros
+- [ ] File I/O
+- [ ] Data handling?
 
 ## License
 
