@@ -124,10 +124,9 @@ dt31    </h1>
 
 <span class="n">cpu</span> <span class="o">=</span> <span class="n">DT31</span><span class="p">()</span>
 
-<span class="n">loop</span> <span class="o">=</span> <span class="n">Label</span><span class="p">(</span><span class="s2">&quot;loop&quot;</span><span class="p">)</span>
 <span class="n">program</span> <span class="o">=</span> <span class="p">[</span>
-    <span class="n">I</span><span class="o">.</span><span class="n">CP</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">R</span><span class="o">.</span><span class="n">a</span><span class="p">),</span>                <span class="c1"># Start counter at 1</span>
-    <span class="n">loop</span><span class="p">,</span>                        <span class="c1"># Mark loop start</span>
+    <span class="n">I</span><span class="o">.</span><span class="n">CP</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">R</span><span class="o">.</span><span class="n">a</span><span class="p">),</span>               <span class="c1"># Start counter at 1</span>
+    <span class="n">loop</span> <span class="o">:=</span> <span class="n">Label</span><span class="p">(</span><span class="s2">&quot;loop&quot;</span><span class="p">),</span>      <span class="c1"># Mark loop start</span>
     <span class="n">I</span><span class="o">.</span><span class="n">NOUT</span><span class="p">(</span><span class="n">R</span><span class="o">.</span><span class="n">a</span><span class="p">,</span> <span class="n">L</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span>          <span class="c1"># Print counter</span>
     <span class="n">I</span><span class="o">.</span><span class="n">ADD</span><span class="p">(</span><span class="n">R</span><span class="o">.</span><span class="n">a</span><span class="p">,</span> <span class="n">L</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span>           <span class="c1"># Increment counter</span>
     <span class="n">I</span><span class="o">.</span><span class="n">JLT</span><span class="p">(</span><span class="n">loop</span><span class="p">,</span> <span class="n">R</span><span class="o">.</span><span class="n">a</span><span class="p">,</span> <span class="n">L</span><span class="p">[</span><span class="mi">11</span><span class="p">]),</span>    <span class="c1"># Jump if a &lt; 11</span>
@@ -233,15 +232,15 @@ dt31    </h1>
 <pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn"><a href="dt31/operands.html">dt31.operands</a></span><span class="w"> </span><span class="kn">import</span> <span class="n">LC</span><span class="p">,</span> <span class="n">Label</span>
 
 <span class="n">program</span> <span class="o">=</span> <span class="p">[</span>
-    <span class="n">I</span><span class="o">.</span><span class="n">CALL</span><span class="p">(</span><span class="n">Label</span><span class="p">(</span><span class="s2">&quot;print_hi&quot;</span><span class="p">)),</span>
-    <span class="n">I</span><span class="o">.</span><span class="n">JMP</span><span class="p">(</span><span class="n">Label</span><span class="p">(</span><span class="s2">&quot;end&quot;</span><span class="p">)),</span>
+    <span class="n">I</span><span class="o">.</span><span class="n">CALL</span><span class="p">(</span><span class="n">print_hi</span> <span class="o">:=</span> <span class="n">Label</span><span class="p">(</span><span class="s2">&quot;print_hi&quot;</span><span class="p">)),</span>
+    <span class="n">I</span><span class="o">.</span><span class="n">JMP</span><span class="p">(</span><span class="n">end</span> <span class="o">:=</span> <span class="n">Label</span><span class="p">(</span><span class="s2">&quot;end&quot;</span><span class="p">)),</span>
 
-    <span class="n">Label</span><span class="p">(</span><span class="s2">&quot;print_hi&quot;</span><span class="p">),</span>
+    <span class="n">print_hi</span><span class="p">,</span>
     <span class="n">I</span><span class="o">.</span><span class="n">OOUT</span><span class="p">(</span><span class="n">LC</span><span class="p">[</span><span class="s1">&#39;H&#39;</span><span class="p">]),</span>
     <span class="n">I</span><span class="o">.</span><span class="n">OOUT</span><span class="p">(</span><span class="n">LC</span><span class="p">[</span><span class="s1">&#39;i&#39;</span><span class="p">]),</span>
     <span class="n">I</span><span class="o">.</span><span class="n">RET</span><span class="p">(),</span>
 
-    <span class="n">Label</span><span class="p">(</span><span class="s2">&quot;end&quot;</span><span class="p">),</span>
+    <span class="n">end</span><span class="p">,</span>
 <span class="p">]</span>
 <span class="n">cpu</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">program</span><span class="p">)</span>
 <span class="c1"># Hi</span>

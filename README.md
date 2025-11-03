@@ -64,10 +64,9 @@ from dt31.operands import R, L
 
 cpu = DT31()
 
-loop = Label("loop")
 program = [
-    I.CP(1, R.a),                # Start counter at 1
-    loop,                        # Mark loop start
+    I.CP(1, R.a),               # Start counter at 1
+    loop := Label("loop"),      # Mark loop start
     I.NOUT(R.a, L[1]),          # Print counter
     I.ADD(R.a, L[1]),           # Increment counter
     I.JLT(loop, R.a, L[11]),    # Jump if a < 11
@@ -164,15 +163,15 @@ cpu.run(program)
 from dt31.operands import LC, Label
 
 program = [
-    I.CALL(Label("print_hi")),
-    I.JMP(Label("end")),
+    I.CALL(print_hi := Label("print_hi")),
+    I.JMP(end := Label("end")),
 
-    Label("print_hi"),
+    print_hi,
     I.OOUT(LC['H']),
     I.OOUT(LC['i']),
     I.RET(),
 
-    Label("end"),
+    end,
 ]
 cpu.run(program)
 # Hi
