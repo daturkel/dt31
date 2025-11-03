@@ -3,7 +3,7 @@ name = "dt31"
 version = "0.1.0"
 description = "A toy computer in Python."
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 authors = [{ name = "Dan Turkel", email = "daturkel@gmail.com" }]
 maintainers = [{ name = "Dan Turkel", email = "daaturkel@gmail.com" }]
 dependencies = []
@@ -22,7 +22,6 @@ classifiers = [
     "Development Status :: 4 - Beta",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",

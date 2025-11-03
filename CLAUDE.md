@@ -4,7 +4,7 @@ See @README.md for project overview, features, usage examples, and user-facing d
 
 ## Code Style
 
-- **Python Version**: 3.9+ (see [pyproject.toml](pyproject.toml))
+- **Python Version**: 3.10+ (see [pyproject.toml](pyproject.toml))
 - **Formatting**: Ruff for linting and formatting
 - **Type Hints**: Required for all function signatures and public APIs
 - **Docstrings**: Google-style (configured for pdoc in [tasks.py](tasks.py))
@@ -82,7 +82,7 @@ When adding or modifying instructions:
 
 - **Memory Model**: Configurable fixed-size array of integers and fixed set of registers
 - **No Runtime Dependencies**: Do not add runtime dependencies
-- **Python 3.9+ Compatibility**: Avoid Python 3.10+ features unless bumping minimum version
+- **Python 3.10+ Compatibility**: Avoid Python 3.11+ features unless bumping minimum version
 
 ## Testing Philosophy
 
