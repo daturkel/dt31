@@ -23,8 +23,12 @@
 
             <h2>Contents</h2>
             <ul>
+  <li><a href="#features">Features</a></li>
   <li><a href="#installation">Installation</a></li>
-  <li><a href="#usage">Usage</a></li>
+  <li><a href="#quick-start">Quick Start</a></li>
+  <li><a href="#core-concepts">Core Concepts</a></li>
+  <li><a href="#usage-guide">Usage Guide</a></li>
+  <li><a href="#documentation">Documentation</a></li>
   <li><a href="#development">Development</a></li>
   <li><a href="#roadmap">Roadmap</a></li>
   <li><a href="#license">License</a></li>
@@ -53,7 +57,18 @@
                     <h1 class="modulename">
 dt31    </h1>
 
-                        <div class="docstring"><p>A toy computer emulator in Python with a simple instruction set and virtual machine.</p>
+                        <div class="docstring"><p>A toy computer emulator in Python with a simple instruction set and virtual machine. dt31 is a toy computer that simulates a CPU with registers, memory, a stack, and a rich instruction set.</p>
+
+<h2 id="features">Features</h2>
+
+<ul>
+<li><strong>Simple CPU Architecture</strong>: Configurable registers, fixed-size memory, and stack-based operations</li>
+<li><strong>Rich Instruction Set</strong>: 60+ instructions including arithmetic, bitwise operations, logic, control flow, and I/O</li>
+<li><strong>Assembly Support</strong>: Two-pass assembler with label resolution for jumps and function calls</li>
+<li><strong>Intuitive API</strong>: Clean operand syntax (<code>R.a</code>, <code>M[100]</code>, <code>L[42]</code>, <code>LC['A']</code>)</li>
+<li><strong>Debug Mode</strong>: Step-by-step execution with state inspection</li>
+<li><strong>Pure Python</strong>: Zero dependencies</li>
+</ul>
 
 <h2 id="installation">Installation</h2>
 
@@ -62,18 +77,227 @@ dt31    </h1>
 </code></pre>
 </div>
 
-<h2 id="usage">Usage</h2>
+<h2 id="quick-start">Quick Start</h2>
+
+<h3 id="hello-world">Hello World</h3>
 
 <div class="pdoc-code codehilite">
-<pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">dt31</span><span class="w"> </span><span class="kn">import</span> <span class="n">Computer</span>
+<pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">dt31</span><span class="w"> </span><span class="kn">import</span> <span class="n">DT31</span><span class="p">,</span> <span class="n">LC</span><span class="p">,</span> <span class="n">I</span>
 
-<span class="c1"># Create and run programs</span>
-<span class="n">computer</span> <span class="o">=</span> <span class="n">Computer</span><span class="p">()</span>
-<span class="c1"># Your code here</span>
+<span class="n">cpu</span> <span class="o">=</span> <span class="n">DT31</span><span class="p">()</span>
+
+<span class="n">program</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="n">I</span><span class="o">.</span><span class="n">OOUT</span><span class="p">(</span><span class="n">LC</span><span class="p">[</span><span class="s2">&quot;H&quot;</span><span class="p">]),</span>  <span class="c1"># Output &#39;H&#39;</span>
+    <span class="n">I</span><span class="o">.</span><span class="n">OOUT</span><span class="p">(</span><span class="n">LC</span><span class="p">[</span><span class="s2">&quot;i&quot;</span><span class="p">]),</span>  <span class="c1"># Output &#39;i&#39;</span>
+    <span class="n">I</span><span class="o">.</span><span class="n">OOUT</span><span class="p">(</span><span class="n">LC</span><span class="p">[</span><span class="s2">&quot;!&quot;</span><span class="p">]),</span>  <span class="c1"># Output &#39;!&#39;</span>
+<span class="p">]</span>
+
+<span class="n">cpu</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">program</span><span class="p">)</span>
+<span class="c1"># Hi!</span>
 </code></pre>
 </div>
 
-<p>For example programs, see the <a href="./examples/">examples</a>.</p>
+<h3 id="basic-arithmetic">Basic Arithmetic</h3>
+
+<div class="pdoc-code codehilite">
+<pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">dt31</span><span class="w"> </span><span class="kn">import</span> <span class="n">DT31</span><span class="p">,</span> <span class="n">I</span><span class="p">,</span> <span class="n">R</span><span class="p">,</span> <span class="n">L</span>
+
+<span class="n">cpu</span> <span class="o">=</span> <span class="n">DT31</span><span class="p">()</span>
+
+<span class="n">program</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="n">I</span><span class="o">.</span><span class="n">CP</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">R</span><span class="o">.</span><span class="n">a</span><span class="p">),</span>           <span class="c1"># Copy 10 into register a</span>
+    <span class="n">I</span><span class="o">.</span><span class="n">CP</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="n">R</span><span class="o">.</span><span class="n">b</span><span class="p">),</span>            <span class="c1"># Copy 5 into register b</span>
+    <span class="n">I</span><span class="o">.</span><span class="n">ADD</span><span class="p">(</span><span class="n">R</span><span class="o">.</span><span class="n">a</span><span class="p">,</span> <span class="n">R</span><span class="o">.</span><span class="n">b</span><span class="p">),</span>         <span class="c1"># a = a + b</span>
+    <span class="n">I</span><span class="o">.</span><span class="n">NOUT</span><span class="p">(</span><span class="n">R</span><span class="o">.</span><span class="n">a</span><span class="p">,</span> <span class="n">L</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span>       <span class="c1"># Output a with newline</span>
+<span class="p">]</span>
+
+<span class="n">cpu</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">program</span><span class="p">)</span>
+<span class="c1"># 15</span>
+</code></pre>
+</div>
+
+<h3 id="loops-with-labels">Loops with Labels</h3>
+
+<div class="pdoc-code codehilite">
+<pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">dt31</span><span class="w"> </span><span class="kn">import</span> <span class="n">DT31</span><span class="p">,</span> <span class="n">I</span><span class="p">,</span> <span class="n">Label</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn"><a href="dt31/operands.html">dt31.operands</a></span><span class="w"> </span><span class="kn">import</span> <span class="n">R</span><span class="p">,</span> <span class="n">L</span>
+
+<span class="n">cpu</span> <span class="o">=</span> <span class="n">DT31</span><span class="p">()</span>
+
+<span class="n">loop</span> <span class="o">=</span> <span class="n">Label</span><span class="p">(</span><span class="s2">&quot;loop&quot;</span><span class="p">)</span>
+<span class="n">program</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="n">I</span><span class="o">.</span><span class="n">CP</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">R</span><span class="o">.</span><span class="n">a</span><span class="p">),</span>                <span class="c1"># Start counter at 1</span>
+    <span class="n">loop</span><span class="p">,</span>                        <span class="c1"># Mark loop start</span>
+    <span class="n">I</span><span class="o">.</span><span class="n">NOUT</span><span class="p">(</span><span class="n">R</span><span class="o">.</span><span class="n">a</span><span class="p">,</span> <span class="n">L</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span>          <span class="c1"># Print counter</span>
+    <span class="n">I</span><span class="o">.</span><span class="n">ADD</span><span class="p">(</span><span class="n">R</span><span class="o">.</span><span class="n">a</span><span class="p">,</span> <span class="n">L</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span>           <span class="c1"># Increment counter</span>
+    <span class="n">I</span><span class="o">.</span><span class="n">JLT</span><span class="p">(</span><span class="n">loop</span><span class="p">,</span> <span class="n">R</span><span class="o">.</span><span class="n">a</span><span class="p">,</span> <span class="n">L</span><span class="p">[</span><span class="mi">11</span><span class="p">]),</span>    <span class="c1"># Jump if a &lt; 11</span>
+<span class="p">]</span>
+
+<span class="n">cpu</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">program</span><span class="p">)</span>
+<span class="c1"># 1 2 3 4 5 6 7 8 9 10</span>
+</code></pre>
+</div>
+
+<p>For more examples including factorial, fibonacci, function calls, and more, see the <a href="./examples/">examples</a> directory.</p>
+
+<h2 id="core-concepts">Core Concepts</h2>
+
+<h3 id="operands">Operands</h3>
+
+<p>dt31 provides several operand types for referencing values:</p>
+
+<ul>
+<li><strong>Literals</strong>: Constant values <code>L[42]</code>, or <code>LC["a"]</code> as a shortcut for <code>L[ord("a")]</code></li>
+<li><strong>Registers</strong>: CPU registers <code>R.a</code>, <code>R.b</code>, <code>R.c</code></li>
+<li><strong>Memory</strong>: Memory addresses <code>M[100]</code>, indirect addressing <code>M[R.a]</code></li>
+<li><strong>Labels</strong>: Named jump targets <code>Label("loop")</code></li>
+</ul>
+
+<p>See the <a href="https://daturkel.github.io/dt31/dt31/operands.html">operands documentation</a> for details.</p>
+
+<h3 id="instructions">Instructions</h3>
+
+<p>The instruction set includes:</p>
+
+<ul>
+<li><strong>Arithmetic</strong>: <code>ADD</code>, <code>SUB</code>, <code>MUL</code>, <code>DIV</code>, <code>MOD</code></li>
+<li><strong>Bitwise</strong>: <code>BAND</code>, <code>BOR</code>, <code>BXOR</code>, <code>BNOT</code>, <code>BSL</code>, <code>BSR</code></li>
+<li><strong>Comparisons</strong>: <code>LT</code>, <code>GT</code>, <code>LE</code>, <code>GE</code>, <code>EQ</code>, <code>NE</code></li>
+<li><strong>Logic</strong>: <code>AND</code>, <code>OR</code>, <code>XOR</code>, <code>NOT</code></li>
+<li><strong>Control Flow</strong>: <code>JMP</code>, <code>RJMP</code>, <code>JEQ</code>, <code>JNE</code>, <code>JGT</code>, <code>JGE</code>, <code>JIF</code></li>
+<li><strong>Functions</strong>: <code>CALL</code>, <code>RCALL</code>, <code>RET</code></li>
+<li><strong>Stack</strong>: <code>PUSH</code>, <code>POP</code>, <code>SEMP</code></li>
+<li><strong>I/O</strong>: <code>NOUT</code>, <code>OOUT</code>, <code>NIN</code>, <code>OIN</code></li>
+<li><strong>Data Movement</strong>: <code>CP</code></li>
+</ul>
+
+<p>See the <a href="https://daturkel.github.io/dt31/dt31/instructions.html">instructions documentation</a> for the complete reference.</p>
+
+<h3 id="cpu-architecture">CPU Architecture</h3>
+
+<p>The DT31 CPU includes:</p>
+
+<ul>
+<li><strong>Registers</strong>: General-purpose registers (default: <code>a</code>, <code>b</code>, and <code>c</code>)</li>
+<li><strong>Memory</strong>: Fixed-size byte array (default: 256 bytes)</li>
+<li><strong>Stack</strong>: For temporary values and function calls (default: 256 items)</li>
+<li><strong>Instruction Pointer</strong>: Tracks current instruction in register <code>ip</code></li>
+</ul>
+
+<p>See the <a href="https://daturkel.github.io/dt31/dt31/cpu.html">CPU documentation</a> for API details.</p>
+
+<h2 id="usage-guide">Usage Guide</h2>
+
+<h3 id="creating-and-running-programs">Creating and Running Programs</h3>
+
+<div class="pdoc-code codehilite">
+<pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">dt31</span><span class="w"> </span><span class="kn">import</span> <span class="n">DT31</span><span class="p">,</span> <span class="n">instructions</span> <span class="k">as</span> <span class="n">I</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn"><a href="dt31/operands.html">dt31.operands</a></span><span class="w"> </span><span class="kn">import</span> <span class="n">R</span><span class="p">,</span> <span class="n">L</span>
+
+<span class="c1"># Create CPU instance</span>
+<span class="n">cpu</span> <span class="o">=</span> <span class="n">DT31</span><span class="p">()</span>
+
+<span class="c1"># Write program as list of instructions</span>
+<span class="n">program</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="n">I</span><span class="o">.</span><span class="n">CP</span><span class="p">(</span><span class="mi">42</span><span class="p">,</span> <span class="n">R</span><span class="o">.</span><span class="n">a</span><span class="p">),</span>
+    <span class="n">I</span><span class="o">.</span><span class="n">NOUT</span><span class="p">(</span><span class="n">R</span><span class="o">.</span><span class="n">a</span><span class="p">,</span> <span class="n">L</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span>
+<span class="p">]</span>
+
+<span class="c1"># Run the program</span>
+<span class="n">cpu</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">program</span><span class="p">)</span>
+<span class="c1"># 42</span>
+</code></pre>
+</div>
+
+<h3 id="working-with-memory">Working with Memory</h3>
+
+<div class="pdoc-code codehilite">
+<pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">dt31</span><span class="w"> </span><span class="kn">import</span> <span class="n">DT31</span><span class="p">,</span> <span class="n">I</span><span class="p">,</span> <span class="n">L</span><span class="p">,</span> <span class="n">M</span><span class="p">,</span> <span class="n">R</span>
+
+<span class="n">cpu</span> <span class="o">=</span> <span class="n">DT31</span><span class="p">()</span>
+
+<span class="n">program</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="n">I</span><span class="o">.</span><span class="n">CP</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="n">M</span><span class="p">[</span><span class="mi">50</span><span class="p">]),</span>   <span class="c1"># Store 100 at address 50</span>
+    <span class="n">I</span><span class="o">.</span><span class="n">CP</span><span class="p">(</span><span class="mi">50</span><span class="p">,</span> <span class="n">R</span><span class="o">.</span><span class="n">a</span><span class="p">),</span>      <span class="c1"># Put 50 in register a</span>
+    <span class="n">I</span><span class="o">.</span><span class="n">CP</span><span class="p">(</span><span class="n">M</span><span class="p">[</span><span class="n">R</span><span class="o">.</span><span class="n">a</span><span class="p">],</span> <span class="n">R</span><span class="o">.</span><span class="n">b</span><span class="p">),</span>  <span class="c1"># Indirect load: b = memory[a]</span>
+    <span class="n">I</span><span class="o">.</span><span class="n">NOUT</span><span class="p">(</span><span class="n">R</span><span class="o">.</span><span class="n">b</span><span class="p">,</span> <span class="n">L</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span>  <span class="c1"># Output: 100</span>
+<span class="p">]</span>
+<span class="n">cpu</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">program</span><span class="p">)</span>
+<span class="c1"># 100</span>
+</code></pre>
+</div>
+
+<h3 id="function-calls">Function Calls</h3>
+
+<div class="pdoc-code codehilite">
+<pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn"><a href="dt31/operands.html">dt31.operands</a></span><span class="w"> </span><span class="kn">import</span> <span class="n">LC</span><span class="p">,</span> <span class="n">Label</span>
+
+<span class="n">program</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="n">I</span><span class="o">.</span><span class="n">CALL</span><span class="p">(</span><span class="n">Label</span><span class="p">(</span><span class="s2">&quot;print_hi&quot;</span><span class="p">)),</span>
+    <span class="n">I</span><span class="o">.</span><span class="n">JMP</span><span class="p">(</span><span class="n">Label</span><span class="p">(</span><span class="s2">&quot;end&quot;</span><span class="p">)),</span>
+
+    <span class="n">Label</span><span class="p">(</span><span class="s2">&quot;print_hi&quot;</span><span class="p">),</span>
+    <span class="n">I</span><span class="o">.</span><span class="n">OOUT</span><span class="p">(</span><span class="n">LC</span><span class="p">[</span><span class="s1">&#39;H&#39;</span><span class="p">]),</span>
+    <span class="n">I</span><span class="o">.</span><span class="n">OOUT</span><span class="p">(</span><span class="n">LC</span><span class="p">[</span><span class="s1">&#39;i&#39;</span><span class="p">]),</span>
+    <span class="n">I</span><span class="o">.</span><span class="n">RET</span><span class="p">(),</span>
+
+    <span class="n">Label</span><span class="p">(</span><span class="s2">&quot;end&quot;</span><span class="p">),</span>
+<span class="p">]</span>
+<span class="n">cpu</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">program</span><span class="p">)</span>
+<span class="c1"># Hi</span>
+</code></pre>
+</div>
+
+<h3 id="debugging-with-step-execution">Debugging with Step Execution</h3>
+
+<div class="pdoc-code codehilite">
+<pre><span></span><code><span class="n">cpu</span> <span class="o">=</span> <span class="n">DT31</span><span class="p">()</span>
+<span class="n">cpu</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">program</span><span class="p">)</span>
+
+<span class="c1"># Execute one instruction at a time</span>
+<span class="n">cpu</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">debug</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>  <span class="c1"># Prints instruction and state</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">cpu</span><span class="o">.</span><span class="n">state</span><span class="p">)</span>      <span class="c1"># Inspect CPU state</span>
+<span class="c1"># Execute a full program one instruction at a time</span>
+<span class="n">cpu</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">program</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</code></pre>
+</div>
+
+<h3 id="accessing-cpu-state">Accessing CPU State</h3>
+
+<div class="pdoc-code codehilite">
+<pre><span></span><code><span class="c1"># Get register values</span>
+<span class="n">value</span> <span class="o">=</span> <span class="n">cpu</span><span class="o">.</span><span class="n">get_register</span><span class="p">(</span><span class="s1">&#39;a&#39;</span><span class="p">)</span>
+
+<span class="c1"># Set register values</span>
+<span class="n">cpu</span><span class="o">.</span><span class="n">set_register</span><span class="p">(</span><span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="mi">42</span><span class="p">)</span>
+
+<span class="c1"># Access memory</span>
+<span class="n">cpu</span><span class="o">.</span><span class="n">set_memory</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="mi">255</span><span class="p">)</span>
+<span class="n">byte</span> <span class="o">=</span> <span class="n">cpu</span><span class="o">.</span><span class="n">get_memory</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>
+
+<span class="c1"># Get full state snapshot</span>
+<span class="n">state</span> <span class="o">=</span> <span class="n">cpu</span><span class="o">.</span><span class="n">state</span>  <span class="c1"># Returns dict with registers, memory, stack, ip</span>
+</code></pre>
+</div>
+
+<h2 id="documentation">Documentation</h2>
+
+<p>Full API documentation is available in the <a href="https://daturkel.github.io/dt31/dt31.html">documentation</a>. Generate the latest docs with:</p>
+
+<div class="pdoc-code codehilite">
+<pre><span></span><code>uv<span class="w"> </span>run<span class="w"> </span>invoke<span class="w"> </span>docs
+uv<span class="w"> </span>run<span class="w"> </span>invoke<span class="w"> </span>serve-docs<span class="w">  </span><span class="c1"># Serve locally at http://localhost:8080</span>
+</code></pre>
+</div>
+
+<p>Key documentation pages:</p>
+
+<ul>
+<li><a href="https://daturkel.github.io/dt31/dt31/cpu.html">DT31 CPU Class</a> - CPU methods and state management</li>
+<li><a href="https://daturkel.github.io/dt31/dt31/instructions.html">Instructions</a> - Complete instruction reference</li>
+<li><a href="https://daturkel.github.io/dt31/dt31/operands.html">Operands</a> - Operand types and usage</li>
+<li><a href="https://daturkel.github.io/dt31/dt31/assembler.html">Assembler</a> - Label resolution and assembly</li>
+</ul>
 
 <h2 id="development">Development</h2>
 
@@ -113,6 +337,10 @@ uv<span class="w"> </span>run<span class="w"> </span>invoke<span class="w"> </sp
 </span><span id="L-3"><a href="#L-3"><span class="linenos">3</span></a><span class="sd">   :start-line: 3</span>
 </span><span id="L-4"><a href="#L-4"><span class="linenos">4</span></a>
 </span><span id="L-5"><a href="#L-5"><span class="linenos">5</span></a><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="L-6"><a href="#L-6"><span class="linenos">6</span></a>
+</span><span id="L-7"><a href="#L-7"><span class="linenos">7</span></a><span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">instructions</span> <span class="k">as</span> <span class="n">I</span>  <span class="c1"># noqa: F401</span>
+</span><span id="L-8"><a href="#L-8"><span class="linenos">8</span></a><span class="kn">from</span><span class="w"> </span><span class="nn">.cpu</span><span class="w"> </span><span class="kn">import</span> <span class="n">DT31</span>  <span class="c1"># noqa: F401</span>
+</span><span id="L-9"><a href="#L-9"><span class="linenos">9</span></a><span class="kn">from</span><span class="w"> </span><span class="nn">.operands</span><span class="w"> </span><span class="kn">import</span> <span class="n">LC</span><span class="p">,</span> <span class="n">L</span><span class="p">,</span> <span class="n">Label</span><span class="p">,</span> <span class="n">M</span><span class="p">,</span> <span class="n">R</span>  <span class="c1"># noqa: F401</span>
 </span></pre></div>
 
 
