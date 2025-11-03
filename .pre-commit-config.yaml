@@ -23,9 +23,6 @@ repos:
     rev: 0.9.7
     hooks:
       - id: uv-lock
-      - id: uv-export
-      - id: uv-sync
-        args: ["--locked", "--group=dev"]
   - repo: local
     hooks:
       - id: generate-docs

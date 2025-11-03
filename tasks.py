@@ -28,3 +28,9 @@ def docs(c):
 def serve_docs(c):
     """Serve the documentation website locally."""
     c.run("pdoc --docformat google src/dt31")
+
+
+@task
+def sync(c):
+    """Sync dev dependencies."""
+    c.run("uv sync --locked --group dev")
