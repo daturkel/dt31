@@ -1,7 +1,7 @@
 from copy import deepcopy
 
-from .instructions import Instruction, RelativeJumpMixin
-from .operands import Label, Literal
+from dt31.instructions import Instruction, RelativeJumpMixin
+from dt31.operands import Label, Literal
 
 
 def assemble(program: list[Instruction]) -> list[Instruction]:

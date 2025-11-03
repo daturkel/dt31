@@ -2,10 +2,10 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from .operands import Destination, L, Label, Operand, Reference, as_op
+from dt31.operands import Destination, L, Label, Operand, Reference, as_op
 
 if TYPE_CHECKING:
-    from .cpu import DT31  # pragma: no cover
+    from dt31.cpu import DT31  # pragma: no cover
 
 
 class Instruction:

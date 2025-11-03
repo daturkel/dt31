@@ -3,11 +3,11 @@ from __future__ import annotations
 from collections import deque
 from typing import TYPE_CHECKING
 
-from .assembler import assemble
-from .operands import MemoryReference, Operand, RegisterReference
+from dt31.assembler import assemble
+from dt31.operands import MemoryReference, Operand, RegisterReference
 
 if TYPE_CHECKING:
-    from .instructions import Instruction  # pragma: no cover
+    from dt31.instructions import Instruction  # pragma: no cover
 
 
 class DT31:

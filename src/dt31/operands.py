@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from .cpu import DT31  # pragma: no cover
+    from dt31.cpu import DT31  # pragma: no cover
 
 
 class Operand:
