@@ -237,6 +237,8 @@ pre-commit install --hook-type pre-push
 uv run invoke test
 ```
 
+DT31 is open-source and contributors are welcome on [Github](https://github.com/daturkel/dt31).
+
 ## Roadmap
 
 - [x] Character literals?
