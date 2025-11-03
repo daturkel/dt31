@@ -247,6 +247,7 @@ DT31 is open-source and contributors are welcome on [Github](https://github.com/
 - [ ] File I/O
 - [ ] Data handling?
 - [ ] Input error handling?
+- [ ] Clearer handing of input during debug mode
 
 ## License
 
