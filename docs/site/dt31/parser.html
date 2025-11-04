@@ -111,11 +111,11 @@
 </span><span id="L-37"><a href="#L-37"><span class="linenos"> 37</span></a><span class="sd">        &gt;&gt;&gt; from dt31 import DT31</span>
 </span><span id="L-38"><a href="#L-38"><span class="linenos"> 38</span></a><span class="sd">        &gt;&gt;&gt; cpu = DT31()</span>
 </span><span id="L-39"><a href="#L-39"><span class="linenos"> 39</span></a><span class="sd">        &gt;&gt;&gt; text = &#39;&#39;&#39;</span>
-</span><span id="L-40"><a href="#L-40"><span class="linenos"> 40</span></a><span class="sd">        ... CP 5, a</span>
+</span><span id="L-40"><a href="#L-40"><span class="linenos"> 40</span></a><span class="sd">        ... CP 5, R.a</span>
 </span><span id="L-41"><a href="#L-41"><span class="linenos"> 41</span></a><span class="sd">        ... loop:</span>
-</span><span id="L-42"><a href="#L-42"><span class="linenos"> 42</span></a><span class="sd">        ...     NOUT a, 1</span>
-</span><span id="L-43"><a href="#L-43"><span class="linenos"> 43</span></a><span class="sd">        ...     SUB a, 1</span>
-</span><span id="L-44"><a href="#L-44"><span class="linenos"> 44</span></a><span class="sd">        ...     JGT loop, a, 0</span>
+</span><span id="L-42"><a href="#L-42"><span class="linenos"> 42</span></a><span class="sd">        ...     NOUT R.a, 1</span>
+</span><span id="L-43"><a href="#L-43"><span class="linenos"> 43</span></a><span class="sd">        ...     SUB R.a, 1</span>
+</span><span id="L-44"><a href="#L-44"><span class="linenos"> 44</span></a><span class="sd">        ...     JGT loop, R.a, 0</span>
 </span><span id="L-45"><a href="#L-45"><span class="linenos"> 45</span></a><span class="sd">        ... &#39;&#39;&#39;</span>
 </span><span id="L-46"><a href="#L-46"><span class="linenos"> 46</span></a><span class="sd">        &gt;&gt;&gt; program = parse_program(text)</span>
 </span><span id="L-47"><a href="#L-47"><span class="linenos"> 47</span></a><span class="sd">        &gt;&gt;&gt; cpu.run(program)</span>
@@ -196,8 +196,8 @@
 </span><span id="L-122"><a href="#L-122"><span class="linenos">122</span></a><span class="sd">    Supports:</span>
 </span><span id="L-123"><a href="#L-123"><span class="linenos">123</span></a><span class="sd">    - Numeric literals: 42, -5</span>
 </span><span id="L-124"><a href="#L-124"><span class="linenos">124</span></a><span class="sd">    - Character literals: &#39;H&#39;, &#39;a&#39;</span>
-</span><span id="L-125"><a href="#L-125"><span class="linenos">125</span></a><span class="sd">    - Registers: a, b, c or R.a, R.b, R.c</span>
-</span><span id="L-126"><a href="#L-126"><span class="linenos">126</span></a><span class="sd">    - Memory: [100], M[100], [a], M[R.a]</span>
+</span><span id="L-125"><a href="#L-125"><span class="linenos">125</span></a><span class="sd">    - Registers: R.a, R.b, R.c (must use R. prefix)</span>
+</span><span id="L-126"><a href="#L-126"><span class="linenos">126</span></a><span class="sd">    - Memory: [100], M[100], [R.a], M[R.a]</span>
 </span><span id="L-127"><a href="#L-127"><span class="linenos">127</span></a><span class="sd">    - Labels: loop, end, start (any bare identifier not matching above)</span>
 </span><span id="L-128"><a href="#L-128"><span class="linenos">128</span></a>
 </span><span id="L-129"><a href="#L-129"><span class="linenos">129</span></a><span class="sd">    Args:</span>
@@ -207,9 +207,9 @@
 </span><span id="L-133"><a href="#L-133"><span class="linenos">133</span></a><span class="sd">        An Operand object (Literal, RegisterReference, MemoryReference, or Label)</span>
 </span><span id="L-134"><a href="#L-134"><span class="linenos">134</span></a>
 </span><span id="L-135"><a href="#L-135"><span class="linenos">135</span></a><span class="sd">    Note:</span>
-</span><span id="L-136"><a href="#L-136"><span class="linenos">136</span></a><span class="sd">        All bare identifiers that are not numeric literals are assumed to be</span>
-</span><span id="L-137"><a href="#L-137"><span class="linenos">137</span></a><span class="sd">        either registers or labels, with registers taking precedence. Register names are</span>
-</span><span id="L-138"><a href="#L-138"><span class="linenos">138</span></a><span class="sd">        not validated at parse time.</span>
+</span><span id="L-136"><a href="#L-136"><span class="linenos">136</span></a><span class="sd">        Registers MUST use the R. prefix syntax (e.g., R.a, R.b).</span>
+</span><span id="L-137"><a href="#L-137"><span class="linenos">137</span></a><span class="sd">        All bare identifiers that are not numeric literals or special syntax</span>
+</span><span id="L-138"><a href="#L-138"><span class="linenos">138</span></a><span class="sd">        are treated as labels. Register names are not validated at parse time.</span>
 </span><span id="L-139"><a href="#L-139"><span class="linenos">139</span></a><span class="sd">    &quot;&quot;&quot;</span>
 </span><span id="L-140"><a href="#L-140"><span class="linenos">140</span></a>    <span class="k">match</span> <span class="n">token</span><span class="p">:</span>
 </span><span id="L-141"><a href="#L-141"><span class="linenos">141</span></a>        <span class="c1"># Character literal: &#39;H&#39;</span>
@@ -243,23 +243,20 @@
 </span><span id="L-169"><a href="#L-169"><span class="linenos">169</span></a>        <span class="k">case</span> <span class="nb">str</span><span class="p">()</span> <span class="k">if</span> <span class="n">token</span><span class="o">.</span><span class="n">lstrip</span><span class="p">(</span><span class="s2">&quot;-&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">isdigit</span><span class="p">():</span>
 </span><span id="L-170"><a href="#L-170"><span class="linenos">170</span></a>            <span class="k">return</span> <span class="n">L</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">token</span><span class="p">)]</span>
 </span><span id="L-171"><a href="#L-171"><span class="linenos">171</span></a>
-</span><span id="L-172"><a href="#L-172"><span class="linenos">172</span></a>        <span class="c1"># Bare identifier: could be register or label</span>
-</span><span id="L-173"><a href="#L-173"><span class="linenos">173</span></a>        <span class="c1"># Try to get it as a register attribute, fall back to Label if not found</span>
+</span><span id="L-172"><a href="#L-172"><span class="linenos">172</span></a>        <span class="c1"># Bare identifier: always treated as a label</span>
+</span><span id="L-173"><a href="#L-173"><span class="linenos">173</span></a>        <span class="c1"># Registers must use R.name syntax</span>
 </span><span id="L-174"><a href="#L-174"><span class="linenos">174</span></a>        <span class="k">case</span><span class="w"> </span><span class="k">_</span><span class="p">:</span>
-</span><span id="L-175"><a href="#L-175"><span class="linenos">175</span></a>            <span class="k">try</span><span class="p">:</span>
-</span><span id="L-176"><a href="#L-176"><span class="linenos">176</span></a>                <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">R</span><span class="p">,</span> <span class="n">token</span><span class="p">)</span>
-</span><span id="L-177"><a href="#L-177"><span class="linenos">177</span></a>            <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
-</span><span id="L-178"><a href="#L-178"><span class="linenos">178</span></a>                <span class="k">return</span> <span class="n">Label</span><span class="p">(</span><span class="n">token</span><span class="p">)</span>
-</span><span id="L-179"><a href="#L-179"><span class="linenos">179</span></a>
+</span><span id="L-175"><a href="#L-175"><span class="linenos">175</span></a>            <span class="k">return</span> <span class="n">Label</span><span class="p">(</span><span class="n">token</span><span class="p">)</span>
+</span><span id="L-176"><a href="#L-176"><span class="linenos">176</span></a>
+</span><span id="L-177"><a href="#L-177"><span class="linenos">177</span></a>
+</span><span id="L-178"><a href="#L-178"><span class="linenos">178</span></a><span class="k">class</span><span class="w"> </span><span class="nc">ParserError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+</span><span id="L-179"><a href="#L-179"><span class="linenos">179</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Exception raised when parsing DT31 assembly text fails.</span>
 </span><span id="L-180"><a href="#L-180"><span class="linenos">180</span></a>
-</span><span id="L-181"><a href="#L-181"><span class="linenos">181</span></a><span class="k">class</span><span class="w"> </span><span class="nc">ParserError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
-</span><span id="L-182"><a href="#L-182"><span class="linenos">182</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Exception raised when parsing DT31 assembly text fails.</span>
-</span><span id="L-183"><a href="#L-183"><span class="linenos">183</span></a>
-</span><span id="L-184"><a href="#L-184"><span class="linenos">184</span></a><span class="sd">    This exception is raised for syntax errors, invalid operands,</span>
-</span><span id="L-185"><a href="#L-185"><span class="linenos">185</span></a><span class="sd">    or other parsing issues in DT31 assembly code.</span>
-</span><span id="L-186"><a href="#L-186"><span class="linenos">186</span></a><span class="sd">    &quot;&quot;&quot;</span>
-</span><span id="L-187"><a href="#L-187"><span class="linenos">187</span></a>
-</span><span id="L-188"><a href="#L-188"><span class="linenos">188</span></a>    <span class="k">pass</span>
+</span><span id="L-181"><a href="#L-181"><span class="linenos">181</span></a><span class="sd">    This exception is raised for syntax errors, invalid operands,</span>
+</span><span id="L-182"><a href="#L-182"><span class="linenos">182</span></a><span class="sd">    or other parsing issues in DT31 assembly code.</span>
+</span><span id="L-183"><a href="#L-183"><span class="linenos">183</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="L-184"><a href="#L-184"><span class="linenos">184</span></a>
+</span><span id="L-185"><a href="#L-185"><span class="linenos">185</span></a>    <span class="k">pass</span>
 </span></pre></div>
 
 
@@ -329,11 +326,11 @@
 </span><span id="parse_program-38"><a href="#parse_program-38"><span class="linenos"> 38</span></a><span class="sd">        &gt;&gt;&gt; from dt31 import DT31</span>
 </span><span id="parse_program-39"><a href="#parse_program-39"><span class="linenos"> 39</span></a><span class="sd">        &gt;&gt;&gt; cpu = DT31()</span>
 </span><span id="parse_program-40"><a href="#parse_program-40"><span class="linenos"> 40</span></a><span class="sd">        &gt;&gt;&gt; text = &#39;&#39;&#39;</span>
-</span><span id="parse_program-41"><a href="#parse_program-41"><span class="linenos"> 41</span></a><span class="sd">        ... CP 5, a</span>
+</span><span id="parse_program-41"><a href="#parse_program-41"><span class="linenos"> 41</span></a><span class="sd">        ... CP 5, R.a</span>
 </span><span id="parse_program-42"><a href="#parse_program-42"><span class="linenos"> 42</span></a><span class="sd">        ... loop:</span>
-</span><span id="parse_program-43"><a href="#parse_program-43"><span class="linenos"> 43</span></a><span class="sd">        ...     NOUT a, 1</span>
-</span><span id="parse_program-44"><a href="#parse_program-44"><span class="linenos"> 44</span></a><span class="sd">        ...     SUB a, 1</span>
-</span><span id="parse_program-45"><a href="#parse_program-45"><span class="linenos"> 45</span></a><span class="sd">        ...     JGT loop, a, 0</span>
+</span><span id="parse_program-43"><a href="#parse_program-43"><span class="linenos"> 43</span></a><span class="sd">        ...     NOUT R.a, 1</span>
+</span><span id="parse_program-44"><a href="#parse_program-44"><span class="linenos"> 44</span></a><span class="sd">        ...     SUB R.a, 1</span>
+</span><span id="parse_program-45"><a href="#parse_program-45"><span class="linenos"> 45</span></a><span class="sd">        ...     JGT loop, R.a, 0</span>
 </span><span id="parse_program-46"><a href="#parse_program-46"><span class="linenos"> 46</span></a><span class="sd">        ... &#39;&#39;&#39;</span>
 </span><span id="parse_program-47"><a href="#parse_program-47"><span class="linenos"> 47</span></a><span class="sd">        &gt;&gt;&gt; program = parse_program(text)</span>
 </span><span id="parse_program-48"><a href="#parse_program-48"><span class="linenos"> 48</span></a><span class="sd">        &gt;&gt;&gt; cpu.run(program)</span>
@@ -430,11 +427,11 @@
 <pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">dt31</span><span class="w"> </span><span class="kn">import</span> <span class="n">DT31</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">cpu</span> <span class="o">=</span> <span class="n">DT31</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">text</span> <span class="o">=</span> <span class="s1">&#39;&#39;&#39;</span>
-<span class="gp">... </span><span class="s1">CP 5, a</span>
+<span class="gp">... </span><span class="s1">CP 5, R.a</span>
 <span class="gp">... </span><span class="s1">loop:</span>
-<span class="gp">... </span><span class="s1">    NOUT a, 1</span>
-<span class="gp">... </span><span class="s1">    SUB a, 1</span>
-<span class="gp">... </span><span class="s1">    JGT loop, a, 0</span>
+<span class="gp">... </span><span class="s1">    NOUT R.a, 1</span>
+<span class="gp">... </span><span class="s1">    SUB R.a, 1</span>
+<span class="gp">... </span><span class="s1">    JGT loop, R.a, 0</span>
 <span class="gp">... </span><span class="s1">&#39;&#39;&#39;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">program</span> <span class="o">=</span> <span class="n">parse_program</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">cpu</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">program</span><span class="p">)</span>
@@ -468,8 +465,8 @@
 </span><span id="parse_operand-123"><a href="#parse_operand-123"><span class="linenos">123</span></a><span class="sd">    Supports:</span>
 </span><span id="parse_operand-124"><a href="#parse_operand-124"><span class="linenos">124</span></a><span class="sd">    - Numeric literals: 42, -5</span>
 </span><span id="parse_operand-125"><a href="#parse_operand-125"><span class="linenos">125</span></a><span class="sd">    - Character literals: &#39;H&#39;, &#39;a&#39;</span>
-</span><span id="parse_operand-126"><a href="#parse_operand-126"><span class="linenos">126</span></a><span class="sd">    - Registers: a, b, c or R.a, R.b, R.c</span>
-</span><span id="parse_operand-127"><a href="#parse_operand-127"><span class="linenos">127</span></a><span class="sd">    - Memory: [100], M[100], [a], M[R.a]</span>
+</span><span id="parse_operand-126"><a href="#parse_operand-126"><span class="linenos">126</span></a><span class="sd">    - Registers: R.a, R.b, R.c (must use R. prefix)</span>
+</span><span id="parse_operand-127"><a href="#parse_operand-127"><span class="linenos">127</span></a><span class="sd">    - Memory: [100], M[100], [R.a], M[R.a]</span>
 </span><span id="parse_operand-128"><a href="#parse_operand-128"><span class="linenos">128</span></a><span class="sd">    - Labels: loop, end, start (any bare identifier not matching above)</span>
 </span><span id="parse_operand-129"><a href="#parse_operand-129"><span class="linenos">129</span></a>
 </span><span id="parse_operand-130"><a href="#parse_operand-130"><span class="linenos">130</span></a><span class="sd">    Args:</span>
@@ -479,9 +476,9 @@
 </span><span id="parse_operand-134"><a href="#parse_operand-134"><span class="linenos">134</span></a><span class="sd">        An Operand object (Literal, RegisterReference, MemoryReference, or Label)</span>
 </span><span id="parse_operand-135"><a href="#parse_operand-135"><span class="linenos">135</span></a>
 </span><span id="parse_operand-136"><a href="#parse_operand-136"><span class="linenos">136</span></a><span class="sd">    Note:</span>
-</span><span id="parse_operand-137"><a href="#parse_operand-137"><span class="linenos">137</span></a><span class="sd">        All bare identifiers that are not numeric literals are assumed to be</span>
-</span><span id="parse_operand-138"><a href="#parse_operand-138"><span class="linenos">138</span></a><span class="sd">        either registers or labels, with registers taking precedence. Register names are</span>
-</span><span id="parse_operand-139"><a href="#parse_operand-139"><span class="linenos">139</span></a><span class="sd">        not validated at parse time.</span>
+</span><span id="parse_operand-137"><a href="#parse_operand-137"><span class="linenos">137</span></a><span class="sd">        Registers MUST use the R. prefix syntax (e.g., R.a, R.b).</span>
+</span><span id="parse_operand-138"><a href="#parse_operand-138"><span class="linenos">138</span></a><span class="sd">        All bare identifiers that are not numeric literals or special syntax</span>
+</span><span id="parse_operand-139"><a href="#parse_operand-139"><span class="linenos">139</span></a><span class="sd">        are treated as labels. Register names are not validated at parse time.</span>
 </span><span id="parse_operand-140"><a href="#parse_operand-140"><span class="linenos">140</span></a><span class="sd">    &quot;&quot;&quot;</span>
 </span><span id="parse_operand-141"><a href="#parse_operand-141"><span class="linenos">141</span></a>    <span class="k">match</span> <span class="n">token</span><span class="p">:</span>
 </span><span id="parse_operand-142"><a href="#parse_operand-142"><span class="linenos">142</span></a>        <span class="c1"># Character literal: &#39;H&#39;</span>
@@ -515,13 +512,10 @@
 </span><span id="parse_operand-170"><a href="#parse_operand-170"><span class="linenos">170</span></a>        <span class="k">case</span> <span class="nb">str</span><span class="p">()</span> <span class="k">if</span> <span class="n">token</span><span class="o">.</span><span class="n">lstrip</span><span class="p">(</span><span class="s2">&quot;-&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">isdigit</span><span class="p">():</span>
 </span><span id="parse_operand-171"><a href="#parse_operand-171"><span class="linenos">171</span></a>            <span class="k">return</span> <span class="n">L</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">token</span><span class="p">)]</span>
 </span><span id="parse_operand-172"><a href="#parse_operand-172"><span class="linenos">172</span></a>
-</span><span id="parse_operand-173"><a href="#parse_operand-173"><span class="linenos">173</span></a>        <span class="c1"># Bare identifier: could be register or label</span>
-</span><span id="parse_operand-174"><a href="#parse_operand-174"><span class="linenos">174</span></a>        <span class="c1"># Try to get it as a register attribute, fall back to Label if not found</span>
+</span><span id="parse_operand-173"><a href="#parse_operand-173"><span class="linenos">173</span></a>        <span class="c1"># Bare identifier: always treated as a label</span>
+</span><span id="parse_operand-174"><a href="#parse_operand-174"><span class="linenos">174</span></a>        <span class="c1"># Registers must use R.name syntax</span>
 </span><span id="parse_operand-175"><a href="#parse_operand-175"><span class="linenos">175</span></a>        <span class="k">case</span><span class="w"> </span><span class="k">_</span><span class="p">:</span>
-</span><span id="parse_operand-176"><a href="#parse_operand-176"><span class="linenos">176</span></a>            <span class="k">try</span><span class="p">:</span>
-</span><span id="parse_operand-177"><a href="#parse_operand-177"><span class="linenos">177</span></a>                <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">R</span><span class="p">,</span> <span class="n">token</span><span class="p">)</span>
-</span><span id="parse_operand-178"><a href="#parse_operand-178"><span class="linenos">178</span></a>            <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
-</span><span id="parse_operand-179"><a href="#parse_operand-179"><span class="linenos">179</span></a>                <span class="k">return</span> <span class="n">Label</span><span class="p">(</span><span class="n">token</span><span class="p">)</span>
+</span><span id="parse_operand-176"><a href="#parse_operand-176"><span class="linenos">176</span></a>            <span class="k">return</span> <span class="n">Label</span><span class="p">(</span><span class="n">token</span><span class="p">)</span>
 </span></pre></div>
 
 
@@ -532,8 +526,8 @@
 <ul>
 <li>Numeric literals: 42, -5</li>
 <li>Character literals: 'H', 'a'</li>
-<li>Registers: a, b, c or R.a, R.b, R.c</li>
-<li>Memory: [100], M[100], [a], M[R.a]</li>
+<li>Registers: R.a, R.b, R.c (must use R. prefix)</li>
+<li>Memory: [100], M[100], [R.a], M[R.a]</li>
 <li>Labels: loop, end, start (any bare identifier not matching above)</li>
 </ul>
 
@@ -552,9 +546,9 @@
 <h6 id="note">Note:</h6>
 
 <blockquote>
-  <p>All bare identifiers that are not numeric literals are assumed to be
-  either registers or labels, with registers taking precedence. Register names are
-  not validated at parse time.</p>
+  <p>Registers MUST use the R. prefix syntax (e.g., R.a, R.b).
+  All bare identifiers that are not numeric literals or special syntax
+  are treated as labels. Register names are not validated at parse time.</p>
 </blockquote>
 </div>
 
@@ -571,14 +565,14 @@
 
     </div>
     <a class="headerlink" href="#ParserError"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="ParserError-182"><a href="#ParserError-182"><span class="linenos">182</span></a><span class="k">class</span><span class="w"> </span><span class="nc">ParserError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
-</span><span id="ParserError-183"><a href="#ParserError-183"><span class="linenos">183</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Exception raised when parsing DT31 assembly text fails.</span>
-</span><span id="ParserError-184"><a href="#ParserError-184"><span class="linenos">184</span></a>
-</span><span id="ParserError-185"><a href="#ParserError-185"><span class="linenos">185</span></a><span class="sd">    This exception is raised for syntax errors, invalid operands,</span>
-</span><span id="ParserError-186"><a href="#ParserError-186"><span class="linenos">186</span></a><span class="sd">    or other parsing issues in DT31 assembly code.</span>
-</span><span id="ParserError-187"><a href="#ParserError-187"><span class="linenos">187</span></a><span class="sd">    &quot;&quot;&quot;</span>
-</span><span id="ParserError-188"><a href="#ParserError-188"><span class="linenos">188</span></a>
-</span><span id="ParserError-189"><a href="#ParserError-189"><span class="linenos">189</span></a>    <span class="k">pass</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="ParserError-179"><a href="#ParserError-179"><span class="linenos">179</span></a><span class="k">class</span><span class="w"> </span><span class="nc">ParserError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+</span><span id="ParserError-180"><a href="#ParserError-180"><span class="linenos">180</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Exception raised when parsing DT31 assembly text fails.</span>
+</span><span id="ParserError-181"><a href="#ParserError-181"><span class="linenos">181</span></a>
+</span><span id="ParserError-182"><a href="#ParserError-182"><span class="linenos">182</span></a><span class="sd">    This exception is raised for syntax errors, invalid operands,</span>
+</span><span id="ParserError-183"><a href="#ParserError-183"><span class="linenos">183</span></a><span class="sd">    or other parsing issues in DT31 assembly code.</span>
+</span><span id="ParserError-184"><a href="#ParserError-184"><span class="linenos">184</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="ParserError-185"><a href="#ParserError-185"><span class="linenos">185</span></a>
+</span><span id="ParserError-186"><a href="#ParserError-186"><span class="linenos">186</span></a>    <span class="k">pass</span>
 </span></pre></div>
 
 

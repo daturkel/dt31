@@ -1,7 +1,12 @@
+import pytest
+
+from dt31.operands import LC, L, Label, M, R
 from dt31.parser import (
     MEMORY_PATTERN,
     REGISTER_PREFIX_PATTERN,
     TOKEN_PATTERN,
+    ParserError,
+    parse_operand,
 )
 
 # ----------------------------------- Token pattern ---------------------------------- #
@@ -159,3 +164,124 @@ def test_register_pattern_no_match():
     assert REGISTER_PREFIX_PATTERN.match("100") is None
     assert REGISTER_PREFIX_PATTERN.match("M[100]") is None
     assert REGISTER_PREFIX_PATTERN.match("'A'") is None
+
+
+# --------------------------------- parse_operand -------------------------------- #
+
+
+def test_parse_operand_numeric_literals():
+    result = parse_operand("42")
+    assert result == L[42]
+
+    result = parse_operand("0")
+    assert result == L[0]
+
+    result = parse_operand("-5")
+    assert result == L[-5]
+
+    result = parse_operand("999")
+    assert result == L[999]
+
+
+def test_parse_operand_character_literals():
+    result = parse_operand("'H'")
+    assert result == LC["H"]
+
+    result = parse_operand("'a'")
+    assert result == LC["a"]
+
+    result = parse_operand("' '")
+    assert result == LC[" "]
+
+    result = parse_operand("'0'")
+    assert result == LC["0"]
+
+
+def test_parse_operand_character_literal_errors():
+    """Test that invalid character literals raise errors."""
+    with pytest.raises(ParserError, match="Invalid character literal"):
+        parse_operand("''")
+
+    with pytest.raises(ParserError, match="Invalid character literal"):
+        parse_operand("'abc'")
+
+    with pytest.raises(ParserError, match="must contain exactly one character"):
+        parse_operand("'ab'")
+
+
+def test_parse_operand_registers_prefixed():
+    """Test parsing R. prefixed register names."""
+    result = parse_operand("R.a")
+    assert result == R.a
+
+    result = parse_operand("R.foo")
+    assert result == R.foo
+
+    result = parse_operand("R.my_register")
+    assert result == R.my_register
+
+    result = parse_operand("R.reg1")
+    assert result == R.reg1
+
+
+def test_parse_operand_memory_basic():
+    """Test parsing basic memory references."""
+    result = parse_operand("[100]")
+    assert result == M[100]
+
+    result = parse_operand("M[100]")
+    assert result == M[100]
+
+    result = parse_operand("[0]")
+    assert result == M[0]
+
+
+def test_parse_operand_memory_register_indirect():
+    """Test parsing memory references with register indirection."""
+    result = parse_operand("M[R.a]")
+    assert result == M[R.a]
+
+    result = parse_operand("[R.foo]")
+    assert result == M[R.foo]
+
+    result = parse_operand("[R.b]")
+    assert result == M[R.b]
+
+
+def test_parse_operand_memory_nested():
+    """Test parsing nested memory references."""
+    result = parse_operand("M[M[100]]")
+    assert result == M[M[100]]
+
+    result = parse_operand("[[R.a]]")
+    assert result == M[M[R.a]]
+
+    result = parse_operand("[M[R.a]]")
+    assert result == M[M[R.a]]
+
+
+def test_parse_operand_memory_with_label_error():
+    """Test that labels cannot be used as memory addresses."""
+    with pytest.raises(ParserError, match="Labels cannot be used as memory addresses"):
+        parse_operand("[unknown_identifier]")
+
+    with pytest.raises(ParserError, match="Labels cannot be used as memory addresses"):
+        parse_operand("M[loop]")
+
+    # Bare identifiers are now labels, so [a] should error
+    with pytest.raises(ParserError, match="Labels cannot be used as memory addresses"):
+        parse_operand("[a]")
+
+
+def test_parse_operand_labels():
+    result = parse_operand("loop")
+    assert isinstance(result, Label)
+    assert result.name == "loop"
+
+    result = parse_operand("end_label")
+    assert isinstance(result, Label)
+    assert result.name == "end_label"
+
+    result = parse_operand("a")
+    assert isinstance(result, Label)
+    assert result.name == "a"

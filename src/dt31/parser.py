@@ -37,11 +37,11 @@ def parse_program(
         >>> from dt31 import DT31
         >>> cpu = DT31()
         >>> text = '''
-        ... CP 5, a
+        ... CP 5, R.a
         ... loop:
-        ...     NOUT a, 1
-        ...     SUB a, 1
-        ...     JGT loop, a, 0
+        ...     NOUT R.a, 1
+        ...     SUB R.a, 1
+        ...     JGT loop, R.a, 0
         ... '''
         >>> program = parse_program(text)
         >>> cpu.run(program)
@@ -122,8 +122,8 @@ def parse_operand(token: str) -> Literal | RegisterReference | MemoryReference |
     Supports:
     - Numeric literals: 42, -5
     - Character literals: 'H', 'a'
-    - Registers: a, b, c or R.a, R.b, R.c
-    - Memory: [100], M[100], [a], M[R.a]
+    - Registers: R.a, R.b, R.c (must use R. prefix)
+    - Memory: [100], M[100], [R.a], M[R.a]
     - Labels: loop, end, start (any bare identifier not matching above)
 
     Args:
@@ -133,9 +133,9 @@ def parse_operand(token: str) -> Literal | RegisterReference | MemoryReference |
         An Operand object (Literal, RegisterReference, MemoryReference, or Label)
 
     Note:
-        All bare identifiers that are not numeric literals are assumed to be
-        either registers or labels, with registers taking precedence. Register names are
-        not validated at parse time.
+        Registers MUST use the R. prefix syntax (e.g., R.a, R.b).
+        All bare identifiers that are not numeric literals or special syntax
+        are treated as labels. Register names are not validated at parse time.
     """
     match token:
         # Character literal: 'H'
@@ -169,13 +169,10 @@ def parse_operand(token: str) -> Literal | RegisterReference | MemoryReference |
         case str() if token.lstrip("-").isdigit():
             return L[int(token)]
 
-        # Bare identifier: could be register or label
-        # Try to get it as a register attribute, fall back to Label if not found
+        # Bare identifier: always treated as a label
+        # Registers must use R.name syntax
         case _:
-            try:
-                return getattr(R, token)
-            except AttributeError:
-                return Label(token)
+            return Label(token)
 
 
 class ParserError(Exception):
