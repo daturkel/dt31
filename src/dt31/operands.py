@@ -234,16 +234,22 @@ class RegisterReference(Operand):
     """An operand representing a CPU register reference.
 
     Register references resolve to the value stored in the named register.
+
+    Register names must be valid Python identifiers (letters, digits, underscores;
+    cannot start with a digit) and cannot start with double underscores (reserved
+    for dunder methods).
     """
 
     def __init__(self, register: str):
         """Initialize a register reference operand.
 
         Args:
-            register: The name of the register to reference.
+            register: The name of the register to reference. Must be a valid Python
+                identifier and cannot start with double underscores.
 
         Raises:
-            ValueError: If the register name is not a valid Python identifier.
+            ValueError: If the register name is not a valid Python identifier or
+                starts with double underscores.
         """
         validate_register_name(register)
         self.register = register
@@ -289,10 +295,17 @@ class R(metaclass=_MetaRegister):
 
     Uses attribute syntax for ergonomic register references.
 
+    Register names must be valid Python identifiers (letters, digits, underscores;
+    cannot start with a digit) and cannot start with double underscores (reserved
+    for dunder methods).
+
     Examples:
         R.a         # Creates RegisterReference("a")
         R.foo       # Creates RegisterReference("foo")
         R.my_reg    # Creates RegisterReference("my_reg")
+        R._temp     # Creates RegisterReference("_temp") - valid
+        R.__dunder  # Raises ValueError - double underscore prefix not allowed
+        R.123       # SyntaxError - identifiers cannot start with digits
     """
 
     pass

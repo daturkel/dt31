@@ -66,6 +66,7 @@ dt31    </h1>
 <li><strong>Simple CPU Architecture</strong>: Configurable registers, fixed-size memory, and stack-based operations</li>
 <li><strong>Rich Instruction Set</strong>: 60+ instructions including arithmetic, bitwise operations, logic, control flow, and I/O</li>
 <li><strong>Assembly Support</strong>: Two-pass assembler with label resolution for jumps and function calls</li>
+<li><strong>Assembly Parser</strong>: Parse and execute <code>.dt</code> assembly files with text-based syntax</li>
 <li><strong>Intuitive API</strong>: Clean operand syntax (<code>R.a</code>, <code>M[100]</code>, <code>L[42]</code>, <code>LC['A']</code>)</li>
 <li><strong>Debug Mode</strong>: Step-by-step execution with state inspection</li>
 <li><strong>Pure Python</strong>: Zero dependencies</li>
@@ -135,6 +136,34 @@ dt31    </h1>
 
 <span class="n">cpu</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">program</span><span class="p">)</span>
 <span class="c1"># 1 2 3 4 5 6 7 8 9 10</span>
+</code></pre>
+</div>
+
+<h3 id="parsing-programs-from-text">Parsing Programs from Text</h3>
+
+<div class="pdoc-code codehilite">
+<pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">dt31</span><span class="w"> </span><span class="kn">import</span> <span class="n">DT31</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn"><a href="dt31/parser.html">dt31.parser</a></span><span class="w"> </span><span class="kn">import</span> <span class="n">parse_program</span>
+
+<span class="n">cpu</span> <span class="o">=</span> <span class="n">DT31</span><span class="p">()</span>
+
+<span class="c1"># Write assembly code as text</span>
+<span class="n">assembly</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">CP 5, R.a             ; Copy 5 into register a</span>
+<span class="s2">loop:</span>
+<span class="s2">    NOUT R.a, 1       ; Output register a with newline</span>
+<span class="s2">    SUB R.a, 1        ; Decrement a</span>
+<span class="s2">    JGT loop, R.a, 0  ; Jump to loop if a &gt; 0</span>
+<span class="s2">&quot;&quot;&quot;</span>
+
+<span class="c1"># Parse and run</span>
+<span class="n">program</span> <span class="o">=</span> <span class="n">parse_program</span><span class="p">(</span><span class="n">assembly</span><span class="p">)</span>
+<span class="n">cpu</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">program</span><span class="p">)</span>
+<span class="c1"># 5</span>
+<span class="c1"># 4</span>
+<span class="c1"># 3</span>
+<span class="c1"># 2</span>
+<span class="c1"># 1</span>
 </code></pre>
 </div>
 
@@ -280,6 +309,150 @@ dt31    </h1>
 </code></pre>
 </div>
 
+<h3 id="assembly-text-syntax">Assembly Text Syntax</h3>
+
+<p>dt31 supports writing programs in both Python and text-based assembly syntax. The text syntax is designed to be human-readable and closely resembles traditional assembly languages.</p>
+
+<h4 id="basic-syntax-rules">Basic Syntax Rules</h4>
+
+<p><strong>Instructions and Operands:</strong></p>
+
+<pre><code>INSTRUCTION operand1, operand2, operand3
+</code></pre>
+
+<ul>
+<li>Instructions are case-insensitive (<code>ADD</code>, <code>add</code>, and <code>Add</code> are all valid)</li>
+<li>Register names and label names are case-<em>sensitive</em></li>
+<li>Operands are separated by commas (spaces around commas are optional)</li>
+<li>Comments start with <code>;</code> and continue to end of line</li>
+<li>Blank lines and indentation are ignored</li>
+</ul>
+
+<h4 id="operand-syntax-differences">Operand Syntax Differences</h4>
+
+<p>The text syntax differs from Python syntax in how operands are written:</p>
+
+<table>
+<thead>
+<tr>
+  <th>Operand Type</th>
+  <th>Python Syntax</th>
+  <th>Text Syntax</th>
+  <th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><strong>Numeric Literal</strong></td>
+  <td><code>L[42]</code></td>
+  <td><code>42</code></td>
+  <td><code>CP 42, R.a</code></td>
+</tr>
+<tr>
+  <td><strong>Negative Literal</strong></td>
+  <td><code>L[-5]</code></td>
+  <td><code>-5</code></td>
+  <td><code>ADD R.a, -5</code></td>
+</tr>
+<tr>
+  <td><strong>Character Literal</strong></td>
+  <td><code>LC["A"]</code></td>
+  <td><code>'A'</code></td>
+  <td><code>OOUT 'H', 0</code></td>
+</tr>
+<tr>
+  <td><strong>Register</strong></td>
+  <td><code>R.a</code></td>
+  <td><code>R.a</code></td>
+  <td><code>ADD R.a, R.b</code></td>
+</tr>
+<tr>
+  <td><strong>Memory (direct)</strong></td>
+  <td><code>M[100]</code></td>
+  <td><code>[100]</code> or <code>M[100]</code></td>
+  <td><code>CP 42, [100]</code></td>
+</tr>
+<tr>
+  <td><strong>Memory (indirect)</strong></td>
+  <td><code>M[R.a]</code></td>
+  <td><code>[R.a]</code> or <code>M[R.a]</code></td>
+  <td><code>CP [R.a], R.b</code></td>
+</tr>
+<tr>
+  <td><strong>Label</strong></td>
+  <td><code>Label("loop")</code></td>
+  <td><code>loop</code></td>
+  <td><code>JMP loop</code></td>
+</tr>
+</tbody>
+</table>
+
+<p><strong>Key Differences:</strong></p>
+
+<ol>
+<li><strong>Literals</strong>: In text syntax, bare numbers are literals (no <code>L[...]</code> wrapper needed)</li>
+<li><strong>Characters</strong>: Use single quotes <code>'A'</code> instead of <code>LC["A"]</code></li>
+<li><strong>Memory</strong>: The <code>M</code> prefix is optional (both <code>[100]</code> and <code>M[100]</code> work)</li>
+<li><strong>Labels</strong>: Bare identifiers are labels (no <code>Label(...)</code> constructor needed)</li>
+<li><strong>Registers</strong>: <strong>Must</strong> use <code>R.</code> prefix in both syntaxes</li>
+</ol>
+
+<h4 id="label-definition">Label Definition</h4>
+
+<p>Labels mark positions in code and can be defined in two ways:</p>
+
+<pre><code>; Label on its own line
+loop:
+    ADD R.a, 1
+    JLT loop, R.a, 10
+
+; Label on same line as instruction
+start: CP 0, R.a
+</code></pre>
+
+<p>Label names must contain only alphanumeric characters and underscores.</p>
+
+<h4 id="complete-example-comparison">Complete Example Comparison</h4>
+
+<p><strong>Python Syntax:</strong></p>
+
+<div class="pdoc-code codehilite">
+<pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">dt31</span><span class="w"> </span><span class="kn">import</span> <span class="n">DT31</span><span class="p">,</span> <span class="n">I</span><span class="p">,</span> <span class="n">Label</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn"><a href="dt31/operands.html">dt31.operands</a></span><span class="w"> </span><span class="kn">import</span> <span class="n">R</span><span class="p">,</span> <span class="n">L</span><span class="p">,</span> <span class="n">LC</span><span class="p">,</span> <span class="n">M</span>
+
+<span class="n">cpu</span> <span class="o">=</span> <span class="n">DT31</span><span class="p">()</span>
+<span class="n">program</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="n">I</span><span class="o">.</span><span class="n">CP</span><span class="p">(</span><span class="n">L</span><span class="p">[</span><span class="mi">5</span><span class="p">],</span> <span class="n">R</span><span class="o">.</span><span class="n">a</span><span class="p">),</span>
+    <span class="n">loop</span> <span class="o">:=</span> <span class="n">Label</span><span class="p">(</span><span class="s2">&quot;loop&quot;</span><span class="p">),</span>
+    <span class="n">I</span><span class="o">.</span><span class="n">NOUT</span><span class="p">(</span><span class="n">R</span><span class="o">.</span><span class="n">a</span><span class="p">,</span> <span class="n">L</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span>
+    <span class="n">I</span><span class="o">.</span><span class="n">SUB</span><span class="p">(</span><span class="n">R</span><span class="o">.</span><span class="n">a</span><span class="p">,</span> <span class="n">L</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span>
+    <span class="n">I</span><span class="o">.</span><span class="n">JGT</span><span class="p">(</span><span class="n">loop</span><span class="p">,</span> <span class="n">R</span><span class="o">.</span><span class="n">a</span><span class="p">,</span> <span class="n">L</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span>
+<span class="p">]</span>
+<span class="n">cpu</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">program</span><span class="p">)</span>
+</code></pre>
+</div>
+
+<p><strong>Text Syntax:</strong></p>
+
+<div class="pdoc-code codehilite">
+<pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">dt31</span><span class="w"> </span><span class="kn">import</span> <span class="n">DT31</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn"><a href="dt31/parser.html">dt31.parser</a></span><span class="w"> </span><span class="kn">import</span> <span class="n">parse_program</span>
+
+<span class="n">cpu</span> <span class="o">=</span> <span class="n">DT31</span><span class="p">()</span>
+<span class="n">assembly</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">    CP 5, R.a        ; Copy 5 into register a</span>
+<span class="s2">    loop:            ; Define loop label</span>
+<span class="s2">        NOUT R.a, 1  ; Output register a</span>
+<span class="s2">        SUB R.a, 1   ; Decrement a</span>
+<span class="s2">        JGT loop, R.a, 0  ; Jump if a &gt; 0</span>
+<span class="s2">&quot;&quot;&quot;</span>
+<span class="n">program</span> <span class="o">=</span> <span class="n">parse_program</span><span class="p">(</span><span class="n">assembly</span><span class="p">)</span>
+<span class="n">cpu</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">program</span><span class="p">)</span>
+</code></pre>
+</div>
+
+<p>Both programs produce the same output: <code>5 4 3 2 1</code></p>
+
 <h2 id="documentation">Documentation</h2>
 
 <p>Full API documentation is available in the <a href="https://daturkel.github.io/dt31/dt31.html">documentation</a>. Generate the latest docs with:</p>
@@ -296,6 +469,7 @@ uv<span class="w"> </span>run<span class="w"> </span>invoke<span class="w"> </sp
 <li><a href="https://daturkel.github.io/dt31/dt31/cpu.html">DT31 CPU Class</a> - CPU methods and state management</li>
 <li><a href="https://daturkel.github.io/dt31/dt31/instructions.html">Instructions</a> - Complete instruction reference</li>
 <li><a href="https://daturkel.github.io/dt31/dt31/operands.html">Operands</a> - Operand types and usage</li>
+<li><a href="https://daturkel.github.io/dt31/dt31/parser.html">Parser</a> - Assembly text parsing</li>
 <li><a href="https://daturkel.github.io/dt31/dt31/assembler.html">Assembler</a> - Label resolution and assembly</li>
 </ul>
 
@@ -320,7 +494,7 @@ uv<span class="w"> </span>run<span class="w"> </span>invoke<span class="w"> </sp
 
 <ul>
 <li><input type="checkbox" class="task-list-item-checkbox" checked disabled> Character literals?</li>
-<li><input type="checkbox" class="task-list-item-checkbox" disabled> Parse and execute <code>.dt</code> files</li>
+<li><input type="checkbox" class="task-list-item-checkbox" checked disabled> Parse and execute <code>.dt</code> files</li>
 <li><input type="checkbox" class="task-list-item-checkbox" disabled> Macros</li>
 <li><input type="checkbox" class="task-list-item-checkbox" disabled> File I/O</li>
 <li><input type="checkbox" class="task-list-item-checkbox" disabled> Data handling?</li>

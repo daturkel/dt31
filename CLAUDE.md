@@ -17,6 +17,7 @@ See @README.md for project overview, features, usage examples, and user-facing d
 - **[src/dt31/cpu.py](src/dt31/cpu.py)**: The DT31 CPU class with registers, memory, stack, and execution logic
 - **[src/dt31/instructions.py](src/dt31/instructions.py)**: Instruction definitions and implementations
 - **[src/dt31/operands.py](src/dt31/operands.py)**: Operand types (Literal, Register, Memory, Label)
+- **[src/dt31/parser.py](src/dt31/parser.py)**: Parser for text-based assembly syntax
 - **[src/dt31/assembler.py](src/dt31/assembler.py)**: Two-pass assembler for label resolution
 
 ### Design Principles

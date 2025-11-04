@@ -86,7 +86,7 @@ def parse_program(
         if not tokens:
             continue
 
-        inst_name = tokens[0].upper()
+        inst_name = tokens[0]
 
         try:
             operands = [parse_operand(t) for t in tokens[1:]]
@@ -98,7 +98,7 @@ def parse_program(
             if inst_name in custom_instructions:
                 inst_func = custom_instructions[inst_name]
             else:
-                inst_func = getattr(I, inst_name)
+                inst_func = getattr(I, inst_name.upper())
         except AttributeError:
             raise ParserError(f"Line {line_num}: Unknown instruction '{inst_name}'")
 
