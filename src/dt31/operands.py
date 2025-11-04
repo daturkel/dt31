@@ -195,6 +195,41 @@ class M(metaclass=_MetaMemory):
     pass
 
 
+def validate_register_name(name: str) -> None:
+    """Validate that a register name is a valid Python identifier.
+
+    Register names must be valid Python identifiers and cannot start with
+    double underscores to avoid conflicts with dunder methods.
+
+    Args:
+        name: The register name to validate.
+
+    Raises:
+        ValueError: If the register name is not a valid Python identifier
+            or starts with double underscores.
+
+    Examples:
+        >>> validate_register_name("a")  # Valid
+        >>> validate_register_name("my_reg")  # Valid
+        >>> validate_register_name("reg123")  # Valid
+        >>> validate_register_name("_private")  # Valid
+        >>> validate_register_name("123")  # Raises ValueError
+        >>> validate_register_name("my-reg")  # Raises ValueError
+        >>> validate_register_name("__dunder__")  # Raises ValueError
+    """
+    if not name.isidentifier():
+        raise ValueError(
+            f"Invalid register name '{name}'. "
+            f"Register names must be valid Python identifiers "
+            f"(letters, digits, underscores; cannot start with a digit)."
+        )
+    if name.startswith("__"):
+        raise ValueError(
+            f"Invalid register name '{name}'. "
+            f"Register names cannot start with double underscores (reserved for dunder methods)."
+        )
+
+
 class RegisterReference(Operand):
     """An operand representing a CPU register reference.
 
@@ -206,7 +241,11 @@ class RegisterReference(Operand):
 
         Args:
             register: The name of the register to reference.
+
+        Raises:
+            ValueError: If the register name is not a valid Python identifier.
         """
+        validate_register_name(register)
         self.register = register
 
     def resolve(self, cpu: DT31) -> int:
@@ -221,22 +260,11 @@ class RegisterReference(Operand):
         return cpu.get_register(self.register)
 
     def __str__(self) -> str:
-        return f"R[{self.register}]"
+        return f"R.{self.register}"
 
 
 class _MetaRegister(type):
-    """Metaclass enabling bracket and attribute syntax for RegisterReference operands."""
-
-    def __getitem__(self, arg: str) -> RegisterReference:
-        """Create a RegisterReference using bracket syntax.
-
-        Args:
-            arg: The name of the register.
-
-        Returns:
-            A RegisterReference operand for the specified register.
-        """
-        return RegisterReference(arg)
+    """Metaclass enabling attribute syntax for RegisterReference operands."""
 
     def __getattribute__(self, arg: str):
         """Create a RegisterReference using attribute syntax.
@@ -246,9 +274,12 @@ class _MetaRegister(type):
 
         Returns:
             A RegisterReference operand, unless accessing special attributes.
+
+        Raises:
+            ValueError: If the register name is not a valid Python identifier.
         """
         # Don't intercept special attributes (dunder methods)
-        if arg.startswith("_"):
+        if arg.startswith("__"):
             return super().__getattribute__(arg)
         return RegisterReference(arg)
 
@@ -256,11 +287,12 @@ class _MetaRegister(type):
 class R(metaclass=_MetaRegister):
     """Convenience class for creating RegisterReference operands.
 
-    Supports both bracket and attribute syntax for ergonomic register references.
+    Uses attribute syntax for ergonomic register references.
 
     Examples:
         R.a         # Creates RegisterReference("a")
-        R["a"]      # Also creates RegisterReference("a")
+        R.foo       # Creates RegisterReference("foo")
+        R.my_reg    # Creates RegisterReference("my_reg")
     """
 
     pass

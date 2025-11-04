@@ -4,7 +4,6 @@ from dt31 import instructions as I
 from dt31.assembler import AssemblyError, assemble
 from dt31.operands import L, Label, Literal, R
 
-
 # ============================================================================
 # Basic Assembly
 # ============================================================================
@@ -462,7 +461,7 @@ def test_modifying_result_does_not_affect_original():
     result[0] = I.NOOP()
 
     # Original should be unchanged
-    assert str(program[0]) == "CP(a=0, out=R[a])"
+    assert str(program[0]) == "CP(a=0, out=R.a)"
 
 
 # ============================================================================

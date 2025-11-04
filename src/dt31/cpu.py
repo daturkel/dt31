@@ -4,7 +4,12 @@ from collections import deque
 from typing import TYPE_CHECKING
 
 from dt31.assembler import assemble
-from dt31.operands import MemoryReference, Operand, RegisterReference
+from dt31.operands import (
+    MemoryReference,
+    Operand,
+    RegisterReference,
+    validate_register_name,
+)
 
 if TYPE_CHECKING:
     from dt31.instructions import Instruction  # pragma: no cover
@@ -21,13 +26,15 @@ class DT31:
 
     Args:
         registers: List of register names to create. If None, creates registers a, b, c.
+            Register names must be valid Python identifiers and cannot start with '__'.
         memory_size: Size of the memory array (must be > 0).
         stack_size: Maximum size of the stack (must be > 0).
         wrap_memory: If True, memory accesses wrap around using modulo arithmetic.
             If False, out-of-bounds accesses raise IndexError.
 
     Raises:
-        ValueError: If stack_size or memory_size <= 0, or if 'ip' is in register names.
+        ValueError: If stack_size or memory_size <= 0, if 'ip' is in register names,
+            or if any register name is not a valid Python identifier or starts with '__'.
     """
 
     def __init__(
@@ -43,6 +50,12 @@ class DT31:
             raise ValueError("memory_size must be greater than 0")
         if (registers is not None) and ("ip" in registers):
             raise ValueError("register name 'ip' is reserved")
+
+        # Validate register names
+        register_list = registers if registers is not None else ["a", "b", "c"]
+        for reg_name in register_list:
+            validate_register_name(reg_name)
+
         self.registers: dict[str, int]
         """General-purpose registers for holding variables."""
         if registers is None:
@@ -68,14 +81,14 @@ class DT31:
         """Get a dictionary representation of the CPU's current state.
 
         Returns:
-            dict: Contains non-zero memory locations (M[addr]), all registers (R[name]),
+            dict: Contains non-zero memory locations (M[addr]), all registers (R.name),
                 and the stack contents.
         """
         state = {}
         for k, v in enumerate(self.memory):
             if v != 0:
                 state[f"M[{k}]"] = v
-        state |= {f"R[{k}]": v for k, v in self.registers.items()}
+        state |= {f"R.{k}": v for k, v in self.registers.items()}
         state["stack"] = list(self.stack)
         return state
 

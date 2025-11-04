@@ -36,6 +36,26 @@ def test_set_registers():
     assert set(cpu.registers.keys()) == set(["a", "d", "xy", "ip"])
 
 
+def test_cpu_validates_register_names():
+    """Test that CPU initialization validates register names."""
+    # Valid names should work
+    DT31(registers=["foo", "bar", "_private"])
+
+    # Invalid identifier should fail
+    with pytest.raises(ValueError, match="Invalid register name"):
+        DT31(registers=["123invalid"])
+
+    with pytest.raises(ValueError, match="Invalid register name"):
+        DT31(registers=["my-register"])
+
+    # Dunder names should fail
+    with pytest.raises(ValueError, match="cannot start with double underscores"):
+        DT31(registers=["__dunder__"])
+
+    with pytest.raises(ValueError, match="cannot start with double underscores"):
+        DT31(registers=["valid", "__invalid"])
+
+
 def test_stack_underflow(cpu):
     cpu.push(2)
     assert cpu.pop() == 2
@@ -129,35 +149,35 @@ def test_run_debug(cpu, capsys, monkeypatch):
     print(output)
     assert output.splitlines() == [
         "ADD(a=M[1], b=M[2], out=M[1]) -> 30",
-        "{'M[1]': 30, 'M[2]': 20, 'R[a]': 30, 'R[b]': 40, 'R[c]': 50, 'R[ip]': 1, 'stack': []}",
+        "{'M[1]': 30, 'M[2]': 20, 'R.a': 30, 'R.b': 40, 'R.c': 50, 'R.ip': 1, 'stack': []}",
         "NOOP() -> 0",
-        "{'M[1]': 30, 'M[2]': 20, 'R[a]': 30, 'R[b]': 40, 'R[c]': 50, 'R[ip]': 2, 'stack': []}",
+        "{'M[1]': 30, 'M[2]': 20, 'R.a': 30, 'R.b': 40, 'R.c': 50, 'R.ip': 2, 'stack': []}",
         "JGT(dest=0, a=100, b=M[1]) -> 0",
-        "{'M[1]': 30, 'M[2]': 20, 'R[a]': 30, 'R[b]': 40, 'R[c]': 50, 'R[ip]': 0, 'stack': []}",
+        "{'M[1]': 30, 'M[2]': 20, 'R.a': 30, 'R.b': 40, 'R.c': 50, 'R.ip': 0, 'stack': []}",
         "ADD(a=M[1], b=M[2], out=M[1]) -> 50",
-        "{'M[1]': 50, 'M[2]': 20, 'R[a]': 30, 'R[b]': 40, 'R[c]': 50, 'R[ip]': 1, 'stack': []}",
+        "{'M[1]': 50, 'M[2]': 20, 'R.a': 30, 'R.b': 40, 'R.c': 50, 'R.ip': 1, 'stack': []}",
         "NOOP() -> 0",
-        "{'M[1]': 50, 'M[2]': 20, 'R[a]': 30, 'R[b]': 40, 'R[c]': 50, 'R[ip]': 2, 'stack': []}",
+        "{'M[1]': 50, 'M[2]': 20, 'R.a': 30, 'R.b': 40, 'R.c': 50, 'R.ip': 2, 'stack': []}",
         "JGT(dest=0, a=100, b=M[1]) -> 0",
-        "{'M[1]': 50, 'M[2]': 20, 'R[a]': 30, 'R[b]': 40, 'R[c]': 50, 'R[ip]': 0, 'stack': []}",
+        "{'M[1]': 50, 'M[2]': 20, 'R.a': 30, 'R.b': 40, 'R.c': 50, 'R.ip': 0, 'stack': []}",
         "ADD(a=M[1], b=M[2], out=M[1]) -> 70",
-        "{'M[1]': 70, 'M[2]': 20, 'R[a]': 30, 'R[b]': 40, 'R[c]': 50, 'R[ip]': 1, 'stack': []}",
+        "{'M[1]': 70, 'M[2]': 20, 'R.a': 30, 'R.b': 40, 'R.c': 50, 'R.ip': 1, 'stack': []}",
         "NOOP() -> 0",
-        "{'M[1]': 70, 'M[2]': 20, 'R[a]': 30, 'R[b]': 40, 'R[c]': 50, 'R[ip]': 2, 'stack': []}",
+        "{'M[1]': 70, 'M[2]': 20, 'R.a': 30, 'R.b': 40, 'R.c': 50, 'R.ip': 2, 'stack': []}",
         "JGT(dest=0, a=100, b=M[1]) -> 0",
-        "{'M[1]': 70, 'M[2]': 20, 'R[a]': 30, 'R[b]': 40, 'R[c]': 50, 'R[ip]': 0, 'stack': []}",
+        "{'M[1]': 70, 'M[2]': 20, 'R.a': 30, 'R.b': 40, 'R.c': 50, 'R.ip': 0, 'stack': []}",
         "ADD(a=M[1], b=M[2], out=M[1]) -> 90",
-        "{'M[1]': 90, 'M[2]': 20, 'R[a]': 30, 'R[b]': 40, 'R[c]': 50, 'R[ip]': 1, 'stack': []}",
+        "{'M[1]': 90, 'M[2]': 20, 'R.a': 30, 'R.b': 40, 'R.c': 50, 'R.ip': 1, 'stack': []}",
         "NOOP() -> 0",
-        "{'M[1]': 90, 'M[2]': 20, 'R[a]': 30, 'R[b]': 40, 'R[c]': 50, 'R[ip]': 2, 'stack': []}",
+        "{'M[1]': 90, 'M[2]': 20, 'R.a': 30, 'R.b': 40, 'R.c': 50, 'R.ip': 2, 'stack': []}",
         "JGT(dest=0, a=100, b=M[1]) -> 0",
-        "{'M[1]': 90, 'M[2]': 20, 'R[a]': 30, 'R[b]': 40, 'R[c]': 50, 'R[ip]': 0, 'stack': []}",
+        "{'M[1]': 90, 'M[2]': 20, 'R.a': 30, 'R.b': 40, 'R.c': 50, 'R.ip': 0, 'stack': []}",
         "ADD(a=M[1], b=M[2], out=M[1]) -> 110",
-        "{'M[1]': 110, 'M[2]': 20, 'R[a]': 30, 'R[b]': 40, 'R[c]': 50, 'R[ip]': 1, 'stack': []}",
+        "{'M[1]': 110, 'M[2]': 20, 'R.a': 30, 'R.b': 40, 'R.c': 50, 'R.ip': 1, 'stack': []}",
         "NOOP() -> 0",
-        "{'M[1]': 110, 'M[2]': 20, 'R[a]': 30, 'R[b]': 40, 'R[c]': 50, 'R[ip]': 2, 'stack': []}",
+        "{'M[1]': 110, 'M[2]': 20, 'R.a': 30, 'R.b': 40, 'R.c': 50, 'R.ip': 2, 'stack': []}",
         "JGT(dest=0, a=100, b=M[1]) -> 0",
-        "{'M[1]': 110, 'M[2]': 20, 'R[a]': 30, 'R[b]': 40, 'R[c]': 50, 'R[ip]': 3, 'stack': []}",
+        "{'M[1]': 110, 'M[2]': 20, 'R.a': 30, 'R.b': 40, 'R.c': 50, 'R.ip': 3, 'stack': []}",
     ]
 
 
@@ -197,10 +217,10 @@ def test_state(cpu):
     assert cpu.state == {
         "M[1]": 10,
         "M[2]": 20,
-        "R[a]": 30,
-        "R[b]": 40,
-        "R[c]": 50,
-        "R[ip]": 0,
+        "R.a": 30,
+        "R.b": 40,
+        "R.c": 50,
+        "R.ip": 0,
         "stack": [],
     }
     cpu.push(2)
@@ -209,9 +229,9 @@ def test_state(cpu):
     assert cpu.state == {
         "M[1]": 9,
         "M[2]": 20,
-        "R[a]": 30,
-        "R[b]": 40,
-        "R[c]": 4,
-        "R[ip]": 0,
+        "R.a": 30,
+        "R.b": 40,
+        "R.c": 4,
+        "R.ip": 0,
         "stack": [2],
     }

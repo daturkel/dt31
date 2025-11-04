@@ -41,8 +41,8 @@ def test_m_shorthand():
 
 
 def test_r_shorthand():
-    assert str(R["a"]) == "R[a]"
-    r1 = R["a"]
+    assert str(R.a) == "R.a"
+    r1 = R.a
     r2 = R.a
     r3 = RegisterReference("a")
     assert isinstance(r1, RegisterReference)
@@ -154,7 +154,7 @@ def test_memory_reference_equality():
 
 def test_register_reference_equality():
     r1 = R.a
-    r2 = R["a"]
+    r2 = R.a
     r3 = R.b
     assert r1 == r2
     assert r1 != r3
@@ -168,3 +168,63 @@ def test_label_equality():
     assert l1 == l2
     assert l1 != l3
     assert l1 != "start"
+
+
+def test_register_name_validation_valid():
+    """Test that valid register names are accepted."""
+    # Valid identifiers
+    R.a
+    R.b
+    R.my_register
+    R.reg123
+    R._private
+    R.CamelCase
+
+    # Direct construction
+    RegisterReference("valid_name")
+    RegisterReference("x")
+    RegisterReference("_underscore")
+
+
+def test_register_name_validation_invalid_identifier():
+    """Test that invalid Python identifiers are rejected."""
+    with pytest.raises(ValueError, match="Invalid register name"):
+        RegisterReference("123")
+
+    with pytest.raises(ValueError, match="Invalid register name"):
+        RegisterReference("my-register")
+
+    with pytest.raises(ValueError, match="Invalid register name"):
+        RegisterReference("my.register")
+
+    with pytest.raises(ValueError, match="Invalid register name"):
+        RegisterReference("my register")
+
+    with pytest.raises(ValueError, match="Invalid register name"):
+        RegisterReference("")
+
+
+def test_register_name_validation_dunder():
+    """Test that double underscore names are rejected."""
+    with pytest.raises(ValueError, match="cannot start with double underscores"):
+        RegisterReference("__dunder__")
+
+    with pytest.raises(ValueError, match="cannot start with double underscores"):
+        RegisterReference("__init__")
+
+    with pytest.raises(ValueError, match="cannot start with double underscores"):
+        RegisterReference("__name")
+
+    # Single underscore should be fine
+    RegisterReference("_single")
+
+
+def test_register_name_validation_via_r_shorthand():
+    """Test that validation works when using R.name syntax."""
+    # Valid names should work
+    assert isinstance(R.valid, RegisterReference)
+    assert isinstance(R._private, RegisterReference)
+
+    # Dunder names are intercepted by __getattribute__ before validation
+    # so they don't trigger ValueError but return the actual dunder method
+    # This is intentional to avoid breaking metaclass behavior

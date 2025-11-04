@@ -34,7 +34,7 @@ def test_unary_operation_writes_memory(cpu):
 
 
 def test_unary_operation_writes_register(cpu):
-    I.BNOT(1, R["a"])(cpu)
+    I.BNOT(1, R.a)(cpu)
     assert cpu.get_register("a") == -2
 
 
@@ -48,7 +48,7 @@ def test_unary_operation_validates_types(cpu):
 
 
 def test_unary_operation_writes_to_default_register(cpu):
-    I.BNOT(R["a"])(cpu)
+    I.BNOT(R.a)(cpu)
     assert cpu.get_register("a") == -31
 
 
@@ -70,7 +70,7 @@ def test_binary_operation_writes_memory(cpu):
 
 
 def test_binary_operation_writes_register(cpu):
-    I.ADD(1, 1, R["a"])(cpu)
+    I.ADD(1, 1, R.a)(cpu)
     assert cpu.get_register("a") == 2
 
 
@@ -84,7 +84,7 @@ def test_binary_operation_validates_types(cpu):
 
 
 def test_binary_operation_writes_to_default_register(cpu):
-    I.ADD(R["a"], 2)(cpu)
+    I.ADD(R.a, 2)(cpu)
     assert cpu.get_register("a") == 32
 
 
@@ -411,14 +411,14 @@ def test_oout_newline(cpu, capsys):
 def test_nin(cpu, monkeypatch):
     assert str(I.NIN(M[10])) == "NIN(out=M[10])"
     monkeypatch.setattr("builtins.input", lambda: "31")
-    assert I.NIN(R["a"])(cpu) == 31
+    assert I.NIN(R.a)(cpu) == 31
     assert cpu.get_register("a") == 31
 
 
 def test_oin(cpu, monkeypatch):
     assert str(I.OIN(M[10])) == "OIN(out=M[10])"
     monkeypatch.setattr("builtins.input", lambda: "A")
-    assert I.OIN(R["a"])(cpu) == 65
+    assert I.OIN(R.a)(cpu) == 65
     assert cpu.get_register("a") == 65
 
 
