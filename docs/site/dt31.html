@@ -440,10 +440,10 @@ start: CP 0, R.a
 
 <span class="n">cpu</span> <span class="o">=</span> <span class="n">DT31</span><span class="p">()</span>
 <span class="n">assembly</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
-<span class="s2">    CP 5, R.a        ; Copy 5 into register a</span>
-<span class="s2">    loop:            ; Define loop label</span>
-<span class="s2">        NOUT R.a, 1  ; Output register a</span>
-<span class="s2">        SUB R.a, 1   ; Decrement a</span>
+<span class="s2">    CP 5, R.a             ; Copy 5 into register a</span>
+<span class="s2">    loop:                 ; Define loop label</span>
+<span class="s2">        NOUT R.a, 1       ; Output register a</span>
+<span class="s2">        SUB R.a, 1        ; Decrement a</span>
 <span class="s2">        JGT loop, R.a, 0  ; Jump if a &gt; 0</span>
 <span class="s2">&quot;&quot;&quot;</span>
 <span class="n">program</span> <span class="o">=</span> <span class="n">parse_program</span><span class="p">(</span><span class="n">assembly</span><span class="p">)</span>

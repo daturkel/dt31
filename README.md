@@ -315,10 +315,10 @@ from dt31.parser import parse_program
 
 cpu = DT31()
 assembly = """
-    CP 5, R.a        ; Copy 5 into register a
-    loop:            ; Define loop label
-        NOUT R.a, 1  ; Output register a
-        SUB R.a, 1   ; Decrement a
+    CP 5, R.a             ; Copy 5 into register a
+    loop:                 ; Define loop label
+        NOUT R.a, 1       ; Output register a
+        SUB R.a, 1        ; Decrement a
         JGT loop, R.a, 0  ; Jump if a > 0
 """
 program = parse_program(assembly)
