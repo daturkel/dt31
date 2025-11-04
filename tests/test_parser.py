@@ -1,5 +1,7 @@
 import pytest
 
+import dt31.instructions as I
+from dt31.instructions import Instruction
 from dt31.operands import LC, L, Label, M, R
 from dt31.parser import (
     MEMORY_PATTERN,
@@ -7,6 +9,7 @@ from dt31.parser import (
     TOKEN_PATTERN,
     ParserError,
     parse_operand,
+    parse_program,
 )
 
 # ----------------------------------- Token pattern ---------------------------------- #
@@ -285,3 +288,369 @@ def test_parse_operand_labels():
     result = parse_operand("a")
     assert isinstance(result, Label)
     assert result.name == "a"
+
+
+# --------------------------------- parse_program -------------------------------- #
+
+
+def test_parse_program_empty():
+    """Test parsing empty program."""
+    program = parse_program("")
+    assert program == []
+
+
+def test_parse_program_whitespace_only():
+    """Test parsing program with only whitespace."""
+    program = parse_program("   \n  \n\t\n  ")
+    assert program == []
+
+
+def test_parse_program_commas_only():
+    """Test parsing program with lines containing only commas."""
+    program = parse_program(",,,\n   ,,,   \nCP 5, R.a")
+    expected = [I.CP(5, R.a)]
+    assert program == expected
+
+
+def test_parse_program_single_instruction():
+    """Test parsing a single instruction."""
+    program = parse_program("CP 5, R.a")
+    expected = [I.CP(5, R.a)]
+    assert program == expected
+
+
+def test_parse_program_multiple_instructions():
+    """Test parsing multiple instructions."""
+    text = """
+    CP 10, R.a
+    CP 5, R.b
+    ADD R.a, R.b
+    NOUT R.a, 1
+    """
+    program = parse_program(text)
+    expected = [
+        I.CP(10, R.a),
+        I.CP(5, R.b),
+        I.ADD(R.a, R.b),
+        I.NOUT(R.a, 1),
+    ]
+    assert program == expected
+
+
+def test_parse_program_with_comments():
+    """Test that comments are stripped correctly."""
+    text = """
+    CP 5, R.a  ; This is a comment
+    ; This entire line is a comment
+    ADD R.a, 1 ; Another comment
+    """
+    program = parse_program(text)
+    expected = [
+        I.CP(5, R.a),
+        I.ADD(R.a, 1),
+    ]
+    assert program == expected
+
+
+def test_parse_program_label_only_line():
+    """Test parsing labels on their own line."""
+    text = """
+    CP 1, R.a
+    loop:
+    NOUT R.a, 1
+    ADD R.a, 1
+    JGT loop, R.a, 10
+    """
+    program = parse_program(text)
+    expected = [
+        I.CP(1, R.a),
+        Label("loop"),
+        I.NOUT(R.a, 1),
+        I.ADD(R.a, 1),
+        I.JGT(Label("loop"), R.a, 10),
+    ]
+    assert program == expected
+
+
+def test_parse_program_label_with_instruction():
+    """Test parsing label on same line as instruction."""
+    text = """
+    CP 1, R.a
+    loop: NOUT R.a, 1
+    ADD R.a, 1
+    JGT loop, R.a, 10
+    """
+    program = parse_program(text)
+    expected = [
+        I.CP(1, R.a),
+        Label("loop"),
+        I.NOUT(R.a, 1),
+        I.ADD(R.a, 1),
+        I.JGT(Label("loop"), R.a, 10),
+    ]
+    assert program == expected
+
+
+def test_parse_program_multiple_labels():
+    """Test parsing multiple labels."""
+    text = """
+    start:
+    CP 0, R.a
+    loop:
+    NOUT R.a, 1
+    ADD R.a, 1
+    JGT loop, R.a, 5
+    end:
+    """
+    program = parse_program(text)
+    labels = [item for item in program if isinstance(item, Label)]
+    assert len(labels) == 3
+    assert labels[0].name == "start"
+    assert labels[1].name == "loop"
+    assert labels[2].name == "end"
+
+
+def test_parse_program_label_validation_valid():
+    """Test that valid label names are accepted."""
+    text = """
+    valid_label:
+    loop123:
+    _underscore:
+    CamelCase:
+    """
+    program = parse_program(text)
+    labels = [item for item in program if isinstance(item, Label)]
+    assert len(labels) == 4
+    assert labels[0].name == "valid_label"
+    assert labels[1].name == "loop123"
+    assert labels[2].name == "_underscore"
+    assert labels[3].name == "CamelCase"
+
+
+def test_parse_program_label_validation_invalid():
+    """Test that invalid label names raise errors."""
+    with pytest.raises(ParserError, match="Invalid label name"):
+        parse_program("invalid-label:")
+
+    with pytest.raises(ParserError, match="Invalid label name"):
+        parse_program("label with spaces:")
+
+    with pytest.raises(ParserError, match="Invalid label name"):
+        parse_program("label!:")
+
+
+def test_parse_program_character_literals():
+    """Test parsing character literals in instructions."""
+    text = """
+    OOUT 'H', 0
+    OOUT 'i', 0
+    OOUT '!', 0
+    """
+    program = parse_program(text)
+    expected = [
+        I.OOUT(LC["H"], 0),
+        I.OOUT(LC["i"], 0),
+        I.OOUT(LC["!"], 0),
+    ]
+    assert program == expected
+
+
+def test_parse_program_memory_references():
+    """Test parsing various memory reference formats."""
+    text = """
+    CP 100, M[50]
+    CP M[50], R.a
+    CP M[R.a], R.b
+    CP R.a, [100]
+    """
+    program = parse_program(text)
+    expected = [
+        I.CP(100, M[50]),
+        I.CP(M[50], R.a),
+        I.CP(M[R.a], R.b),
+        I.CP(R.a, M[100]),
+    ]
+    assert program == expected
+
+
+def test_parse_program_mixed_operands():
+    """Test parsing instructions with various operand types."""
+    text = """
+    CP 42, R.a
+    CP R.a, M[100]
+    ADD R.a, 10
+    JMP loop
+    OOUT 'X', 0
+    """
+    program = parse_program(text)
+    expected = [
+        I.CP(42, R.a),
+        I.CP(R.a, M[100]),
+        I.ADD(R.a, 10),
+        I.JMP(Label("loop")),
+        I.OOUT(LC["X"], 0),
+    ]
+    assert program == expected
+
+
+def test_parse_program_case_insensitive_instructions():
+    """Test that instruction names are case insensitive."""
+    text = """
+    cp 5, R.a
+    ADD R.a, 1
+    Nout R.a, 1
+    """
+    program = parse_program(text)
+    expected = [
+        I.CP(5, R.a),
+        I.ADD(R.a, 1),
+        I.NOUT(R.a, 1),
+    ]
+    assert program == expected
+
+
+def test_parse_program_no_spaces_after_commas():
+    """Test parsing instructions without spaces after commas."""
+    text = "CP 5,R.a\nADD R.a,R.b"
+    program = parse_program(text)
+    expected = [
+        I.CP(5, R.a),
+        I.ADD(R.a, R.b),
+    ]
+    assert program == expected
+
+
+def test_parse_program_negative_numbers():
+    """Test parsing negative number literals."""
+    text = """
+    CP -5, R.a
+    ADD R.a, -10
+    SUB R.a, -3
+    """
+    program = parse_program(text)
+    expected = [
+        I.CP(-5, R.a),
+        I.ADD(R.a, -10),
+        I.SUB(R.a, -3),
+    ]
+    assert program == expected
+
+
+def test_parse_program_unknown_instruction():
+    """Test that unknown instructions raise errors."""
+    with pytest.raises(ParserError, match="Unknown instruction 'INVALID'"):
+        parse_program("INVALID R.a, R.b")
+
+
+def test_parse_program_wrong_operand_count():
+    """Test that wrong operand count raises errors."""
+    # CP requires at least 1 operand (a, with optional out)
+    # But passing 0 operands should fail
+    with pytest.raises(ParserError, match="Error creating instruction"):
+        parse_program("CP")
+
+    # ADD with only 1 operand should fail
+    with pytest.raises(ParserError, match="Error creating instruction"):
+        parse_program("ADD R.a")
+
+
+def test_parse_program_invalid_operand_syntax():
+    """Test that invalid operand syntax raises errors."""
+    with pytest.raises(ParserError, match="Labels cannot be used as memory addresses"):
+        parse_program("CP [invalid_label], R.a")
+
+
+def test_parse_program_custom_instructions():
+    """Test parsing with custom instruction definitions."""
+
+    class CUSTOM(Instruction):
+        def __init__(self, x: int, y: int):
+            super().__init__("CUSTOM")
+            self.x = x
+            self.y = y
+
+        def _calc(self, cpu) -> int:
+            return 0
+
+    text = """
+    CUSTOM 10, 20
+    CP 5, R.a
+    """
+    program = parse_program(text, custom_instructions={"CUSTOM": CUSTOM})
+    assert len(program) == 2
+    assert program[0].name == "CUSTOM"
+    assert program[1].name == "CP"
+
+
+def test_parse_program_custom_instructions_override():
+    """Test that custom instructions can override built-ins."""
+
+    class CUSTOM_CP(Instruction):
+        def __init__(self, x: int):
+            super().__init__("CUSTOM_CP")
+            self.x = x
+
+        def _calc(self, cpu) -> int:
+            return 0
+
+    text = "CP 42"
+    program = parse_program(text, custom_instructions={"CP": CUSTOM_CP})
+    assert len(program) == 1
+    assert program[0].name == "CUSTOM_CP"
+
+
+def test_parse_program_line_numbers_in_errors():
+    """Test that error messages include line numbers."""
+    text = """
+    CP 5, R.a
+    INVALID R.a, R.b
+    ADD R.a, 1
+    """
+    with pytest.raises(ParserError, match="Line 3:"):
+        parse_program(text)
+
+
+def test_parse_program_complete_loop_example():
+    """Test parsing a complete program with loop."""
+    text = """
+    CP 1, R.a
+    loop:
+        NOUT R.a, 1
+        ADD R.a, 1
+        JGT loop, R.a, 11
+    """
+    program = parse_program(text)
+    expected = [
+        I.CP(1, R.a),
+        Label("loop"),
+        I.NOUT(R.a, 1),
+        I.ADD(R.a, 1),
+        I.JGT(Label("loop"), R.a, 11),
+    ]
+    assert program == expected
+
+
+def test_parse_program_function_call_example():
+    """Test parsing a program with function calls."""
+    text = """
+    CALL print_hi
+    JMP end
+
+    print_hi:
+        OOUT 'H', 0
+        OOUT 'i', 0
+        RET
+
+    end:
+    """
+    program = parse_program(text)
+    expected = [
+        I.CALL(Label("print_hi")),
+        I.JMP(Label("end")),
+        Label("print_hi"),
+        I.OOUT(LC["H"], 0),
+        I.OOUT(LC["i"], 0),
+        I.RET(),
+        Label("end"),
+    ]
+    assert program == expected

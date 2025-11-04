@@ -1094,7 +1094,7 @@ class CP(UnaryOperation):
 class NOUT(Instruction):
     """Output operand as a number."""
 
-    def __init__(self, a: Operand, b: Operand = L[0]):
+    def __init__(self, a: Operand, b: Operand | int = L[0]):
         """
         Args:
             a: Operand value to output as a number.
@@ -1119,7 +1119,7 @@ class NOUT(Instruction):
 class OOUT(Instruction):
     """Output operand as a character (using chr())."""
 
-    def __init__(self, a: Operand, b: Operand = L[0]):
+    def __init__(self, a: Operand, b: Operand | int = L[0]):
         """
         Args:
             a: Operand value to output as a character.
