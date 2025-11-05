@@ -19,6 +19,7 @@ See @README.md for project overview, features, usage examples, and user-facing d
 - **[src/dt31/operands.py](src/dt31/operands.py)**: Operand types (Literal, Register, Memory, Label)
 - **[src/dt31/parser.py](src/dt31/parser.py)**: Parser for text-based assembly syntax
 - **[src/dt31/assembler.py](src/dt31/assembler.py)**: Two-pass assembler for label resolution
+- **[src/dt31/cli.py](src/dt31/cli.py)**: Command-line interface for executing `.dt` assembly files
 
 ### Design Principles
 
@@ -75,7 +76,8 @@ When adding or modifying instructions:
 ### Adding Examples
 
 - Place new examples in [examples/](examples/) directory
-- Examples should be self-contained and runnable with `uv run python example_name.py`
+- Python examples should be self-contained and runnable with `uv run python example_name.py`
+- Assembly examples (`.dt` files) should be runnable with `dt31 example_name.dt`
 - Include comments explaining key concepts
 - Reference examples in README if they demonstrate important features
 

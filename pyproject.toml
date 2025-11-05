@@ -30,6 +30,9 @@ classifiers = [
     "Topic :: Software Development :: Interpreters",
 ]
 
+[project.scripts]
+dt31 = "dt31.cli:main"
+
 
 [build-system]
 requires = ["uv_build>=0.9.6,<0.10.0"]

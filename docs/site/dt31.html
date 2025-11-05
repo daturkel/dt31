@@ -38,6 +38,7 @@
             <h2>Submodules</h2>
             <ul>
                     <li><a href="dt31/assembler.html">assembler</a></li>
+                    <li><a href="dt31/cli.html">cli</a></li>
                     <li><a href="dt31/cpu.html">cpu</a></li>
                     <li><a href="dt31/instructions.html">instructions</a></li>
                     <li><a href="dt31/operands.html">operands</a></li>
@@ -67,6 +68,7 @@ dt31    </h1>
 <li><strong>Rich Instruction Set</strong>: 60+ instructions including arithmetic, bitwise operations, logic, control flow, and I/O</li>
 <li><strong>Assembly Support</strong>: Two-pass assembler with label resolution for jumps and function calls</li>
 <li><strong>Assembly Parser</strong>: Parse and execute <code>.dt</code> assembly files with text-based syntax</li>
+<li><strong>Command-Line Interface</strong>: Execute <code>.dt</code> files directly with the <code><a href="">dt31</a></code> command</li>
 <li><strong>Intuitive API</strong>: Clean operand syntax (<code>R.a</code>, <code>M[100]</code>, <code>L[42]</code>, <code>LC['A']</code>)</li>
 <li><strong>Debug Mode</strong>: Step-by-step execution with state inspection</li>
 <li><strong>Pure Python</strong>: Zero dependencies</li>
@@ -166,6 +168,57 @@ dt31    </h1>
 <span class="c1"># 1</span>
 </code></pre>
 </div>
+
+<h3 id="using-the-command-line">Using the Command Line</h3>
+
+<p>Once installed, you can execute <code>.dt</code> assembly files directly from the command line:</p>
+
+<div class="pdoc-code codehilite">
+<pre><span></span><code><span class="c1"># Create a simple program file</span>
+cat<span class="w"> </span>&gt;<span class="w"> </span>countdown.dt<span class="w"> </span><span class="s">&lt;&lt; &#39;EOF&#39;</span>
+<span class="s">CP 5, R.a             ; Copy 5 into register a</span>
+<span class="s">loop:</span>
+<span class="s">    NOUT R.a, 1       ; Output register a with newline</span>
+<span class="s">    SUB R.a, 1        ; Decrement a</span>
+<span class="s">    JGT loop, R.a, 0  ; Jump to loop if a &gt; 0</span>
+<span class="s">EOF</span>
+
+<span class="c1"># Execute the program</span>
+dt31<span class="w"> </span>countdown.dt
+<span class="c1"># 5</span>
+<span class="c1"># 4</span>
+<span class="c1"># 3</span>
+<span class="c1"># 2</span>
+<span class="c1"># 1</span>
+</code></pre>
+</div>
+
+<h4 id="cli-options">CLI Options</h4>
+
+<ul>
+<li><code>--debug</code> or <code>-d</code>: Enable step-by-step debug output</li>
+<li><code>--parse-only</code> or <code>-p</code>: Validate syntax without executing</li>
+<li><code>--registers a,b,c,d</code>: Specify custom registers (auto-detected by default)</li>
+<li><code>--memory 512</code>: Set memory size in bytes (default: 256)</li>
+<li><code>--stack-size 512</code>: Set stack size (default: 256)</li>
+</ul>
+
+<div class="pdoc-code codehilite">
+<pre><span></span><code><span class="c1"># Parse and validate only (no execution)</span>
+dt31<span class="w"> </span>--parse-only<span class="w"> </span>program.dt
+
+<span class="c1"># Run with debug output</span>
+dt31<span class="w"> </span>--debug<span class="w"> </span>program.dt
+
+<span class="c1"># Use custom memory size</span>
+dt31<span class="w"> </span>--memory<span class="w"> </span><span class="m">1024</span><span class="w"> </span>program.dt
+
+<span class="c1"># Specify registers explicitly</span>
+dt31<span class="w"> </span>--registers<span class="w"> </span>a,b,c,d,e<span class="w"> </span>program.dt
+</code></pre>
+</div>
+
+<p>See the <a href="https://daturkel.github.io/dt31/dt31/cli.html">CLI documentation</a> for more details.</p>
 
 <p>For more examples including factorial, fibonacci, function calls, and more, see the <a href="./examples/">examples</a> directory.</p>
 
@@ -471,6 +524,7 @@ uv<span class="w"> </span>run<span class="w"> </span>invoke<span class="w"> </sp
 <li><a href="https://daturkel.github.io/dt31/dt31/operands.html">Operands</a> - Operand types and usage</li>
 <li><a href="https://daturkel.github.io/dt31/dt31/parser.html">Parser</a> - Assembly text parsing</li>
 <li><a href="https://daturkel.github.io/dt31/dt31/assembler.html">Assembler</a> - Label resolution and assembly</li>
+<li><a href="https://daturkel.github.io/dt31/dt31/cli.html">CLI</a> - Command-line interface</li>
 </ul>
 
 <h2 id="development">Development</h2>

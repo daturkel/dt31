@@ -235,3 +235,71 @@ def test_state(cpu):
         "R.ip": 0,
         "stack": [2],
     }
+
+
+# ============================================================================
+# Register Validation
+# ============================================================================
+
+
+def test_cpu_validates_missing_registers():
+    """Test that CPU raises error when program uses missing registers."""
+    from dt31.assembler import AssemblyError
+
+    cpu = DT31(registers=["a", "b"])
+    program = [I.CP(L[10], R.x)]  # 'x' not in CPU registers
+
+    with pytest.raises(AssemblyError) as exc_info:
+        cpu.load(program)
+
+    assert "x" in str(exc_info.value)
+    assert "Missing registers" in str(exc_info.value)
+
+
+def test_cpu_validates_multiple_missing_registers():
+    """Test error message with multiple missing registers."""
+    from dt31.assembler import AssemblyError
+
+    cpu = DT31(registers=["a"])
+    program = [
+        I.CP(L[10], R.x),
+        I.CP(L[20], R.y),
+        I.ADD(R.x, R.y),
+    ]
+
+    with pytest.raises(AssemblyError) as exc_info:
+        cpu.load(program)
+
+    error_msg = str(exc_info.value)
+    assert "x" in error_msg
+    assert "y" in error_msg
+
+
+def test_cpu_accepts_valid_registers():
+    """Test that CPU accepts program when all registers exist."""
+    cpu = DT31(registers=["x", "y"])
+    program = [
+        I.CP(L[10], R.x),
+        I.CP(L[20], R.y),
+        I.ADD(R.x, R.y),
+    ]
+
+    # Should not raise
+    cpu.load(program)
+    assert len(cpu.instructions) == 3
+
+
+def test_cpu_run_with_auto_detected_registers():
+    """Test running a program with auto-detected registers."""
+    from dt31.assembler import extract_registers_from_program
+
+    program = [
+        I.CP(L[5], R.counter),
+        I.NOUT(R.counter, L[1]),
+    ]
+
+    registers = extract_registers_from_program(program)
+    cpu = DT31(registers=registers)
+    cpu.run(program)
+
+    assert cpu.get_register("counter") == 5
