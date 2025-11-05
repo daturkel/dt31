@@ -302,8 +302,8 @@ NOUT R.a, 1  ; Outputs 15
 
 <ul>
 <li><strong>Registers</strong>: General-purpose registers (default: <code>a</code>, <code>b</code>, and <code>c</code>)</li>
-<li><strong>Memory</strong>: Fixed-size byte array (default: 256 bytes)</li>
-<li><strong>Stack</strong>: For temporary values and function calls (default: 256 items)</li>
+<li><strong>Memory</strong>: Fixed-size byte array (default: 256 slots)</li>
+<li><strong>Stack</strong>: For temporary values and function calls (default: 256 slots)</li>
 <li><strong>Instruction Pointer</strong>: Tracks current instruction in register <code>ip</code></li>
 </ul>
 
@@ -597,6 +597,7 @@ uv<span class="w"> </span>run<span class="w"> </span>invoke<span class="w"> </sp
 <li><input type="checkbox" class="task-list-item-checkbox" disabled> Data handling?</li>
 <li><input type="checkbox" class="task-list-item-checkbox" disabled> Input error handling rather than immediate crash</li>
 <li><input type="checkbox" class="task-list-item-checkbox" disabled> Clearer handing of input during debug mode (currently hard to tell when the user is being prompted for input)</li>
+<li><input type="checkbox" class="task-list-item-checkbox" disabled> Preserve comments in parser?</li>
 </ul>
 
 <h2 id="license">License</h2>

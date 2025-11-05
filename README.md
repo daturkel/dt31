@@ -228,8 +228,8 @@ See the [instructions documentation](https://daturkel.github.io/dt31/dt31/instru
 The DT31 CPU includes:
 
 - **Registers**: General-purpose registers (default: `a`, `b`, and `c`)
-- **Memory**: Fixed-size byte array (default: 256 bytes)
-- **Stack**: For temporary values and function calls (default: 256 items)
+- **Memory**: Fixed-size byte array (default: 256 slots)
+- **Stack**: For temporary values and function calls (default: 256 slots)
 - **Instruction Pointer**: Tracks current instruction in register `ip`
 
 See the [CPU documentation](https://daturkel.github.io/dt31/dt31/cpu.html) for API details.
@@ -460,6 +460,7 @@ DT31 is open-source and contributors are welcome on [Github](https://github.com/
 - [ ] Data handling?
 - [ ] Input error handling rather than immediate crash
 - [ ] Clearer handing of input during debug mode (currently hard to tell when the user is being prompted for input)
+- [ ] Preserve comments in parser?
 
 ## License
 
