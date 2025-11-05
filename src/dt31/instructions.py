@@ -27,46 +27,54 @@ class Instruction:
 
     Implementing New Instructions
     ------------------------------
-    To create a new instruction, subclass `Instruction` and implement:
+    To create a new instruction, subclass `Instruction` (or, even better, a helper subclass
+    like `UnaryOperation` or `BinaryOperation`) and implement:
 
+    - `__init__(self)`: Pass the instruction's args to the `__init__` method of the parent
+      class.
     - `_calc(cpu)`: Perform the instruction's operation and return a result value.
       This value is available to the instruction but typically only used for operations
       that need to store results (via `BinaryOperation` or `UnaryOperation` base classes).
-
     - `_advance(cpu)` (optional): Override to customize how the instruction pointer moves.
       Default behavior increments IP by 1. Jump instructions override this to modify
       control flow.
-
     - `__str__()` (optional): Return a human-readable representation showing the
       instruction name and operands for debugging and display purposes.
 
+    Consult the source of existing instructions as a guide.
+
     Examples
     --------
-    Simple instruction (no operands, no special `_advance` behavior):
+    Simple unary operation (square a value):
     ```python
-    class NOOP(Instruction):
-        def __init__(self):
-            super().__init__("NOOP")
+    class SQUARE(UnaryOperation):
+        \"\"\"Square a value (a * a).\"\"\"
+        def __init__(self, a: Operand, out: Reference | None = None):
+            super().__init__("SQUARE", a, out)
 
         def _calc(self, cpu: DT31) -> int:
-            return 0  # Do nothing
+            val = self.a.resolve(cpu)
+            return val * val
     ```
 
-    Jump instruction (custom `_advance`, `__str__`):
+    Custom instruction with multiple operands (swap two registers):
     ```python
-    class JMP(Instruction):
-        def __init__(self, dest: Destination):
-            super().__init__("JMP")
-            self.dest = as_op(dest)
+    class SWAP(Instruction):
+        \"\"\"Swap the values of two registers.\"\"\"
+        def __init__(self, a: Reference, b: Reference):
+            super().__init__("SWAP")
+            self.a = a
+            self.b = b
 
         def _calc(self, cpu: DT31) -> int:
+            val_a = self.a.resolve(cpu)
+            val_b = self.b.resolve(cpu)
+            self.a.assign(cpu, val_b)
+            self.b.assign(cpu, val_a)
             return 0
 
-        def _advance(self, cpu: DT31):
-            cpu.set_register("ip", self.dest.resolve(cpu))
-
         def __str__(self) -> str:
-            return f"{self.name}(dest={self.dest})"
+            return f"{self.name}({self.a}, {self.b})"
     ```
     """
 

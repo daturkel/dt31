@@ -25,7 +25,8 @@ def parse_program(
 
     Args:
         text: Assembly code as a string
-        custom_instructions: Optional dict of custom instruction names to functions
+        custom_instructions: Optional dict of custom instruction names to `Instruction`
+            subclasses
 
     Returns:
         List of Instructions and Labels ready for cpu.run()
