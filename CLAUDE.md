@@ -58,6 +58,15 @@ When adding or modifying instructions:
 4. **Documentation**: Include clear docstrings explaining the instruction's behavior
 5. **Testing**: Add comprehensive tests in [tests/test_instructions.py](tests/test_instructions.py)
 
+### Custom Instructions
+
+Users can extend dt31 with custom instructions via the CLI's `--custom-instructions` flag or programmatically via `parse_program(custom_instructions=...)`. Custom instructions must:
+- Subclass `dt31.instructions.Instruction` (or helpers like `UnaryOperation`, `BinaryOperation`)
+- Be exported in an `INSTRUCTIONS` dict mapping instruction names to classes
+- Follow the same naming, documentation, and testing standards as built-in instructions
+
+See [examples/custom_instructions.py](examples/custom_instructions.py) and [README.md](README.md) for details.
+
 ## Common Tasks
 
 ### Adding a New Instruction

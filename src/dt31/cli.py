@@ -363,7 +363,6 @@ def load_custom_instructions(file_path: str) -> dict[str, type]:
         raise ImportError(f"Could not load module from {file_path}")
 
     module = importlib.util.module_from_spec(spec)
-    sys.modules["custom_instructions"] = module
     spec.loader.exec_module(module)
 
     # Extract INSTRUCTIONS dict
