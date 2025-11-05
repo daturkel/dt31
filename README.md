@@ -10,6 +10,7 @@ A toy computer emulator in Python with a simple instruction set and virtual mach
 - **Rich Instruction Set**: 60+ instructions including arithmetic, bitwise operations, logic, control flow, and I/O
 - **Assembly Support**: Two-pass assembler with label resolution for jumps and function calls
 - **Assembly Parser**: Parse and execute `.dt` assembly files with text-based syntax
+- **Command-Line Interface**: Execute `.dt` files directly with the `dt31` command
 - **Intuitive API**: Clean operand syntax (`R.a`, `M[100]`, `L[42]`, `LC['A']`)
 - **Debug Mode**: Step-by-step execution with state inspection
 - **Pure Python**: Zero dependencies
@@ -103,6 +104,53 @@ cpu.run(program)
 # 2
 # 1
 ```
+
+### Using the Command Line
+
+Once installed, you can execute `.dt` assembly files directly from the command line:
+
+```shell
+# Create a simple program file
+cat > countdown.dt << 'EOF'
+CP 5, R.a             ; Copy 5 into register a
+loop:
+    NOUT R.a, 1       ; Output register a with newline
+    SUB R.a, 1        ; Decrement a
+    JGT loop, R.a, 0  ; Jump to loop if a > 0
+EOF
+
+# Execute the program
+dt31 countdown.dt
+# 5
+# 4
+# 3
+# 2
+# 1
+```
+
+#### CLI Options
+
+- `--debug` or `-d`: Enable step-by-step debug output
+- `--parse-only` or `-p`: Validate syntax without executing
+- `--registers a,b,c,d`: Specify custom registers (auto-detected by default)
+- `--memory 512`: Set memory size in bytes (default: 256)
+- `--stack-size 512`: Set stack size (default: 256)
+
+```shell
+# Parse and validate only (no execution)
+dt31 --parse-only program.dt
+
+# Run with debug output
+dt31 --debug program.dt
+
+# Use custom memory size
+dt31 --memory 1024 program.dt
+
+# Specify registers explicitly
+dt31 --registers a,b,c,d,e program.dt
+```
+
+See the [CLI documentation](https://daturkel.github.io/dt31/dt31/cli.html) for more details.
 
 For more examples including factorial, fibonacci, function calls, and more, see the [examples](./examples/) directory.
 
@@ -343,6 +391,7 @@ Key documentation pages:
 - [Operands](https://daturkel.github.io/dt31/dt31/operands.html) - Operand types and usage
 - [Parser](https://daturkel.github.io/dt31/dt31/parser.html) - Assembly text parsing
 - [Assembler](https://daturkel.github.io/dt31/dt31/assembler.html) - Label resolution and assembly
+- [CLI](https://daturkel.github.io/dt31/dt31/cli.html) - Command-line interface
 
 ## Development
 

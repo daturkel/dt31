@@ -1,0 +1,29 @@
+; Calculate factorial of 5
+; Demonstrates function calls, stack operations, and recursion
+; Run with: dt31 factorial.dt
+
+; Main program
+CP 5, R.a                    ; Calculate factorial of 5
+CALL factorial               ; Call factorial function
+NOUT R.a, 1                  ; Output result with newline
+JMP end                      ; Skip to end
+
+; Factorial function
+; Input: R.a = n
+; Output: R.a = n!
+factorial:
+    ; Base case: if n <= 1, return 1
+    JGT recursive_case, R.a, 1
+    CP 1, R.a                ; Base case: return 1
+    RET
+
+recursive_case:
+    ; Recursive case: n * factorial(n-1)
+    PUSH R.a                 ; Save n
+    SUB R.a, 1               ; n-1
+    CALL factorial           ; factorial(n-1)
+    POP R.b                  ; Restore n to R.b
+    MUL R.a, R.b             ; n * factorial(n-1)
+    RET
+
+end:
