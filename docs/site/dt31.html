@@ -26,6 +26,7 @@
   <li><a href="#features">Features</a></li>
   <li><a href="#installation">Installation</a></li>
   <li><a href="#quick-start">Quick Start</a></li>
+  <li><a href="#examples">Examples</a></li>
   <li><a href="#core-concepts">Core Concepts</a></li>
   <li><a href="#usage-guide">Usage Guide</a></li>
   <li><a href="#documentation">Documentation</a></li>
@@ -201,6 +202,7 @@ dt31<span class="w"> </span>countdown.dt
 <li><code>--registers a,b,c,d</code>: Specify custom registers (auto-detected by default)</li>
 <li><code>--memory 512</code>: Set memory size in bytes (default: 256)</li>
 <li><code>--stack-size 512</code>: Set stack size (default: 256)</li>
+<li><code>--custom-instructions PATH</code> or <code>-i PATH</code>: Load custom instruction definitions from a Python file</li>
 </ul>
 
 <div class="pdoc-code codehilite">
@@ -215,10 +217,47 @@ dt31<span class="w"> </span>--memory<span class="w"> </span><span class="m">1024
 
 <span class="c1"># Specify registers explicitly</span>
 dt31<span class="w"> </span>--registers<span class="w"> </span>a,b,c,d,e<span class="w"> </span>program.dt
+
+<span class="c1"># Use custom instructions</span>
+dt31<span class="w"> </span>--custom-instructions<span class="w"> </span>my_instructions.py<span class="w"> </span>program.dt
 </code></pre>
 </div>
 
-<p>See the <a href="https://daturkel.github.io/dt31/dt31/cli.html">CLI documentation</a> for more details.</p>
+<h4 id="custom-instructions">Custom Instructions</h4>
+
+<p>You can define custom instructions in a Python file and load them using the <code>--custom-instructions</code> flag. Your Python file must define an <code>INSTRUCTIONS</code> dict mapping instruction names to <code><a href="dt31/instructions.html#Instruction">dt31.instructions.Instruction</a></code> subclasses:</p>
+
+<div class="pdoc-code codehilite">
+<pre><span></span><code><span class="c1"># my_instructions.py</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn"><a href="dt31/instructions.html">dt31.instructions</a></span><span class="w"> </span><span class="kn">import</span> <span class="n">UnaryOperation</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn"><a href="dt31/operands.html">dt31.operands</a></span><span class="w"> </span><span class="kn">import</span> <span class="n">Operand</span><span class="p">,</span> <span class="n">Reference</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">TRIPLE</span><span class="p">(</span><span class="n">UnaryOperation</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Triple a value.&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">a</span><span class="p">:</span> <span class="n">Operand</span><span class="p">,</span> <span class="n">out</span><span class="p">:</span> <span class="n">Reference</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="s2">&quot;TRIPLE&quot;</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">out</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_calc</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cpu</span><span class="p">:</span> <span class="s2">&quot;DT31&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">a</span><span class="o">.</span><span class="n">resolve</span><span class="p">(</span><span class="n">cpu</span><span class="p">)</span> <span class="o">*</span> <span class="mi">3</span>
+
+<span class="n">INSTRUCTIONS</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;TRIPLE&quot;</span><span class="p">:</span> <span class="n">TRIPLE</span><span class="p">}</span>
+</code></pre>
+</div>
+
+<p>Then use them in your assembly programs:</p>
+
+<pre><code>CP 5, R.a
+TRIPLE R.a
+NOUT R.a, 1  ; Outputs 15
+</code></pre>
+
+<p>Run with: <code>dt31 --custom-instructions my_instructions.py program.dt</code></p>
+
+<p><strong>Security Warning</strong>: Loading custom instruction files executes arbitrary Python code. Only load files from trusted sources.</p>
+
+<p>See the <a href="https://daturkel.github.io/dt31/dt31/cli.html">CLI documentation</a> for more details on running text assembly programs, <a href="https://daturkel.github.io/dt31/dt31/instructions.html">instructions documentation</a> for additional info on custom instructions.</p>
+
+<h2 id="examples">Examples</h2>
 
 <p>For more examples including factorial, fibonacci, function calls, and more, see the <a href="./examples/">examples</a> directory.</p>
 
@@ -252,6 +291,8 @@ dt31<span class="w"> </span>--registers<span class="w"> </span>a,b,c,d,e<span cl
 <li><strong>I/O</strong>: <code>NOUT</code>, <code>OOUT</code>, <code>NIN</code>, <code>OIN</code></li>
 <li><strong>Data Movement</strong>: <code>CP</code></li>
 </ul>
+
+<p>Users can easily define their own custom instructions by subclassing <code><a href="dt31/instructions.html#Instruction">dt31.instructions.Instruction</a></code>.</p>
 
 <p>See the <a href="https://daturkel.github.io/dt31/dt31/instructions.html">instructions documentation</a> for the complete reference.</p>
 

@@ -135,6 +135,7 @@ dt31 countdown.dt
 - `--registers a,b,c,d`: Specify custom registers (auto-detected by default)
 - `--memory 512`: Set memory size in bytes (default: 256)
 - `--stack-size 512`: Set stack size (default: 256)
+- `--custom-instructions PATH` or `-i PATH`: Load custom instruction definitions from a Python file
 
 ```shell
 # Parse and validate only (no execution)
@@ -148,9 +149,46 @@ dt31 --memory 1024 program.dt
 
 # Specify registers explicitly
 dt31 --registers a,b,c,d,e program.dt
+
+# Use custom instructions
+dt31 --custom-instructions my_instructions.py program.dt
 ```
 
-See the [CLI documentation](https://daturkel.github.io/dt31/dt31/cli.html) for more details.
+#### Custom Instructions
+
+You can define custom instructions in a Python file and load them using the `--custom-instructions` flag. Your Python file must define an `INSTRUCTIONS` dict mapping instruction names to `dt31.instructions.Instruction` subclasses:
+
+```python
+# my_instructions.py
+from dt31.instructions import UnaryOperation
+from dt31.operands import Operand, Reference
+
+class TRIPLE(UnaryOperation):
+    """Triple a value."""
+    def __init__(self, a: Operand, out: Reference | None = None):
+        super().__init__("TRIPLE", a, out)
+
+    def _calc(self, cpu: "DT31") -> int:
+        return self.a.resolve(cpu) * 3
+
+INSTRUCTIONS = {"TRIPLE": TRIPLE}
+```
+
+Then use them in your assembly programs:
+
+```
+CP 5, R.a
+TRIPLE R.a
+NOUT R.a, 1  ; Outputs 15
+```
+
+Run with: `dt31 --custom-instructions my_instructions.py program.dt`
+
+**Security Warning**: Loading custom instruction files executes arbitrary Python code. Only load files from trusted sources.
+
+See the [CLI documentation](https://daturkel.github.io/dt31/dt31/cli.html) for more details on running text assembly programs, [instructions documentation](https://daturkel.github.io/dt31/dt31/instructions.html) for additional info on custom instructions.
+
+## Examples
 
 For more examples including factorial, fibonacci, function calls, and more, see the [examples](./examples/) directory.
 
@@ -180,6 +218,8 @@ The instruction set includes:
 - **Stack**: `PUSH`, `POP`, `SEMP`
 - **I/O**: `NOUT`, `OOUT`, `NIN`, `OIN`
 - **Data Movement**: `CP`
+
+Users can easily define their own custom instructions by subclassing `dt31.instructions.Instruction`.
 
 See the [instructions documentation](https://daturkel.github.io/dt31/dt31/instructions.html) for the complete reference.
 
