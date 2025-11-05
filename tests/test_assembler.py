@@ -1,8 +1,8 @@
 import pytest
 
 from dt31 import instructions as I
-from dt31.assembler import AssemblyError, assemble
-from dt31.operands import L, Label, Literal, R
+from dt31.assembler import AssemblyError, assemble, extract_registers_from_program
+from dt31.operands import L, Label, Literal, M, R
 
 # ============================================================================
 # Basic Assembly
@@ -520,3 +520,86 @@ def test_many_consecutive_jumps_to_same_label():
     assert result[3].dest.value == 0
     # Relative jump at IP 4 to IP 0: offset = -4
     assert result[4].dest.value == -4
+
+
+# ============================================================================
+# Register Extraction
+# ============================================================================
+
+
+def test_extract_registers_single():
+    """Test extracting a single register from a program."""
+    program = [
+        I.CP(L[10], R.x),
+        I.NOUT(R.x, L[1]),
+    ]
+    registers = extract_registers_from_program(program)
+    assert registers == ["x"]
+
+
+def test_extract_registers_multiple():
+    """Test extracting multiple registers from a program."""
+    program = [
+        I.CP(L[10], R.x),
+        I.CP(L[20], R.y),
+        I.ADD(R.x, R.y),
+        I.NOUT(R.x, L[1]),
+    ]
+    registers = extract_registers_from_program(program)
+    assert registers == ["x", "y"]
+
+
+def test_extract_registers_with_memory():
+    """Test extracting registers from memory references like M[R.a]."""
+    program = [
+        I.CP(L[100], R.addr),
+        I.CP(L[42], M[R.addr]),
+        I.CP(M[R.addr], R.value),
+    ]
+    registers = extract_registers_from_program(program)
+    assert registers == ["addr", "value"]
+
+
+def test_extract_registers_filters_ip():
+    """Test that 'ip' register is filtered out."""
+    program = [
+        I.CP(L[10], R.x),
+        I.CP(R.ip, R.y),  # Using ip register
+    ]
+    registers = extract_registers_from_program(program)
+    # 'ip' should be filtered out
+    assert registers == ["x", "y"]
+
+
+def test_extract_registers_no_registers():
+    """Test program with no registers."""
+    program = [
+        I.CP(L[10], M[50]),
+        I.NOUT(M[50], L[1]),
+    ]
+    registers = extract_registers_from_program(program)
+    assert registers == []
+
+
+def test_extract_registers_ignores_labels():
+    """Test that labels don't affect register extraction."""
+    program = [
+        Label("start"),
+        I.CP(L[10], R.x),
+        Label("loop"),
+        I.NOUT(R.x, L[1]),
+        I.JMP(Label("start")),
+    ]
+    registers = extract_registers_from_program(program)
+    assert registers == ["x"]
+
+
+def test_extract_registers_sorted():
+    """Test that extracted registers are sorted."""
+    program = [
+        I.CP(L[1], R.z),
+        I.CP(L[2], R.a),
+        I.CP(L[3], R.m),
+    ]
+    registers = extract_registers_from_program(program)
+    assert registers == ["a", "m", "z"]

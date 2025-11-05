@@ -3,8 +3,9 @@ from __future__ import annotations
 from collections import deque
 from typing import TYPE_CHECKING
 
-from dt31.assembler import assemble
+from dt31.assembler import AssemblyError, assemble, extract_registers_from_program
 from dt31.operands import (
+    Label,
     MemoryReference,
     Operand,
     RegisterReference,
@@ -221,7 +222,7 @@ class DT31:
         self.registers[register] = value
         return value
 
-    def run(self, instructions: list[Instruction], debug: bool = False):
+    def run(self, instructions: list[Instruction | Label], debug: bool = False):
         """Load and execute a list of instructions until completion.
 
         Assembly happens automatically during loading.
@@ -243,12 +244,55 @@ class DT31:
             except EndOfProgram:
                 break
 
-    def load(self, instructions: list[Instruction]):
+    def validate_program_registers(self, program: list[Instruction | Label]) -> None:
+        """Validate that all registers used in a program exist in this CPU.
+
+        This method extracts all register references from the program and verifies
+        that each register has been defined in this CPU instance. This provides
+        assembly-time validation similar to real assemblers, catching register
+        errors before execution begins.
+
+        Args:
+            program: List of instructions and labels to validate.
+
+        Raises:
+            AssemblyError: If the program uses registers that don't exist in this CPU,
+                with a message listing the missing registers.
+
+        Example:
+            >>> from dt31 import DT31, I, R, L
+            >>> cpu = DT31(registers=["a", "b"])
+            >>> program = [I.CP(10, R.x)]  # 'x' not in CPU registers
+            >>> cpu.validate_program_registers(program)
+            Traceback (most recent call last):
+                ...
+            AssemblyError: Program uses registers ['x'] but CPU only has registers ['a', 'b']
+            Missing registers: ['x']
+        """
+        registers_used = extract_registers_from_program(program)
+        # Filter out 'ip' from CPU registers for comparison (it's always present)
+        cpu_user_registers = [r for r in self.registers.keys() if r != "ip"]
+
+        missing = set(registers_used) - set(self.registers.keys())
+        if missing:
+            raise AssemblyError(
+                f"Program uses registers {registers_used} "
+                f"but CPU only has registers {cpu_user_registers}\n"
+                f"Missing registers: {sorted(missing)}"
+            )
+
+    def load(self, instructions: list[Instruction | Label]):
         """Assemble and load instructions into the DT31 and reset the instruction pointer.
 
         Args:
             instructions: The list of instructions to load.
+
+        Raises:
+            AssemblyError: If the program uses registers that don't exist in this CPU,
+                or if there are issues with label resolution.
         """
+        # Validate registers before assembling
+        self.validate_program_registers(instructions)
         self.set_register("ip", 0)
         self.instructions = assemble(instructions)
 

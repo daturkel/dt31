@@ -6,25 +6,22 @@ from dt31.operands import (
     LC,
     L,
     Label,
-    Literal,
     M,
-    MemoryReference,
+    Operand,
     R,
-    RegisterReference,
 )
-
-# Precompiled regex patterns for parsing
-TOKEN_PATTERN = re.compile(r"'[^']+'|[^\s,]+")
-MEMORY_PATTERN = re.compile(r"M?\[(.+)\]")
-REGISTER_PREFIX_PATTERN = re.compile(r"R\.(\w+)")
 
 
 def parse_program(
     text: str,
     custom_instructions: dict[str, type[Instruction]] | None = None,
-) -> list:
+) -> list[Instruction | Label]:
     """
     Parse DT31 assembly text into a program list.
+
+    For an overview of the text syntax, see the main documentation of `dt31`.
+
+    For the CLI tool to directly execute programs in the text syntax, see `dt31.cli`.
 
     Args:
         text: Assembly code as a string
@@ -35,7 +32,7 @@ def parse_program(
 
     Example:
         >>> from dt31 import DT31
-        >>> cpu = DT31()
+        >>> from dt31.assembler import extract_registers_from_program
         >>> text = '''
         ... CP 5, R.a
         ... loop:
@@ -44,6 +41,8 @@ def parse_program(
         ...     JGT loop, R.a, 0
         ... '''
         >>> program = parse_program(text)
+        >>> registers = extract_registers_from_program(program)
+        >>> cpu = DT31(registers=registers)
         >>> cpu.run(program)
         5
         4
@@ -115,7 +114,7 @@ def parse_program(
     return program
 
 
-def parse_operand(token: str) -> Literal | RegisterReference | MemoryReference | Label:
+def parse_operand(token: str) -> Operand | Label:
     """
     Parse a single operand token into an Operand object.
 
@@ -183,3 +182,9 @@ class ParserError(Exception):
     """
 
     pass
+
+
+# Precompiled regex patterns for parsing
+TOKEN_PATTERN = re.compile(r"'[^']+'|[^\s,]+")
+MEMORY_PATTERN = re.compile(r"M?\[(.+)\]")
+REGISTER_PREFIX_PATTERN = re.compile(r"R\.(\w+)")
