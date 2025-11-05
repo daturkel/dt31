@@ -453,11 +453,13 @@ DT31 is open-source and contributors are welcome on [Github](https://github.com/
 
 - [x] Character literals?
 - [x] Parse and execute `.dt` files
-- [ ] Macros
+- [ ] User-definable macros (in both python and assembly syntax)
+- [ ] Python to text output
+- [ ] Breakpoint instruction
 - [ ] File I/O
 - [ ] Data handling?
-- [ ] Input error handling?
-- [ ] Clearer handing of input during debug mode
+- [ ] Input error handling rather than immediate crash
+- [ ] Clearer handing of input during debug mode (currently hard to tell when the user is being prompted for input)
 
 ## License
 
