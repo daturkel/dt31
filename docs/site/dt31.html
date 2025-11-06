@@ -70,9 +70,10 @@ dt31    </h1>
 <li><strong>Rich Instruction Set</strong>: 60+ instructions including arithmetic, bitwise operations, logic, control flow, and I/O</li>
 <li><strong>Assembly Support</strong>: Two-pass assembler with label resolution for jumps and function calls</li>
 <li><strong>Assembly Parser</strong>: Parse and execute <code>.dt</code> assembly files with text-based syntax</li>
+<li><strong>Text Output</strong>: Convert Python programs to assembly text format for sharing and documentation</li>
 <li><strong>Command-Line Interface</strong>: Execute <code>.dt</code> files directly with the <code><a href="">dt31</a></code> command</li>
 <li><strong>Intuitive API</strong>: Clean operand syntax (<code>R.a</code>, <code>M[100]</code>, <code>L[42]</code>, <code>LC['A']</code>)</li>
-<li><strong>Debug Mode</strong>: Step-by-step execution with state inspection</li>
+<li><strong>Debug Mode</strong>: Step-by-step execution with state inspection and breakpoints</li>
 <li><strong>Pure Python</strong>: Zero dependencies</li>
 </ul>
 
@@ -170,6 +171,45 @@ dt31    </h1>
 <span class="c1"># 1</span>
 </code></pre>
 </div>
+
+<h3 id="converting-programs-to-text">Converting Programs to Text</h3>
+
+<p>You can convert Python programs to assembly text format for sharing or documentation:</p>
+
+<div class="pdoc-code codehilite">
+<pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">dt31</span><span class="w"> </span><span class="kn">import</span> <span class="n">I</span><span class="p">,</span> <span class="n">Label</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn"><a href="dt31/assembler.html">dt31.assembler</a></span><span class="w"> </span><span class="kn">import</span> <span class="n">program_to_text</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn"><a href="dt31/operands.html">dt31.operands</a></span><span class="w"> </span><span class="kn">import</span> <span class="n">R</span><span class="p">,</span> <span class="n">L</span><span class="p">,</span> <span class="n">LC</span>
+
+<span class="c1"># Create a program in Python</span>
+<span class="n">program</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="n">I</span><span class="o">.</span><span class="n">CP</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="n">R</span><span class="o">.</span><span class="n">a</span><span class="p">),</span>
+    <span class="n">loop</span> <span class="o">:=</span> <span class="n">Label</span><span class="p">(</span><span class="s2">&quot;loop&quot;</span><span class="p">),</span>
+    <span class="n">I</span><span class="o">.</span><span class="n">OOUT</span><span class="p">(</span><span class="n">LC</span><span class="p">[</span><span class="s2">&quot;*&quot;</span><span class="p">]),</span>           <span class="c1"># Print asterisk</span>
+    <span class="n">I</span><span class="o">.</span><span class="n">SUB</span><span class="p">(</span><span class="n">R</span><span class="o">.</span><span class="n">a</span><span class="p">,</span> <span class="n">L</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span>
+    <span class="n">I</span><span class="o">.</span><span class="n">JGT</span><span class="p">(</span><span class="n">loop</span><span class="p">,</span> <span class="n">R</span><span class="o">.</span><span class="n">a</span><span class="p">,</span> <span class="n">L</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span>
+<span class="p">]</span>
+
+<span class="c1"># Convert to assembly text</span>
+<span class="n">text</span> <span class="o">=</span> <span class="n">program_to_text</span><span class="p">(</span><span class="n">program</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+<span class="c1"># Output:</span>
+<span class="c1">#     CP 5, R.a</span>
+<span class="c1"># loop:</span>
+<span class="c1">#     OOUT &#39;*&#39;, 0</span>
+<span class="c1">#     SUB R.a, 1, R.a</span>
+<span class="c1">#     JGT loop, R.a, 0</span>
+</code></pre>
+</div>
+
+<p>This is useful for:</p>
+
+<ul>
+<li>Debugging generated programs</li>
+<li>Sharing programs in text format</li>
+<li>Documentation and teaching</li>
+<li>Round-trip conversion (Python ↔ text)</li>
+</ul>
 
 <h3 id="using-the-command-line">Using the Command Line</h3>
 
@@ -593,12 +633,12 @@ uv<span class="w"> </span>run<span class="w"> </span>invoke<span class="w"> </sp
 <li><input type="checkbox" class="task-list-item-checkbox" checked disabled> Parse and execute <code>.dt</code> files</li>
 <li><input type="checkbox" class="task-list-item-checkbox" checked disabled> Breakpoint instruction</li>
 <li><input type="checkbox" class="task-list-item-checkbox" checked disabled> Clearer handing of input during debug mode</li>
+<li><input type="checkbox" class="task-list-item-checkbox" checked disabled> Python to text output</li>
 <li><input type="checkbox" class="task-list-item-checkbox" disabled> User-definable macros (in both python and assembly syntax)</li>
-<li><input type="checkbox" class="task-list-item-checkbox" disabled> Python to text output</li>
 <li><input type="checkbox" class="task-list-item-checkbox" disabled> File I/O</li>
 <li><input type="checkbox" class="task-list-item-checkbox" disabled> Data handling?</li>
 <li><input type="checkbox" class="task-list-item-checkbox" disabled> Input error handling rather than immediate crash</li>
-<li><input type="checkbox" class="task-list-item-checkbox" disabled> Preserve comments in parser?</li>
+<li><input type="checkbox" class="task-list-item-checkbox" disabled> Preserve comments in parser (then text formatter)?</li>
 </ul>
 
 <h2 id="license">License</h2>

@@ -10,9 +10,10 @@ A toy computer emulator in Python with a simple instruction set and virtual mach
 - **Rich Instruction Set**: 60+ instructions including arithmetic, bitwise operations, logic, control flow, and I/O
 - **Assembly Support**: Two-pass assembler with label resolution for jumps and function calls
 - **Assembly Parser**: Parse and execute `.dt` assembly files with text-based syntax
+- **Text Output**: Convert Python programs to assembly text format for sharing and documentation
 - **Command-Line Interface**: Execute `.dt` files directly with the `dt31` command
 - **Intuitive API**: Clean operand syntax (`R.a`, `M[100]`, `L[42]`, `LC['A']`)
-- **Debug Mode**: Step-by-step execution with state inspection
+- **Debug Mode**: Step-by-step execution with state inspection and breakpoints
 - **Pure Python**: Zero dependencies
 
 ## Installation
@@ -104,6 +105,41 @@ cpu.run(program)
 # 2
 # 1
 ```
+
+### Converting Programs to Text
+
+You can convert Python programs to assembly text format for sharing or documentation:
+
+```python
+from dt31 import I, Label
+from dt31.assembler import program_to_text
+from dt31.operands import R, L, LC
+
+# Create a program in Python
+program = [
+    I.CP(5, R.a),
+    loop := Label("loop"),
+    I.OOUT(LC["*"]),           # Print asterisk
+    I.SUB(R.a, L[1]),
+    I.JGT(loop, R.a, L[0]),
+]
+
+# Convert to assembly text
+text = program_to_text(program)
+print(text)
+# Output:
+#     CP 5, R.a
+# loop:
+#     OOUT '*', 0
+#     SUB R.a, 1, R.a
+#     JGT loop, R.a, 0
+```
+
+This is useful for:
+- Debugging generated programs
+- Sharing programs in text format
+- Documentation and teaching
+- Round-trip conversion (Python ↔ text)
 
 ### Using the Command Line
 
@@ -455,12 +491,12 @@ DT31 is open-source and contributors are welcome on [Github](https://github.com/
 - [x] Parse and execute `.dt` files
 - [x] Breakpoint instruction
 - [x] Clearer handing of input during debug mode
+- [x] Python to text output
 - [ ] User-definable macros (in both python and assembly syntax)
-- [ ] Python to text output
 - [ ] File I/O
 - [ ] Data handling?
 - [ ] Input error handling rather than immediate crash
-- [ ] Preserve comments in parser?
+- [ ] Preserve comments in parser (then text formatter)?
 
 ## License
 

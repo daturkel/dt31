@@ -28,8 +28,10 @@ def test_l_shorthand():
 
 
 def test_m_shorthand():
-    assert str(M[3]) == "M[3]"
-    assert str(M[M[3]]) == "M[M[3]]"
+    assert repr(M[3]) == "M[3]"
+    assert str(M[3]) == "[3]"
+    assert repr(M[M[3]]) == "M[M[3]]"
+    assert str(M[M[3]]) == "[[3]]"
     m1 = M[3]
     m2 = MemoryReference(3)
     assert isinstance(m1, MemoryReference)
@@ -41,7 +43,8 @@ def test_m_shorthand():
 
 
 def test_r_shorthand():
-    assert str(R.a) == "R.a"
+    assert repr(R.a) == "R.a"
+    assert str(R.a) == "R.a"  # Same in both formats
     r1 = R.a
     r2 = R.a
     r3 = RegisterReference("a")
@@ -107,10 +110,50 @@ def test_lc_invalid_input():
         LC[123]  # type: ignore
 
 
+def test_lc_str_repr():
+    """Test that character literals render correctly in str and repr."""
+    lc = LC["A"]
+    assert repr(lc) == "65"
+    assert str(lc) == "'A'"
+
+    lc2 = LC["z"]
+    assert repr(lc2) == "122"
+    assert str(lc2) == "'z'"
+
+
+def test_literal_str_repr():
+    """Test that numeric literals render correctly in str and repr."""
+    lit = L[42]
+    assert repr(lit) == "42"
+    assert str(lit) == "42"
+
+    lit2 = L[-5]
+    assert repr(lit2) == "-5"
+    assert str(lit2) == "-5"
+
+
+def test_is_char_flag():
+    """Test that is_char flag is set correctly for L vs LC."""
+    # Numeric literals created with L should NOT have is_char set
+    l_numeric = L[65]
+    assert l_numeric.is_char is False
+    assert str(l_numeric) == "65"  # Renders as number
+
+    # Character literals created with LC SHOULD have is_char set
+    lc_char = LC["A"]
+    assert lc_char.is_char is True
+    assert str(lc_char) == "'A'"  # Renders as character
+
+    # Even though they have the same value, they render differently
+    assert l_numeric.value == lc_char.value == 65
+    assert str(l_numeric) != str(lc_char)
+
+
 def test_label_init():
     label = Label("my_function")
     assert label.name == "my_function"
-    assert str(label) == "my_function"
+    assert repr(label) == "my_function"
+    assert str(label) == "my_function"  # Same in both formats
 
 
 def test_label_resolve_raises_error(cpu):
@@ -127,8 +170,10 @@ def test_label_resolve_raises_error(cpu):
 
 def test_label_str():
     label1 = Label("start")
-    assert str(label1) == "start"
+    assert repr(label1) == "start"
+    assert str(label1) == "start"  # Same in both formats
     label2 = Label("loop_begin")
+    assert repr(label2) == "loop_begin"
     assert str(label2) == "loop_begin"
 
 

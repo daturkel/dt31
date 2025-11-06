@@ -141,13 +141,21 @@ class Instruction:
         self._advance(cpu)
         return value
 
-    def __str__(self) -> str:
-        """Return a string representation of the instruction.
+    def __repr__(self) -> str:
+        """Return Python API representation of the instruction.
 
         Returns:
-            A string showing the instruction name and any operands for debugging.
+            A string showing the instruction name and any operands in Python syntax.
         """
         return f"{self.name}()"
+
+    def __str__(self) -> str:
+        """Return assembly text representation of the instruction.
+
+        Returns:
+            A string showing the instruction in assembly text format.
+        """
+        return self.name
 
     def __eq__(self, other):
         if type(self) is not type(other):
@@ -188,8 +196,13 @@ class UnaryOperation(Instruction):
         cpu[self.out] = value
         return value
 
+    def __repr__(self) -> str:
+        """Return Python API representation."""
+        return f"{self.name}(a={self.a!r}, out={self.out!r})"
+
     def __str__(self) -> str:
-        return f"{self.name}(a={self.a}, out={self.out})"
+        """Return assembly text representation."""
+        return f"{self.name} {self.a}, {self.out}"
 
 
 # ---------------------------------- bitwise and alu --------------------------------- #
@@ -225,8 +238,13 @@ class BinaryOperation(Instruction):
         cpu[self.out] = value
         return value
 
+    def __repr__(self) -> str:
+        """Return Python API representation."""
+        return f"{self.name}(a={self.a!r}, b={self.b!r}, out={self.out!r})"
+
     def __str__(self) -> str:
-        return f"{self.name}(a={self.a}, b={self.b}, out={self.out})"
+        """Return assembly text representation."""
+        return f"{self.name} {self.a}, {self.b}, {self.out}"
 
 
 class ADD(BinaryOperation):
@@ -658,8 +676,15 @@ class Jump(Instruction):
         else:
             cpu.set_register("ip", cpu.get_register("ip") + 1)
 
+    def __repr__(self) -> str:
+        """Return Python API representation."""
+        if isinstance(self.dest, Label):
+            return f"{self.name}(dest={self.dest!r})"
+        return f"{self.name}(dest={self.dest!r})"
+
     def __str__(self) -> str:
-        return f"{self.name}(dest={self.dest})"
+        """Return assembly text representation."""
+        return f"{self.name} {self.dest}"
 
 
 class UnaryJump(Jump):
@@ -675,8 +700,13 @@ class UnaryJump(Jump):
         super().__init__(name, dest)
         self.a = as_op(a)
 
+    def __repr__(self) -> str:
+        """Return Python API representation."""
+        return f"{self.name}(dest={self.dest!r}, a={self.a!r})"
+
     def __str__(self) -> str:
-        return f"{self.name}(dest={self.dest}, a={self.a})"
+        """Return assembly text representation."""
+        return f"{self.name} {self.dest}, {self.a}"
 
 
 class BinaryJump(Jump):
@@ -696,8 +726,13 @@ class BinaryJump(Jump):
         self.a = as_op(a)
         self.b = as_op(b)
 
+    def __repr__(self) -> str:
+        """Return Python API representation."""
+        return f"{self.name}(dest={self.dest!r}, a={self.a!r}, b={self.b!r})"
+
     def __str__(self) -> str:
-        return f"{self.name}(dest={self.dest}, a={self.a}, b={self.b})"
+        """Return assembly text representation."""
+        return f"{self.name} {self.dest}, {self.a}, {self.b}"
 
 
 class ExactJumpMixin(Jump):
@@ -805,8 +840,13 @@ class JMP(ExactJumpMixin, UnconditionalJumpMixin):
         """
         super().__init__("JMP", dest)
 
+    def __repr__(self) -> str:
+        """Return Python API representation."""
+        return f"JMP(dest={self.dest!r})"
+
     def __str__(self) -> str:
-        return f"{self.name}(dest={self.dest})"
+        """Return assembly text representation."""
+        return f"JMP {self.dest}"
 
 
 class RJMP(RelativeJumpMixin, UnconditionalJumpMixin):
@@ -819,8 +859,13 @@ class RJMP(RelativeJumpMixin, UnconditionalJumpMixin):
         """
         super().__init__("RJMP", delta)
 
+    def __repr__(self) -> str:
+        """Return Python API representation."""
+        return f"RJMP(dest={self.dest!r})"
+
     def __str__(self) -> str:
-        return f"{self.name}(dest={self.dest})"
+        """Return assembly text representation."""
+        return f"RJMP {self.dest}"
 
 
 class JEQ(ExactJumpMixin, IfEqualJumpMixin):
@@ -969,8 +1014,13 @@ class CALL(ExactJumpMixin, UnconditionalJumpMixin):
         cpu.push(cpu.get_register("ip") + 1)
         return 0
 
+    def __repr__(self) -> str:
+        """Return Python API representation."""
+        return f"CALL(dest={self.dest!r})"
+
     def __str__(self) -> str:
-        return f"{self.name}(dest={self.dest})"
+        """Return assembly text representation."""
+        return f"CALL {self.dest}"
 
 
 class RCALL(RelativeJumpMixin, UnconditionalJumpMixin):
@@ -988,8 +1038,13 @@ class RCALL(RelativeJumpMixin, UnconditionalJumpMixin):
         cpu.push(cpu.get_register("ip") + 1)
         return 0
 
+    def __repr__(self) -> str:
+        """Return Python API representation."""
+        return f"RCALL(dest={self.dest!r})"
+
     def __str__(self) -> str:
-        return f"{self.name}(dest={self.dest})"
+        """Return assembly text representation."""
+        return f"RCALL {self.dest}"
 
 
 class RET(Instruction):
@@ -1006,8 +1061,13 @@ class RET(Instruction):
         return_address = cpu.pop()
         cpu.set_register("ip", return_address)
 
+    def __repr__(self) -> str:
+        """Return Python API representation."""
+        return "RET()"
+
     def __str__(self) -> str:
-        return f"{self.name}()"
+        """Return assembly text representation."""
+        return "RET"
 
 
 # --------------------------------------- stack -------------------------------------- #
@@ -1028,8 +1088,13 @@ class PUSH(Instruction):
         cpu.push(self.a.resolve(cpu))
         return 0
 
+    def __repr__(self) -> str:
+        """Return Python API representation."""
+        return f"PUSH(a={self.a!r})"
+
     def __str__(self) -> str:
-        return f"{self.name}(a={self.a})"
+        """Return assembly text representation."""
+        return f"PUSH {self.a}"
 
 
 class POP(Instruction):
@@ -1053,8 +1118,15 @@ class POP(Instruction):
             cpu[self.out] = value
         return 0
 
+    def __repr__(self) -> str:
+        """Return Python API representation."""
+        return f"POP(out={self.out!r})"
+
     def __str__(self) -> str:
-        return f"{self.name}(out={self.out})"
+        """Return assembly text representation."""
+        if self.out is not None:
+            return f"POP {self.out}"
+        return "POP"
 
 
 class SEMP(Instruction):
@@ -1076,8 +1148,13 @@ class SEMP(Instruction):
         cpu[self.out] = value
         return value
 
+    def __repr__(self) -> str:
+        """Return Python API representation."""
+        return f"SEMP(out={self.out!r})"
+
     def __str__(self) -> str:
-        return f"{self.name}(out={self.out})"
+        """Return assembly text representation."""
+        return f"SEMP {self.out}"
 
 
 # ---------------------------------------- I/O --------------------------------------- #
@@ -1122,8 +1199,13 @@ class NOUT(Instruction):
         print(self.a.resolve(cpu), end=end)
         return 0
 
+    def __repr__(self) -> str:
+        """Return Python API representation."""
+        return f"NOUT(a={self.a!r}, b={self.b!r})"
+
     def __str__(self) -> str:
-        return f"{self.name}(a={self.a}, b={self.b})"
+        """Return assembly text representation."""
+        return f"NOUT {self.a}, {self.b}"
 
 
 class OOUT(Instruction):
@@ -1147,8 +1229,13 @@ class OOUT(Instruction):
         print(chr(self.a.resolve(cpu)), end=end)
         return 0
 
+    def __repr__(self) -> str:
+        """Return Python API representation."""
+        return f"OOUT(a={self.a!r}, b={self.b!r})"
+
     def __str__(self) -> str:
-        return f"{self.name}(a={self.a}, b={self.b})"
+        """Return assembly text representation."""
+        return f"OOUT {self.a}, {self.b}"
 
 
 class NIN(Instruction):
@@ -1168,8 +1255,13 @@ class NIN(Instruction):
         cpu[self.out] = val_int
         return val_int
 
+    def __repr__(self) -> str:
+        """Return Python API representation."""
+        return f"NIN(out={self.out!r})"
+
     def __str__(self) -> str:
-        return f"{self.name}(out={self.out})"
+        """Return assembly text representation."""
+        return f"NIN {self.out}"
 
 
 class OIN(Instruction):
@@ -1189,8 +1281,13 @@ class OIN(Instruction):
         cpu[self.out] = val_ord
         return val_ord
 
+    def __repr__(self) -> str:
+        """Return Python API representation."""
+        return f"OIN(out={self.out!r})"
+
     def __str__(self) -> str:
-        return f"{self.name}(out={self.out})"
+        """Return assembly text representation."""
+        return f"OIN {self.out}"
 
 
 class BRK(Instruction):

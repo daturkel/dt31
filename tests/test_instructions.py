@@ -94,7 +94,14 @@ def test_binary_operation_writes_to_default_memory(cpu):
 
 
 def test_add(cpu):
+    # Test with explicit out parameter
+    assert repr(I.ADD(1, 3, M[10])) == "ADD(a=1, b=3, out=M[10])"
+    assert str(I.ADD(1, 3, M[10])) == "ADD 1, 3, [10]"
     assert I.ADD(1, 3, M[10])(cpu) == 4
+
+    # Test with implicit out (defaults to first operand)
+    assert repr(I.ADD(R.a, R.b)) == "ADD(a=R.a, b=R.b, out=R.a)"
+    assert str(I.ADD(R.a, R.b)) == "ADD R.a, R.b, R.a"
 
 
 def test_sub(cpu):
@@ -204,7 +211,8 @@ def test_jump(cpu):
     inst = I.Jump("foo", M[10])
     assert isinstance(inst.dest, MemoryReference)
     assert inst.dest.address == 10
-    assert str(inst) == "foo(dest=M[10])"
+    assert repr(inst) == "foo(dest=M[10])"
+    assert str(inst) == "foo [10]"
     with pytest.raises(NotImplementedError):
         I.Jump("foo", M[10])(cpu)
 
@@ -221,7 +229,8 @@ def test_jump_with_label(cpu):
     inst = I.Jump("foo", label)
     assert isinstance(inst.dest, Label)
     assert inst.dest.name == "my_label"
-    assert str(inst) == "foo(dest=my_label)"
+    assert repr(inst) == "foo(dest=my_label)"
+    assert str(inst) == "foo my_label"
 
 
 def test_binary_jump_sets_a_and_b(cpu):
@@ -233,13 +242,15 @@ def test_binary_jump_sets_a_and_b(cpu):
 
 
 def test_jmp(cpu):
-    assert str(I.JMP(10)) == "JMP(dest=10)"
+    assert repr(I.JMP(10)) == "JMP(dest=10)"
+    assert str(I.JMP(10)) == "JMP 10"
     I.JMP(10)(cpu)
     assert cpu.get_register("ip") == 10
 
 
 def test_rjmp(cpu):
-    assert str(I.RJMP(10)) == "RJMP(dest=10)"
+    assert repr(I.RJMP(10)) == "RJMP(dest=10)"
+    assert str(I.RJMP(10)) == "RJMP 10"
     I.NOOP()(cpu)
     I.NOOP()(cpu)
     assert cpu.get_register("ip") == 2
@@ -282,7 +293,8 @@ def test_rjne(cpu):
 
 
 def test_jif(cpu):
-    assert str(I.JIF(M[1], 2)) == "JIF(dest=M[1], a=2)"
+    assert repr(I.JIF(M[1], 2)) == "JIF(dest=M[1], a=2)"
+    assert str(I.JIF(M[1], 2)) == "JIF [1], 2"
     assert cpu.get_register("ip") == 0
     I.JIF(M[1], 2)(cpu)
     assert cpu.get_register("ip") == 10
@@ -344,8 +356,12 @@ def test_rjge(cpu):
 
 
 def test_push_pop(cpu):
-    assert str(I.PUSH(2)) == "PUSH(a=2)"
-    assert str(I.POP()) == "POP(out=None)"
+    assert repr(I.PUSH(2)) == "PUSH(a=2)"
+    assert str(I.PUSH(2)) == "PUSH 2"
+    assert repr(I.POP()) == "POP(out=None)"
+    assert str(I.POP()) == "POP"
+    assert repr(I.POP(M[20])) == "POP(out=M[20])"
+    assert str(I.POP(M[20])) == "POP [20]"
     I.PUSH(2)(cpu)
     assert cpu.stack == deque([2])
     I.PUSH(M[1])(cpu)
@@ -369,7 +385,8 @@ def test_push_pop(cpu):
 
 
 def test_cp(cpu):
-    assert str(str(I.CP(2, M[10]))) == "CP(a=2, out=M[10])"
+    assert repr(I.CP(2, M[10])) == "CP(a=2, out=M[10])"
+    assert str(I.CP(2, M[10])) == "CP 2, [10]"
     assert I.CP(2, M[10])(cpu) == 2
     assert cpu.get_memory(10) == 2
     assert I.CP(R.a, M[20])(cpu) == 30
@@ -381,42 +398,48 @@ def test_cp(cpu):
 
 
 def test_nout_no_newline(cpu, capsys):
-    assert str(I.NOUT(L[1])) == "NOUT(a=1, b=0)"
+    assert repr(I.NOUT(L[1])) == "NOUT(a=1, b=0)"
+    assert str(I.NOUT(L[1])) == "NOUT 1, 0"
     assert I.NOUT(L[2])(cpu) == 0
     captured = capsys.readouterr()
     assert captured.out == "2"
 
 
 def test_nout_newline(cpu, capsys):
-    assert str(I.NOUT(L[2], L[1])) == "NOUT(a=2, b=1)"
+    assert repr(I.NOUT(L[2], L[1])) == "NOUT(a=2, b=1)"
+    assert str(I.NOUT(L[2], L[1])) == "NOUT 2, 1"
     assert I.NOUT(L[2], L[1])(cpu) == 0
     captured = capsys.readouterr()
     assert captured.out == "2\n"
 
 
 def test_oout_no_newline(cpu, capsys):
-    assert str(I.OOUT(L[1])) == "OOUT(a=1, b=0)"
+    assert repr(I.OOUT(L[1])) == "OOUT(a=1, b=0)"
+    assert str(I.OOUT(L[1])) == "OOUT 1, 0"
     assert I.OOUT(L[65])(cpu) == 0
     captured = capsys.readouterr()
     assert captured.out == "A"
 
 
 def test_oout_newline(cpu, capsys):
-    assert str(I.OOUT(L[2], L[1])) == "OOUT(a=2, b=1)"
+    assert repr(I.OOUT(L[2], L[1])) == "OOUT(a=2, b=1)"
+    assert str(I.OOUT(L[2], L[1])) == "OOUT 2, 1"
     assert I.OOUT(L[65], L[1])(cpu) == 0
     captured = capsys.readouterr()
     assert captured.out == "A\n"
 
 
 def test_nin(cpu, monkeypatch):
-    assert str(I.NIN(M[10])) == "NIN(out=M[10])"
+    assert repr(I.NIN(M[10])) == "NIN(out=M[10])"
+    assert str(I.NIN(M[10])) == "NIN [10]"
     monkeypatch.setattr("builtins.input", lambda prompt: "31")
     assert I.NIN(R.a)(cpu) == 31
     assert cpu.get_register("a") == 31
 
 
 def test_oin(cpu, monkeypatch):
-    assert str(I.OIN(M[10])) == "OIN(out=M[10])"
+    assert repr(I.OIN(M[10])) == "OIN(out=M[10])"
+    assert str(I.OIN(M[10])) == "OIN [10]"
     monkeypatch.setattr("builtins.input", lambda prompt: "A")
     assert I.OIN(R.a)(cpu) == 65
     assert cpu.get_register("a") == 65
@@ -431,11 +454,13 @@ def test_semp(cpu):
     I.POP()(cpu)
     assert I.SEMP(M[0])(cpu) == 1
     assert cpu.get_memory(0) == 1
-    assert str(I.SEMP(M[10])) == "SEMP(out=M[10])"
+    assert repr(I.SEMP(M[10])) == "SEMP(out=M[10])"
+    assert str(I.SEMP(M[10])) == "SEMP [10]"
 
 
 def test_call_pushes_return_address(cpu):
-    assert str(I.CALL(100)) == "CALL(dest=100)"
+    assert repr(I.CALL(100)) == "CALL(dest=100)"
+    assert str(I.CALL(100)) == "CALL 100"
     assert cpu.get_register("ip") == 0
     assert cpu.stack == deque([])
     I.CALL(100)(cpu)
@@ -465,7 +490,8 @@ def test_call_with_register(cpu):
 
 
 def test_ret_pops_and_jumps(cpu):
-    assert str(I.RET()) == "RET()"
+    assert repr(I.RET()) == "RET()"
+    assert str(I.RET()) == "RET"
     # Simulate a function call sequence
     cpu.set_register("ip", 5)
     I.CALL(100)(cpu)
@@ -513,7 +539,8 @@ def test_call_ret_sequence(cpu):
 
 
 def test_rcall_relative_call(cpu):
-    assert str(I.RCALL(10)) == "RCALL(dest=10)"
+    assert repr(I.RCALL(10)) == "RCALL(dest=10)"
+    assert str(I.RCALL(10)) == "RCALL 10"
     assert cpu.get_register("ip") == 0
     assert cpu.stack == deque([])
     I.RCALL(10)(cpu)

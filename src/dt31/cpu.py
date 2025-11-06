@@ -323,5 +323,5 @@ class DT31:
         instruction = self.instructions[self.get_register("ip")]
         output = instruction(self)
         if debug:
-            print(str(instruction) + " -> " + str(output))
+            print(repr(instruction) + " -> " + str(output))
             print(self.state)
