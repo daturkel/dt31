@@ -3,7 +3,8 @@ from __future__ import annotations
 from collections import deque
 from typing import TYPE_CHECKING
 
-from dt31.assembler import AssemblyError, assemble, extract_registers_from_program
+from dt31.assembler import assemble, extract_registers_from_program
+from dt31.exceptions import AssemblyError, EndOfProgram
 from dt31.operands import (
     Label,
     MemoryReference,
@@ -32,6 +33,8 @@ class DT31:
         stack_size: Maximum size of the stack (must be > 0).
         wrap_memory: If True, memory accesses wrap around using modulo arithmetic.
             If False, out-of-bounds accesses raise IndexError.
+        debug: If True, CPU starts in debug mode (step-by-step execution with state output).
+            Defaults to False.
 
     Raises:
         ValueError: If stack_size or memory_size <= 0, if 'ip' is in register names,
@@ -44,6 +47,7 @@ class DT31:
         memory_size: int = 256,
         stack_size: int = 256,
         wrap_memory: bool = False,
+        debug: bool = False,
     ):
         if stack_size <= 0:
             raise ValueError("stack_size must be greater than 0")
@@ -76,6 +80,8 @@ class DT31:
         """If `True`, memory wraps around using a modulo on the index."""
         self.instructions: list[Instruction] = []
         """Instructions currently loaded."""
+        self.debug_mode: bool = debug
+        """If `True`, the CPU is in debug mode (step-by-step execution)."""
 
     @property
     def state(self):
@@ -236,10 +242,11 @@ class DT31:
             EndOfProgram: When execution completes normally (caught internally).
         """
         self.load(instructions)
+        self.debug_mode = debug
         while True:
             try:
-                self.step(debug)
-                if debug:
+                self.step()
+                if self.debug_mode:
                     input()
             except EndOfProgram:
                 break
@@ -296,15 +303,19 @@ class DT31:
         self.set_register("ip", 0)
         self.instructions = assemble(instructions)
 
-    def step(self, debug: bool = False):
+    def step(self, debug: bool | None = None):
         """Execute a single instruction at the current instruction pointer.
 
         Args:
             debug: If True, prints the instruction and resulting state after execution.
+                If None, uses self.debug_mode. Defaults to None.
 
         Raises:
             EndOfProgram: If the instruction pointer is out of bounds.
         """
+        if debug is None:
+            debug = self.debug_mode
+
         if self.get_register("ip") >= len(self.instructions):
             raise EndOfProgram("No more instructions")
         if self.get_register("ip") < 0:
@@ -314,9 +325,3 @@ class DT31:
         if debug:
             print(str(instruction) + " -> " + str(output))
             print(self.state)
-
-
-class EndOfProgram(Exception):
-    """Exception to throw when the end of the instructions is reached."""
-
-    pass

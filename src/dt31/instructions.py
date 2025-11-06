@@ -1189,3 +1189,32 @@ class OIN(Instruction):
 
     def __str__(self) -> str:
         return f"{self.name}(out={self.out})"
+
+
+class BRK(Instruction):
+    """Breakpoint: dump CPU state and wait for Enter, then continue execution."""
+
+    def __init__(self):
+        super().__init__("BRK")
+
+    def _calc(self, cpu: DT31) -> int:
+        # Print in debug format: instruction -> result, then state
+        print(f"{self.name} -> 0")
+        print(cpu.state)
+        input()
+        return 0
+
+
+class BRKD(Instruction):
+    """Debug breakpoint: dump CPU state and switch to debug mode for rest of execution."""
+
+    def __init__(self):
+        super().__init__("BRKD")
+
+    def _calc(self, cpu: DT31) -> int:
+        # Print in debug format: instruction -> result, then state
+        print(f"{self.name} -> 0")
+        print(cpu.state)
+        # Switch to debug mode - run() will handle waiting for input
+        cpu.debug_mode = True
+        return 0

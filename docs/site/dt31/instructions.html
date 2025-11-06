@@ -582,6 +582,24 @@
                 </ul>
 
             </li>
+            <li>
+                    <a class="class" href="#BRK">BRK</a>
+                            <ul class="memberlist">
+                        <li>
+                                <a class="function" href="#BRK.__init__">BRK</a>
+                        </li>
+                </ul>
+
+            </li>
+            <li>
+                    <a class="class" href="#BRKD">BRKD</a>
+                            <ul class="memberlist">
+                        <li>
+                                <a class="function" href="#BRKD.__init__">BRKD</a>
+                        </li>
+                </ul>
+
+            </li>
     </ul>
 
 
@@ -1794,6 +1812,35 @@
 </span><span id="L-1189"><a href="#L-1189"><span class="linenos">1189</span></a>
 </span><span id="L-1190"><a href="#L-1190"><span class="linenos">1190</span></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 </span><span id="L-1191"><a href="#L-1191"><span class="linenos">1191</span></a>        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">(out=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">out</span><span class="si">}</span><span class="s2">)&quot;</span>
+</span><span id="L-1192"><a href="#L-1192"><span class="linenos">1192</span></a>
+</span><span id="L-1193"><a href="#L-1193"><span class="linenos">1193</span></a>
+</span><span id="L-1194"><a href="#L-1194"><span class="linenos">1194</span></a><span class="k">class</span><span class="w"> </span><span class="nc">BRK</span><span class="p">(</span><span class="n">Instruction</span><span class="p">):</span>
+</span><span id="L-1195"><a href="#L-1195"><span class="linenos">1195</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Breakpoint: dump CPU state and wait for Enter, then continue execution.&quot;&quot;&quot;</span>
+</span><span id="L-1196"><a href="#L-1196"><span class="linenos">1196</span></a>
+</span><span id="L-1197"><a href="#L-1197"><span class="linenos">1197</span></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+</span><span id="L-1198"><a href="#L-1198"><span class="linenos">1198</span></a>        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="s2">&quot;BRK&quot;</span><span class="p">)</span>
+</span><span id="L-1199"><a href="#L-1199"><span class="linenos">1199</span></a>
+</span><span id="L-1200"><a href="#L-1200"><span class="linenos">1200</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">_calc</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cpu</span><span class="p">:</span> <span class="n">DT31</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+</span><span id="L-1201"><a href="#L-1201"><span class="linenos">1201</span></a>        <span class="c1"># Print in debug format: instruction -&gt; result, then state</span>
+</span><span id="L-1202"><a href="#L-1202"><span class="linenos">1202</span></a>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> -&gt; 0&quot;</span><span class="p">)</span>
+</span><span id="L-1203"><a href="#L-1203"><span class="linenos">1203</span></a>        <span class="nb">print</span><span class="p">(</span><span class="n">cpu</span><span class="o">.</span><span class="n">state</span><span class="p">)</span>
+</span><span id="L-1204"><a href="#L-1204"><span class="linenos">1204</span></a>        <span class="nb">input</span><span class="p">()</span>
+</span><span id="L-1205"><a href="#L-1205"><span class="linenos">1205</span></a>        <span class="k">return</span> <span class="mi">0</span>
+</span><span id="L-1206"><a href="#L-1206"><span class="linenos">1206</span></a>
+</span><span id="L-1207"><a href="#L-1207"><span class="linenos">1207</span></a>
+</span><span id="L-1208"><a href="#L-1208"><span class="linenos">1208</span></a><span class="k">class</span><span class="w"> </span><span class="nc">BRKD</span><span class="p">(</span><span class="n">Instruction</span><span class="p">):</span>
+</span><span id="L-1209"><a href="#L-1209"><span class="linenos">1209</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Debug breakpoint: dump CPU state and switch to debug mode for rest of execution.&quot;&quot;&quot;</span>
+</span><span id="L-1210"><a href="#L-1210"><span class="linenos">1210</span></a>
+</span><span id="L-1211"><a href="#L-1211"><span class="linenos">1211</span></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+</span><span id="L-1212"><a href="#L-1212"><span class="linenos">1212</span></a>        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="s2">&quot;BRKD&quot;</span><span class="p">)</span>
+</span><span id="L-1213"><a href="#L-1213"><span class="linenos">1213</span></a>
+</span><span id="L-1214"><a href="#L-1214"><span class="linenos">1214</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">_calc</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cpu</span><span class="p">:</span> <span class="n">DT31</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+</span><span id="L-1215"><a href="#L-1215"><span class="linenos">1215</span></a>        <span class="c1"># Print in debug format: instruction -&gt; result, then state</span>
+</span><span id="L-1216"><a href="#L-1216"><span class="linenos">1216</span></a>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> -&gt; 0&quot;</span><span class="p">)</span>
+</span><span id="L-1217"><a href="#L-1217"><span class="linenos">1217</span></a>        <span class="nb">print</span><span class="p">(</span><span class="n">cpu</span><span class="o">.</span><span class="n">state</span><span class="p">)</span>
+</span><span id="L-1218"><a href="#L-1218"><span class="linenos">1218</span></a>        <span class="c1"># Switch to debug mode - run() will handle waiting for input</span>
+</span><span id="L-1219"><a href="#L-1219"><span class="linenos">1219</span></a>        <span class="n">cpu</span><span class="o">.</span><span class="n">debug_mode</span> <span class="o">=</span> <span class="kc">True</span>
+</span><span id="L-1220"><a href="#L-1220"><span class="linenos">1220</span></a>        <span class="k">return</span> <span class="mi">0</span>
 </span></pre></div>
 
 
@@ -6645,6 +6692,139 @@ first operand.</li>
                                 <dl>
                                     <div><dt><a href="#Instruction">Instruction</a></dt>
                                 <dd id="OIN.name" class="variable"><a href="#Instruction.name">name</a></dd>
+
+            </div>
+                                </dl>
+                            </div>
+                </section>
+                <section id="BRK">
+                            <input id="BRK-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
+<div class="attr class">
+            
+    <span class="def">class</span>
+    <span class="name">BRK</span><wbr>(<span class="base"><a href="#Instruction">Instruction</a></span>):
+
+                <label class="view-source-button" for="BRK-view-source"><span>View Source</span></label>
+
+    </div>
+    <a class="headerlink" href="#BRK"></a>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="BRK-1195"><a href="#BRK-1195"><span class="linenos">1195</span></a><span class="k">class</span><span class="w"> </span><span class="nc">BRK</span><span class="p">(</span><span class="n">Instruction</span><span class="p">):</span>
+</span><span id="BRK-1196"><a href="#BRK-1196"><span class="linenos">1196</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Breakpoint: dump CPU state and wait for Enter, then continue execution.&quot;&quot;&quot;</span>
+</span><span id="BRK-1197"><a href="#BRK-1197"><span class="linenos">1197</span></a>
+</span><span id="BRK-1198"><a href="#BRK-1198"><span class="linenos">1198</span></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+</span><span id="BRK-1199"><a href="#BRK-1199"><span class="linenos">1199</span></a>        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="s2">&quot;BRK&quot;</span><span class="p">)</span>
+</span><span id="BRK-1200"><a href="#BRK-1200"><span class="linenos">1200</span></a>
+</span><span id="BRK-1201"><a href="#BRK-1201"><span class="linenos">1201</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">_calc</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cpu</span><span class="p">:</span> <span class="n">DT31</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+</span><span id="BRK-1202"><a href="#BRK-1202"><span class="linenos">1202</span></a>        <span class="c1"># Print in debug format: instruction -&gt; result, then state</span>
+</span><span id="BRK-1203"><a href="#BRK-1203"><span class="linenos">1203</span></a>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> -&gt; 0&quot;</span><span class="p">)</span>
+</span><span id="BRK-1204"><a href="#BRK-1204"><span class="linenos">1204</span></a>        <span class="nb">print</span><span class="p">(</span><span class="n">cpu</span><span class="o">.</span><span class="n">state</span><span class="p">)</span>
+</span><span id="BRK-1205"><a href="#BRK-1205"><span class="linenos">1205</span></a>        <span class="nb">input</span><span class="p">()</span>
+</span><span id="BRK-1206"><a href="#BRK-1206"><span class="linenos">1206</span></a>        <span class="k">return</span> <span class="mi">0</span>
+</span></pre></div>
+
+
+            <div class="docstring"><p>Breakpoint: dump CPU state and wait for Enter, then continue execution.</p>
+</div>
+
+
+                            <div id="BRK.__init__" class="classattr">
+                                        <input id="BRK.__init__-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
+<div class="attr function">
+            
+        <span class="name">BRK</span><span class="signature pdoc-code condensed">()</span>
+
+                <label class="view-source-button" for="BRK.__init__-view-source"><span>View Source</span></label>
+
+    </div>
+    <a class="headerlink" href="#BRK.__init__"></a>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="BRK.__init__-1198"><a href="#BRK.__init__-1198"><span class="linenos">1198</span></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+</span><span id="BRK.__init__-1199"><a href="#BRK.__init__-1199"><span class="linenos">1199</span></a>        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="s2">&quot;BRK&quot;</span><span class="p">)</span>
+</span></pre></div>
+
+
+            <div class="docstring"><p>Initialize an Instruction.</p>
+
+<h6 id="arguments">Arguments:</h6>
+
+<ul>
+<li><strong>name:</strong>  The name of the instruction (e.g., "ADD", "JMP", "PUSH").</li>
+</ul>
+</div>
+
+
+                            </div>
+                            <div class="inherited">
+                                <h5>Inherited Members</h5>
+                                <dl>
+                                    <div><dt><a href="#Instruction">Instruction</a></dt>
+                                <dd id="BRK.name" class="variable"><a href="#Instruction.name">name</a></dd>
+
+            </div>
+                                </dl>
+                            </div>
+                </section>
+                <section id="BRKD">
+                            <input id="BRKD-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
+<div class="attr class">
+            
+    <span class="def">class</span>
+    <span class="name">BRKD</span><wbr>(<span class="base"><a href="#Instruction">Instruction</a></span>):
+
+                <label class="view-source-button" for="BRKD-view-source"><span>View Source</span></label>
+
+    </div>
+    <a class="headerlink" href="#BRKD"></a>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="BRKD-1209"><a href="#BRKD-1209"><span class="linenos">1209</span></a><span class="k">class</span><span class="w"> </span><span class="nc">BRKD</span><span class="p">(</span><span class="n">Instruction</span><span class="p">):</span>
+</span><span id="BRKD-1210"><a href="#BRKD-1210"><span class="linenos">1210</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Debug breakpoint: dump CPU state and switch to debug mode for rest of execution.&quot;&quot;&quot;</span>
+</span><span id="BRKD-1211"><a href="#BRKD-1211"><span class="linenos">1211</span></a>
+</span><span id="BRKD-1212"><a href="#BRKD-1212"><span class="linenos">1212</span></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+</span><span id="BRKD-1213"><a href="#BRKD-1213"><span class="linenos">1213</span></a>        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="s2">&quot;BRKD&quot;</span><span class="p">)</span>
+</span><span id="BRKD-1214"><a href="#BRKD-1214"><span class="linenos">1214</span></a>
+</span><span id="BRKD-1215"><a href="#BRKD-1215"><span class="linenos">1215</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">_calc</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cpu</span><span class="p">:</span> <span class="n">DT31</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+</span><span id="BRKD-1216"><a href="#BRKD-1216"><span class="linenos">1216</span></a>        <span class="c1"># Print in debug format: instruction -&gt; result, then state</span>
+</span><span id="BRKD-1217"><a href="#BRKD-1217"><span class="linenos">1217</span></a>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> -&gt; 0&quot;</span><span class="p">)</span>
+</span><span id="BRKD-1218"><a href="#BRKD-1218"><span class="linenos">1218</span></a>        <span class="nb">print</span><span class="p">(</span><span class="n">cpu</span><span class="o">.</span><span class="n">state</span><span class="p">)</span>
+</span><span id="BRKD-1219"><a href="#BRKD-1219"><span class="linenos">1219</span></a>        <span class="c1"># Switch to debug mode - run() will handle waiting for input</span>
+</span><span id="BRKD-1220"><a href="#BRKD-1220"><span class="linenos">1220</span></a>        <span class="n">cpu</span><span class="o">.</span><span class="n">debug_mode</span> <span class="o">=</span> <span class="kc">True</span>
+</span><span id="BRKD-1221"><a href="#BRKD-1221"><span class="linenos">1221</span></a>        <span class="k">return</span> <span class="mi">0</span>
+</span></pre></div>
+
+
+            <div class="docstring"><p>Debug breakpoint: dump CPU state and switch to debug mode for rest of execution.</p>
+</div>
+
+
+                            <div id="BRKD.__init__" class="classattr">
+                                        <input id="BRKD.__init__-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
+<div class="attr function">
+            
+        <span class="name">BRKD</span><span class="signature pdoc-code condensed">()</span>
+
+                <label class="view-source-button" for="BRKD.__init__-view-source"><span>View Source</span></label>
+
+    </div>
+    <a class="headerlink" href="#BRKD.__init__"></a>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="BRKD.__init__-1212"><a href="#BRKD.__init__-1212"><span class="linenos">1212</span></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+</span><span id="BRKD.__init__-1213"><a href="#BRKD.__init__-1213"><span class="linenos">1213</span></a>        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="s2">&quot;BRKD&quot;</span><span class="p">)</span>
+</span></pre></div>
+
+
+            <div class="docstring"><p>Initialize an Instruction.</p>
+
+<h6 id="arguments">Arguments:</h6>
+
+<ul>
+<li><strong>name:</strong>  The name of the instruction (e.g., "ADD", "JMP", "PUSH").</li>
+</ul>
+</div>
+
+
+                            </div>
+                            <div class="inherited">
+                                <h5>Inherited Members</h5>
+                                <dl>
+                                    <div><dt><a href="#Instruction">Instruction</a></dt>
+                                <dd id="BRKD.name" class="variable"><a href="#Instruction.name">name</a></dd>
 
             </div>
                                 </dl>

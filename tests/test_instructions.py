@@ -2,7 +2,6 @@ from collections import deque
 from copy import copy
 
 import pytest
-
 from dt31 import instructions as I
 from dt31.operands import L, M, MemoryReference, R
 
@@ -600,3 +599,95 @@ def test_instruction_equality():
     assert I.JMP(100) != I.JMP(200)
     assert I.JEQ(10, R.a, L[5]) == I.JEQ(10, R.a, L[5])
     assert I.JEQ(10, R.a, L[5]) != I.JEQ(20, R.a, L[5])
+
+
+def test_brk_displays_state_and_waits(cpu, capsys, monkeypatch):
+    """Test that BRK prints state and waits for input."""
+    # Set up some state to display
+    cpu.set_register("a", 42)
+    cpu.set_memory(10, 100)
+
+    # Mock input to simulate pressing Enter (accept optional prompt parameter)
+    monkeypatch.setattr("builtins.input", lambda prompt="": "")
+
+    # Execute BRK instruction
+    result = I.BRK()(cpu)
+
+    # Check return value
+    assert result == 0
+
+    # Check that state was printed (state is printed as dict representation)
+    captured = capsys.readouterr()
+    assert "BRK -> 0" in captured.out
+    assert "'R.a': 42" in captured.out
+    assert "'M[10]': 100" in captured.out
+
+    # Check IP advanced
+    assert cpu.get_register("ip") == 1
+
+
+def test_brk_in_program(cpu, capsys, monkeypatch):
+    """Test BRK in a complete program."""
+    # Mock input to simulate pressing Enter (accept optional prompt parameter)
+    monkeypatch.setattr("builtins.input", lambda prompt="": "")
+
+    program = [
+        I.CP(5, R.a),
+        I.BRK(),  # Should pause here
+        I.ADD(R.a, L[1]),
+        I.NOUT(R.a, L[1]),
+    ]
+
+    cpu.run(program)
+
+    captured = capsys.readouterr()
+    # Should see BRK output
+    assert "BRK -> 0" in captured.out
+    # Should see final output
+    assert "6" in captured.out
+
+
+def test_brkd_switches_to_debug_mode(cpu, capsys, monkeypatch):
+    """Test that BRKD switches to debug mode for rest of execution."""
+    # Track input calls to verify debug mode
+    input_calls = []
+
+    def mock_input(prompt=""):
+        input_calls.append(prompt)
+        return ""
+
+    monkeypatch.setattr("builtins.input", mock_input)
+
+    program = [
+        I.CP(1, R.a),  # Not in debug mode
+        I.BRKD(),  # Switch to debug mode
+        I.ADD(R.a, L[1]),  # Should run in debug mode (wait for input)
+        I.ADD(R.a, L[1]),  # Should run in debug mode (wait for input)
+        I.NOUT(R.a, L[1]),  # Should run in debug mode (wait for input)
+    ]
+
+    cpu.run(program)
+
+    captured = capsys.readouterr()
+
+    # Should see BRKD output
+    assert "BRKD -> 0" in captured.out
+
+    # Should see debug output for instructions after BRKD
+    assert "ADD(a=R.a, b=1, out=R.a) -> 2" in captured.out
+    assert "ADD(a=R.a, b=1, out=R.a) -> 3" in captured.out
+    assert "NOUT(a=R.a, b=1) -> 0" in captured.out
+
+    # Should see final output
+    assert "3" in captured.out
+
+    # Verify input was called for BRKD and each subsequent instruction
+    # BRKD triggers 1 input(), then 3 more instructions each trigger input() in debug mode
+    assert len(input_calls) == 4
+
+
+def test_brk_and_brkd_equality(cpu):
+    """Test that BRK and BRKD instructions compare correctly."""
+    assert I.BRK() == I.BRK()
+    assert I.BRKD() == I.BRKD()
+    assert I.BRK() != I.BRKD()

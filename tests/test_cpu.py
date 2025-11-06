@@ -247,7 +247,9 @@ def test_cpu_validates_missing_registers():
     from dt31.assembler import AssemblyError
 
     cpu = DT31(registers=["a", "b"])
-    program = [I.CP(L[10], R.x)]  # 'x' not in CPU registers
+    program: list[I.Instruction | I.Label] = [
+        I.CP(L[10], R.x)
+    ]  # 'x' not in CPU registers
 
     with pytest.raises(AssemblyError) as exc_info:
         cpu.load(program)

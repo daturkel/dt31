@@ -1,7 +1,8 @@
 from copy import deepcopy
 
+from dt31.exceptions import AssemblyError
 from dt31.instructions import Instruction, RelativeJumpMixin
-from dt31.operands import Label, Literal, MemoryReference, RegisterReference, Operand
+from dt31.operands import Label, Literal, MemoryReference, Operand, RegisterReference
 
 
 def extract_registers_from_program(program: list[Instruction | Label]) -> list[str]:
@@ -142,9 +143,3 @@ def assemble(program: list[Instruction | Label]) -> list[Instruction]:
                 inst.dest = Literal(target_ip)
 
     return new_program
-
-
-class AssemblyError(Exception):
-    """An exception to throw when the assembler encounters something wrong with a program."""
-
-    pass
