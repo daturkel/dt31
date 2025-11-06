@@ -1,10 +1,11 @@
 import re
 
 import dt31.instructions as I
+from dt31.exceptions import ParserError
 from dt31.instructions import Instruction
 from dt31.operands import (
-    LC,
     L,
+    LC,
     Label,
     M,
     Operand,
@@ -173,16 +174,6 @@ def parse_operand(token: str) -> Operand | Label:
         # Registers must use R.name syntax
         case _:
             return Label(token)
-
-
-class ParserError(Exception):
-    """Exception raised when parsing DT31 assembly text fails.
-
-    This exception is raised for syntax errors, invalid operands,
-    or other parsing issues in DT31 assembly code.
-    """
-
-    pass
 
 
 # Precompiled regex patterns for parsing

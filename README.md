@@ -453,9 +453,9 @@ DT31 is open-source and contributors are welcome on [Github](https://github.com/
 
 - [x] Character literals?
 - [x] Parse and execute `.dt` files
+- [x] Breakpoint instruction
 - [ ] User-definable macros (in both python and assembly syntax)
 - [ ] Python to text output
-- [ ] Breakpoint instruction
 - [ ] File I/O
 - [ ] Data handling?
 - [ ] Input error handling rather than immediate crash
