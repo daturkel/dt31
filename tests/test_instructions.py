@@ -2,6 +2,7 @@ from collections import deque
 from copy import copy
 
 import pytest
+
 from dt31 import instructions as I
 from dt31.operands import L, M, MemoryReference, R
 
@@ -409,14 +410,14 @@ def test_oout_newline(cpu, capsys):
 
 def test_nin(cpu, monkeypatch):
     assert str(I.NIN(M[10])) == "NIN(out=M[10])"
-    monkeypatch.setattr("builtins.input", lambda: "31")
+    monkeypatch.setattr("builtins.input", lambda prompt: "31")
     assert I.NIN(R.a)(cpu) == 31
     assert cpu.get_register("a") == 31
 
 
 def test_oin(cpu, monkeypatch):
     assert str(I.OIN(M[10])) == "OIN(out=M[10])"
-    monkeypatch.setattr("builtins.input", lambda: "A")
+    monkeypatch.setattr("builtins.input", lambda prompt: "A")
     assert I.OIN(R.a)(cpu) == 65
     assert cpu.get_register("a") == 65
 

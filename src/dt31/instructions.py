@@ -7,6 +7,8 @@ from dt31.operands import Destination, L, Label, Operand, Reference, as_op
 if TYPE_CHECKING:
     from dt31.cpu import DT31  # pragma: no cover
 
+INPUT_PROMPT = "> "
+
 
 class Instruction:
     """Base class for all DT31 instructions.
@@ -1161,7 +1163,7 @@ class NIN(Instruction):
         self.out = as_op(out)
 
     def _calc(self, cpu: DT31) -> int:
-        val = input()
+        val = input(INPUT_PROMPT)
         val_int = int(val)
         cpu[self.out] = val_int
         return val_int
@@ -1182,7 +1184,7 @@ class OIN(Instruction):
         self.out = as_op(out)
 
     def _calc(self, cpu: DT31) -> int:
-        val = input()
+        val = input("> ")
         val_ord = ord(val)
         cpu[self.out] = val_ord
         return val_ord
