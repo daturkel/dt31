@@ -31,6 +31,24 @@ def serve_docs(c):
 
 
 @task
+def docs_sphinx(c):
+    """Build Sphinx documentation."""
+    c.run("sphinx-build -b html docs-sphinx/source docs-sphinx/build")
+
+
+@task
+def serve_docs_sphinx(c, port=8080):
+    """Serve the Sphinx documentation website locally."""
+    c.run(f"python -m http.server {port} --directory docs-sphinx/build")
+
+
+@task
+def clean_docs_sphinx(c):
+    """Clean Sphinx build directory."""
+    c.run("rm -rf docs-sphinx/build")
+
+
+@task
 def sync(c):
     """Sync dev dependencies."""
     c.run("uv sync --locked --group dev")
