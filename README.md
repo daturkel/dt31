@@ -1,6 +1,6 @@
 # dt31
 
-[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff) ![Coverage Badge](coverage-badge.svg)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](https://opensource.org/licenses/MIT) [![pdoc](https://img.shields.io/badge/docs-pdoc.dev-green)](https://pdoc.dev/docs/pdoc.html) ![Coverage Badge](coverage-badge.svg) [![Ruff](https://img.shields.io/badge/style-ruff-green.svg)](https://github.com/astral-sh/ruff)
 
 A toy computer emulator in Python with a simple instruction set and virtual machine. dt31 is a toy computer that simulates a CPU with registers, memory, a stack, and a rich instruction set.
 
