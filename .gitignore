@@ -14,3 +14,4 @@ wheels/
 .python-version
 .coverage
 coverage.xml
+plans/
