@@ -9,6 +9,7 @@ See @README.md for project overview, features, usage examples, and user-facing d
 - **Type Hints**: Required for all function signatures and public APIs
 - **Docstrings**: Google-style (configured for pdoc in [tasks.py](tasks.py))
 - **Dependencies**: Zero runtime dependencies (dev dependencies are okay)
+- **Imports**: Always place imports at the top of the file (avoid inline imports unless absolutely necessary to prevent circular imports)
 
 ## Architecture
 

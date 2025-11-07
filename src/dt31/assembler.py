@@ -5,7 +5,9 @@ from dt31.instructions import Instruction, RelativeJumpMixin
 from dt31.operands import Label, Literal, MemoryReference, Operand, RegisterReference
 
 
-def assemble(program: list[Instruction | Label]) -> list[Instruction]:
+def assemble(
+    program: list[Instruction | Label] | list[Instruction],
+) -> list[Instruction]:
     """Assemble a program by resolving labels to instruction positions.
 
     This function performs a two-pass assembly process:
@@ -97,7 +99,7 @@ def assemble(program: list[Instruction | Label]) -> list[Instruction]:
     return new_program
 
 
-def program_to_text(program: list[Instruction | Label]) -> str:
+def program_to_text(program: list[Instruction | Label] | list[Instruction]) -> str:
     """Convert a program to assembly text format.
 
     Converts a list of instructions and labels (whether created programmatically
