@@ -631,7 +631,7 @@ def test_custom_instructions_import_error(tmp_path, capsys) -> None:
 
 
 def test_dump_on_error_with_explicit_path(temp_dt_file, tmp_path, capsys):
-    """Test --dump-on-error with explicit file path."""
+    """Test --dump error with explicit file path."""
     assembly = """
     CP 10, R.a
     CP 0, R.b
@@ -641,7 +641,9 @@ def test_dump_on_error_with_explicit_path(temp_dt_file, tmp_path, capsys):
     dump_path = tmp_path / "my_crash.json"
 
     with patch.object(
-        sys, "argv", ["dt31", "--dump-on-error", str(dump_path), file_path]
+        sys,
+        "argv",
+        ["dt31", "--dump", "error", "--dump-file", str(dump_path), file_path],
     ):
         with pytest.raises(SystemExit) as exc_info:
             main()
@@ -661,6 +663,7 @@ def test_dump_on_error_with_explicit_path(temp_dt_file, tmp_path, capsys):
     assert "cpu_state" in dump_data
     assert "error" in dump_data
     assert dump_data["error"]["type"] == "ZeroDivisionError"
+    assert "instruction" in dump_data["error"]  # New: includes last instruction
     assert dump_data["cpu_state"]["registers"]["a"] == 10
     assert dump_data["cpu_state"]["registers"]["b"] == 0
 
@@ -679,7 +682,7 @@ def test_dump_on_error_auto_generate_filename(
     monkeypatch.chdir(tmp_path)
 
     # Use -- to separate flag from positional argument
-    with patch.object(sys, "argv", ["dt31", "--dump-on-error", "--", file_path]):
+    with patch.object(sys, "argv", ["dt31", "--dump", "error", "--", file_path]):
         with pytest.raises(SystemExit) as exc_info:
             main()
 
@@ -713,7 +716,9 @@ def test_dump_on_error_not_triggered_on_success(temp_dt_file, tmp_path, capsys):
     dump_path = tmp_path / "should_not_exist.json"
 
     with patch.object(
-        sys, "argv", ["dt31", "--dump-on-error", str(dump_path), file_path]
+        sys,
+        "argv",
+        ["dt31", "--dump", "error", "--dump-file", str(dump_path), file_path],
     ):
         with pytest.raises(SystemExit) as exc_info:
             main()
@@ -738,7 +743,9 @@ def test_dump_on_error_includes_traceback(temp_dt_file, tmp_path, capsys):
     dump_path = tmp_path / "stack_underflow.json"
 
     with patch.object(
-        sys, "argv", ["dt31", "--dump-on-error", str(dump_path), file_path]
+        sys,
+        "argv",
+        ["dt31", "--dump", "error", "--dump-file", str(dump_path), file_path],
     ):
         with pytest.raises(SystemExit) as exc_info:
             main()
@@ -766,7 +773,9 @@ def test_dump_on_error_write_failure(temp_dt_file, tmp_path, capsys):
     file_path = temp_dt_file(assembly)
     dump_path = "/invalid/path/crash.json"
 
-    with patch.object(sys, "argv", ["dt31", "--dump-on-error", dump_path, file_path]):
+    with patch.object(
+        sys, "argv", ["dt31", "--dump", "error", "--dump-file", dump_path, file_path]
+    ):
         with pytest.raises(SystemExit) as exc_info:
             main()
 
@@ -789,7 +798,9 @@ def test_dump_on_error_with_program_loaded(temp_dt_file, tmp_path, capsys):
     dump_path = tmp_path / "program_dump.json"
 
     with patch.object(
-        sys, "argv", ["dt31", "--dump-on-error", str(dump_path), file_path]
+        sys,
+        "argv",
+        ["dt31", "--dump", "error", "--dump-file", str(dump_path), file_path],
     ):
         with pytest.raises(SystemExit) as exc_info:
             main()
@@ -805,3 +816,255 @@ def test_dump_on_error_with_program_loaded(temp_dt_file, tmp_path, capsys):
     assert dump_data["cpu_state"]["program"] is not None
     assert "CP 5, R.x" in dump_data["cpu_state"]["program"]
     assert "DIV R.x, R.z" in dump_data["cpu_state"]["program"]
+
+
+def test_dump_on_exit_with_explicit_path(temp_dt_file, tmp_path, capsys):
+    """Test --dump-on-exit with explicit file path."""
+    assembly = """
+    CP 10, R.a
+    CP 5, R.b
+    ADD R.a, R.b
+    """
+    file_path = temp_dt_file(assembly)
+    dump_path = tmp_path / "final_state.json"
+
+    with patch.object(
+        sys,
+        "argv",
+        ["dt31", "--dump", "success", "--dump-file", str(dump_path), file_path],
+    ):
+        with pytest.raises(SystemExit) as exc_info:
+            main()
+
+    assert exc_info.value.code == 0
+    captured = capsys.readouterr()
+    assert f"CPU state dumped to: {dump_path}" in captured.err
+
+    # Verify dump file was created and contains expected data
+    assert dump_path.exists()
+    import json
+
+    with open(dump_path) as f:
+        dump_data = json.load(f)
+
+    assert "cpu_state" in dump_data
+    assert "error" not in dump_data  # No error on successful execution
+    assert dump_data["cpu_state"]["registers"]["a"] == 15
+    assert dump_data["cpu_state"]["registers"]["b"] == 5
+
+
+def test_dump_on_exit_auto_generate_filename(
+    temp_dt_file, tmp_path, capsys, monkeypatch
+):
+    """Test --dump-on-exit with auto-generated filename."""
+    assembly = """
+    CP 42, R.x
+    """
+    file_path = temp_dt_file(assembly, "myprogram.dt")
+
+    # Change to temp directory so auto-generated file goes there
+    monkeypatch.chdir(tmp_path)
+
+    with patch.object(sys, "argv", ["dt31", "--dump", "success", "--", file_path]):
+        with pytest.raises(SystemExit) as exc_info:
+            main()
+
+    assert exc_info.value.code == 0
+    captured = capsys.readouterr()
+    assert "CPU state dumped to: myprogram_final_" in captured.err
+
+    # Find the generated file
+    dump_files = list(tmp_path.glob("myprogram_final_*.json"))
+    assert len(dump_files) == 1
+
+    # Verify dump file contains expected data
+    import json
+
+    with open(dump_files[0]) as f:
+        dump_data = json.load(f)
+
+    assert "cpu_state" in dump_data
+    assert "error" not in dump_data
+    assert dump_data["cpu_state"]["registers"]["x"] == 42
+
+
+def test_dump_all_mode_on_error(temp_dt_file, tmp_path, capsys):
+    """Test --dump all mode (only error triggers on crash)."""
+    assembly = """
+    CP 10, R.a
+    CP 0, R.b
+    DIV R.a, R.b
+    """
+    file_path = temp_dt_file(assembly)
+
+    # Don't specify dump-file, let it auto-generate
+    with patch.object(
+        sys,
+        "argv",
+        [
+            "dt31",
+            "--dump",
+            "all",
+            file_path,
+        ],
+    ):
+        # Change to temp directory for auto-generated file
+        import os
+
+        old_cwd = os.getcwd()
+        os.chdir(tmp_path)
+        try:
+            with pytest.raises(SystemExit) as exc_info:
+                main()
+        finally:
+            os.chdir(old_cwd)
+
+    assert exc_info.value.code == 1
+
+    # Should have created a crash dump
+    crash_dumps = list(tmp_path.glob("*_crash_*.json"))
+    assert len(crash_dumps) == 1
+
+
+def test_dump_on_exit_with_successful_program(temp_dt_file, tmp_path, capsys):
+    """Test --dump-on-exit captures final state after successful execution."""
+    assembly = """
+    CP 1, R.counter
+    loop:
+        ADD R.counter, 1
+        JGT loop, 5, R.counter
+    """
+    file_path = temp_dt_file(assembly)
+    dump_path = tmp_path / "final.json"
+
+    with patch.object(
+        sys,
+        "argv",
+        ["dt31", "--dump", "success", "--dump-file", str(dump_path), file_path],
+    ):
+        with pytest.raises(SystemExit) as exc_info:
+            main()
+
+    assert exc_info.value.code == 0
+
+    # Verify final state
+    import json
+
+    with open(dump_path) as f:
+        dump_data = json.load(f)
+
+    assert dump_data["cpu_state"]["registers"]["counter"] == 5
+
+
+def test_dump_on_exit_write_failure(temp_dt_file, capsys):
+    """Test handling of write failure when dumping on exit."""
+    assembly = """
+    CP 42, R.a
+    """
+    file_path = temp_dt_file(assembly)
+    dump_path = "/invalid/path/final.json"
+
+    with patch.object(
+        sys, "argv", ["dt31", "--dump", "success", "--dump-file", dump_path, file_path]
+    ):
+        with pytest.raises(SystemExit) as exc_info:
+            main()
+
+    # Should still exit successfully even if dump fails
+    assert exc_info.value.code == 0
+    captured = capsys.readouterr()
+    assert "Failed to dump CPU state" in captured.err
+
+
+def test_dump_error_with_ip_past_end(temp_dt_file, tmp_path, capsys):
+    """Test that dump includes last instruction when IP goes past program end."""
+    assembly = """
+    CP 10, R.a
+    """
+    file_path = temp_dt_file(assembly)
+    dump_path = tmp_path / "past_end.json"
+
+    # Mock CPU to raise error after IP increments past end
+
+    original_main = main
+
+    def patched_main():
+        # Run normally but catch at the right point
+        original_main()
+
+    # Create a scenario where IP is past the end
+    with patch.object(
+        sys,
+        "argv",
+        ["dt31", "--dump", "error", "--dump-file", str(dump_path), file_path],
+    ):
+        # Patch the CPU run to simulate EndOfProgram error with IP past end
+        from dt31 import DT31
+
+        def run_with_error(self, *args, **kwargs):
+            # Execute normally first
+            self.load(args[0] if args else kwargs.get("program"))
+            # Set IP past the end
+            self.set_register("ip", len(self.instructions) + 5)
+            # Raise an error
+            raise RuntimeError("Simulated error with IP past end")
+
+        with patch.object(DT31, "run", run_with_error):
+            with pytest.raises(SystemExit) as exc_info:
+                main()
+
+    assert exc_info.value.code == 1
+
+    # Verify dump contains the last instruction
+    import json
+
+    with open(dump_path) as f:
+        dump_data = json.load(f)
+
+    assert "instruction" in dump_data["error"]
+    assert "repr" in dump_data["error"]["instruction"]
+    assert "str" in dump_data["error"]["instruction"]
+    assert "CP" in dump_data["error"]["instruction"]["repr"]
+    assert "R.a" in dump_data["error"]["instruction"]["repr"]
+
+
+def test_dump_error_instruction_retrieval_fails(temp_dt_file, tmp_path, capsys):
+    """Test that dump succeeds even if instruction retrieval fails."""
+    assembly = """
+    CP 10, R.a
+    CP 0, R.b
+    DIV R.a, R.b
+    """
+    file_path = temp_dt_file(assembly)
+    dump_path = tmp_path / "retrieval_fails.json"
+
+    with patch.object(
+        sys,
+        "argv",
+        ["dt31", "--dump", "error", "--dump-file", str(dump_path), file_path],
+    ):
+        # Patch get_register to raise an exception
+        from dt31 import DT31
+
+        original_get_register = DT31.get_register
+
+        def failing_get_register(self, name):
+            if name == "ip":
+                raise RuntimeError("Cannot get IP")
+            return original_get_register(self, name)
+
+        with patch.object(DT31, "get_register", failing_get_register):
+            with pytest.raises(SystemExit) as exc_info:
+                main()
+
+    assert exc_info.value.code == 1
+
+    # Verify dump was created despite instruction retrieval failure
+    import json
+
+    with open(dump_path) as f:
+        dump_data = json.load(f)
+
+    # Should still have error info, just no instruction
+    assert "error" in dump_data
+    assert "instruction" not in dump_data["error"]

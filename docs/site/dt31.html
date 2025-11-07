@@ -244,6 +244,8 @@ dt31<span class="w"> </span>countdown.dt
 <li><code>--memory 512</code>: Set memory size in bytes (default: 256)</li>
 <li><code>--stack-size 512</code>: Set stack size (default: 256)</li>
 <li><code>--custom-instructions PATH</code> or <code>-i PATH</code>: Load custom instruction definitions from a Python file</li>
+<li><code>--dump {none,error,success,all}</code>: When to dump CPU state (default: none)</li>
+<li><code>--dump-file FILE</code>: File path for CPU state dump (auto-generates timestamped filename if not specified)</li>
 </ul>
 
 <div class="pdoc-code codehilite">
@@ -261,6 +263,16 @@ dt31<span class="w"> </span>--registers<span class="w"> </span>a,b,c,d,e<span cl
 
 <span class="c1"># Use custom instructions</span>
 dt31<span class="w"> </span>--custom-instructions<span class="w"> </span>my_instructions.py<span class="w"> </span>program.dt
+
+<span class="c1"># Dump CPU state on error (for debugging crashes)</span>
+dt31<span class="w"> </span>--dump<span class="w"> </span>error<span class="w"> </span>program.dt<span class="w">  </span><span class="c1"># Auto-generates program_crash_TIMESTAMP.json</span>
+dt31<span class="w"> </span>--dump<span class="w"> </span>error<span class="w"> </span>--dump-file<span class="w"> </span>crash.json<span class="w"> </span>program.dt
+
+<span class="c1"># Dump CPU state after successful execution</span>
+dt31<span class="w"> </span>--dump<span class="w"> </span>success<span class="w"> </span>program.dt<span class="w">  </span><span class="c1"># Auto-generates program_final_TIMESTAMP.json</span>
+
+<span class="c1"># Dump in both cases</span>
+dt31<span class="w"> </span>--dump<span class="w"> </span>all<span class="w"> </span>program.dt
 </code></pre>
 </div>
 
@@ -297,6 +309,41 @@ NOUT R.a, 1  ; Outputs 15
 <p><strong>Security Warning</strong>: Loading custom instruction files executes arbitrary Python code. Only load files from trusted sources.</p>
 
 <p>See the <a href="https://daturkel.github.io/dt31/dt31/cli.html">CLI documentation</a> for more details on running text assembly programs, <a href="https://daturkel.github.io/dt31/dt31/instructions.html">instructions documentation</a> for additional info on custom instructions.</p>
+
+<h4 id="cpu-state-dumps">CPU State Dumps</h4>
+
+<p>The <code>--dump</code> option captures complete CPU state to JSON for debugging. Dumps include:</p>
+
+<ul>
+<li><strong>CPU state</strong>: registers, memory, stack, and loaded program (as assembly text)</li>
+<li><strong>Error information</strong> (on error dumps): exception type, message, traceback, and the instruction that caused the error</li>
+</ul>
+
+<p>Error dumps include both <code>repr</code> and <code>str</code> formats of the failing instruction for easier debugging:</p>
+
+<div class="pdoc-code codehilite">
+<pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;cpu_state&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;registers&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">&quot;a&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;b&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;ip&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="p">},</span>
+<span class="w">    </span><span class="nt">&quot;memory&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="err">...</span><span class="p">],</span>
+<span class="w">    </span><span class="nt">&quot;stack&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span>
+<span class="w">    </span><span class="nt">&quot;program&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;CP 10, R.a\nCP 0, R.b\nDIV R.a, R.b&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;config&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">&quot;memory_size&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">256</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;stack_size&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">256</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;wrap_memory&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">}</span>
+<span class="w">  </span><span class="p">},</span>
+<span class="w">  </span><span class="nt">&quot;error&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;ZeroDivisionError&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;message&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;integer division or modulo by zero&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;instruction&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;repr&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;DIV(a=R.a, b=R.b, out=R.a)&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;str&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;DIV R.a, R.b, R.a&quot;</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">&quot;traceback&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;...&quot;</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre>
+</div>
+
+<p>Use <code>--dump error</code> for crash debugging or <code>--dump success</code> to inspect final state after successful execution.</p>
 
 <h2 id="examples">Examples</h2>
 
@@ -639,6 +686,7 @@ uv<span class="w"> </span>run<span class="w"> </span>invoke<span class="w"> </sp
 <li><input type="checkbox" class="task-list-item-checkbox" disabled> Data handling?</li>
 <li><input type="checkbox" class="task-list-item-checkbox" disabled> Input error handling rather than immediate crash</li>
 <li><input type="checkbox" class="task-list-item-checkbox" disabled> Preserve comments in parser (then text formatter)?</li>
+<li><input type="checkbox" class="task-list-item-checkbox" disabled> interpreter resume from dump</li>
 </ul>
 
 <h2 id="license">License</h2>

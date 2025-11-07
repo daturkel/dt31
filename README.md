@@ -172,6 +172,8 @@ dt31 countdown.dt
 - `--memory 512`: Set memory size in bytes (default: 256)
 - `--stack-size 512`: Set stack size (default: 256)
 - `--custom-instructions PATH` or `-i PATH`: Load custom instruction definitions from a Python file
+- `--dump {none,error,success,all}`: When to dump CPU state (default: none)
+- `--dump-file FILE`: File path for CPU state dump (auto-generates timestamped filename if not specified)
 
 ```shell
 # Parse and validate only (no execution)
@@ -188,6 +190,16 @@ dt31 --registers a,b,c,d,e program.dt
 
 # Use custom instructions
 dt31 --custom-instructions my_instructions.py program.dt
+
+# Dump CPU state on error (for debugging crashes)
+dt31 --dump error program.dt  # Auto-generates program_crash_TIMESTAMP.json
+dt31 --dump error --dump-file crash.json program.dt
+
+# Dump CPU state after successful execution
+dt31 --dump success program.dt  # Auto-generates program_final_TIMESTAMP.json
+
+# Dump in both cases
+dt31 --dump all program.dt
 ```
 
 #### Custom Instructions
@@ -223,6 +235,38 @@ Run with: `dt31 --custom-instructions my_instructions.py program.dt`
 **Security Warning**: Loading custom instruction files executes arbitrary Python code. Only load files from trusted sources.
 
 See the [CLI documentation](https://daturkel.github.io/dt31/dt31/cli.html) for more details on running text assembly programs, [instructions documentation](https://daturkel.github.io/dt31/dt31/instructions.html) for additional info on custom instructions.
+
+#### CPU State Dumps
+
+The `--dump` option captures complete CPU state to JSON for debugging. Dumps include:
+
+- **CPU state**: registers, memory, stack, and loaded program (as assembly text)
+- **Error information** (on error dumps): exception type, message, traceback, and the instruction that caused the error
+
+Error dumps include both `repr` and `str` formats of the failing instruction for easier debugging:
+
+```json
+{
+  "cpu_state": {
+    "registers": {"a": 10, "b": 0, "ip": 2},
+    "memory": [...],
+    "stack": [],
+    "program": "CP 10, R.a\nCP 0, R.b\nDIV R.a, R.b",
+    "config": {"memory_size": 256, "stack_size": 256, "wrap_memory": false}
+  },
+  "error": {
+    "type": "ZeroDivisionError",
+    "message": "integer division or modulo by zero",
+    "instruction": {
+      "repr": "DIV(a=R.a, b=R.b, out=R.a)",
+      "str": "DIV R.a, R.b, R.a"
+    },
+    "traceback": "..."
+  }
+}
+```
+
+Use `--dump error` for crash debugging or `--dump success` to inspect final state after successful execution.
 
 ## Examples
 
@@ -497,6 +541,7 @@ DT31 is open-source and contributors are welcome on [Github](https://github.com/
 - [ ] Data handling?
 - [ ] Input error handling rather than immediate crash
 - [ ] Preserve comments in parser (then text formatter)?
+- [ ] interpreter resume from dump
 
 ## License
 
