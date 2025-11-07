@@ -84,6 +84,7 @@ from pathlib import Path
 
 from dt31 import DT31
 from dt31.assembler import extract_registers_from_program
+from dt31.instructions import Instruction
 from dt31.parser import ParserError, parse_program
 
 
@@ -309,7 +310,7 @@ examples:
     sys.exit(0)
 
 
-def load_custom_instructions(file_path: str) -> dict[str, type]:
+def load_custom_instructions(file_path: str) -> dict[str, type[Instruction]]:
     """Load custom instruction definitions from a Python file.
 
     The file should define an INSTRUCTIONS dict mapping instruction names

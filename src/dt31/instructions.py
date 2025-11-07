@@ -177,6 +177,8 @@ class UnaryOperation(Instruction):
     """Base class for instructions which utilize a single operand and optionally write
     to a separate operand."""
 
+    out: Reference  # Always set to a Reference in __init__
+
     def __init__(self, name: str, a: Operand | int, out: Reference | None = None):
         super().__init__(name)
         self.a = as_op(a)
@@ -209,6 +211,8 @@ class UnaryOperation(Instruction):
 class BinaryOperation(Instruction):
     """Base class for instructions which utilize two operands and optionally write
     to a separate operand."""
+
+    out: Reference  # Always set to a Reference in __init__
 
     def __init__(
         self,
