@@ -29,6 +29,7 @@ dt31 program.dt
 - **--registers**: Comma-separated list of register names (auto-detected by default)
 - **--memory**: Memory size in bytes (default: 256)
 - **--stack-size**: Stack size (default: 256)
+- **--dump-on-error**: Dump CPU state to JSON file on error (auto-generates filename if not specified)
 
 ## Examples
 
@@ -50,6 +51,10 @@ dt31 --registers a,b,c,d,e program.dt
 
 # Load custom instructions
 dt31 --custom-instructions my_instructions.py program.dt
+
+# Dump CPU state on error
+dt31 --dump-on-error crash.json program.dt
+dt31 --dump-on-error -- program.dt  # Auto-generates program_crash_TIMESTAMP.json
 ```
 
 ## Register Auto-Detection
@@ -79,7 +84,10 @@ The CLI provides helpful error messages for common issues:
 
 import argparse
 import importlib.util
+import json
 import sys
+import traceback
+from datetime import datetime
 from pathlib import Path
 
 from dt31 import DT31
@@ -217,6 +225,15 @@ examples:
         help="Path to Python file containing custom instruction definitions",
     )
 
+    parser.add_argument(
+        "--dump-on-error",
+        type=str,
+        nargs="?",
+        const="",
+        metavar="FILE",
+        help="Dump CPU state to JSON file on error (auto-generates filename if not specified)",
+    )
+
     args = parser.parse_args()
 
     # Load custom instructions if provided
@@ -304,10 +321,70 @@ examples:
             registers = {k: v for k, v in state.items() if k.startswith("R.")}
             print(f"  Registers: {registers}", file=sys.stderr)
             print(f"  Stack size: {len(state['stack'])}", file=sys.stderr)
+
+        # Dump CPU state to file if requested
+        if args.dump_on_error is not None:
+            dump_path = generate_crash_dump_path(args.file, args.dump_on_error)
+            try:
+                dump_crash_state(cpu, e, dump_path)
+                print(f"CPU state dumped to: {dump_path}", file=sys.stderr)
+            except Exception as dump_error:
+                print(f"Failed to dump CPU state: {dump_error}", file=sys.stderr)
+
         sys.exit(1)
 
     # Success
     sys.exit(0)
+
+
+def generate_crash_dump_path(program_file: str, user_path: str) -> str:
+    """Generate the path for crash dump file.
+
+    Args:
+        program_file: Path to the program file being executed
+        user_path: User-specified path (empty string for auto-generate)
+
+    Returns:
+        Path to use for crash dump file
+
+    Example:
+        >>> generate_crash_dump_path("countdown.dt", "")
+        'countdown_crash_20251106_143022.json'
+        >>> generate_crash_dump_path("countdown.dt", "my_dump.json")
+        'my_dump.json'
+    """
+    if user_path:
+        return user_path
+
+    # Auto-generate filename from program name
+    program_name = Path(program_file).stem
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    return f"{program_name}_crash_{timestamp}.json"
+
+
+def dump_crash_state(cpu: DT31, exception: Exception, file_path: str) -> None:
+    """Dump CPU state and exception info to JSON file.
+
+    Args:
+        cpu: The DT31 CPU instance
+        exception: The exception that was raised
+        file_path: Path to write the JSON dump
+
+    Raises:
+        IOError: If the file cannot be written
+    """
+
+    dump_data = {
+        "cpu_state": cpu.dump(),
+        "error": {
+            "type": type(exception).__name__,
+            "message": str(exception),
+            "traceback": traceback.format_exc(),
+        },
+    }
+
+    with open(file_path, "w") as f:
+        json.dump(dump_data, f, indent=2)
 
 
 def load_custom_instructions(file_path: str) -> dict[str, type[Instruction]]:
@@ -380,7 +457,6 @@ def load_custom_instructions(file_path: str) -> dict[str, type[Instruction]]:
         )
 
     # Validate all values are Instruction subclasses
-    from dt31.instructions import Instruction
 
     for name, cls in instructions.items():
         if not isinstance(cls, type) or not issubclass(cls, Instruction):

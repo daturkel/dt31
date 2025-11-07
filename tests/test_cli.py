@@ -628,3 +628,180 @@ def test_custom_instructions_import_error(tmp_path, capsys) -> None:
     captured = capsys.readouterr()
     assert "Error loading custom instructions" in captured.err
     assert "Could not load module" in captured.err
+
+
+def test_dump_on_error_with_explicit_path(temp_dt_file, tmp_path, capsys):
+    """Test --dump-on-error with explicit file path."""
+    assembly = """
+    CP 10, R.a
+    CP 0, R.b
+    DIV R.a, R.b
+    """
+    file_path = temp_dt_file(assembly)
+    dump_path = tmp_path / "my_crash.json"
+
+    with patch.object(
+        sys, "argv", ["dt31", "--dump-on-error", str(dump_path), file_path]
+    ):
+        with pytest.raises(SystemExit) as exc_info:
+            main()
+
+    assert exc_info.value.code == 1
+    captured = capsys.readouterr()
+    assert "Runtime error" in captured.err
+    assert f"CPU state dumped to: {dump_path}" in captured.err
+
+    # Verify dump file was created and contains expected data
+    assert dump_path.exists()
+    import json
+
+    with open(dump_path) as f:
+        dump_data = json.load(f)
+
+    assert "cpu_state" in dump_data
+    assert "error" in dump_data
+    assert dump_data["error"]["type"] == "ZeroDivisionError"
+    assert dump_data["cpu_state"]["registers"]["a"] == 10
+    assert dump_data["cpu_state"]["registers"]["b"] == 0
+
+
+def test_dump_on_error_auto_generate_filename(
+    temp_dt_file, tmp_path, capsys, monkeypatch
+):
+    """Test --dump-on-error with auto-generated filename."""
+    assembly = """
+    CP 999, R.a
+    CP [R.a], R.b
+    """
+    file_path = temp_dt_file(assembly, "countdown.dt")
+
+    # Change to temp directory so auto-generated file goes there
+    monkeypatch.chdir(tmp_path)
+
+    # Use -- to separate flag from positional argument
+    with patch.object(sys, "argv", ["dt31", "--dump-on-error", "--", file_path]):
+        with pytest.raises(SystemExit) as exc_info:
+            main()
+
+    assert exc_info.value.code == 1
+    captured = capsys.readouterr()
+    assert "Runtime error" in captured.err
+    assert "CPU state dumped to: countdown_crash_" in captured.err
+
+    # Find the generated file
+    dump_files = list(tmp_path.glob("countdown_crash_*.json"))
+    assert len(dump_files) == 1
+
+    # Verify dump file contains expected data
+    import json
+
+    with open(dump_files[0]) as f:
+        dump_data = json.load(f)
+
+    assert "cpu_state" in dump_data
+    assert "error" in dump_data
+    assert "memory has no index 999" in dump_data["error"]["message"]
+
+
+def test_dump_on_error_not_triggered_on_success(temp_dt_file, tmp_path, capsys):
+    """Test that --dump-on-error doesn't create file on successful execution."""
+    assembly = """
+    CP 42, R.a
+    NOUT R.a, 1
+    """
+    file_path = temp_dt_file(assembly)
+    dump_path = tmp_path / "should_not_exist.json"
+
+    with patch.object(
+        sys, "argv", ["dt31", "--dump-on-error", str(dump_path), file_path]
+    ):
+        with pytest.raises(SystemExit) as exc_info:
+            main()
+
+    assert exc_info.value.code == 0
+    captured = capsys.readouterr()
+    assert "42" in captured.out
+    # Dump file should not exist
+    assert not dump_path.exists()
+
+
+def test_dump_on_error_includes_traceback(temp_dt_file, tmp_path, capsys):
+    """Test that dump includes full traceback."""
+    assembly = """
+    PUSH 1
+    PUSH 2
+    POP R.a
+    POP R.a
+    POP R.a
+    """
+    file_path = temp_dt_file(assembly)
+    dump_path = tmp_path / "stack_underflow.json"
+
+    with patch.object(
+        sys, "argv", ["dt31", "--dump-on-error", str(dump_path), file_path]
+    ):
+        with pytest.raises(SystemExit) as exc_info:
+            main()
+
+    assert exc_info.value.code == 1
+
+    # Verify dump contains traceback
+    import json
+
+    with open(dump_path) as f:
+        dump_data = json.load(f)
+
+    assert "traceback" in dump_data["error"]
+    assert "stack underflow" in dump_data["error"]["message"]
+    assert len(dump_data["error"]["traceback"]) > 0
+
+
+def test_dump_on_error_write_failure(temp_dt_file, tmp_path, capsys):
+    """Test handling of write failure when dumping crash state."""
+    assembly = """
+    CP 10, R.a
+    CP 0, R.b
+    DIV R.a, R.b
+    """
+    file_path = temp_dt_file(assembly)
+    dump_path = "/invalid/path/crash.json"
+
+    with patch.object(sys, "argv", ["dt31", "--dump-on-error", dump_path, file_path]):
+        with pytest.raises(SystemExit) as exc_info:
+            main()
+
+    assert exc_info.value.code == 1
+    captured = capsys.readouterr()
+    assert "Runtime error" in captured.err
+    # Should report failure to dump
+    assert "Failed to dump CPU state" in captured.err
+
+
+def test_dump_on_error_with_program_loaded(temp_dt_file, tmp_path, capsys):
+    """Test that dump includes the loaded program."""
+    assembly = """
+    CP 5, R.x
+    CP 3, R.y
+    CP 0, R.z
+    DIV R.x, R.z
+    """
+    file_path = temp_dt_file(assembly)
+    dump_path = tmp_path / "program_dump.json"
+
+    with patch.object(
+        sys, "argv", ["dt31", "--dump-on-error", str(dump_path), file_path]
+    ):
+        with pytest.raises(SystemExit) as exc_info:
+            main()
+
+    assert exc_info.value.code == 1
+
+    # Verify dump includes program
+    import json
+
+    with open(dump_path) as f:
+        dump_data = json.load(f)
+
+    assert dump_data["cpu_state"]["program"] is not None
+    assert "CP 5, R.x" in dump_data["cpu_state"]["program"]
+    assert "DIV R.x, R.z" in dump_data["cpu_state"]["program"]
