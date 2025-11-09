@@ -25,8 +25,8 @@
             <ul>
   <li><a href="#features">Features</a></li>
   <li><a href="#installation">Installation</a></li>
-  <li><a href="#quick-start">Quick Start</a></li>
-  <li><a href="#examples">Examples</a></li>
+  <li><a href="#whirlwind-language-tour">Whirlwind Language Tour</a></li>
+  <li><a href="#more-examples">More Examples</a></li>
   <li><a href="#core-concepts">Core Concepts</a></li>
   <li><a href="#usage-guide">Usage Guide</a></li>
   <li><a href="#documentation">Documentation</a></li>
@@ -61,7 +61,55 @@
                     <h1 class="modulename">
 dt31    </h1>
 
-                        <div class="docstring"><p>A toy computer emulator in Python with a simple instruction set and virtual machine. dt31 is a toy computer that simulates a CPU with registers, memory, a stack, and a rich instruction set.</p>
+                        <div class="docstring"><p>A toy computer emulator and assembly language written in Python. Build programs with 60+ built-in instructions for interacting with registers, memory, and the stack. Write your programs in the native assembly-like syntax or directly with the Python API.</p>
+
+<table>
+<tr>
+<th>countdown.dt</th>
+<th>countdown.py</th>
+</tr>
+<tr>
+<td>
+<pre><code>; countdown.dt
+
+; copy 5 to register a
+CP 5, R.a
+loop:
+    ; print register a
+    NOUT R.a, 1
+    ; a = a - 1
+    SUB R.a, 1
+    ; jump to loop if a &gt; 0
+    JGT loop, R.a, 0
+
+; run with: `dt31 countdown.dt`
+; output: 5 4 3 2 1
+</code></pre>
+</td>
+<td>
+<div class="pdoc-code codehilite">
+<pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">dt31</span><span class="w"> </span><span class="kn">import</span> <span class="n">DT31</span><span class="p">,</span> <span class="n">I</span><span class="p">,</span> <span class="n">L</span><span class="p">,</span> <span class="n">Label</span><span class="p">,</span> <span class="n">R</span>
+
+<span class="c1"># create vm with default settings</span>
+<span class="n">cpu</span> <span class="o">=</span> <span class="n">DT31</span><span class="p">()</span>
+
+<span class="n">program</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="n">I</span><span class="o">.</span><span class="n">CP</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="n">R</span><span class="o">.</span><span class="n">a</span><span class="p">),</span>
+    <span class="n">loop</span> <span class="o">:=</span> <span class="n">Label</span><span class="p">(</span><span class="s2">&quot;loop&quot;</span><span class="p">),</span>
+    <span class="n">I</span><span class="o">.</span><span class="n">NOUT</span><span class="p">(</span><span class="n">R</span><span class="o">.</span><span class="n">a</span><span class="p">,</span> <span class="n">L</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span>
+    <span class="n">I</span><span class="o">.</span><span class="n">SUB</span><span class="p">(</span><span class="n">R</span><span class="o">.</span><span class="n">a</span><span class="p">,</span> <span class="n">L</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span>
+    <span class="n">I</span><span class="o">.</span><span class="n">JGT</span><span class="p">(</span><span class="n">loop</span><span class="p">,</span> <span class="n">R</span><span class="o">.</span><span class="n">a</span><span class="p">,</span> <span class="n">L</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span>
+<span class="p">]</span>
+
+<span class="n">cpu</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">program</span><span class="p">)</span>
+</code></pre>
+</div>
+
+
+</td>
+
+</tr>
+</table>
 
 <h2 id="features">Features</h2>
 
@@ -84,7 +132,7 @@ dt31    </h1>
 </code></pre>
 </div>
 
-<h2 id="quick-start">Quick Start</h2>
+<h2 id="whirlwind-language-tour">Whirlwind Language Tour</h2>
 
 <h3 id="hello-world">Hello World</h3>
 
@@ -185,7 +233,7 @@ dt31    </h1>
 <span class="n">program</span> <span class="o">=</span> <span class="p">[</span>
     <span class="n">I</span><span class="o">.</span><span class="n">CP</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="n">R</span><span class="o">.</span><span class="n">a</span><span class="p">),</span>
     <span class="n">loop</span> <span class="o">:=</span> <span class="n">Label</span><span class="p">(</span><span class="s2">&quot;loop&quot;</span><span class="p">),</span>
-    <span class="n">I</span><span class="o">.</span><span class="n">OOUT</span><span class="p">(</span><span class="n">LC</span><span class="p">[</span><span class="s2">&quot;*&quot;</span><span class="p">]),</span>           <span class="c1"># Print asterisk</span>
+    <span class="n">I</span><span class="o">.</span><span class="n">OOUT</span><span class="p">(</span><span class="n">LC</span><span class="p">[</span><span class="s2">&quot;*&quot;</span><span class="p">]),</span>
     <span class="n">I</span><span class="o">.</span><span class="n">SUB</span><span class="p">(</span><span class="n">R</span><span class="o">.</span><span class="n">a</span><span class="p">,</span> <span class="n">L</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span>
     <span class="n">I</span><span class="o">.</span><span class="n">JGT</span><span class="p">(</span><span class="n">loop</span><span class="p">,</span> <span class="n">R</span><span class="o">.</span><span class="n">a</span><span class="p">,</span> <span class="n">L</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span>
 <span class="p">]</span>
@@ -201,15 +249,6 @@ dt31    </h1>
 <span class="c1">#     JGT loop, R.a, 0</span>
 </code></pre>
 </div>
-
-<p>This is useful for:</p>
-
-<ul>
-<li>Debugging generated programs</li>
-<li>Sharing programs in text format</li>
-<li>Documentation and teaching</li>
-<li>Round-trip conversion (Python ↔ text)</li>
-</ul>
 
 <h3 id="using-the-command-line">Using the Command Line</h3>
 
@@ -345,9 +384,9 @@ NOUT R.a, 1  ; Outputs 15
 
 <p>Use <code>--dump error</code> for crash debugging or <code>--dump success</code> to inspect final state after successful execution.</p>
 
-<h2 id="examples">Examples</h2>
+<h2 id="more-examples">More Examples</h2>
 
-<p>For more examples including factorial, fibonacci, function calls, and more, see the <a href="./examples/">examples</a> directory.</p>
+<p>For even more examples including factorial, fibonacci, function calls, and more, see the <a href="./examples/">examples</a> directory.</p>
 
 <h2 id="core-concepts">Core Concepts</h2>
 
@@ -683,10 +722,11 @@ uv<span class="w"> </span>run<span class="w"> </span>invoke<span class="w"> </sp
 <li><input type="checkbox" class="task-list-item-checkbox" checked disabled> Python to text output</li>
 <li><input type="checkbox" class="task-list-item-checkbox" disabled> User-definable macros (in both python and assembly syntax)</li>
 <li><input type="checkbox" class="task-list-item-checkbox" disabled> File I/O</li>
-<li><input type="checkbox" class="task-list-item-checkbox" disabled> Data handling?</li>
-<li><input type="checkbox" class="task-list-item-checkbox" disabled> Input error handling rather than immediate crash</li>
-<li><input type="checkbox" class="task-list-item-checkbox" disabled> Preserve comments in parser (then text formatter)?</li>
-<li><input type="checkbox" class="task-list-item-checkbox" disabled> interpreter resume from dump</li>
+<li><input type="checkbox" class="task-list-item-checkbox" disabled> Data handling</li>
+<li><input type="checkbox" class="task-list-item-checkbox" disabled> Input error-handling</li>
+<li><input type="checkbox" class="task-list-item-checkbox" disabled> Preserve comments in parser</li>
+<li><input type="checkbox" class="task-list-item-checkbox" disabled> Formatter</li>
+<li><input type="checkbox" class="task-list-item-checkbox" disabled> Interpreter resume from dump</li>
 </ul>
 
 <h2 id="license">License</h2>

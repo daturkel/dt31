@@ -2,7 +2,56 @@
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](https://opensource.org/licenses/MIT) [![pdoc](https://img.shields.io/badge/docs-pdoc.dev-green)](https://pdoc.dev/docs/pdoc.html) [![Ruff](https://img.shields.io/badge/style-ruff-green.svg)](https://github.com/astral-sh/ruff) ![Coverage Badge](coverage-badge.svg)
 
-A toy computer emulator in Python with a simple instruction set and virtual machine. dt31 is a toy computer that simulates a CPU with registers, memory, a stack, and a rich instruction set.
+A toy computer emulator and assembly language written in Python. Build programs with 60+ built-in instructions for interacting with registers, memory, and the stack. Write your programs in the native assembly-like syntax or directly with the Python API.
+
+<table>
+<tr>
+<th>countdown.dt</th>
+<th>countdown.py</th>
+</tr>
+<tr>
+<td>
+
+```x86asm
+; countdown.dt
+
+; copy 5 to register a
+CP 5, R.a
+loop:
+    ; print register a
+    NOUT R.a, 1
+    ; a = a - 1
+    SUB R.a, 1
+    ; jump to loop if a > 0
+    JGT loop, R.a, 0
+
+; run with: `dt31 countdown.dt`
+; output: 5 4 3 2 1
+```
+</td>
+<td>
+
+```python
+from dt31 import DT31, I, L, Label, R
+
+# create vm with default settings
+cpu = DT31()
+
+program = [
+    I.CP(5, R.a),
+    loop := Label("loop"),
+    I.NOUT(R.a, L[1]),
+    I.SUB(R.a, L[1]),
+    I.JGT(loop, R.a, L[0]),
+]
+
+cpu.run(program)
+```
+
+</td>
+
+</tr>
+</table>
 
 ## Features
 
@@ -22,7 +71,7 @@ A toy computer emulator in Python with a simple instruction set and virtual mach
 pip install dt31
 ```
 
-## Quick Start
+## Whirlwind Language Tour
 
 ### Hello World
 
@@ -119,7 +168,7 @@ from dt31.operands import R, L, LC
 program = [
     I.CP(5, R.a),
     loop := Label("loop"),
-    I.OOUT(LC["*"]),           # Print asterisk
+    I.OOUT(LC["*"]),
     I.SUB(R.a, L[1]),
     I.JGT(loop, R.a, L[0]),
 ]
@@ -134,12 +183,6 @@ print(text)
 #     SUB R.a, 1, R.a
 #     JGT loop, R.a, 0
 ```
-
-This is useful for:
-- Debugging generated programs
-- Sharing programs in text format
-- Documentation and teaching
-- Round-trip conversion (Python ↔ text)
 
 ### Using the Command Line
 
@@ -268,9 +311,9 @@ Error dumps include both `repr` and `str` formats of the failing instruction for
 
 Use `--dump error` for crash debugging or `--dump success` to inspect final state after successful execution.
 
-## Examples
+## More Examples
 
-For more examples including factorial, fibonacci, function calls, and more, see the [examples](./examples/) directory.
+For even more examples including factorial, fibonacci, function calls, and more, see the [examples](./examples/) directory.
 
 ## Core Concepts
 
@@ -538,10 +581,11 @@ DT31 is open-source and contributors are welcome on [Github](https://github.com/
 - [x] Python to text output
 - [ ] User-definable macros (in both python and assembly syntax)
 - [ ] File I/O
-- [ ] Data handling?
-- [ ] Input error handling rather than immediate crash
-- [ ] Preserve comments in parser (then text formatter)?
-- [ ] interpreter resume from dump
+- [ ] Data handling
+- [ ] Input error-handling
+- [ ] Preserve comments in parser
+- [ ] Formatter
+- [ ] Interpreter resume from dump
 
 ## License
 
