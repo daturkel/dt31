@@ -638,8 +638,8 @@ uv<span class="w"> </span>run<span class="w"> </span>invoke<span class="w"> </sp
 uv<span class="w"> </span>sync<span class="w"> </span>--dev
 
 <span class="c1"># Set up pre-commit hooks</span>
-pre-commit<span class="w"> </span>install
-pre-commit<span class="w"> </span>install<span class="w"> </span>--hook-type<span class="w"> </span>pre-push
+uv<span class="w"> </span>run<span class="w"> </span>prek<span class="w"> </span>install<span class="w"> </span>--install-hooks
+uv<span class="w"> </span>run<span class="w"> </span>prek<span class="w"> </span>install<span class="w"> </span>--hook-type<span class="w"> </span>pre-push
 
 <span class="c1"># Run tests</span>
 uv<span class="w"> </span>run<span class="w"> </span>invoke<span class="w"> </span><span class="nb">test</span>

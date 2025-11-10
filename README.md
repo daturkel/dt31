@@ -496,8 +496,8 @@ Key documentation pages:
 uv sync --dev
 
 # Set up pre-commit hooks
-pre-commit install
-pre-commit install --hook-type pre-push
+uv run prek install --install-hooks
+uv run prek install --hook-type pre-push
 
 # Run tests
 uv run invoke test
