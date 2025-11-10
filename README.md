@@ -135,9 +135,8 @@ greet:
     RET
 
 end:
+; output: `Hi! Hi! Hi! `
 ```
-
-Output: `Hi! Hi! Hi! `
 
 Functions use the stack for return addresses and can be called multiple times. See the [examples](https://github.com/daturkel/dt31/tree/main/examples) directory for more complex examples.
 
