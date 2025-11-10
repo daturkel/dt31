@@ -8,7 +8,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v5
-      - uses: j178/prek-action@v1
       - name: Install uv
         uses: astral-sh/setup-uv@v7
         with:
@@ -21,6 +20,7 @@ jobs:
           python-version-file: "pyproject.toml"
       - name: Install the project
         run: uv sync --frozen --group dev
+      - uses: j178/prek-action@v1
       - name: Run tests
         run: uv run inv test --ci
       - name: Generate coverage badge
