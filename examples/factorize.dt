@@ -1,0 +1,38 @@
+; Prime factorization using trial division
+; R.a = number to factorize (gets reduced as we find factors)
+; R.b = current divisor to try
+; R.c = scratch register
+
+; Read input number
+NIN R.a
+; Start trying divisors from 2
+CP 2, R.b
+
+; Main loop: keep finding factors until number becomes 1
+factorize_loop:
+    ; If number is 1, we're done
+    JEQ done, R.a, 1
+    ; If divisor squared > number, remaining number is prime
+    ; Check if R.b * R.b > R.a
+    MUL R.b, R.b, R.c
+    JGT last_prime, R.c, R.a
+    ; Try dividing by current divisor
+    MOD R.a, R.b, R.c
+    JEQ found_factor, R.c, 0
+    ; Not a factor, try next divisor
+    ADD R.b, 1
+    JMP factorize_loop
+
+found_factor:
+    ; Output the factor
+    NOUT R.b, 1
+    ; Divide number by the factor
+    DIV R.a, R.b
+    ; Try same divisor again (to get repeated factors)
+    JMP factorize_loop
+
+last_prime:
+    ; The remaining number is prime (and > 1)
+    NOUT R.a, 1
+
+done:
