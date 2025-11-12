@@ -2,6 +2,8 @@ import sys
 from pathlib import Path
 from unittest.mock import patch
 
+import pytest
+
 from dt31 import DT31
 from dt31.parser import parse_program
 
@@ -22,7 +24,7 @@ from hello_world import hello_world  # type: ignore # noqa: E402
 from simple_calculator import calculator  # type: ignore # noqa: E402
 from sum_array import sum_array  # type: ignore # noqa: E402
 
-TESTED_PROGRAMS = [
+TESTED_PYTHON_PROGRAMS = [
     "bitwise_operations.py",
     "conditional_logic.py",
     "custom_instructions.py",
@@ -222,7 +224,116 @@ def test_sum_array(capsys):
     assert captured.out == expected_output
 
 
-def test_all_examples_are_tested():
+def test_all_py_examples_are_tested():
     all_example_files = sorted([f.name for f in examples_dir.glob("*.py")])
 
-    assert sorted(TESTED_PROGRAMS) == all_example_files
+    assert sorted(TESTED_PYTHON_PROGRAMS) == all_example_files
+
+
+# Define expected outputs for each .dt file
+# Format: filename -> (input_values, expected_output) or just expected_output if no input
+DT_FILE_EXPECTED_IO = {
+    "countdown.dt": (None, "5\n4\n3\n2\n1\n"),
+    "factorial.dt": (["5"], "120\n"),
+    "factorize.dt": (["12"], "2\n2\n3\n"),
+    "hello.dt": (None, "Hello World!\n"),
+}
+
+
+@pytest.mark.parametrize(
+    "dt_file",
+    [f.name for f in examples_dir.glob("*.dt") if f.name in DT_FILE_EXPECTED_IO],
+)
+def test_dt_file(dt_file, capsys):
+    """Test that .dt assembly files can be parsed and run."""
+    test_data = DT_FILE_EXPECTED_IO[dt_file]
+
+    dt_path = examples_dir / dt_file
+
+    # Parse the program
+    with open(dt_path) as f:
+        assembly = f.read()
+
+    program = parse_program(assembly)
+
+    # Create CPU and run
+    cpu = DT31()
+
+    # Unpack test data
+    input_values, expected_output = test_data
+
+    if input_values is not None:
+        # Mock input for programs that require it
+        with patch("builtins.input", side_effect=input_values):
+            cpu.run(program, debug=False)
+    else:
+        # Run without mocking input
+        cpu.run(program, debug=False)
+
+    # Check output
+    captured = capsys.readouterr()
+    assert captured.out == expected_output
+
+
+def test_crash_dt():
+    """Test that crash.dt raises a ZeroDivisionError as expected."""
+    dt_path = examples_dir / "crash.dt"
+
+    with open(dt_path) as f:
+        assembly = f.read()
+
+    program = parse_program(assembly)
+    cpu = DT31()
+
+    # The crash.dt program divides by zero
+    with pytest.raises(ZeroDivisionError):
+        cpu.run(program, debug=False)
+
+
+def test_binomial_dist_dt(capsys):
+    """Test that binomial_dist.dt runs without error.
+
+    We don't check the exact output since it's random, but we verify:
+    1. The program runs to completion
+    2. It produces output
+    3. The output is a valid number in the expected range
+    """
+    dt_path = examples_dir / "binomial_dist.dt"
+
+    with open(dt_path) as f:
+        assembly = f.read()
+
+    program = parse_program(assembly)
+    # Program uses: R.n, R.c, R.cc, R.s, R.r, R.avg
+    cpu = DT31(registers=["n", "c", "cc", "s", "r", "avg"])
+
+    # Mock input for n parameter
+    with patch("builtins.input", side_effect=["10"]):
+        cpu.run(program, debug=False)
+
+    # Capture output
+    captured = capsys.readouterr()
+    output = captured.out
+
+    # Verify we got output
+    assert output, "binomial_dist.dt should produce output"
+
+    # Verify output is a number (the average)
+    lines = output.strip().split("\n")
+    assert len(lines) == 1, "Should output exactly one line"
+
+    result = int(lines[0])
+    # For B(10, 0.5), the expected value is 5, but allow reasonable variance
+    assert 0 <= result <= 10, f"Average should be between 0 and 10, got {result}"
+
+
+TESTED_ASSEMBLY_PROGRAMS = list(DT_FILE_EXPECTED_IO.keys()) + [
+    "binomial_dist.dt",
+    "crash.dt",
+]
+
+
+def test_all_asm_examples_are_tested():
+    all_example_files = sorted([f.name for f in examples_dir.glob("*.dt")])
+
+    assert sorted(TESTED_ASSEMBLY_PROGRAMS) == all_example_files
