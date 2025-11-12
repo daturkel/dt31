@@ -28,10 +28,9 @@ def test_basic_imports():
         from dt31.parser import parse_program  # noqa: F401
 
         print("✓ All core modules imported successfully")
-        return True
     except ImportError as e:
         print(f"✗ Import failed: {e}")
-        return False
+        assert False
 
 
 def test_basic_execution():
@@ -56,14 +55,13 @@ def test_basic_execution():
 
         if output.strip() == "42":
             print("✓ Basic program execution works")
-            return True
         else:
             print(f"✗ Program output incorrect: expected '42', got '{output.strip()}'")
-            return False
+            assert False
     except Exception as e:
         sys.stdout = old_stdout
         print(f"✗ Basic execution failed: {e}")
-        return False
+        assert False
 
 
 def test_parser():
@@ -91,14 +89,13 @@ def test_parser():
 
         if output.strip() == "5":
             print("✓ Parser works")
-            return True
         else:
             print(f"✗ Parser output incorrect: expected '5', got '{output.strip()}'")
-            return False
+            assert False
     except Exception as e:
         sys.stdout = old_stdout
         print(f"✗ Parser test failed: {e}")
-        return False
+        assert False
 
 
 def test_labels():
@@ -118,15 +115,14 @@ def test_labels():
 
         if cpu.get_register("a") == 0:
             print("✓ Label resolution works")
-            return True
         else:
             print(
                 f"✗ Label test failed: register a = {cpu.get_register('a')}, expected 0"
             )
-            return False
+            assert False
     except Exception as e:
         print(f"✗ Label test failed: {e}")
-        return False
+        assert False
 
 
 def test_stack_operations():
@@ -146,15 +142,14 @@ def test_stack_operations():
 
         if cpu.get_register("a") == 42:
             print("✓ Stack operations work")
-            return True
         else:
             print(
                 f"✗ Stack test failed: register a = {cpu.get_register('a')}, expected 42"
             )
-            return False
+            assert False
     except Exception as e:
         print(f"✗ Stack test failed: {e}")
-        return False
+        assert False
 
 
 def test_memory_operations():
@@ -172,15 +167,14 @@ def test_memory_operations():
 
         if cpu.get_register("a") == 99:
             print("✓ Memory operations work")
-            return True
         else:
             print(
                 f"✗ Memory test failed: register a = {cpu.get_register('a')}, expected 99"
             )
-            return False
+            assert False
     except Exception as e:
         print(f"✗ Memory test failed: {e}")
-        return False
+        assert False
 
 
 def test_program_to_text():
@@ -200,13 +194,12 @@ def test_program_to_text():
 
         if "CP 5, R.a" in text and "loop:" in text and "JGT" in text:
             print("✓ Program to text conversion works")
-            return True
         else:
             print(f"✗ Program to text failed: unexpected output\n{text}")
-            return False
+            assert False
     except Exception as e:
         print(f"✗ Program to text test failed: {e}")
-        return False
+        assert False
 
 
 def main():
