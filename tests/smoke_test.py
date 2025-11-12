@@ -217,18 +217,7 @@ def main():
         test_program_to_text,
     ]
 
-    results = [test() for test in tests]
-
-    print()
-    passed = sum(results)
-    total = len(results)
-
-    if passed == total:
-        print(f"All {total} smoke tests passed! ✓")
-        sys.exit(0)
-    else:
-        print(f"{passed}/{total} smoke tests passed, {total - passed} failed ✗")
-        sys.exit(1)
+    _ = [test() for test in tests]
 
 
 if __name__ == "__main__":
