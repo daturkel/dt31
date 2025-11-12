@@ -40,7 +40,8 @@ calculator = [
     end,
 ]
 
-cpu = DT31(registers=["a", "b", "c", "d", "e"])
-print("Simple calculator: (a + b) * (c + d)")
-print("Enter four numbers:")
-cpu.run(calculator, debug=False)
+if __name__ == "__main__":
+    cpu = DT31(registers=["a", "b", "c", "d", "e"])
+    print("Simple calculator: (a + b) * (c + d)")
+    print("Enter four numbers:")
+    cpu.run(calculator, debug=False)

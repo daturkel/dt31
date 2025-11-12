@@ -41,6 +41,7 @@ sum_array = [
     I.NOUT(R.a, L[1]),
 ]
 
-cpu = DT31(registers=["a", "b", "c"])
-print("Enter numbers to sum (enter 0 to finish):")
-cpu.run(sum_array, debug=False)
+if __name__ == "__main__":
+    cpu = DT31(registers=["a", "b", "c"])
+    print("Enter numbers to sum (enter 0 to finish):")
+    cpu.run(sum_array, debug=False)
