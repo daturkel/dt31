@@ -63,8 +63,9 @@ factorial_memoized = [
     I.RJMP(start),
 ]
 
-cpu = DT31(registers=["a", "b", "c", "max"])
-print("The program caches results in memory - try entering")
-print("the same number twice or increasing numbers to see")
-print("instant lookups! Press Ctrl+C to exit.")
-cpu.run(factorial_memoized, debug=False)
+if __name__ == "__main__":
+    cpu = DT31(registers=["a", "b", "c", "max"])
+    print("The program caches results in memory - try entering")
+    print("the same number twice or increasing numbers to see")
+    print("instant lookups! Press Ctrl+C to exit.")
+    cpu.run(factorial_memoized, debug=False)

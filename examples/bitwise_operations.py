@@ -5,7 +5,7 @@ Shows various bitwise operations: AND, OR, XOR, NOT, shift left, shift right.
 
 import dt31.instructions as I
 from dt31.cpu import DT31
-from dt31.operands import R, L
+from dt31.operands import L, R
 
 # Demonstrate bitwise operations
 bitwise_ops = [
@@ -32,7 +32,8 @@ bitwise_ops = [
     I.NOUT(R.c, L[1]),
 ]
 
-cpu = DT31(registers=["a", "b", "c"])
-print("Enter two numbers for bitwise operations:")
-print("Results will be: AND, OR, XOR, NOT(first), first<<2, first>>1")
-cpu.run(bitwise_ops, debug=False)
+if __name__ == "__main__":
+    cpu = DT31(registers=["a", "b", "c"])
+    print("Enter two numbers for bitwise operations:")
+    print("Results will be: AND, OR, XOR, NOT(first), first<<2, first>>1")
+    cpu.run(bitwise_ops, debug=False)

@@ -33,6 +33,16 @@ class CLAMP(BinaryOperation):
         return max(0, min(val, max_val))
 
 
+ASSEMBLY = """
+    CP 5, R.a
+    SQUARE R.a          ; a = 25
+    NOUT R.a, 1
+
+    CP 150, R.b
+    CLAMP R.b, 100, R.c ; c = 100 (clamped)
+    NOUT R.c, 1
+"""
+
 if __name__ == "__main__":
     cpu = DT31()
 
@@ -43,17 +53,8 @@ if __name__ == "__main__":
     }
 
     # Program using custom instructions
-    assembly = """
-        CP 5, R.a
-        SQUARE R.a          ; a = 25
-        NOUT R.a, 1
 
-        CP 150, R.b
-        CLAMP R.b, 100, R.c ; c = 100 (clamped)
-        NOUT R.c, 1
-    """
-
-    program = parse_program(assembly, custom_instructions=custom_instructions)
+    program = parse_program(ASSEMBLY, custom_instructions=custom_instructions)
     cpu.run(program)
     # Output:
     # 25
