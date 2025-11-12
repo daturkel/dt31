@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import random
 from typing import TYPE_CHECKING
 
 from dt31.operands import Destination, L, Label, Operand, Reference, as_op
@@ -30,13 +31,14 @@ class Instruction:
     Implementing New Instructions
     ------------------------------
     To create a new instruction, subclass `Instruction` (or, even better, a helper subclass
-    like `UnaryOperation` or `BinaryOperation`) and implement:
+    like `NullaryOperation`, `UnaryOperation`, or `BinaryOperation`) and implement:
 
     - `__init__(self)`: Pass the instruction's args to the `__init__` method of the parent
       class.
     - `_calc(cpu)`: Perform the instruction's operation and return a result value.
       This value is available to the instruction but typically only used for operations
-      that need to store results (via `BinaryOperation` or `UnaryOperation` base classes).
+      that need to store results (via `NullaryOperation`,`BinaryOperation` or `UnaryOperation`
+      base classes).
     - `_advance(cpu)` (optional): Override to customize how the instruction pointer moves.
       Default behavior increments IP by 1. Jump instructions override this to modify
       control flow.
@@ -171,6 +173,39 @@ class NOOP(Instruction):
 
     def _calc(self, cpu: DT31) -> int:
         return 0
+
+
+class NullaryOperation(Instruction):
+    """Base class for instructions which take no input operands and write to an output
+    operand."""
+
+    out: Reference  # Always set to a Reference in __init__
+
+    def __init__(self, name: str, out: Reference):
+        """Base class for instructions which take no input operands and write to an
+        output operand.
+
+        Args:
+            name: The name of the instruction (e.g., "RND").
+            out: Output reference for result.
+        """
+        super().__init__(name)
+        if not isinstance(out, Reference):
+            raise ValueError("argument `out` must be a Reference")
+        self.out = out
+
+    def __call__(self, cpu: DT31) -> int:
+        value = super().__call__(cpu)
+        cpu[self.out] = value
+        return value
+
+    def __repr__(self) -> str:
+        """Return Python API representation."""
+        return f"{self.name}(out={self.out!r})"
+
+    def __str__(self) -> str:
+        """Return assembly text representation."""
+        return f"{self.name} {self.out}"
 
 
 class UnaryOperation(Instruction):
@@ -1164,6 +1199,7 @@ class SEMP(Instruction):
 # ---------------------------------------- I/O --------------------------------------- #
 
 
+# TODO: Should this force out to be non-null? (breaking change)
 class CP(UnaryOperation):
     """Copy operand value to output reference."""
 
@@ -1321,3 +1357,44 @@ class BRKD(Instruction):
         # Switch to debug mode - run() will handle waiting for input
         cpu.debug_mode = True
         return 0
+
+
+# ------------------------------------ Randomness ------------------------------------ #
+
+
+class RND(NullaryOperation):
+    """Return a random bit."""
+
+    def __init__(self, out: Reference):
+        """
+        Args:
+            out: Output reference for result.
+        """
+        super().__init__("RND", out)
+
+    def _calc(self, cpu: DT31) -> int:
+        return random.getrandbits(1)
+
+
+class RINT(BinaryOperation):
+    """Return a random number between a and b (inclusive)."""
+
+    def __init__(
+        self, a: Operand | int, b: Operand | int, out: Reference | None = None
+    ):
+        """
+        Args:
+            a: Lowest integer value allowed
+            b: Second operand of the addition.
+            out: Optional output reference for result. If not provided, result stored in
+                first operand.
+        """
+        super().__init__("ADD", a, b, out)
+
+    def _calc(self, cpu: DT31) -> int:
+        a = self.a.resolve(cpu)
+        b = self.b.resolve(cpu)
+        if b < a:
+            raise ValueError(f"RINT argument b must be ≥ argument a; got {a=}, {b=}")
+
+        return random.randint(a, b)

@@ -1,0 +1,32 @@
+; Generate 100 samples from B(n, 0.5), then print average
+; R.n  = parameter n
+; R.c  = sample_loop counter (0-100)
+; R.cc = get_sample counter (0-n)
+; R.s  = sample
+; R.r  = random bit
+; R.a  = average
+; M[i] = ith sample
+
+; Get n
+NIN R.n
+
+; Generate i samples
+sample_loop:
+    CP 0, R.cc ; restart the get_sample counter
+    CP 0, R.s  ; zero out the sample
+    CALL get_sample
+    ADD R.avg, M[R.c] ; accumulate the running sum
+    ADD R.c, 1
+    JEQ end R.c, 100 ; loop until we have 100 samples
+    JMP sample_loop
+
+get_sample:
+    RND R.r                   ; get random bit
+    ADD M[R.c], R.r           ; add to M[R.c]
+    ADD R.cc, 1               ; increment counter
+    JGT get_sample, R.n, R.cc ; loop if inner counter < n
+    RET
+
+end:
+    DIV R.avg, 100
+    NOUT R.avg, 1

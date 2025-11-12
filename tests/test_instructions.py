@@ -21,6 +21,36 @@ def test_noop(cpu):
     assert cpu.registers == registers
 
 
+def test_nullary_operation_advances_one(cpu):
+    I.RND(M[0])(cpu)
+    assert cpu.get_register("ip") == 1
+    I.RND(M[0])(cpu)
+    assert cpu.get_register("ip") == 2
+
+
+def test_nullary_operation_writes_memory(cpu):
+    cpu.set_memory(0, 100)
+    I.RND(M[0])(cpu)
+    assert cpu.get_memory(0) in {0, 1}
+
+
+def test_nullary_operation_writes_register(cpu):
+    cpu.set_register("a", 100)
+    I.RND(R.a)(cpu)
+    assert cpu.get_register("a") in {0, 1}
+
+
+def test_nullary_operation_validates_types(cpu):
+    with pytest.raises(ValueError) as e1:
+        I.RND(L[1])  # type: ignore
+    assert str(e1.value).endswith("must be a Reference")
+
+
+def test_nullary_representations(cpu):
+    assert str(I.RND(M[0])) == "RND [0]"
+    assert repr(I.RND(M[0])) == "RND(out=M[0])"
+
+
 def test_unary_operation_advances_one(cpu):
     I.NOT(1, M[10])(cpu)
     assert cpu.get_register("ip") == 1
@@ -719,3 +749,26 @@ def test_brk_and_brkd_equality(cpu):
     assert I.BRK() == I.BRK()
     assert I.BRKD() == I.BRKD()
     assert I.BRK() != I.BRKD()
+
+
+def test_rnd(cpu):
+    for i in range(100):
+        I.RND(M[i])(cpu)
+    assert any(cpu.memory[:100])
+    assert not all(cpu.memory[:100])
+    for m in cpu.memory[:100]:
+        assert m in {0, 1}
+
+
+def test_rint(cpu):
+    for i in range(100):
+        I.RINT(4, 10, M[i])(cpu)
+    print(cpu.memory)
+    for i in range(4, 11):
+        assert i in cpu.memory[:100]
+    for i in cpu.memory[:100]:
+        assert i in range(4, 11)
+
+    with pytest.raises(ValueError) as e:
+        I.RINT(5, 1, M[101])(cpu)
+    assert "got a=5, b=1" in str(e.value)
