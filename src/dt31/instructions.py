@@ -1199,23 +1199,33 @@ class SEMP(Instruction):
 # ---------------------------------------- I/O --------------------------------------- #
 
 
-# TODO: Should this force out to be non-null? (breaking change)
-class CP(UnaryOperation):
+class CP(Instruction):
     """Copy operand value to output reference."""
 
-    def __init__(self, a: Operand | int, out: Reference | None = None):
+    def __init__(self, a: Operand | int, b: Reference):
         """
         Args:
             a: Source operand to copy from.
-            out: Optional output reference for result. If not provided, result stored in
-                first operand.
+            b: Output reference to copy to.
         """
-        super().__init__("CP", a, out)
+        super().__init__("CP")
+        self.a = as_op(a)
+        if not isinstance(b, Reference):
+            raise ValueError("argument `b` must be a Reference")
+        self.b = b
 
     def _calc(self, cpu: DT31) -> int:
         value = self.a.resolve(cpu)
-        cpu[self.out] = value
+        cpu[self.b] = value
         return value
+
+    def __repr__(self) -> str:
+        """Return Python API representation."""
+        return f"{self.name}(a={self.a!r}, b={self.b!r})"
+
+    def __str__(self) -> str:
+        """Return assembly text representation."""
+        return f"{self.name} {self.a}, {self.b}"
 
 
 class NOUT(Instruction):

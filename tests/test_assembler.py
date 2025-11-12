@@ -466,7 +466,7 @@ def test_modifying_result_does_not_affect_original():
     result[0] = I.NOOP()
 
     # Original should be unchanged
-    assert repr(program[0]) == "CP(a=0, out=R.a)"
+    assert repr(program[0]) == "CP(a=0, b=R.a)"
 
 
 # ============================================================================

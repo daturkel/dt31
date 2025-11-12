@@ -87,6 +87,13 @@ def test_unary_operation_writes_to_default_memory(cpu):
     assert cpu.get_memory(1) == -11
 
 
+def test_unary_operation_representations():
+    assert repr(I.BNOT(5, M[10])) == "BNOT(a=5, out=M[10])"
+    assert str(I.BNOT(5, M[10])) == "BNOT 5, [10]"
+    assert repr(I.NOT(R.a, R.b)) == "NOT(a=R.a, out=R.b)"
+    assert str(I.NOT(R.a, R.b)) == "NOT R.a, R.b"
+
+
 def test_binary_operation_advances_one(cpu):
     I.ADD(1, 1, M[10])(cpu)
     assert cpu.get_register("ip") == 1
@@ -415,7 +422,7 @@ def test_push_pop(cpu):
 
 
 def test_cp(cpu):
-    assert repr(I.CP(2, M[10])) == "CP(a=2, out=M[10])"
+    assert repr(I.CP(2, M[10])) == "CP(a=2, b=M[10])"
     assert str(I.CP(2, M[10])) == "CP 2, [10]"
     assert I.CP(2, M[10])(cpu) == 2
     assert cpu.get_memory(10) == 2
@@ -425,6 +432,12 @@ def test_cp(cpu):
     assert cpu.get_memory(0) == 30
     assert I.CP(M[10], R.b)(cpu) == 2
     assert cpu.get_register("b") == 2
+
+
+def test_cp_validates_b_is_reference():
+    with pytest.raises(ValueError) as e:
+        I.CP(5, L[10])  # type: ignore
+    assert "argument `b` must be a Reference" in str(e.value)
 
 
 def test_nout_no_newline(cpu, capsys):
