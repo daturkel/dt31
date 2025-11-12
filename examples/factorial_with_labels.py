@@ -33,6 +33,7 @@ factorial = [
     I.NOUT(R.b, L[1]),
 ]
 
-cpu = DT31(registers=["a", "b"])
-print("Enter number to compute factorial:")
-cpu.run(factorial, debug=False)
+if __name__ == "__main__":
+    cpu = DT31(registers=["a", "b"])
+    print("Enter number to compute factorial:")
+    cpu.run(factorial, debug=False)

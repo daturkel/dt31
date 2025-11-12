@@ -27,5 +27,6 @@ hello_world = [
     I.RJEQ(L[-3], M[2], 0),
 ]
 
-cpu = DT31(registers=[])
-cpu.run(hello_world, debug=False)
+if __name__ == "__main__":
+    cpu = DT31(registers=[])
+    cpu.run(hello_world, debug=False)

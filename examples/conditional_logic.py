@@ -6,7 +6,7 @@ of three numbers.
 
 import dt31.instructions as I
 from dt31.cpu import DT31
-from dt31.operands import R, L
+from dt31.operands import L, R
 
 # Find maximum of three numbers
 find_max = [
@@ -27,6 +27,7 @@ find_max = [
     I.NOUT(R.a, L[1]),
 ]
 
-cpu = DT31(registers=["a", "b", "c"])
-print("Enter three numbers to find the maximum:")
-cpu.run(find_max, debug=False)
+if __name__ == "__main__":
+    cpu = DT31(registers=["a", "b", "c"])
+    print("Enter three numbers to find the maximum:")
+    cpu.run(find_max, debug=False)
