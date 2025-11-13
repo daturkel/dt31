@@ -785,3 +785,53 @@ def test_rint(cpu):
     with pytest.raises(ValueError) as e:
         I.RINT(5, 1, M[101])(cpu)
     assert "got a=5, b=1" in str(e.value)
+
+
+def test_exit_default_status_code(cpu):
+    """Test EXIT instruction with default status code (0)."""
+    with pytest.raises(SystemExit) as e:
+        I.EXIT()(cpu)
+    assert e.value.code == 0
+
+
+def test_exit_with_literal_status_code(cpu):
+    """Test EXIT instruction with literal status code."""
+    with pytest.raises(SystemExit) as e:
+        I.EXIT(42)(cpu)
+    assert e.value.code == 42
+
+
+def test_exit_with_register_status_code(cpu):
+    """Test EXIT instruction with status code from register."""
+    cpu.set_register("a", 5)
+    with pytest.raises(SystemExit) as e:
+        I.EXIT(R.a)(cpu)
+    assert e.value.code == 5
+
+
+def test_exit_with_memory_status_code(cpu):
+    """Test EXIT instruction with status code from memory."""
+    cpu.set_memory(10, 7)
+    with pytest.raises(SystemExit) as e:
+        I.EXIT(M[10])(cpu)
+    assert e.value.code == 7
+
+
+def test_exit_representations():
+    """Test string representations of EXIT instruction."""
+    assert str(I.EXIT()) == "EXIT 0"
+    assert str(I.EXIT(42)) == "EXIT 42"
+    assert str(I.EXIT(R.a)) == "EXIT R.a"
+    assert repr(I.EXIT()) == "EXIT(status_code=0)"
+    assert repr(I.EXIT(42)) == "EXIT(status_code=42)"
+    assert repr(I.EXIT(R.a)) == "EXIT(status_code=R.a)"
+
+
+def test_exit_equality():
+    """Test EXIT instruction equality comparison."""
+    assert I.EXIT() == I.EXIT()
+    assert I.EXIT(0) == I.EXIT()
+    assert I.EXIT(42) == I.EXIT(42)
+    assert I.EXIT(42) != I.EXIT(5)
+    assert I.EXIT(R.a) == I.EXIT(R.a)
+    assert I.EXIT(R.a) != I.EXIT(R.b)
