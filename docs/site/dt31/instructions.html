@@ -628,6 +628,18 @@
 
             </li>
             <li>
+                    <a class="class" href="#EXIT">EXIT</a>
+                            <ul class="memberlist">
+                        <li>
+                                <a class="function" href="#EXIT.__init__">EXIT</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#EXIT.status_code">status_code</a>
+                        </li>
+                </ul>
+
+            </li>
+            <li>
                     <a class="class" href="#RND">RND</a>
                             <ul class="memberlist">
                         <li>
@@ -2037,45 +2049,69 @@
 </span><span id="L-1369"><a href="#L-1369"><span class="linenos">1369</span></a>        <span class="k">return</span> <span class="mi">0</span>
 </span><span id="L-1370"><a href="#L-1370"><span class="linenos">1370</span></a>
 </span><span id="L-1371"><a href="#L-1371"><span class="linenos">1371</span></a>
-</span><span id="L-1372"><a href="#L-1372"><span class="linenos">1372</span></a><span class="c1"># ------------------------------------ Randomness ------------------------------------ #</span>
-</span><span id="L-1373"><a href="#L-1373"><span class="linenos">1373</span></a>
+</span><span id="L-1372"><a href="#L-1372"><span class="linenos">1372</span></a><span class="k">class</span><span class="w"> </span><span class="nc">EXIT</span><span class="p">(</span><span class="n">Instruction</span><span class="p">):</span>
+</span><span id="L-1373"><a href="#L-1373"><span class="linenos">1373</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Exit the program with a status code.&quot;&quot;&quot;</span>
 </span><span id="L-1374"><a href="#L-1374"><span class="linenos">1374</span></a>
-</span><span id="L-1375"><a href="#L-1375"><span class="linenos">1375</span></a><span class="k">class</span><span class="w"> </span><span class="nc">RND</span><span class="p">(</span><span class="n">NullaryOperation</span><span class="p">):</span>
-</span><span id="L-1376"><a href="#L-1376"><span class="linenos">1376</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Return a random bit.&quot;&quot;&quot;</span>
-</span><span id="L-1377"><a href="#L-1377"><span class="linenos">1377</span></a>
-</span><span id="L-1378"><a href="#L-1378"><span class="linenos">1378</span></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">out</span><span class="p">:</span> <span class="n">Reference</span><span class="p">):</span>
-</span><span id="L-1379"><a href="#L-1379"><span class="linenos">1379</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-</span><span id="L-1380"><a href="#L-1380"><span class="linenos">1380</span></a><span class="sd">        Args:</span>
-</span><span id="L-1381"><a href="#L-1381"><span class="linenos">1381</span></a><span class="sd">            out: Output reference for result.</span>
-</span><span id="L-1382"><a href="#L-1382"><span class="linenos">1382</span></a><span class="sd">        &quot;&quot;&quot;</span>
-</span><span id="L-1383"><a href="#L-1383"><span class="linenos">1383</span></a>        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="s2">&quot;RND&quot;</span><span class="p">,</span> <span class="n">out</span><span class="p">)</span>
-</span><span id="L-1384"><a href="#L-1384"><span class="linenos">1384</span></a>
-</span><span id="L-1385"><a href="#L-1385"><span class="linenos">1385</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">_calc</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cpu</span><span class="p">:</span> <span class="n">DT31</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-</span><span id="L-1386"><a href="#L-1386"><span class="linenos">1386</span></a>        <span class="k">return</span> <span class="n">random</span><span class="o">.</span><span class="n">getrandbits</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
-</span><span id="L-1387"><a href="#L-1387"><span class="linenos">1387</span></a>
-</span><span id="L-1388"><a href="#L-1388"><span class="linenos">1388</span></a>
-</span><span id="L-1389"><a href="#L-1389"><span class="linenos">1389</span></a><span class="k">class</span><span class="w"> </span><span class="nc">RINT</span><span class="p">(</span><span class="n">BinaryOperation</span><span class="p">):</span>
-</span><span id="L-1390"><a href="#L-1390"><span class="linenos">1390</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Return a random number between a and b (inclusive).&quot;&quot;&quot;</span>
-</span><span id="L-1391"><a href="#L-1391"><span class="linenos">1391</span></a>
-</span><span id="L-1392"><a href="#L-1392"><span class="linenos">1392</span></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
-</span><span id="L-1393"><a href="#L-1393"><span class="linenos">1393</span></a>        <span class="bp">self</span><span class="p">,</span> <span class="n">a</span><span class="p">:</span> <span class="n">Operand</span> <span class="o">|</span> <span class="nb">int</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="n">Operand</span> <span class="o">|</span> <span class="nb">int</span><span class="p">,</span> <span class="n">out</span><span class="p">:</span> <span class="n">Reference</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
-</span><span id="L-1394"><a href="#L-1394"><span class="linenos">1394</span></a>    <span class="p">):</span>
-</span><span id="L-1395"><a href="#L-1395"><span class="linenos">1395</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-</span><span id="L-1396"><a href="#L-1396"><span class="linenos">1396</span></a><span class="sd">        Args:</span>
-</span><span id="L-1397"><a href="#L-1397"><span class="linenos">1397</span></a><span class="sd">            a: Lowest integer value allowed</span>
-</span><span id="L-1398"><a href="#L-1398"><span class="linenos">1398</span></a><span class="sd">            b: Second operand of the addition.</span>
-</span><span id="L-1399"><a href="#L-1399"><span class="linenos">1399</span></a><span class="sd">            out: Optional output reference for result. If not provided, result stored in</span>
-</span><span id="L-1400"><a href="#L-1400"><span class="linenos">1400</span></a><span class="sd">                first operand.</span>
-</span><span id="L-1401"><a href="#L-1401"><span class="linenos">1401</span></a><span class="sd">        &quot;&quot;&quot;</span>
-</span><span id="L-1402"><a href="#L-1402"><span class="linenos">1402</span></a>        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="s2">&quot;ADD&quot;</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">out</span><span class="p">)</span>
-</span><span id="L-1403"><a href="#L-1403"><span class="linenos">1403</span></a>
-</span><span id="L-1404"><a href="#L-1404"><span class="linenos">1404</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">_calc</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cpu</span><span class="p">:</span> <span class="n">DT31</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-</span><span id="L-1405"><a href="#L-1405"><span class="linenos">1405</span></a>        <span class="n">a</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">a</span><span class="o">.</span><span class="n">resolve</span><span class="p">(</span><span class="n">cpu</span><span class="p">)</span>
-</span><span id="L-1406"><a href="#L-1406"><span class="linenos">1406</span></a>        <span class="n">b</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">b</span><span class="o">.</span><span class="n">resolve</span><span class="p">(</span><span class="n">cpu</span><span class="p">)</span>
-</span><span id="L-1407"><a href="#L-1407"><span class="linenos">1407</span></a>        <span class="k">if</span> <span class="n">b</span> <span class="o">&lt;</span> <span class="n">a</span><span class="p">:</span>
-</span><span id="L-1408"><a href="#L-1408"><span class="linenos">1408</span></a>            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;RINT argument b must be ≥ argument a; got </span><span class="si">{</span><span class="n">a</span><span class="si">=}</span><span class="s2">, </span><span class="si">{</span><span class="n">b</span><span class="si">=}</span><span class="s2">&quot;</span><span class="p">)</span>
-</span><span id="L-1409"><a href="#L-1409"><span class="linenos">1409</span></a>
-</span><span id="L-1410"><a href="#L-1410"><span class="linenos">1410</span></a>        <span class="k">return</span> <span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+</span><span id="L-1375"><a href="#L-1375"><span class="linenos">1375</span></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">status_code</span><span class="p">:</span> <span class="n">Operand</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">L</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+</span><span id="L-1376"><a href="#L-1376"><span class="linenos">1376</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="L-1377"><a href="#L-1377"><span class="linenos">1377</span></a><span class="sd">        Args:</span>
+</span><span id="L-1378"><a href="#L-1378"><span class="linenos">1378</span></a><span class="sd">            status_code: The exit status code. Defaults to L[0] (success).</span>
+</span><span id="L-1379"><a href="#L-1379"><span class="linenos">1379</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="L-1380"><a href="#L-1380"><span class="linenos">1380</span></a>        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="s2">&quot;EXIT&quot;</span><span class="p">)</span>
+</span><span id="L-1381"><a href="#L-1381"><span class="linenos">1381</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">status_code</span> <span class="o">=</span> <span class="n">as_op</span><span class="p">(</span><span class="n">status_code</span><span class="p">)</span>
+</span><span id="L-1382"><a href="#L-1382"><span class="linenos">1382</span></a>
+</span><span id="L-1383"><a href="#L-1383"><span class="linenos">1383</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">_calc</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cpu</span><span class="p">:</span> <span class="n">DT31</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+</span><span id="L-1384"><a href="#L-1384"><span class="linenos">1384</span></a>        <span class="n">code</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">status_code</span><span class="o">.</span><span class="n">resolve</span><span class="p">(</span><span class="n">cpu</span><span class="p">)</span>
+</span><span id="L-1385"><a href="#L-1385"><span class="linenos">1385</span></a>        <span class="k">raise</span> <span class="ne">SystemExit</span><span class="p">(</span><span class="n">code</span><span class="p">)</span>
+</span><span id="L-1386"><a href="#L-1386"><span class="linenos">1386</span></a>
+</span><span id="L-1387"><a href="#L-1387"><span class="linenos">1387</span></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+</span><span id="L-1388"><a href="#L-1388"><span class="linenos">1388</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Return Python API representation.&quot;&quot;&quot;</span>
+</span><span id="L-1389"><a href="#L-1389"><span class="linenos">1389</span></a>        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;EXIT(status_code=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">status_code</span><span class="si">!r}</span><span class="s2">)&quot;</span>
+</span><span id="L-1390"><a href="#L-1390"><span class="linenos">1390</span></a>
+</span><span id="L-1391"><a href="#L-1391"><span class="linenos">1391</span></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+</span><span id="L-1392"><a href="#L-1392"><span class="linenos">1392</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Return assembly text representation.&quot;&quot;&quot;</span>
+</span><span id="L-1393"><a href="#L-1393"><span class="linenos">1393</span></a>        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;EXIT </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">status_code</span><span class="si">}</span><span class="s2">&quot;</span>
+</span><span id="L-1394"><a href="#L-1394"><span class="linenos">1394</span></a>
+</span><span id="L-1395"><a href="#L-1395"><span class="linenos">1395</span></a>
+</span><span id="L-1396"><a href="#L-1396"><span class="linenos">1396</span></a><span class="c1"># ------------------------------------ Randomness ------------------------------------ #</span>
+</span><span id="L-1397"><a href="#L-1397"><span class="linenos">1397</span></a>
+</span><span id="L-1398"><a href="#L-1398"><span class="linenos">1398</span></a>
+</span><span id="L-1399"><a href="#L-1399"><span class="linenos">1399</span></a><span class="k">class</span><span class="w"> </span><span class="nc">RND</span><span class="p">(</span><span class="n">NullaryOperation</span><span class="p">):</span>
+</span><span id="L-1400"><a href="#L-1400"><span class="linenos">1400</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Return a random bit.&quot;&quot;&quot;</span>
+</span><span id="L-1401"><a href="#L-1401"><span class="linenos">1401</span></a>
+</span><span id="L-1402"><a href="#L-1402"><span class="linenos">1402</span></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">out</span><span class="p">:</span> <span class="n">Reference</span><span class="p">):</span>
+</span><span id="L-1403"><a href="#L-1403"><span class="linenos">1403</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="L-1404"><a href="#L-1404"><span class="linenos">1404</span></a><span class="sd">        Args:</span>
+</span><span id="L-1405"><a href="#L-1405"><span class="linenos">1405</span></a><span class="sd">            out: Output reference for result.</span>
+</span><span id="L-1406"><a href="#L-1406"><span class="linenos">1406</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="L-1407"><a href="#L-1407"><span class="linenos">1407</span></a>        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="s2">&quot;RND&quot;</span><span class="p">,</span> <span class="n">out</span><span class="p">)</span>
+</span><span id="L-1408"><a href="#L-1408"><span class="linenos">1408</span></a>
+</span><span id="L-1409"><a href="#L-1409"><span class="linenos">1409</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">_calc</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cpu</span><span class="p">:</span> <span class="n">DT31</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+</span><span id="L-1410"><a href="#L-1410"><span class="linenos">1410</span></a>        <span class="k">return</span> <span class="n">random</span><span class="o">.</span><span class="n">getrandbits</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+</span><span id="L-1411"><a href="#L-1411"><span class="linenos">1411</span></a>
+</span><span id="L-1412"><a href="#L-1412"><span class="linenos">1412</span></a>
+</span><span id="L-1413"><a href="#L-1413"><span class="linenos">1413</span></a><span class="k">class</span><span class="w"> </span><span class="nc">RINT</span><span class="p">(</span><span class="n">BinaryOperation</span><span class="p">):</span>
+</span><span id="L-1414"><a href="#L-1414"><span class="linenos">1414</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Return a random number between a and b (inclusive).&quot;&quot;&quot;</span>
+</span><span id="L-1415"><a href="#L-1415"><span class="linenos">1415</span></a>
+</span><span id="L-1416"><a href="#L-1416"><span class="linenos">1416</span></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+</span><span id="L-1417"><a href="#L-1417"><span class="linenos">1417</span></a>        <span class="bp">self</span><span class="p">,</span> <span class="n">a</span><span class="p">:</span> <span class="n">Operand</span> <span class="o">|</span> <span class="nb">int</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="n">Operand</span> <span class="o">|</span> <span class="nb">int</span><span class="p">,</span> <span class="n">out</span><span class="p">:</span> <span class="n">Reference</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+</span><span id="L-1418"><a href="#L-1418"><span class="linenos">1418</span></a>    <span class="p">):</span>
+</span><span id="L-1419"><a href="#L-1419"><span class="linenos">1419</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="L-1420"><a href="#L-1420"><span class="linenos">1420</span></a><span class="sd">        Args:</span>
+</span><span id="L-1421"><a href="#L-1421"><span class="linenos">1421</span></a><span class="sd">            a: Lowest integer value allowed</span>
+</span><span id="L-1422"><a href="#L-1422"><span class="linenos">1422</span></a><span class="sd">            b: Second operand of the addition.</span>
+</span><span id="L-1423"><a href="#L-1423"><span class="linenos">1423</span></a><span class="sd">            out: Optional output reference for result. If not provided, result stored in</span>
+</span><span id="L-1424"><a href="#L-1424"><span class="linenos">1424</span></a><span class="sd">                first operand.</span>
+</span><span id="L-1425"><a href="#L-1425"><span class="linenos">1425</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="L-1426"><a href="#L-1426"><span class="linenos">1426</span></a>        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="s2">&quot;ADD&quot;</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">out</span><span class="p">)</span>
+</span><span id="L-1427"><a href="#L-1427"><span class="linenos">1427</span></a>
+</span><span id="L-1428"><a href="#L-1428"><span class="linenos">1428</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">_calc</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cpu</span><span class="p">:</span> <span class="n">DT31</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+</span><span id="L-1429"><a href="#L-1429"><span class="linenos">1429</span></a>        <span class="n">a</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">a</span><span class="o">.</span><span class="n">resolve</span><span class="p">(</span><span class="n">cpu</span><span class="p">)</span>
+</span><span id="L-1430"><a href="#L-1430"><span class="linenos">1430</span></a>        <span class="n">b</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">b</span><span class="o">.</span><span class="n">resolve</span><span class="p">(</span><span class="n">cpu</span><span class="p">)</span>
+</span><span id="L-1431"><a href="#L-1431"><span class="linenos">1431</span></a>        <span class="k">if</span> <span class="n">b</span> <span class="o">&lt;</span> <span class="n">a</span><span class="p">:</span>
+</span><span id="L-1432"><a href="#L-1432"><span class="linenos">1432</span></a>            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;RINT argument b must be ≥ argument a; got </span><span class="si">{</span><span class="n">a</span><span class="si">=}</span><span class="s2">, </span><span class="si">{</span><span class="n">b</span><span class="si">=}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span id="L-1433"><a href="#L-1433"><span class="linenos">1433</span></a>
+</span><span id="L-1434"><a href="#L-1434"><span class="linenos">1434</span></a>        <span class="k">return</span> <span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
 </span></pre></div>
 
 
@@ -7363,6 +7399,96 @@ is popped but not stored.</li>
                                 </dl>
                             </div>
                 </section>
+                <section id="EXIT">
+                            <input id="EXIT-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
+<div class="attr class">
+            
+    <span class="def">class</span>
+    <span class="name">EXIT</span><wbr>(<span class="base"><a href="#Instruction">Instruction</a></span>):
+
+                <label class="view-source-button" for="EXIT-view-source"><span>View Source</span></label>
+
+    </div>
+    <a class="headerlink" href="#EXIT"></a>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="EXIT-1373"><a href="#EXIT-1373"><span class="linenos">1373</span></a><span class="k">class</span><span class="w"> </span><span class="nc">EXIT</span><span class="p">(</span><span class="n">Instruction</span><span class="p">):</span>
+</span><span id="EXIT-1374"><a href="#EXIT-1374"><span class="linenos">1374</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Exit the program with a status code.&quot;&quot;&quot;</span>
+</span><span id="EXIT-1375"><a href="#EXIT-1375"><span class="linenos">1375</span></a>
+</span><span id="EXIT-1376"><a href="#EXIT-1376"><span class="linenos">1376</span></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">status_code</span><span class="p">:</span> <span class="n">Operand</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">L</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+</span><span id="EXIT-1377"><a href="#EXIT-1377"><span class="linenos">1377</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="EXIT-1378"><a href="#EXIT-1378"><span class="linenos">1378</span></a><span class="sd">        Args:</span>
+</span><span id="EXIT-1379"><a href="#EXIT-1379"><span class="linenos">1379</span></a><span class="sd">            status_code: The exit status code. Defaults to L[0] (success).</span>
+</span><span id="EXIT-1380"><a href="#EXIT-1380"><span class="linenos">1380</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="EXIT-1381"><a href="#EXIT-1381"><span class="linenos">1381</span></a>        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="s2">&quot;EXIT&quot;</span><span class="p">)</span>
+</span><span id="EXIT-1382"><a href="#EXIT-1382"><span class="linenos">1382</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">status_code</span> <span class="o">=</span> <span class="n">as_op</span><span class="p">(</span><span class="n">status_code</span><span class="p">)</span>
+</span><span id="EXIT-1383"><a href="#EXIT-1383"><span class="linenos">1383</span></a>
+</span><span id="EXIT-1384"><a href="#EXIT-1384"><span class="linenos">1384</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">_calc</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cpu</span><span class="p">:</span> <span class="n">DT31</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+</span><span id="EXIT-1385"><a href="#EXIT-1385"><span class="linenos">1385</span></a>        <span class="n">code</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">status_code</span><span class="o">.</span><span class="n">resolve</span><span class="p">(</span><span class="n">cpu</span><span class="p">)</span>
+</span><span id="EXIT-1386"><a href="#EXIT-1386"><span class="linenos">1386</span></a>        <span class="k">raise</span> <span class="ne">SystemExit</span><span class="p">(</span><span class="n">code</span><span class="p">)</span>
+</span><span id="EXIT-1387"><a href="#EXIT-1387"><span class="linenos">1387</span></a>
+</span><span id="EXIT-1388"><a href="#EXIT-1388"><span class="linenos">1388</span></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+</span><span id="EXIT-1389"><a href="#EXIT-1389"><span class="linenos">1389</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Return Python API representation.&quot;&quot;&quot;</span>
+</span><span id="EXIT-1390"><a href="#EXIT-1390"><span class="linenos">1390</span></a>        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;EXIT(status_code=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">status_code</span><span class="si">!r}</span><span class="s2">)&quot;</span>
+</span><span id="EXIT-1391"><a href="#EXIT-1391"><span class="linenos">1391</span></a>
+</span><span id="EXIT-1392"><a href="#EXIT-1392"><span class="linenos">1392</span></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+</span><span id="EXIT-1393"><a href="#EXIT-1393"><span class="linenos">1393</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Return assembly text representation.&quot;&quot;&quot;</span>
+</span><span id="EXIT-1394"><a href="#EXIT-1394"><span class="linenos">1394</span></a>        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;EXIT </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">status_code</span><span class="si">}</span><span class="s2">&quot;</span>
+</span></pre></div>
+
+
+            <div class="docstring"><p>Exit the program with a status code.</p>
+</div>
+
+
+                            <div id="EXIT.__init__" class="classattr">
+                                        <input id="EXIT.__init__-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
+<div class="attr function">
+            
+        <span class="name">EXIT</span><span class="signature pdoc-code condensed">(<span class="param"><span class="n">status_code</span><span class="p">:</span> <span class="n"><a href="operands.html#Operand">dt31.operands.Operand</a></span> <span class="o">|</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span></span>)</span>
+
+                <label class="view-source-button" for="EXIT.__init__-view-source"><span>View Source</span></label>
+
+    </div>
+    <a class="headerlink" href="#EXIT.__init__"></a>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="EXIT.__init__-1376"><a href="#EXIT.__init__-1376"><span class="linenos">1376</span></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">status_code</span><span class="p">:</span> <span class="n">Operand</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">L</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+</span><span id="EXIT.__init__-1377"><a href="#EXIT.__init__-1377"><span class="linenos">1377</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="EXIT.__init__-1378"><a href="#EXIT.__init__-1378"><span class="linenos">1378</span></a><span class="sd">        Args:</span>
+</span><span id="EXIT.__init__-1379"><a href="#EXIT.__init__-1379"><span class="linenos">1379</span></a><span class="sd">            status_code: The exit status code. Defaults to L[0] (success).</span>
+</span><span id="EXIT.__init__-1380"><a href="#EXIT.__init__-1380"><span class="linenos">1380</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="EXIT.__init__-1381"><a href="#EXIT.__init__-1381"><span class="linenos">1381</span></a>        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="s2">&quot;EXIT&quot;</span><span class="p">)</span>
+</span><span id="EXIT.__init__-1382"><a href="#EXIT.__init__-1382"><span class="linenos">1382</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">status_code</span> <span class="o">=</span> <span class="n">as_op</span><span class="p">(</span><span class="n">status_code</span><span class="p">)</span>
+</span></pre></div>
+
+
+            <div class="docstring"><h6 id="arguments">Arguments:</h6>
+
+<ul>
+<li><strong>status_code:</strong>  The exit status code. Defaults to L[0] (success).</li>
+</ul>
+</div>
+
+
+                            </div>
+                            <div id="EXIT.status_code" class="classattr">
+                                <div class="attr variable">
+            <span class="name">status_code</span>
+
+        
+    </div>
+    <a class="headerlink" href="#EXIT.status_code"></a>
+    
+    
+
+                            </div>
+                            <div class="inherited">
+                                <h5>Inherited Members</h5>
+                                <dl>
+                                    <div><dt><a href="#Instruction">Instruction</a></dt>
+                                <dd id="EXIT.name" class="variable"><a href="#Instruction.name">name</a></dd>
+
+            </div>
+                                </dl>
+                            </div>
+                </section>
                 <section id="RND">
                             <input id="RND-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
 <div class="attr class">
@@ -7374,18 +7500,18 @@ is popped but not stored.</li>
 
     </div>
     <a class="headerlink" href="#RND"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="RND-1376"><a href="#RND-1376"><span class="linenos">1376</span></a><span class="k">class</span><span class="w"> </span><span class="nc">RND</span><span class="p">(</span><span class="n">NullaryOperation</span><span class="p">):</span>
-</span><span id="RND-1377"><a href="#RND-1377"><span class="linenos">1377</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Return a random bit.&quot;&quot;&quot;</span>
-</span><span id="RND-1378"><a href="#RND-1378"><span class="linenos">1378</span></a>
-</span><span id="RND-1379"><a href="#RND-1379"><span class="linenos">1379</span></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">out</span><span class="p">:</span> <span class="n">Reference</span><span class="p">):</span>
-</span><span id="RND-1380"><a href="#RND-1380"><span class="linenos">1380</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-</span><span id="RND-1381"><a href="#RND-1381"><span class="linenos">1381</span></a><span class="sd">        Args:</span>
-</span><span id="RND-1382"><a href="#RND-1382"><span class="linenos">1382</span></a><span class="sd">            out: Output reference for result.</span>
-</span><span id="RND-1383"><a href="#RND-1383"><span class="linenos">1383</span></a><span class="sd">        &quot;&quot;&quot;</span>
-</span><span id="RND-1384"><a href="#RND-1384"><span class="linenos">1384</span></a>        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="s2">&quot;RND&quot;</span><span class="p">,</span> <span class="n">out</span><span class="p">)</span>
-</span><span id="RND-1385"><a href="#RND-1385"><span class="linenos">1385</span></a>
-</span><span id="RND-1386"><a href="#RND-1386"><span class="linenos">1386</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">_calc</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cpu</span><span class="p">:</span> <span class="n">DT31</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-</span><span id="RND-1387"><a href="#RND-1387"><span class="linenos">1387</span></a>        <span class="k">return</span> <span class="n">random</span><span class="o">.</span><span class="n">getrandbits</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="RND-1400"><a href="#RND-1400"><span class="linenos">1400</span></a><span class="k">class</span><span class="w"> </span><span class="nc">RND</span><span class="p">(</span><span class="n">NullaryOperation</span><span class="p">):</span>
+</span><span id="RND-1401"><a href="#RND-1401"><span class="linenos">1401</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Return a random bit.&quot;&quot;&quot;</span>
+</span><span id="RND-1402"><a href="#RND-1402"><span class="linenos">1402</span></a>
+</span><span id="RND-1403"><a href="#RND-1403"><span class="linenos">1403</span></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">out</span><span class="p">:</span> <span class="n">Reference</span><span class="p">):</span>
+</span><span id="RND-1404"><a href="#RND-1404"><span class="linenos">1404</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="RND-1405"><a href="#RND-1405"><span class="linenos">1405</span></a><span class="sd">        Args:</span>
+</span><span id="RND-1406"><a href="#RND-1406"><span class="linenos">1406</span></a><span class="sd">            out: Output reference for result.</span>
+</span><span id="RND-1407"><a href="#RND-1407"><span class="linenos">1407</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="RND-1408"><a href="#RND-1408"><span class="linenos">1408</span></a>        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="s2">&quot;RND&quot;</span><span class="p">,</span> <span class="n">out</span><span class="p">)</span>
+</span><span id="RND-1409"><a href="#RND-1409"><span class="linenos">1409</span></a>
+</span><span id="RND-1410"><a href="#RND-1410"><span class="linenos">1410</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">_calc</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cpu</span><span class="p">:</span> <span class="n">DT31</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+</span><span id="RND-1411"><a href="#RND-1411"><span class="linenos">1411</span></a>        <span class="k">return</span> <span class="n">random</span><span class="o">.</span><span class="n">getrandbits</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
 </span></pre></div>
 
 
@@ -7403,12 +7529,12 @@ is popped but not stored.</li>
 
     </div>
     <a class="headerlink" href="#RND.__init__"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="RND.__init__-1379"><a href="#RND.__init__-1379"><span class="linenos">1379</span></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">out</span><span class="p">:</span> <span class="n">Reference</span><span class="p">):</span>
-</span><span id="RND.__init__-1380"><a href="#RND.__init__-1380"><span class="linenos">1380</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-</span><span id="RND.__init__-1381"><a href="#RND.__init__-1381"><span class="linenos">1381</span></a><span class="sd">        Args:</span>
-</span><span id="RND.__init__-1382"><a href="#RND.__init__-1382"><span class="linenos">1382</span></a><span class="sd">            out: Output reference for result.</span>
-</span><span id="RND.__init__-1383"><a href="#RND.__init__-1383"><span class="linenos">1383</span></a><span class="sd">        &quot;&quot;&quot;</span>
-</span><span id="RND.__init__-1384"><a href="#RND.__init__-1384"><span class="linenos">1384</span></a>        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="s2">&quot;RND&quot;</span><span class="p">,</span> <span class="n">out</span><span class="p">)</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="RND.__init__-1403"><a href="#RND.__init__-1403"><span class="linenos">1403</span></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">out</span><span class="p">:</span> <span class="n">Reference</span><span class="p">):</span>
+</span><span id="RND.__init__-1404"><a href="#RND.__init__-1404"><span class="linenos">1404</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="RND.__init__-1405"><a href="#RND.__init__-1405"><span class="linenos">1405</span></a><span class="sd">        Args:</span>
+</span><span id="RND.__init__-1406"><a href="#RND.__init__-1406"><span class="linenos">1406</span></a><span class="sd">            out: Output reference for result.</span>
+</span><span id="RND.__init__-1407"><a href="#RND.__init__-1407"><span class="linenos">1407</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="RND.__init__-1408"><a href="#RND.__init__-1408"><span class="linenos">1408</span></a>        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="s2">&quot;RND&quot;</span><span class="p">,</span> <span class="n">out</span><span class="p">)</span>
 </span></pre></div>
 
 
@@ -7446,28 +7572,28 @@ is popped but not stored.</li>
 
     </div>
     <a class="headerlink" href="#RINT"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="RINT-1390"><a href="#RINT-1390"><span class="linenos">1390</span></a><span class="k">class</span><span class="w"> </span><span class="nc">RINT</span><span class="p">(</span><span class="n">BinaryOperation</span><span class="p">):</span>
-</span><span id="RINT-1391"><a href="#RINT-1391"><span class="linenos">1391</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Return a random number between a and b (inclusive).&quot;&quot;&quot;</span>
-</span><span id="RINT-1392"><a href="#RINT-1392"><span class="linenos">1392</span></a>
-</span><span id="RINT-1393"><a href="#RINT-1393"><span class="linenos">1393</span></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
-</span><span id="RINT-1394"><a href="#RINT-1394"><span class="linenos">1394</span></a>        <span class="bp">self</span><span class="p">,</span> <span class="n">a</span><span class="p">:</span> <span class="n">Operand</span> <span class="o">|</span> <span class="nb">int</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="n">Operand</span> <span class="o">|</span> <span class="nb">int</span><span class="p">,</span> <span class="n">out</span><span class="p">:</span> <span class="n">Reference</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
-</span><span id="RINT-1395"><a href="#RINT-1395"><span class="linenos">1395</span></a>    <span class="p">):</span>
-</span><span id="RINT-1396"><a href="#RINT-1396"><span class="linenos">1396</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-</span><span id="RINT-1397"><a href="#RINT-1397"><span class="linenos">1397</span></a><span class="sd">        Args:</span>
-</span><span id="RINT-1398"><a href="#RINT-1398"><span class="linenos">1398</span></a><span class="sd">            a: Lowest integer value allowed</span>
-</span><span id="RINT-1399"><a href="#RINT-1399"><span class="linenos">1399</span></a><span class="sd">            b: Second operand of the addition.</span>
-</span><span id="RINT-1400"><a href="#RINT-1400"><span class="linenos">1400</span></a><span class="sd">            out: Optional output reference for result. If not provided, result stored in</span>
-</span><span id="RINT-1401"><a href="#RINT-1401"><span class="linenos">1401</span></a><span class="sd">                first operand.</span>
-</span><span id="RINT-1402"><a href="#RINT-1402"><span class="linenos">1402</span></a><span class="sd">        &quot;&quot;&quot;</span>
-</span><span id="RINT-1403"><a href="#RINT-1403"><span class="linenos">1403</span></a>        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="s2">&quot;ADD&quot;</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">out</span><span class="p">)</span>
-</span><span id="RINT-1404"><a href="#RINT-1404"><span class="linenos">1404</span></a>
-</span><span id="RINT-1405"><a href="#RINT-1405"><span class="linenos">1405</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">_calc</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cpu</span><span class="p">:</span> <span class="n">DT31</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-</span><span id="RINT-1406"><a href="#RINT-1406"><span class="linenos">1406</span></a>        <span class="n">a</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">a</span><span class="o">.</span><span class="n">resolve</span><span class="p">(</span><span class="n">cpu</span><span class="p">)</span>
-</span><span id="RINT-1407"><a href="#RINT-1407"><span class="linenos">1407</span></a>        <span class="n">b</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">b</span><span class="o">.</span><span class="n">resolve</span><span class="p">(</span><span class="n">cpu</span><span class="p">)</span>
-</span><span id="RINT-1408"><a href="#RINT-1408"><span class="linenos">1408</span></a>        <span class="k">if</span> <span class="n">b</span> <span class="o">&lt;</span> <span class="n">a</span><span class="p">:</span>
-</span><span id="RINT-1409"><a href="#RINT-1409"><span class="linenos">1409</span></a>            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;RINT argument b must be ≥ argument a; got </span><span class="si">{</span><span class="n">a</span><span class="si">=}</span><span class="s2">, </span><span class="si">{</span><span class="n">b</span><span class="si">=}</span><span class="s2">&quot;</span><span class="p">)</span>
-</span><span id="RINT-1410"><a href="#RINT-1410"><span class="linenos">1410</span></a>
-</span><span id="RINT-1411"><a href="#RINT-1411"><span class="linenos">1411</span></a>        <span class="k">return</span> <span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="RINT-1414"><a href="#RINT-1414"><span class="linenos">1414</span></a><span class="k">class</span><span class="w"> </span><span class="nc">RINT</span><span class="p">(</span><span class="n">BinaryOperation</span><span class="p">):</span>
+</span><span id="RINT-1415"><a href="#RINT-1415"><span class="linenos">1415</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Return a random number between a and b (inclusive).&quot;&quot;&quot;</span>
+</span><span id="RINT-1416"><a href="#RINT-1416"><span class="linenos">1416</span></a>
+</span><span id="RINT-1417"><a href="#RINT-1417"><span class="linenos">1417</span></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+</span><span id="RINT-1418"><a href="#RINT-1418"><span class="linenos">1418</span></a>        <span class="bp">self</span><span class="p">,</span> <span class="n">a</span><span class="p">:</span> <span class="n">Operand</span> <span class="o">|</span> <span class="nb">int</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="n">Operand</span> <span class="o">|</span> <span class="nb">int</span><span class="p">,</span> <span class="n">out</span><span class="p">:</span> <span class="n">Reference</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+</span><span id="RINT-1419"><a href="#RINT-1419"><span class="linenos">1419</span></a>    <span class="p">):</span>
+</span><span id="RINT-1420"><a href="#RINT-1420"><span class="linenos">1420</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="RINT-1421"><a href="#RINT-1421"><span class="linenos">1421</span></a><span class="sd">        Args:</span>
+</span><span id="RINT-1422"><a href="#RINT-1422"><span class="linenos">1422</span></a><span class="sd">            a: Lowest integer value allowed</span>
+</span><span id="RINT-1423"><a href="#RINT-1423"><span class="linenos">1423</span></a><span class="sd">            b: Second operand of the addition.</span>
+</span><span id="RINT-1424"><a href="#RINT-1424"><span class="linenos">1424</span></a><span class="sd">            out: Optional output reference for result. If not provided, result stored in</span>
+</span><span id="RINT-1425"><a href="#RINT-1425"><span class="linenos">1425</span></a><span class="sd">                first operand.</span>
+</span><span id="RINT-1426"><a href="#RINT-1426"><span class="linenos">1426</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="RINT-1427"><a href="#RINT-1427"><span class="linenos">1427</span></a>        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="s2">&quot;ADD&quot;</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">out</span><span class="p">)</span>
+</span><span id="RINT-1428"><a href="#RINT-1428"><span class="linenos">1428</span></a>
+</span><span id="RINT-1429"><a href="#RINT-1429"><span class="linenos">1429</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">_calc</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cpu</span><span class="p">:</span> <span class="n">DT31</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+</span><span id="RINT-1430"><a href="#RINT-1430"><span class="linenos">1430</span></a>        <span class="n">a</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">a</span><span class="o">.</span><span class="n">resolve</span><span class="p">(</span><span class="n">cpu</span><span class="p">)</span>
+</span><span id="RINT-1431"><a href="#RINT-1431"><span class="linenos">1431</span></a>        <span class="n">b</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">b</span><span class="o">.</span><span class="n">resolve</span><span class="p">(</span><span class="n">cpu</span><span class="p">)</span>
+</span><span id="RINT-1432"><a href="#RINT-1432"><span class="linenos">1432</span></a>        <span class="k">if</span> <span class="n">b</span> <span class="o">&lt;</span> <span class="n">a</span><span class="p">:</span>
+</span><span id="RINT-1433"><a href="#RINT-1433"><span class="linenos">1433</span></a>            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;RINT argument b must be ≥ argument a; got </span><span class="si">{</span><span class="n">a</span><span class="si">=}</span><span class="s2">, </span><span class="si">{</span><span class="n">b</span><span class="si">=}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span id="RINT-1434"><a href="#RINT-1434"><span class="linenos">1434</span></a>
+</span><span id="RINT-1435"><a href="#RINT-1435"><span class="linenos">1435</span></a>        <span class="k">return</span> <span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
 </span></pre></div>
 
 
@@ -7485,17 +7611,17 @@ is popped but not stored.</li>
 
     </div>
     <a class="headerlink" href="#RINT.__init__"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="RINT.__init__-1393"><a href="#RINT.__init__-1393"><span class="linenos">1393</span></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
-</span><span id="RINT.__init__-1394"><a href="#RINT.__init__-1394"><span class="linenos">1394</span></a>        <span class="bp">self</span><span class="p">,</span> <span class="n">a</span><span class="p">:</span> <span class="n">Operand</span> <span class="o">|</span> <span class="nb">int</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="n">Operand</span> <span class="o">|</span> <span class="nb">int</span><span class="p">,</span> <span class="n">out</span><span class="p">:</span> <span class="n">Reference</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
-</span><span id="RINT.__init__-1395"><a href="#RINT.__init__-1395"><span class="linenos">1395</span></a>    <span class="p">):</span>
-</span><span id="RINT.__init__-1396"><a href="#RINT.__init__-1396"><span class="linenos">1396</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-</span><span id="RINT.__init__-1397"><a href="#RINT.__init__-1397"><span class="linenos">1397</span></a><span class="sd">        Args:</span>
-</span><span id="RINT.__init__-1398"><a href="#RINT.__init__-1398"><span class="linenos">1398</span></a><span class="sd">            a: Lowest integer value allowed</span>
-</span><span id="RINT.__init__-1399"><a href="#RINT.__init__-1399"><span class="linenos">1399</span></a><span class="sd">            b: Second operand of the addition.</span>
-</span><span id="RINT.__init__-1400"><a href="#RINT.__init__-1400"><span class="linenos">1400</span></a><span class="sd">            out: Optional output reference for result. If not provided, result stored in</span>
-</span><span id="RINT.__init__-1401"><a href="#RINT.__init__-1401"><span class="linenos">1401</span></a><span class="sd">                first operand.</span>
-</span><span id="RINT.__init__-1402"><a href="#RINT.__init__-1402"><span class="linenos">1402</span></a><span class="sd">        &quot;&quot;&quot;</span>
-</span><span id="RINT.__init__-1403"><a href="#RINT.__init__-1403"><span class="linenos">1403</span></a>        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="s2">&quot;ADD&quot;</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">out</span><span class="p">)</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="RINT.__init__-1417"><a href="#RINT.__init__-1417"><span class="linenos">1417</span></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+</span><span id="RINT.__init__-1418"><a href="#RINT.__init__-1418"><span class="linenos">1418</span></a>        <span class="bp">self</span><span class="p">,</span> <span class="n">a</span><span class="p">:</span> <span class="n">Operand</span> <span class="o">|</span> <span class="nb">int</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="n">Operand</span> <span class="o">|</span> <span class="nb">int</span><span class="p">,</span> <span class="n">out</span><span class="p">:</span> <span class="n">Reference</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+</span><span id="RINT.__init__-1419"><a href="#RINT.__init__-1419"><span class="linenos">1419</span></a>    <span class="p">):</span>
+</span><span id="RINT.__init__-1420"><a href="#RINT.__init__-1420"><span class="linenos">1420</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="RINT.__init__-1421"><a href="#RINT.__init__-1421"><span class="linenos">1421</span></a><span class="sd">        Args:</span>
+</span><span id="RINT.__init__-1422"><a href="#RINT.__init__-1422"><span class="linenos">1422</span></a><span class="sd">            a: Lowest integer value allowed</span>
+</span><span id="RINT.__init__-1423"><a href="#RINT.__init__-1423"><span class="linenos">1423</span></a><span class="sd">            b: Second operand of the addition.</span>
+</span><span id="RINT.__init__-1424"><a href="#RINT.__init__-1424"><span class="linenos">1424</span></a><span class="sd">            out: Optional output reference for result. If not provided, result stored in</span>
+</span><span id="RINT.__init__-1425"><a href="#RINT.__init__-1425"><span class="linenos">1425</span></a><span class="sd">                first operand.</span>
+</span><span id="RINT.__init__-1426"><a href="#RINT.__init__-1426"><span class="linenos">1426</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="RINT.__init__-1427"><a href="#RINT.__init__-1427"><span class="linenos">1427</span></a>        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="s2">&quot;ADD&quot;</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">out</span><span class="p">)</span>
 </span></pre></div>
 
 

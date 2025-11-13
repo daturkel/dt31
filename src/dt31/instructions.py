@@ -1369,6 +1369,30 @@ class BRKD(Instruction):
         return 0
 
 
+class EXIT(Instruction):
+    """Exit the program with a status code."""
+
+    def __init__(self, status_code: Operand | int = L[0]):
+        """
+        Args:
+            status_code: The exit status code. Defaults to L[0] (success).
+        """
+        super().__init__("EXIT")
+        self.status_code = as_op(status_code)
+
+    def _calc(self, cpu: DT31) -> int:
+        code = self.status_code.resolve(cpu)
+        raise SystemExit(code)
+
+    def __repr__(self) -> str:
+        """Return Python API representation."""
+        return f"EXIT(status_code={self.status_code!r})"
+
+    def __str__(self) -> str:
+        """Return assembly text representation."""
+        return f"EXIT {self.status_code}"
+
+
 # ------------------------------------ Randomness ------------------------------------ #
 
 
