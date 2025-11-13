@@ -3,7 +3,8 @@ from __future__ import annotations
 from collections import deque
 from typing import TYPE_CHECKING
 
-from dt31.assembler import assemble, extract_registers_from_program
+from dt31.assembler import assemble, extract_registers_from_program, program_to_text
+from dt31.parser import parse_program
 from dt31.exceptions import AssemblyError, EndOfProgram
 from dt31.operands import (
     Label,
@@ -323,5 +324,116 @@ class DT31:
         instruction = self.instructions[self.get_register("ip")]
         output = instruction(self)
         if debug:
-            print(str(instruction) + " -> " + str(output))
+            print(repr(instruction) + " -> " + str(output))
             print(self.state)
+
+    def dump(self) -> dict:
+        """Serialize complete CPU state for later resumption.
+
+        This method captures the entire state of the CPU including registers, memory,
+        stack, and the loaded program (if any). The serialized state can be used to
+        pause and resume program execution, or to save/restore CPU state.
+
+        If a program is loaded (instructions list is non-empty), it will be converted
+        to assembly text and included in the dump.
+
+        Returns:
+            Dict containing CPU state:
+                - registers: Current register values (dict)
+                - memory: Complete memory array (list)
+                - stack: Current stack contents (list)
+                - program: Assembly text (if program is loaded, otherwise None)
+                - config: CPU configuration (memory_size, stack_size, wrap_memory)
+
+        Example:
+            >>> from dt31 import DT31
+            >>> from dt31.parser import parse_program
+            >>> cpu = DT31()
+            >>> program = parse_program("CP 10, R.a\\nCP 20, R.b")
+            >>> cpu.load(program)
+            >>> cpu.step()  # Execute first instruction
+            >>> state = cpu.dump()
+            >>> state["registers"]["a"]
+            10
+            >>> state["registers"]["ip"]
+            1
+            >>> "CP 10, R.a" in state["program"]
+            True
+        """
+        # Convert loaded program to text if present
+        program_text = None
+        if self.instructions:
+            program_text = program_to_text(self.instructions)
+
+        return {
+            "registers": self.registers.copy(),
+            "memory": self.memory.copy(),
+            "stack": list(self.stack),
+            "program": program_text,
+            "config": {
+                "memory_size": self.memory_size,
+                "stack_size": self.stack_size,
+                "wrap_memory": self.wrap_memory,
+            },
+        }
+
+    @classmethod
+    def load_from_dump(cls, state: dict) -> DT31:
+        """Deserialize CPU from a dumped state.
+
+        This method recreates a CPU instance from a previously dumped state,
+        restoring all registers, memory, stack contents, and optionally the loaded program.
+        If a program was saved in the dump, it is re-parsed and loaded.
+
+        Args:
+            state: Dict from dump() containing CPU state
+
+        Returns:
+            DT31 instance restored to the saved state
+
+        Raises:
+            ValueError: If state dict is missing required fields
+            ParserError: If program is provided but cannot be parsed
+
+        Example:
+            >>> from dt31 import DT31
+            >>> from dt31.parser import parse_program
+            >>> cpu = DT31()
+            >>> program = parse_program("CP 10, R.a\\nCP 20, R.b")
+            >>> cpu.load(program)
+            >>> cpu.step()
+            >>> state = cpu.dump()
+            >>> cpu2 = DT31.load_from_dump(state)
+            >>> cpu2.get_register("a")
+            10
+            >>> cpu2.get_register("ip")
+            1
+        """
+        # Validate state dict
+        required_fields = ["registers", "memory", "stack", "config"]
+        for field in required_fields:
+            if field not in state:
+                raise ValueError(f"State dict missing required field: {field}")
+
+        # Extract register names (excluding 'ip')
+        register_names = [r for r in state["registers"].keys() if r != "ip"]
+
+        # Create CPU with same config
+        cpu = cls(
+            registers=register_names,
+            memory_size=state["config"]["memory_size"],
+            stack_size=state["config"]["stack_size"],
+            wrap_memory=state["config"]["wrap_memory"],
+        )
+
+        # Load program if available
+        if state.get("program"):
+            program = parse_program(state["program"])
+            cpu.load(program)
+
+        # Restore state
+        cpu.registers = state["registers"].copy()
+        cpu.memory = state["memory"].copy()
+        cpu.stack = deque(state["stack"], maxlen=cpu.stack_size)
+
+        return cpu

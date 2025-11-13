@@ -1,6 +1,6 @@
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v5.0.0
+    rev: v6.0.0
     hooks:
       - id: check-added-large-files
         args: ['--maxkb=1000']
@@ -11,16 +11,14 @@ repos:
       - id: check-toml
   - repo: https://github.com/astral-sh/ruff-pre-commit
     # Ruff version.
-    rev: v0.14.3
+    rev: v0.14.4
     hooks:
-      # Run the linter.
       - id: ruff-check
         args: [--fix]
-      # Run the formatter.
       - id: ruff-format
   - repo: https://github.com/astral-sh/uv-pre-commit
     # uv version.
-    rev: 0.9.7
+    rev: 0.9.8
     hooks:
       - id: uv-lock
   - repo: local
@@ -33,6 +31,12 @@ repos:
       - id: run-tests
         name: Run tests with coverage
         entry: uv run inv test --ci
+        language: system
+        pass_filenames: false
+        stages: [pre-push]
+      - id: ty
+        name: Run type checks with type
+        entry: uvx --with ty==0.0.1-alpha.25 ty check src/dt31
         language: system
         pass_filenames: false
         stages: [pre-push]

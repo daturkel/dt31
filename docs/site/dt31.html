@@ -11,7 +11,7 @@
     <style>/*! theme.css */:root{--pdoc-background:#fff;}.pdoc{--text:#212529;--muted:#6c757d;--link:#3660a5;--link-hover:#1659c5;--code:#f8f8f8;--active:#fff598;--accent:#eee;--accent2:#c1c1c1;--nav-hover:rgba(255, 255, 255, 0.5);--name:#0066BB;--def:#008800;--annotation:#007020;}</style>
     <style>/*! layout.css */html, body{width:100%;height:100%;}html, main{scroll-behavior:smooth;}body{background-color:var(--pdoc-background);}@media (max-width:769px){#navtoggle{cursor:pointer;position:absolute;width:50px;height:40px;top:1rem;right:1rem;border-color:var(--text);color:var(--text);display:flex;opacity:0.8;z-index:999;}#navtoggle:hover{opacity:1;}#togglestate + div{display:none;}#togglestate:checked + div{display:inherit;}main, header{padding:2rem 3vw;}header + main{margin-top:-3rem;}.git-button{display:none !important;}nav input[type="search"]{max-width:77%;}nav input[type="search"]:first-child{margin-top:-6px;}nav input[type="search"]:valid ~ *{display:none !important;}}@media (min-width:770px){:root{--sidebar-width:clamp(12.5rem, 28vw, 22rem);}nav{position:fixed;overflow:auto;height:100vh;width:var(--sidebar-width);}main, header{padding:3rem 2rem 3rem calc(var(--sidebar-width) + 3rem);width:calc(54rem + var(--sidebar-width));max-width:100%;}header + main{margin-top:-4rem;}#navtoggle{display:none;}}#togglestate{position:absolute;height:0;opacity:0;}nav.pdoc{--pad:clamp(0.5rem, 2vw, 1.75rem);--indent:1.5rem;background-color:var(--accent);border-right:1px solid var(--accent2);box-shadow:0 0 20px rgba(50, 50, 50, .2) inset;padding:0 0 0 var(--pad);overflow-wrap:anywhere;scrollbar-width:thin; scrollbar-color:var(--accent2) transparent; z-index:1}nav.pdoc::-webkit-scrollbar{width:.4rem; }nav.pdoc::-webkit-scrollbar-thumb{background-color:var(--accent2); }nav.pdoc > div{padding:var(--pad) 0;}nav.pdoc .module-list-button{display:inline-flex;align-items:center;color:var(--text);border-color:var(--muted);margin-bottom:1rem;}nav.pdoc .module-list-button:hover{border-color:var(--text);}nav.pdoc input[type=search]{display:block;outline-offset:0;width:calc(100% - var(--pad));}nav.pdoc .logo{max-width:calc(100% - var(--pad));max-height:35vh;display:block;margin:0 auto 1rem;transform:translate(calc(-.5 * var(--pad)), 0);}nav.pdoc ul{list-style:none;padding-left:0;}nav.pdoc > div > ul{margin-left:calc(0px - var(--pad));}nav.pdoc li a{padding:.2rem 0 .2rem calc(var(--pad) + var(--indent));}nav.pdoc > div > ul > li > a{padding-left:var(--pad);}nav.pdoc li{transition:all 100ms;}nav.pdoc li:hover{background-color:var(--nav-hover);}nav.pdoc a, nav.pdoc a:hover{color:var(--text);}nav.pdoc a{display:block;}nav.pdoc > h2:first-of-type{margin-top:1.5rem;}nav.pdoc .class:before{content:"class ";color:var(--muted);}nav.pdoc .function:after{content:"()";color:var(--muted);}nav.pdoc footer:before{content:"";display:block;width:calc(100% - var(--pad));border-top:solid var(--accent2) 1px;margin-top:1.5rem;padding-top:.5rem;}nav.pdoc footer{font-size:small;}</style>
     <style>/*! content.css */.pdoc{color:var(--text);box-sizing:border-box;line-height:1.5;background:none;}.pdoc .pdoc-button{cursor:pointer;display:inline-block;border:solid black 1px;border-radius:2px;font-size:.75rem;padding:calc(0.5em - 1px) 1em;transition:100ms all;}.pdoc .alert{padding:1rem 1rem 1rem calc(1.5rem + 24px);border:1px solid transparent;border-radius:.25rem;background-repeat:no-repeat;background-position:.75rem center;margin-bottom:1rem;}.pdoc .alert > em{display:none;}.pdoc .alert > *:last-child{margin-bottom:0;}.pdoc .alert.note{color:#084298;background-color:#cfe2ff;border-color:#b6d4fe;background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%2224%22%20height%3D%2224%22%20fill%3D%22%23084298%22%20viewBox%3D%220%200%2016%2016%22%3E%3Cpath%20d%3D%22M8%2016A8%208%200%201%200%208%200a8%208%200%200%200%200%2016zm.93-9.412-1%204.705c-.07.34.029.533.304.533.194%200%20.487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703%200-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381%202.29-.287zM8%205.5a1%201%200%201%201%200-2%201%201%200%200%201%200%202z%22/%3E%3C/svg%3E");}.pdoc .alert.tip{color:#0a3622;background-color:#d1e7dd;border-color:#a3cfbb;background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%2224%22%20height%3D%2224%22%20fill%3D%22%230a3622%22%20viewBox%3D%220%200%2016%2016%22%3E%3Cpath%20d%3D%22M2%206a6%206%200%201%201%2010.174%204.31c-.203.196-.359.4-.453.619l-.762%201.769A.5.5%200%200%201%2010.5%2013a.5.5%200%200%201%200%201%20.5.5%200%200%201%200%201l-.224.447a1%201%200%200%201-.894.553H6.618a1%201%200%200%201-.894-.553L5.5%2015a.5.5%200%200%201%200-1%20.5.5%200%200%201%200-1%20.5.5%200%200%201-.46-.302l-.761-1.77a2%202%200%200%200-.453-.618A5.98%205.98%200%200%201%202%206m6-5a5%205%200%200%200-3.479%208.592c.263.254.514.564.676.941L5.83%2012h4.342l.632-1.467c.162-.377.413-.687.676-.941A5%205%200%200%200%208%201%22/%3E%3C/svg%3E");}.pdoc .alert.important{color:#055160;background-color:#cff4fc;border-color:#9eeaf9;background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%2224%22%20height%3D%2224%22%20fill%3D%22%23055160%22%20viewBox%3D%220%200%2016%2016%22%3E%3Cpath%20d%3D%22M2%200a2%202%200%200%200-2%202v12a2%202%200%200%200%202%202h12a2%202%200%200%200%202-2V2a2%202%200%200%200-2-2zm6%204c.535%200%20.954.462.9.995l-.35%203.507a.552.552%200%200%201-1.1%200L7.1%204.995A.905.905%200%200%201%208%204m.002%206a1%201%200%201%201%200%202%201%201%200%200%201%200-2%22/%3E%3C/svg%3E");}.pdoc .alert.warning{color:#664d03;background-color:#fff3cd;border-color:#ffecb5;background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%2224%22%20height%3D%2224%22%20fill%3D%22%23664d03%22%20viewBox%3D%220%200%2016%2016%22%3E%3Cpath%20d%3D%22M8.982%201.566a1.13%201.13%200%200%200-1.96%200L.165%2013.233c-.457.778.091%201.767.98%201.767h13.713c.889%200%201.438-.99.98-1.767L8.982%201.566zM8%205c.535%200%20.954.462.9.995l-.35%203.507a.552.552%200%200%201-1.1%200L7.1%205.995A.905.905%200%200%201%208%205zm.002%206a1%201%200%201%201%200%202%201%201%200%200%201%200-2z%22/%3E%3C/svg%3E");}.pdoc .alert.caution{color:#842029;background-color:#f8d7da;border-color:#f5c2c7;background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%2224%22%20height%3D%2224%22%20fill%3D%22%23842029%22%20viewBox%3D%220%200%2016%2016%22%3E%3Cpath%20d%3D%22M11.46.146A.5.5%200%200%200%2011.107%200H4.893a.5.5%200%200%200-.353.146L.146%204.54A.5.5%200%200%200%200%204.893v6.214a.5.5%200%200%200%20.146.353l4.394%204.394a.5.5%200%200%200%20.353.146h6.214a.5.5%200%200%200%20.353-.146l4.394-4.394a.5.5%200%200%200%20.146-.353V4.893a.5.5%200%200%200-.146-.353zM8%204c.535%200%20.954.462.9.995l-.35%203.507a.552.552%200%200%201-1.1%200L7.1%204.995A.905.905%200%200%201%208%204m.002%206a1%201%200%201%201%200%202%201%201%200%200%201%200-2%22/%3E%3C/svg%3E");}.pdoc .alert.danger{color:#842029;background-color:#f8d7da;border-color:#f5c2c7;background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%2224%22%20height%3D%2224%22%20fill%3D%22%23842029%22%20viewBox%3D%220%200%2016%2016%22%3E%3Cpath%20d%3D%22M5.52.359A.5.5%200%200%201%206%200h4a.5.5%200%200%201%20.474.658L8.694%206H12.5a.5.5%200%200%201%20.395.807l-7%209a.5.5%200%200%201-.873-.454L6.823%209.5H3.5a.5.5%200%200%201-.48-.641l2.5-8.5z%22/%3E%3C/svg%3E");}.pdoc .visually-hidden{position:absolute !important;width:1px !important;height:1px !important;padding:0 !important;margin:-1px !important;overflow:hidden !important;clip:rect(0, 0, 0, 0) !important;white-space:nowrap !important;border:0 !important;}.pdoc h1, .pdoc h2, .pdoc h3{font-weight:300;margin:.3em 0;padding:.2em 0;}.pdoc > section:not(.module-info) h1{font-size:1.5rem;font-weight:500;}.pdoc > section:not(.module-info) h2{font-size:1.4rem;font-weight:500;}.pdoc > section:not(.module-info) h3{font-size:1.3rem;font-weight:500;}.pdoc > section:not(.module-info) h4{font-size:1.2rem;}.pdoc > section:not(.module-info) h5{font-size:1.1rem;}.pdoc a{text-decoration:none;color:var(--link);}.pdoc a:hover{color:var(--link-hover);}.pdoc blockquote{margin-left:2rem;}.pdoc pre{border-top:1px solid var(--accent2);border-bottom:1px solid var(--accent2);margin-top:0;margin-bottom:1em;padding:.5rem 0 .5rem .5rem;overflow-x:auto;background-color:var(--code);}.pdoc code{color:var(--text);padding:.2em .4em;margin:0;font-size:85%;background-color:var(--accent);border-radius:6px;}.pdoc a > code{color:inherit;}.pdoc pre > code{display:inline-block;font-size:inherit;background:none;border:none;padding:0;}.pdoc > section:not(.module-info){margin-bottom:1.5rem;}.pdoc .modulename{margin-top:0;font-weight:bold;}.pdoc .modulename a{color:var(--link);transition:100ms all;}.pdoc .git-button{float:right;border:solid var(--link) 1px;}.pdoc .git-button:hover{background-color:var(--link);color:var(--pdoc-background);}.view-source-toggle-state,.view-source-toggle-state ~ .pdoc-code{display:none;}.view-source-toggle-state:checked ~ .pdoc-code{display:block;}.view-source-button{display:inline-block;float:right;font-size:.75rem;line-height:1.5rem;color:var(--muted);padding:0 .4rem 0 1.3rem;cursor:pointer;text-indent:-2px;}.view-source-button > span{visibility:hidden;}.module-info .view-source-button{float:none;display:flex;justify-content:flex-end;margin:-1.2rem .4rem -.2rem 0;}.view-source-button::before{position:absolute;content:"View Source";display:list-item;list-style-type:disclosure-closed;}.view-source-toggle-state:checked ~ .attr .view-source-button::before,.view-source-toggle-state:checked ~ .view-source-button::before{list-style-type:disclosure-open;}.pdoc .docstring{margin-bottom:1.5rem;}.pdoc section:not(.module-info) .docstring{margin-left:clamp(0rem, 5vw - 2rem, 1rem);}.pdoc .docstring .pdoc-code{margin-left:1em;margin-right:1em;}.pdoc h1:target,.pdoc h2:target,.pdoc h3:target,.pdoc h4:target,.pdoc h5:target,.pdoc h6:target,.pdoc .pdoc-code > pre > span:target{background-color:var(--active);box-shadow:-1rem 0 0 0 var(--active);}.pdoc .pdoc-code > pre > span:target{display:block;}.pdoc div:target > .attr,.pdoc section:target > .attr,.pdoc dd:target > a{background-color:var(--active);}.pdoc *{scroll-margin:2rem;}.pdoc .pdoc-code .linenos{user-select:none;}.pdoc .attr:hover{filter:contrast(0.95);}.pdoc section, .pdoc .classattr{position:relative;}.pdoc .headerlink{--width:clamp(1rem, 3vw, 2rem);position:absolute;top:0;left:calc(0rem - var(--width));transition:all 100ms ease-in-out;opacity:0;}.pdoc .headerlink::before{content:"#";display:block;text-align:center;width:var(--width);height:2.3rem;line-height:2.3rem;font-size:1.5rem;}.pdoc .attr:hover ~ .headerlink,.pdoc *:target > .headerlink,.pdoc .headerlink:hover{opacity:1;}.pdoc .attr{display:block;margin:.5rem 0 .5rem;padding:.4rem .4rem .4rem 1rem;background-color:var(--accent);overflow-x:auto;}.pdoc .classattr{margin-left:2rem;}.pdoc .decorator-deprecated{color:#842029;}.pdoc .decorator-deprecated ~ span{filter:grayscale(1) opacity(0.8);}.pdoc .name{color:var(--name);font-weight:bold;}.pdoc .def{color:var(--def);font-weight:bold;}.pdoc .signature{background-color:transparent;}.pdoc .param, .pdoc .return-annotation{white-space:pre;}.pdoc .signature.multiline .param{display:block;}.pdoc .signature.condensed .param{display:inline-block;}.pdoc .annotation{color:var(--annotation);}.pdoc .view-value-toggle-state,.pdoc .view-value-toggle-state ~ .default_value{display:none;}.pdoc .view-value-toggle-state:checked ~ .default_value{display:inherit;}.pdoc .view-value-button{font-size:.5rem;vertical-align:middle;border-style:dashed;margin-top:-0.1rem;}.pdoc .view-value-button:hover{background:white;}.pdoc .view-value-button::before{content:"show";text-align:center;width:2.2em;display:inline-block;}.pdoc .view-value-toggle-state:checked ~ .view-value-button::before{content:"hide";}.pdoc .inherited{margin-left:2rem;}.pdoc .inherited dt{font-weight:700;}.pdoc .inherited dt, .pdoc .inherited dd{display:inline;margin-left:0;margin-bottom:.5rem;}.pdoc .inherited dd:not(:last-child):after{content:", ";}.pdoc .inherited .class:before{content:"class ";}.pdoc .inherited .function a:after{content:"()";}.pdoc .search-result .docstring{overflow:auto;max-height:25vh;}.pdoc .search-result.focused > .attr{background-color:var(--active);}.pdoc .attribution{margin-top:2rem;display:block;opacity:0.5;transition:all 200ms;filter:grayscale(100%);}.pdoc .attribution:hover{opacity:1;filter:grayscale(0%);}.pdoc .attribution img{margin-left:5px;height:27px;vertical-align:bottom;width:50px;transition:all 200ms;}.pdoc table{display:block;width:max-content;max-width:100%;overflow:auto;margin-bottom:1rem;}.pdoc table th{font-weight:600;}.pdoc table th, .pdoc table td{padding:6px 13px;border:1px solid var(--accent2);}</style>
-    <style>/*! custom.css */</style></head>
+    <style>/*! custom.css */.pdoc .docstring .pdoc-code{margin-left:0;margin-right:0;}</style></head>
 <body>
     <nav class="pdoc">
         <label id="navtoggle" for="togglestate" class="pdoc-button"><svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'><path stroke-linecap='round' stroke="currentColor" stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/></svg></label>
@@ -25,10 +25,11 @@
             <ul>
   <li><a href="#features">Features</a></li>
   <li><a href="#installation">Installation</a></li>
-  <li><a href="#quick-start">Quick Start</a></li>
-  <li><a href="#examples">Examples</a></li>
+  <li><a href="#getting-started">Getting Started</a></li>
   <li><a href="#core-concepts">Core Concepts</a></li>
-  <li><a href="#usage-guide">Usage Guide</a></li>
+  <li><a href="#command-line-interface">Command-Line Interface</a></li>
+  <li><a href="#assembly-language-reference">Assembly Language Reference</a></li>
+  <li><a href="#python-api">Python API</a></li>
   <li><a href="#documentation">Documentation</a></li>
   <li><a href="#development">Development</a></li>
   <li><a href="#roadmap">Roadmap</a></li>
@@ -61,7 +62,60 @@
                     <h1 class="modulename">
 dt31    </h1>
 
-                        <div class="docstring"><p>A toy computer emulator in Python with a simple instruction set and virtual machine. dt31 is a toy computer that simulates a CPU with registers, memory, a stack, and a rich instruction set.</p>
+                        <div class="docstring"><p><a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/license-MIT-green.svg" alt="License: MIT" /></a> <a href="https://pdoc.dev/docs/pdoc.html"><img src="https://img.shields.io/badge/docs-pdoc.dev-green" alt="pdoc" /></a> <a href="https://github.com/astral-sh/ruff"><img src="https://img.shields.io/badge/style-ruff-green.svg" alt="Ruff" /></a> <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMjIiIGhlaWdodD0iMjAiIHJvbGU9ImltZyIgYXJpYS1sYWJlbD0iY292ZXJhZ2U6IDEwMC4wMCUiPjx0aXRsZT5jb3ZlcmFnZTogMTAwLjAwJTwvdGl0bGU+PGxpbmVhckdyYWRpZW50IGlkPSJzIiB4Mj0iMCIgeTI9IjEwMCUiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iI2JiYiIgc3RvcC1vcGFjaXR5PSIuMSIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1vcGFjaXR5PSIuMSIvPjwvbGluZWFyR3JhZGllbnQ+PGNsaXBQYXRoIGlkPSJyIj48cmVjdCB3aWR0aD0iMTIyIiBoZWlnaHQ9IjIwIiByeD0iMyIgZmlsbD0iI2ZmZiIvPjwvY2xpcFBhdGg+PGcgY2xpcC1wYXRoPSJ1cmwoI3IpIj48cmVjdCB3aWR0aD0iNjEiIGhlaWdodD0iMjAiIGZpbGw9IiM1NTUiLz48cmVjdCB4PSI2MSIgd2lkdGg9IjYxIiBoZWlnaHQ9IjIwIiBmaWxsPSIjNGMxIi8+PHJlY3Qgd2lkdGg9IjEyMiIgaGVpZ2h0PSIyMCIgZmlsbD0idXJsKCNzKSIvPjwvZz48ZyBmaWxsPSIjZmZmIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LWZhbWlseT0iVmVyZGFuYSxHZW5ldmEsRGVqYVZ1IFNhbnMsc2Fucy1zZXJpZiIgdGV4dC1yZW5kZXJpbmc9Imdlb21ldHJpY1ByZWNpc2lvbiIgZm9udC1zaXplPSIxMTAiPjx0ZXh0IGFyaWEtaGlkZGVuPSJ0cnVlIiB4PSIzMTUiIHk9IjE1MCIgZmlsbD0iIzAxMDEwMSIgZmlsbC1vcGFjaXR5PSIuMyIgdHJhbnNmb3JtPSJzY2FsZSguMSkiIHRleHRMZW5ndGg9IjUxMCI+Y292ZXJhZ2U8L3RleHQ+PHRleHQgeD0iMzE1IiB5PSIxNDAiIHRyYW5zZm9ybT0ic2NhbGUoLjEpIiBmaWxsPSIjZmZmIiB0ZXh0TGVuZ3RoPSI1MTAiPmNvdmVyYWdlPC90ZXh0Pjx0ZXh0IGFyaWEtaGlkZGVuPSJ0cnVlIiB4PSI5MDUiIHk9IjE1MCIgZmlsbD0iIzAxMDEwMSIgZmlsbC1vcGFjaXR5PSIuMyIgdHJhbnNmb3JtPSJzY2FsZSguMSkiIHRleHRMZW5ndGg9IjUxMCI+MTAwLjAwJTwvdGV4dD48dGV4dCB4PSI5MDUiIHk9IjE0MCIgdHJhbnNmb3JtPSJzY2FsZSguMSkiIGZpbGw9IiNmZmYiIHRleHRMZW5ndGg9IjUxMCI+MTAwLjAwJTwvdGV4dD48L2c+PC9zdmc+" alt="Coverage Badge" /></p>
+
+<p>A toy computer emulator and assembly language written in Python. Build programs with 60+ built-in instructions for interacting with registers, memory, and the stack. Write your programs in the native assembly syntax or directly with the Python API.</p>
+
+<table>
+<tr>
+<th>countdown.dt</th>
+<th>countdown.py</th>
+</tr>
+<tr>
+<td>
+<div class="pdoc-code codehilite">
+<pre><span></span><code><span class="c1">; countdown.dt</span>
+
+<span class="c1">; copy 5 to register a</span>
+<span class="nf">CP</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span><span class="w"> </span><span class="nv">R.a</span>
+<span class="nl">loop:</span>
+<span class="w">    </span><span class="c1">; print register a</span>
+<span class="w">    </span><span class="nf">NOUT</span><span class="w"> </span><span class="nv">R.a</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span>
+<span class="w">    </span><span class="c1">; a = a - 1</span>
+<span class="w">    </span><span class="nf">SUB</span><span class="w"> </span><span class="nv">R.a</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span>
+<span class="w">    </span><span class="c1">; jump to loop if a &gt; 0</span>
+<span class="w">    </span><span class="nf">JGT</span><span class="w"> </span><span class="nv">loop</span><span class="p">,</span><span class="w"> </span><span class="nv">R.a</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span>
+
+<span class="c1">; run with: `dt31 countdown.dt`</span>
+<span class="c1">; output: 5 4 3 2 1</span>
+</code></pre>
+</div>
+
+</td>
+<td>
+<div class="pdoc-code codehilite">
+<pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">dt31</span><span class="w"> </span><span class="kn">import</span> <span class="n">DT31</span><span class="p">,</span> <span class="n">I</span><span class="p">,</span> <span class="n">L</span><span class="p">,</span> <span class="n">Label</span><span class="p">,</span> <span class="n">R</span>
+
+<span class="c1"># create vm with default settings</span>
+<span class="n">cpu</span> <span class="o">=</span> <span class="n">DT31</span><span class="p">()</span>
+
+<span class="n">program</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="n">I</span><span class="o">.</span><span class="n">CP</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="n">R</span><span class="o">.</span><span class="n">a</span><span class="p">),</span>
+    <span class="n">loop</span> <span class="o">:=</span> <span class="n">Label</span><span class="p">(</span><span class="s2">&quot;loop&quot;</span><span class="p">),</span>
+    <span class="n">I</span><span class="o">.</span><span class="n">NOUT</span><span class="p">(</span><span class="n">R</span><span class="o">.</span><span class="n">a</span><span class="p">,</span> <span class="n">L</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span>
+    <span class="n">I</span><span class="o">.</span><span class="n">SUB</span><span class="p">(</span><span class="n">R</span><span class="o">.</span><span class="n">a</span><span class="p">,</span> <span class="n">L</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span>
+    <span class="n">I</span><span class="o">.</span><span class="n">JGT</span><span class="p">(</span><span class="n">loop</span><span class="p">,</span> <span class="n">R</span><span class="o">.</span><span class="n">a</span><span class="p">,</span> <span class="n">L</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span>
+<span class="p">]</span>
+
+<span class="n">cpu</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">program</span><span class="p">)</span>
+</code></pre>
+</div>
+
+
+</td>
+
+</tr>
+</table>
 
 <h2 id="features">Features</h2>
 
@@ -71,8 +125,8 @@ dt31    </h1>
 <li><strong>Assembly Support</strong>: Two-pass assembler with label resolution for jumps and function calls</li>
 <li><strong>Assembly Parser</strong>: Parse and execute <code>.dt</code> assembly files with text-based syntax</li>
 <li><strong>Command-Line Interface</strong>: Execute <code>.dt</code> files directly with the <code><a href="">dt31</a></code> command</li>
-<li><strong>Intuitive API</strong>: Clean operand syntax (<code>R.a</code>, <code>M[100]</code>, <code>L[42]</code>, <code>LC['A']</code>)</li>
-<li><strong>Debug Mode</strong>: Step-by-step execution with state inspection</li>
+<li><strong>Python API</strong>: Build and run programs programmatically with an intuitive API</li>
+<li><strong>Debug Mode</strong>: Step-by-step execution with state inspection and breakpoints</li>
 <li><strong>Pure Python</strong>: Zero dependencies</li>
 </ul>
 
@@ -83,22 +137,24 @@ dt31    </h1>
 </code></pre>
 </div>
 
-<h2 id="quick-start">Quick Start</h2>
+<h2 id="getting-started">Getting Started</h2>
 
 <h3 id="hello-world">Hello World</h3>
 
+<p>Create a file <code>hello.dt</code></p>
+
 <div class="pdoc-code codehilite">
-<pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">dt31</span><span class="w"> </span><span class="kn">import</span> <span class="n">DT31</span><span class="p">,</span> <span class="n">LC</span><span class="p">,</span> <span class="n">I</span>
+<pre><span></span><code><span class="c1">; Output &quot;Hi!&quot;</span>
+<span class="nf">OOUT</span><span class="w"> </span><span class="s">&#39;H&#39;</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span>
+<span class="nf">OOUT</span><span class="w"> </span><span class="s">&#39;i&#39;</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span>
+<span class="nf">OOUT</span><span class="w"> </span><span class="s">&#39;!&#39;</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span>
+</code></pre>
+</div>
 
-<span class="n">cpu</span> <span class="o">=</span> <span class="n">DT31</span><span class="p">()</span>
+<p>and run it with the <code><a href="">dt31</a></code> interpreter</p>
 
-<span class="n">program</span> <span class="o">=</span> <span class="p">[</span>
-    <span class="n">I</span><span class="o">.</span><span class="n">OOUT</span><span class="p">(</span><span class="n">LC</span><span class="p">[</span><span class="s2">&quot;H&quot;</span><span class="p">]),</span>  <span class="c1"># Output &#39;H&#39;</span>
-    <span class="n">I</span><span class="o">.</span><span class="n">OOUT</span><span class="p">(</span><span class="n">LC</span><span class="p">[</span><span class="s2">&quot;i&quot;</span><span class="p">]),</span>  <span class="c1"># Output &#39;i&#39;</span>
-    <span class="n">I</span><span class="o">.</span><span class="n">OOUT</span><span class="p">(</span><span class="n">LC</span><span class="p">[</span><span class="s2">&quot;!&quot;</span><span class="p">]),</span>  <span class="c1"># Output &#39;!&#39;</span>
-<span class="p">]</span>
-
-<span class="n">cpu</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">program</span><span class="p">)</span>
+<div class="pdoc-code codehilite">
+<pre><span></span><code>dt31<span class="w"> </span>hello.dt
 <span class="c1"># Hi!</span>
 </code></pre>
 </div>
@@ -106,161 +162,55 @@ dt31    </h1>
 <h3 id="basic-arithmetic">Basic Arithmetic</h3>
 
 <div class="pdoc-code codehilite">
-<pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">dt31</span><span class="w"> </span><span class="kn">import</span> <span class="n">DT31</span><span class="p">,</span> <span class="n">I</span><span class="p">,</span> <span class="n">R</span><span class="p">,</span> <span class="n">L</span>
-
-<span class="n">cpu</span> <span class="o">=</span> <span class="n">DT31</span><span class="p">()</span>
-
-<span class="n">program</span> <span class="o">=</span> <span class="p">[</span>
-    <span class="n">I</span><span class="o">.</span><span class="n">CP</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">R</span><span class="o">.</span><span class="n">a</span><span class="p">),</span>           <span class="c1"># Copy 10 into register a</span>
-    <span class="n">I</span><span class="o">.</span><span class="n">CP</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="n">R</span><span class="o">.</span><span class="n">b</span><span class="p">),</span>            <span class="c1"># Copy 5 into register b</span>
-    <span class="n">I</span><span class="o">.</span><span class="n">ADD</span><span class="p">(</span><span class="n">R</span><span class="o">.</span><span class="n">a</span><span class="p">,</span> <span class="n">R</span><span class="o">.</span><span class="n">b</span><span class="p">),</span>         <span class="c1"># a = a + b</span>
-    <span class="n">I</span><span class="o">.</span><span class="n">NOUT</span><span class="p">(</span><span class="n">R</span><span class="o">.</span><span class="n">a</span><span class="p">,</span> <span class="n">L</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span>       <span class="c1"># Output a with newline</span>
-<span class="p">]</span>
-
-<span class="n">cpu</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">program</span><span class="p">)</span>
-<span class="c1"># 15</span>
+<pre><span></span><code><span class="c1">; Add two numbers</span>
+<span class="nf">CP</span><span class="w"> </span><span class="mi">10</span><span class="p">,</span><span class="w"> </span><span class="nv">R.a</span><span class="w">      </span><span class="c1">; Copy 10 into register a</span>
+<span class="nf">CP</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span><span class="w"> </span><span class="nv">R.b</span><span class="w">       </span><span class="c1">; Copy 5 into register b</span>
+<span class="nf">ADD</span><span class="w"> </span><span class="nv">R.a</span><span class="p">,</span><span class="w"> </span><span class="nv">R.b</span><span class="w">    </span><span class="c1">; a = a + b</span>
+<span class="nf">NOUT</span><span class="w"> </span><span class="nv">R.a</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="w">     </span><span class="c1">; Output a with newline</span>
 </code></pre>
 </div>
+
+<p>Save as <code>add.dt</code> and run: <code>dt31 add.dt</code> to output <code>15</code>.</p>
 
 <h3 id="loops-with-labels">Loops with Labels</h3>
 
 <div class="pdoc-code codehilite">
-<pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">dt31</span><span class="w"> </span><span class="kn">import</span> <span class="n">DT31</span><span class="p">,</span> <span class="n">I</span><span class="p">,</span> <span class="n">Label</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn"><a href="dt31/operands.html">dt31.operands</a></span><span class="w"> </span><span class="kn">import</span> <span class="n">R</span><span class="p">,</span> <span class="n">L</span>
-
-<span class="n">cpu</span> <span class="o">=</span> <span class="n">DT31</span><span class="p">()</span>
-
-<span class="n">program</span> <span class="o">=</span> <span class="p">[</span>
-    <span class="n">I</span><span class="o">.</span><span class="n">CP</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">R</span><span class="o">.</span><span class="n">a</span><span class="p">),</span>               <span class="c1"># Start counter at 1</span>
-    <span class="n">loop</span> <span class="o">:=</span> <span class="n">Label</span><span class="p">(</span><span class="s2">&quot;loop&quot;</span><span class="p">),</span>      <span class="c1"># Mark loop start</span>
-    <span class="n">I</span><span class="o">.</span><span class="n">NOUT</span><span class="p">(</span><span class="n">R</span><span class="o">.</span><span class="n">a</span><span class="p">,</span> <span class="n">L</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span>          <span class="c1"># Print counter</span>
-    <span class="n">I</span><span class="o">.</span><span class="n">ADD</span><span class="p">(</span><span class="n">R</span><span class="o">.</span><span class="n">a</span><span class="p">,</span> <span class="n">L</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span>           <span class="c1"># Increment counter</span>
-    <span class="n">I</span><span class="o">.</span><span class="n">JLT</span><span class="p">(</span><span class="n">loop</span><span class="p">,</span> <span class="n">R</span><span class="o">.</span><span class="n">a</span><span class="p">,</span> <span class="n">L</span><span class="p">[</span><span class="mi">11</span><span class="p">]),</span>    <span class="c1"># Jump if a &lt; 11</span>
-<span class="p">]</span>
-
-<span class="n">cpu</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">program</span><span class="p">)</span>
-<span class="c1"># 1 2 3 4 5 6 7 8 9 10</span>
+<pre><span></span><code><span class="c1">; Count from 1 to 10</span>
+<span class="nf">CP</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="nv">R.a</span><span class="w">               </span><span class="c1">; Start counter at 1</span>
+<span class="nl">loop:</span>
+<span class="w">    </span><span class="nf">NOUT</span><span class="w"> </span><span class="nv">R.a</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="w">         </span><span class="c1">; Print counter</span>
+<span class="w">    </span><span class="nf">ADD</span><span class="w"> </span><span class="nv">R.a</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="w">          </span><span class="c1">; Increment counter</span>
+<span class="w">    </span><span class="nf">JLT</span><span class="w"> </span><span class="nv">loop</span><span class="p">,</span><span class="w"> </span><span class="nv">R.a</span><span class="p">,</span><span class="w"> </span><span class="mi">11</span><span class="w">   </span><span class="c1">; Jump to loop if a &lt; 11</span>
 </code></pre>
 </div>
 
-<h3 id="parsing-programs-from-text">Parsing Programs from Text</h3>
+<p>Save as <code>count.dt</code> and run: <code>dt31 count.dt</code> to output <code>1 2 3 4 5 6 7 8 9 10</code>.</p>
+
+<h3 id="function-calls">Function Calls</h3>
 
 <div class="pdoc-code codehilite">
-<pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">dt31</span><span class="w"> </span><span class="kn">import</span> <span class="n">DT31</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn"><a href="dt31/parser.html">dt31.parser</a></span><span class="w"> </span><span class="kn">import</span> <span class="n">parse_program</span>
+<pre><span></span><code><span class="c1">; Print a greeting multiple times</span>
+<span class="nf">CP</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="nv">R.a</span><span class="w">           </span><span class="c1">; Counter: print 3 times</span>
+<span class="nl">print_loop:</span>
+<span class="w">    </span><span class="nf">CALL</span><span class="w"> </span><span class="nv">greet</span><span class="w">      </span><span class="c1">; Call the greeting function</span>
+<span class="w">    </span><span class="nf">SUB</span><span class="w"> </span><span class="nv">R.a</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="nv">.</span><span class="w">     </span><span class="c1">; R.a -= 1</span>
+<span class="w">    </span><span class="nf">JGT</span><span class="w"> </span><span class="nv">print_loop</span><span class="p">,</span><span class="w"> </span><span class="nv">R.a</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="c1">; loop if R.a &gt; 0</span>
+<span class="nf">JMP</span><span class="w"> </span><span class="nv">end</span>
 
-<span class="n">cpu</span> <span class="o">=</span> <span class="n">DT31</span><span class="p">()</span>
+<span class="nl">greet:</span>
+<span class="w">    </span><span class="c1">; Reusable greeting function</span>
+<span class="w">    </span><span class="nf">OOUT</span><span class="w"> </span><span class="s">&#39;H&#39;</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span>
+<span class="w">    </span><span class="nf">OOUT</span><span class="w"> </span><span class="s">&#39;i&#39;</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span>
+<span class="w">    </span><span class="nf">OOUT</span><span class="w"> </span><span class="s">&#39;!&#39;</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span>
+<span class="w">    </span><span class="nf">OOUT</span><span class="w"> </span><span class="s">&#39; &#39;</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span>
+<span class="w">    </span><span class="nf">RET</span>
 
-<span class="c1"># Write assembly code as text</span>
-<span class="n">assembly</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
-<span class="s2">CP 5, R.a             ; Copy 5 into register a</span>
-<span class="s2">loop:</span>
-<span class="s2">    NOUT R.a, 1       ; Output register a with newline</span>
-<span class="s2">    SUB R.a, 1        ; Decrement a</span>
-<span class="s2">    JGT loop, R.a, 0  ; Jump to loop if a &gt; 0</span>
-<span class="s2">&quot;&quot;&quot;</span>
-
-<span class="c1"># Parse and run</span>
-<span class="n">program</span> <span class="o">=</span> <span class="n">parse_program</span><span class="p">(</span><span class="n">assembly</span><span class="p">)</span>
-<span class="n">cpu</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">program</span><span class="p">)</span>
-<span class="c1"># 5</span>
-<span class="c1"># 4</span>
-<span class="c1"># 3</span>
-<span class="c1"># 2</span>
-<span class="c1"># 1</span>
+<span class="nl">end:</span>
+<span class="c1">; output: `Hi! Hi! Hi! `</span>
 </code></pre>
 </div>
 
-<h3 id="using-the-command-line">Using the Command Line</h3>
-
-<p>Once installed, you can execute <code>.dt</code> assembly files directly from the command line:</p>
-
-<div class="pdoc-code codehilite">
-<pre><span></span><code><span class="c1"># Create a simple program file</span>
-cat<span class="w"> </span>&gt;<span class="w"> </span>countdown.dt<span class="w"> </span><span class="s">&lt;&lt; &#39;EOF&#39;</span>
-<span class="s">CP 5, R.a             ; Copy 5 into register a</span>
-<span class="s">loop:</span>
-<span class="s">    NOUT R.a, 1       ; Output register a with newline</span>
-<span class="s">    SUB R.a, 1        ; Decrement a</span>
-<span class="s">    JGT loop, R.a, 0  ; Jump to loop if a &gt; 0</span>
-<span class="s">EOF</span>
-
-<span class="c1"># Execute the program</span>
-dt31<span class="w"> </span>countdown.dt
-<span class="c1"># 5</span>
-<span class="c1"># 4</span>
-<span class="c1"># 3</span>
-<span class="c1"># 2</span>
-<span class="c1"># 1</span>
-</code></pre>
-</div>
-
-<h4 id="cli-options">CLI Options</h4>
-
-<ul>
-<li><code>--debug</code> or <code>-d</code>: Enable step-by-step debug output</li>
-<li><code>--parse-only</code> or <code>-p</code>: Validate syntax without executing</li>
-<li><code>--registers a,b,c,d</code>: Specify custom registers (auto-detected by default)</li>
-<li><code>--memory 512</code>: Set memory size in bytes (default: 256)</li>
-<li><code>--stack-size 512</code>: Set stack size (default: 256)</li>
-<li><code>--custom-instructions PATH</code> or <code>-i PATH</code>: Load custom instruction definitions from a Python file</li>
-</ul>
-
-<div class="pdoc-code codehilite">
-<pre><span></span><code><span class="c1"># Parse and validate only (no execution)</span>
-dt31<span class="w"> </span>--parse-only<span class="w"> </span>program.dt
-
-<span class="c1"># Run with debug output</span>
-dt31<span class="w"> </span>--debug<span class="w"> </span>program.dt
-
-<span class="c1"># Use custom memory size</span>
-dt31<span class="w"> </span>--memory<span class="w"> </span><span class="m">1024</span><span class="w"> </span>program.dt
-
-<span class="c1"># Specify registers explicitly</span>
-dt31<span class="w"> </span>--registers<span class="w"> </span>a,b,c,d,e<span class="w"> </span>program.dt
-
-<span class="c1"># Use custom instructions</span>
-dt31<span class="w"> </span>--custom-instructions<span class="w"> </span>my_instructions.py<span class="w"> </span>program.dt
-</code></pre>
-</div>
-
-<h4 id="custom-instructions">Custom Instructions</h4>
-
-<p>You can define custom instructions in a Python file and load them using the <code>--custom-instructions</code> flag. Your Python file must define an <code>INSTRUCTIONS</code> dict mapping instruction names to <code><a href="dt31/instructions.html#Instruction">dt31.instructions.Instruction</a></code> subclasses:</p>
-
-<div class="pdoc-code codehilite">
-<pre><span></span><code><span class="c1"># my_instructions.py</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn"><a href="dt31/instructions.html">dt31.instructions</a></span><span class="w"> </span><span class="kn">import</span> <span class="n">UnaryOperation</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn"><a href="dt31/operands.html">dt31.operands</a></span><span class="w"> </span><span class="kn">import</span> <span class="n">Operand</span><span class="p">,</span> <span class="n">Reference</span>
-
-<span class="k">class</span><span class="w"> </span><span class="nc">TRIPLE</span><span class="p">(</span><span class="n">UnaryOperation</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Triple a value.&quot;&quot;&quot;</span>
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">a</span><span class="p">:</span> <span class="n">Operand</span><span class="p">,</span> <span class="n">out</span><span class="p">:</span> <span class="n">Reference</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="s2">&quot;TRIPLE&quot;</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">out</span><span class="p">)</span>
-
-    <span class="k">def</span><span class="w"> </span><span class="nf">_calc</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cpu</span><span class="p">:</span> <span class="s2">&quot;DT31&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">a</span><span class="o">.</span><span class="n">resolve</span><span class="p">(</span><span class="n">cpu</span><span class="p">)</span> <span class="o">*</span> <span class="mi">3</span>
-
-<span class="n">INSTRUCTIONS</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;TRIPLE&quot;</span><span class="p">:</span> <span class="n">TRIPLE</span><span class="p">}</span>
-</code></pre>
-</div>
-
-<p>Then use them in your assembly programs:</p>
-
-<pre><code>CP 5, R.a
-TRIPLE R.a
-NOUT R.a, 1  ; Outputs 15
-</code></pre>
-
-<p>Run with: <code>dt31 --custom-instructions my_instructions.py program.dt</code></p>
-
-<p><strong>Security Warning</strong>: Loading custom instruction files executes arbitrary Python code. Only load files from trusted sources.</p>
-
-<p>See the <a href="https://daturkel.github.io/dt31/dt31/cli.html">CLI documentation</a> for more details on running text assembly programs, <a href="https://daturkel.github.io/dt31/dt31/instructions.html">instructions documentation</a> for additional info on custom instructions.</p>
-
-<h2 id="examples">Examples</h2>
-
-<p>For more examples including factorial, fibonacci, function calls, and more, see the <a href="./examples/">examples</a> directory.</p>
+<p>Functions use the stack for return addresses and can be called multiple times. See the <a href="https://github.com/daturkel/dt31/tree/main/examples">examples</a> directory for more complex examples.</p>
 
 <h2 id="core-concepts">Core Concepts</h2>
 
@@ -310,13 +260,231 @@ NOUT R.a, 1  ; Outputs 15
 
 <p>See the <a href="https://daturkel.github.io/dt31/dt31/cpu.html">CPU documentation</a> for API details.</p>
 
-<h2 id="usage-guide">Usage Guide</h2>
+<h2 id="command-line-interface">Command-Line Interface</h2>
+
+<h3 id="basic-usage">Basic Usage</h3>
+
+<p>Execute <code>.dt</code> assembly files directly:</p>
+
+<div class="pdoc-code codehilite">
+<pre><span></span><code>dt31<span class="w"> </span>program.dt
+</code></pre>
+</div>
+
+<h3 id="cli-options">CLI Options</h3>
+
+<ul>
+<li><code>--debug</code> or <code>-d</code>: Enable step-by-step debug output</li>
+<li><code>--parse-only</code> or <code>-p</code>: Validate syntax without executing</li>
+<li><code>--registers a,b,c,d</code>: Specify custom registers (auto-detected by default)</li>
+<li><code>--memory 512</code>: Set memory size in bytes (default: 256)</li>
+<li><code>--stack-size 512</code>: Set stack size (default: 256)</li>
+<li><code>--custom-instructions PATH</code> or <code>-i PATH</code>: Load custom instruction definitions from a Python file</li>
+<li><code>--dump {none,error,success,all}</code>: When to dump CPU state (default: none)</li>
+<li><code>--dump-file FILE</code>: File path for CPU state dump (auto-generates timestamped filename if not specified)</li>
+</ul>
+
+<p><strong>Examples:</strong></p>
+
+<div class="pdoc-code codehilite">
+<pre><span></span><code><span class="c1"># Parse and validate only (no execution)</span>
+dt31<span class="w"> </span>--parse-only<span class="w"> </span>program.dt
+
+<span class="c1"># Run with debug output</span>
+dt31<span class="w"> </span>--debug<span class="w"> </span>program.dt
+
+<span class="c1"># Use custom memory size</span>
+dt31<span class="w"> </span>--memory<span class="w"> </span><span class="m">1024</span><span class="w"> </span>program.dt
+
+<span class="c1"># Specify registers explicitly</span>
+dt31<span class="w"> </span>--registers<span class="w"> </span>a,b,c,d,e<span class="w"> </span>program.dt
+
+<span class="c1"># Use custom instructions</span>
+dt31<span class="w"> </span>--custom-instructions<span class="w"> </span>my_instructions.py<span class="w"> </span>program.dt
+
+<span class="c1"># Dump CPU state on error (for debugging crashes)</span>
+dt31<span class="w"> </span>--dump<span class="w"> </span>error<span class="w"> </span>program.dt<span class="w">  </span><span class="c1"># Auto-generates program_crash_TIMESTAMP.json</span>
+</code></pre>
+</div>
+
+<p>See the <a href="https://daturkel.github.io/dt31/dt31/cli.html">CLI documentation</a> for complete details.</p>
+
+<h3 id="custom-instructions">Custom Instructions</h3>
+
+<p>Define custom instructions in a Python file and load them with <code>--custom-instructions</code>. Your file must export an <code>INSTRUCTIONS</code> dict and instruction names must be all-caps:</p>
+
+<div class="pdoc-code codehilite">
+<pre><span></span><code><span class="c1"># my_instructions.py</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn"><a href="dt31/instructions.html">dt31.instructions</a></span><span class="w"> </span><span class="kn">import</span> <span class="n">UnaryOperation</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn"><a href="dt31/operands.html">dt31.operands</a></span><span class="w"> </span><span class="kn">import</span> <span class="n">Operand</span><span class="p">,</span> <span class="n">Reference</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">TRIPLE</span><span class="p">(</span><span class="n">UnaryOperation</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Triple a value.&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">a</span><span class="p">:</span> <span class="n">Operand</span><span class="p">,</span> <span class="n">out</span><span class="p">:</span> <span class="n">Reference</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="s2">&quot;TRIPLE&quot;</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">out</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_calc</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cpu</span><span class="p">:</span> <span class="s2">&quot;DT31&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">a</span><span class="o">.</span><span class="n">resolve</span><span class="p">(</span><span class="n">cpu</span><span class="p">)</span> <span class="o">*</span> <span class="mi">3</span>
+
+<span class="n">INSTRUCTIONS</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;TRIPLE&quot;</span><span class="p">:</span> <span class="n">TRIPLE</span><span class="p">}</span>
+</code></pre>
+</div>
+
+<p>Use in assembly:</p>
+
+<div class="pdoc-code codehilite">
+<pre><span></span><code><span class="nf">CP</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span><span class="w"> </span><span class="nv">R.a</span>
+<span class="nf">TRIPLE</span><span class="w"> </span><span class="nv">R.a</span>
+<span class="nf">NOUT</span><span class="w"> </span><span class="nv">R.a</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="w">  </span><span class="c1">; Outputs 15</span>
+</code></pre>
+</div>
+
+<p>Run with: <code>dt31 --custom-instructions my_instructions.py program.dt</code></p>
+
+<p><strong>Security Warning</strong>: Loading custom instruction files executes arbitrary Python code. Only load files from trusted sources.</p>
+
+<p>See the <a href="https://daturkel.github.io/dt31/dt31/instructions.html">instructions documentation</a> for more details on creating custom instructions.</p>
+
+<h3 id="cpu-state-dumps">CPU State Dumps</h3>
+
+<p>The <code>--dump</code> option captures complete CPU state to JSON for debugging. Dumps include:</p>
+
+<ul>
+<li><strong>CPU state</strong>: registers, memory, stack, and loaded program (as assembly text)</li>
+<li><strong>Error information</strong> (on error dumps): exception type, message, traceback, and the instruction that caused the error</li>
+</ul>
+
+<p>Error dumps include both <code>repr</code> and <code>str</code> formats of the failing instruction for easier debugging:</p>
+
+<div class="pdoc-code codehilite">
+<pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;cpu_state&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;registers&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">&quot;a&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;b&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;ip&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="p">},</span>
+<span class="w">    </span><span class="nt">&quot;memory&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="err">...</span><span class="p">],</span>
+<span class="w">    </span><span class="nt">&quot;stack&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span>
+<span class="w">    </span><span class="nt">&quot;program&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;CP 10, R.a\nCP 0, R.b\nDIV R.a, R.b&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;config&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">&quot;memory_size&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">256</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;stack_size&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">256</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;wrap_memory&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">}</span>
+<span class="w">  </span><span class="p">},</span>
+<span class="w">  </span><span class="nt">&quot;error&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;ZeroDivisionError&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;message&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;integer division or modulo by zero&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;instruction&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;repr&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;DIV(a=R.a, b=R.b, out=R.a)&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;str&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;DIV R.a, R.b, R.a&quot;</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">&quot;traceback&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;...&quot;</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre>
+</div>
+
+<h2 id="assembly-language-reference">Assembly Language Reference</h2>
+
+<h3 id="syntax-rules">Syntax Rules</h3>
+
+<p><strong>Instructions and Operands:</strong></p>
+
+<div class="pdoc-code codehilite">
+<pre><span></span><code><span class="nf">INSTRUCTION</span><span class="w"> </span><span class="nv">operand1</span><span class="p">,</span><span class="w"> </span><span class="nv">operand2</span><span class="p">,</span><span class="w"> </span><span class="nv">operand3</span>
+</code></pre>
+</div>
+
+<ul>
+<li>Instructions are case-insensitive (<code>ADD</code>, <code>add</code>, and <code>Add</code> are all valid)</li>
+<li>Register names and label names are case-<em>sensitive</em></li>
+<li>Operands are separated by commas (spaces around commas are optional)</li>
+<li>Comments start with <code>;</code> and continue to end of line</li>
+<li>Blank lines and indentation are ignored</li>
+</ul>
+
+<h3 id="operand-types">Operand Types</h3>
+
+<p>The assembly text syntax differs from Python syntax:</p>
+
+<table>
+<thead>
+<tr>
+  <th>Operand Type</th>
+  <th>Assembly Syntax</th>
+  <th>Python Syntax</th>
+  <th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><strong>Numeric Literal</strong></td>
+  <td><code>42</code>, <code>-5</code></td>
+  <td><code>L[42]</code>, <code>L[-5]</code></td>
+  <td><code>CP 42, R.a</code></td>
+</tr>
+<tr>
+  <td><strong>Character Literal</strong></td>
+  <td><code>'A'</code></td>
+  <td><code>LC["A"]</code></td>
+  <td><code>OOUT 'H', 0</code></td>
+</tr>
+<tr>
+  <td><strong>Register</strong></td>
+  <td><code>R.a</code></td>
+  <td><code>R.a</code></td>
+  <td><code>ADD R.a, R.b</code></td>
+</tr>
+<tr>
+  <td><strong>Memory (direct)</strong></td>
+  <td><code>[100]</code> or <code>M[100]</code></td>
+  <td><code>M[100]</code></td>
+  <td><code>CP 42, [100]</code></td>
+</tr>
+<tr>
+  <td><strong>Memory (indirect)</strong></td>
+  <td><code>[R.a]</code> or <code>M[R.a]</code></td>
+  <td><code>M[R.a]</code></td>
+  <td><code>CP [R.a], R.b</code></td>
+</tr>
+<tr>
+  <td><strong>Label</strong></td>
+  <td><code>loop</code></td>
+  <td><code>Label("loop")</code></td>
+  <td><code>JMP loop</code></td>
+</tr>
+</tbody>
+</table>
+
+<p><strong>Key Differences:</strong></p>
+
+<ol>
+<li><strong>Literals</strong>: In text syntax, bare numbers are literals (no <code>L[...]</code> wrapper needed)</li>
+<li><strong>Characters</strong>: Use single quotes <code>'A'</code> instead of <code>LC["A"]</code></li>
+<li><strong>Memory</strong>: The <code>M</code> prefix is optional (both <code>[100]</code> and <code>M[100]</code> work)</li>
+<li><strong>Labels</strong>: Bare identifiers are labels (no <code>Label(...)</code> constructor needed)</li>
+<li><strong>Registers</strong>: <strong>Must</strong> use <code>R.</code> prefix in both syntaxes</li>
+</ol>
+
+<h3 id="label-definition">Label Definition</h3>
+
+<p>Labels mark positions in code:</p>
+
+<div class="pdoc-code codehilite">
+<pre><span></span><code><span class="c1">; Label on its own line</span>
+<span class="nl">loop:</span>
+<span class="w">    </span><span class="nf">ADD</span><span class="w"> </span><span class="nv">R.a</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span>
+<span class="w">    </span><span class="nf">JLT</span><span class="w"> </span><span class="nv">loop</span><span class="p">,</span><span class="w"> </span><span class="nv">R.a</span><span class="p">,</span><span class="w"> </span><span class="mi">10</span>
+
+<span class="c1">; Label on same line as instruction</span>
+<span class="nl">start:</span><span class="w"> </span><span class="nf">CP</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="nv">R.a</span>
+</code></pre>
+</div>
+
+<p>Label names must contain only alphanumeric characters and underscores.</p>
+
+<h2 id="python-api">Python API</h2>
+
+<p>While assembly syntax is the primary way to use dt31, you can also build and run programs programmatically using the Python API.</p>
 
 <h3 id="creating-and-running-programs">Creating and Running Programs</h3>
 
 <div class="pdoc-code codehilite">
-<pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">dt31</span><span class="w"> </span><span class="kn">import</span> <span class="n">DT31</span><span class="p">,</span> <span class="n">instructions</span> <span class="k">as</span> <span class="n">I</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn"><a href="dt31/operands.html">dt31.operands</a></span><span class="w"> </span><span class="kn">import</span> <span class="n">R</span><span class="p">,</span> <span class="n">L</span>
+<pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">dt31</span><span class="w"> </span><span class="kn">import</span> <span class="n">DT31</span><span class="p">,</span> <span class="n">I</span><span class="p">,</span> <span class="n">L</span><span class="p">,</span> <span class="n">M</span><span class="p">,</span> <span class="n">R</span>
 
 <span class="c1"># Create CPU instance</span>
 <span class="n">cpu</span> <span class="o">=</span> <span class="n">DT31</span><span class="p">()</span>
@@ -324,37 +492,74 @@ NOUT R.a, 1  ; Outputs 15
 <span class="c1"># Write program as list of instructions</span>
 <span class="n">program</span> <span class="o">=</span> <span class="p">[</span>
     <span class="n">I</span><span class="o">.</span><span class="n">CP</span><span class="p">(</span><span class="mi">42</span><span class="p">,</span> <span class="n">R</span><span class="o">.</span><span class="n">a</span><span class="p">),</span>
+    <span class="n">I</span><span class="o">.</span><span class="n">CP</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="n">M</span><span class="p">[</span><span class="n">R</span><span class="o">.</span><span class="n">a</span><span class="p">]),</span>
     <span class="n">I</span><span class="o">.</span><span class="n">NOUT</span><span class="p">(</span><span class="n">R</span><span class="o">.</span><span class="n">a</span><span class="p">,</span> <span class="n">L</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span>
+    <span class="n">I</span><span class="o">.</span><span class="n">NOUT</span><span class="p">(</span><span class="n">M</span><span class="p">[</span><span class="n">R</span><span class="o">.</span><span class="n">a</span><span class="p">],</span> <span class="n">L</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
 <span class="p">]</span>
 
 <span class="c1"># Run the program</span>
 <span class="n">cpu</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">program</span><span class="p">)</span>
 <span class="c1"># 42</span>
-</code></pre>
-</div>
-
-<h3 id="working-with-memory">Working with Memory</h3>
-
-<div class="pdoc-code codehilite">
-<pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">dt31</span><span class="w"> </span><span class="kn">import</span> <span class="n">DT31</span><span class="p">,</span> <span class="n">I</span><span class="p">,</span> <span class="n">L</span><span class="p">,</span> <span class="n">M</span><span class="p">,</span> <span class="n">R</span>
-
-<span class="n">cpu</span> <span class="o">=</span> <span class="n">DT31</span><span class="p">()</span>
-
-<span class="n">program</span> <span class="o">=</span> <span class="p">[</span>
-    <span class="n">I</span><span class="o">.</span><span class="n">CP</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="n">M</span><span class="p">[</span><span class="mi">50</span><span class="p">]),</span>   <span class="c1"># Store 100 at address 50</span>
-    <span class="n">I</span><span class="o">.</span><span class="n">CP</span><span class="p">(</span><span class="mi">50</span><span class="p">,</span> <span class="n">R</span><span class="o">.</span><span class="n">a</span><span class="p">),</span>      <span class="c1"># Put 50 in register a</span>
-    <span class="n">I</span><span class="o">.</span><span class="n">CP</span><span class="p">(</span><span class="n">M</span><span class="p">[</span><span class="n">R</span><span class="o">.</span><span class="n">a</span><span class="p">],</span> <span class="n">R</span><span class="o">.</span><span class="n">b</span><span class="p">),</span>  <span class="c1"># Indirect load: b = memory[a]</span>
-    <span class="n">I</span><span class="o">.</span><span class="n">NOUT</span><span class="p">(</span><span class="n">R</span><span class="o">.</span><span class="n">b</span><span class="p">,</span> <span class="n">L</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span>  <span class="c1"># Output: 100</span>
-<span class="p">]</span>
-<span class="n">cpu</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">program</span><span class="p">)</span>
 <span class="c1"># 100</span>
 </code></pre>
 </div>
 
-<h3 id="function-calls">Function Calls</h3>
+<h3 id="parsing-assembly-from-python">Parsing Assembly from Python</h3>
 
 <div class="pdoc-code codehilite">
-<pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn"><a href="dt31/operands.html">dt31.operands</a></span><span class="w"> </span><span class="kn">import</span> <span class="n">LC</span><span class="p">,</span> <span class="n">Label</span>
+<pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">dt31</span><span class="w"> </span><span class="kn">import</span> <span class="n">DT31</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn"><a href="dt31/parser.html">dt31.parser</a></span><span class="w"> </span><span class="kn">import</span> <span class="n">parse_program</span>
+
+<span class="n">cpu</span> <span class="o">=</span> <span class="n">DT31</span><span class="p">()</span>
+
+<span class="n">assembly</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">CP 5, R.a</span>
+<span class="s2">loop:</span>
+<span class="s2">    NOUT R.a, 1</span>
+<span class="s2">    SUB R.a, 1</span>
+<span class="s2">    JGT loop, R.a, 0</span>
+<span class="s2">&quot;&quot;&quot;</span>
+
+<span class="n">program</span> <span class="o">=</span> <span class="n">parse_program</span><span class="p">(</span><span class="n">assembly</span><span class="p">)</span>
+<span class="n">cpu</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">program</span><span class="p">)</span>
+<span class="c1"># 5 4 3 2 1</span>
+</code></pre>
+</div>
+
+<h3 id="converting-programs-to-text">Converting Programs to Text</h3>
+
+<p>Convert Python programs to assembly text format:</p>
+
+<div class="pdoc-code codehilite">
+<pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">dt31</span><span class="w"> </span><span class="kn">import</span> <span class="n">I</span><span class="p">,</span> <span class="n">L</span><span class="p">,</span> <span class="n">Label</span><span class="p">,</span> <span class="n">LC</span><span class="p">,</span> <span class="n">R</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn"><a href="dt31/assembler.html">dt31.assembler</a></span><span class="w"> </span><span class="kn">import</span> <span class="n">program_to_text</span>
+
+<span class="c1"># Create a program in Python</span>
+<span class="n">program</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="n">I</span><span class="o">.</span><span class="n">CP</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="n">R</span><span class="o">.</span><span class="n">a</span><span class="p">),</span>
+    <span class="n">loop</span> <span class="o">:=</span> <span class="n">Label</span><span class="p">(</span><span class="s2">&quot;loop&quot;</span><span class="p">),</span>
+    <span class="n">I</span><span class="o">.</span><span class="n">OOUT</span><span class="p">(</span><span class="n">LC</span><span class="p">[</span><span class="s2">&quot;*&quot;</span><span class="p">]),</span>
+    <span class="n">I</span><span class="o">.</span><span class="n">SUB</span><span class="p">(</span><span class="n">R</span><span class="o">.</span><span class="n">a</span><span class="p">,</span> <span class="n">L</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span>
+    <span class="n">I</span><span class="o">.</span><span class="n">JGT</span><span class="p">(</span><span class="n">loop</span><span class="p">,</span> <span class="n">R</span><span class="o">.</span><span class="n">a</span><span class="p">,</span> <span class="n">L</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span>
+<span class="p">]</span>
+
+<span class="c1"># Convert to assembly text</span>
+<span class="n">text</span> <span class="o">=</span> <span class="n">program_to_text</span><span class="p">(</span><span class="n">program</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+<span class="c1">#     CP 5, R.a</span>
+<span class="c1"># loop:</span>
+<span class="c1">#     OOUT &#39;*&#39;, 0</span>
+<span class="c1">#     SUB R.a, 1, R.a</span>
+<span class="c1">#     JGT loop, R.a, 0</span>
+</code></pre>
+</div>
+
+<h3 id="labels-and-function-calls">Labels and Function Calls</h3>
+
+<p>Labels offer a great use-case for the Python walrus operator.</p>
+
+<div class="pdoc-code codehilite">
+<pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn"><a href="dt31/operands.html">dt31.operands</a></span><span class="w"> </span><span class="kn">import</span> <span class="n">I</span><span class="p">,</span> <span class="n">LC</span><span class="p">,</span> <span class="n">Label</span>
 
 <span class="n">program</span> <span class="o">=</span> <span class="p">[</span>
     <span class="n">I</span><span class="o">.</span><span class="n">CALL</span><span class="p">(</span><span class="n">print_hi</span> <span class="o">:=</span> <span class="n">Label</span><span class="p">(</span><span class="s2">&quot;print_hi&quot;</span><span class="p">)),</span>
@@ -381,6 +586,7 @@ NOUT R.a, 1  ; Outputs 15
 <span class="c1"># Execute one instruction at a time</span>
 <span class="n">cpu</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">debug</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>  <span class="c1"># Prints instruction and state</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">cpu</span><span class="o">.</span><span class="n">state</span><span class="p">)</span>      <span class="c1"># Inspect CPU state</span>
+
 <span class="c1"># Execute a full program one instruction at a time</span>
 <span class="n">cpu</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">program</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </code></pre>
@@ -404,153 +610,9 @@ NOUT R.a, 1  ; Outputs 15
 </code></pre>
 </div>
 
-<h3 id="assembly-text-syntax">Assembly Text Syntax</h3>
-
-<p>dt31 supports writing programs in both Python and text-based assembly syntax. The text syntax is designed to be human-readable and closely resembles traditional assembly languages.</p>
-
-<h4 id="basic-syntax-rules">Basic Syntax Rules</h4>
-
-<p><strong>Instructions and Operands:</strong></p>
-
-<pre><code>INSTRUCTION operand1, operand2, operand3
-</code></pre>
-
-<ul>
-<li>Instructions are case-insensitive (<code>ADD</code>, <code>add</code>, and <code>Add</code> are all valid)</li>
-<li>Register names and label names are case-<em>sensitive</em></li>
-<li>Operands are separated by commas (spaces around commas are optional)</li>
-<li>Comments start with <code>;</code> and continue to end of line</li>
-<li>Blank lines and indentation are ignored</li>
-</ul>
-
-<h4 id="operand-syntax-differences">Operand Syntax Differences</h4>
-
-<p>The text syntax differs from Python syntax in how operands are written:</p>
-
-<table>
-<thead>
-<tr>
-  <th>Operand Type</th>
-  <th>Python Syntax</th>
-  <th>Text Syntax</th>
-  <th>Example</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-  <td><strong>Numeric Literal</strong></td>
-  <td><code>L[42]</code></td>
-  <td><code>42</code></td>
-  <td><code>CP 42, R.a</code></td>
-</tr>
-<tr>
-  <td><strong>Negative Literal</strong></td>
-  <td><code>L[-5]</code></td>
-  <td><code>-5</code></td>
-  <td><code>ADD R.a, -5</code></td>
-</tr>
-<tr>
-  <td><strong>Character Literal</strong></td>
-  <td><code>LC["A"]</code></td>
-  <td><code>'A'</code></td>
-  <td><code>OOUT 'H', 0</code></td>
-</tr>
-<tr>
-  <td><strong>Register</strong></td>
-  <td><code>R.a</code></td>
-  <td><code>R.a</code></td>
-  <td><code>ADD R.a, R.b</code></td>
-</tr>
-<tr>
-  <td><strong>Memory (direct)</strong></td>
-  <td><code>M[100]</code></td>
-  <td><code>[100]</code> or <code>M[100]</code></td>
-  <td><code>CP 42, [100]</code></td>
-</tr>
-<tr>
-  <td><strong>Memory (indirect)</strong></td>
-  <td><code>M[R.a]</code></td>
-  <td><code>[R.a]</code> or <code>M[R.a]</code></td>
-  <td><code>CP [R.a], R.b</code></td>
-</tr>
-<tr>
-  <td><strong>Label</strong></td>
-  <td><code>Label("loop")</code></td>
-  <td><code>loop</code></td>
-  <td><code>JMP loop</code></td>
-</tr>
-</tbody>
-</table>
-
-<p><strong>Key Differences:</strong></p>
-
-<ol>
-<li><strong>Literals</strong>: In text syntax, bare numbers are literals (no <code>L[...]</code> wrapper needed)</li>
-<li><strong>Characters</strong>: Use single quotes <code>'A'</code> instead of <code>LC["A"]</code></li>
-<li><strong>Memory</strong>: The <code>M</code> prefix is optional (both <code>[100]</code> and <code>M[100]</code> work)</li>
-<li><strong>Labels</strong>: Bare identifiers are labels (no <code>Label(...)</code> constructor needed)</li>
-<li><strong>Registers</strong>: <strong>Must</strong> use <code>R.</code> prefix in both syntaxes</li>
-</ol>
-
-<h4 id="label-definition">Label Definition</h4>
-
-<p>Labels mark positions in code and can be defined in two ways:</p>
-
-<pre><code>; Label on its own line
-loop:
-    ADD R.a, 1
-    JLT loop, R.a, 10
-
-; Label on same line as instruction
-start: CP 0, R.a
-</code></pre>
-
-<p>Label names must contain only alphanumeric characters and underscores.</p>
-
-<h4 id="complete-example-comparison">Complete Example Comparison</h4>
-
-<p><strong>Python Syntax:</strong></p>
-
-<div class="pdoc-code codehilite">
-<pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">dt31</span><span class="w"> </span><span class="kn">import</span> <span class="n">DT31</span><span class="p">,</span> <span class="n">I</span><span class="p">,</span> <span class="n">Label</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn"><a href="dt31/operands.html">dt31.operands</a></span><span class="w"> </span><span class="kn">import</span> <span class="n">R</span><span class="p">,</span> <span class="n">L</span><span class="p">,</span> <span class="n">LC</span><span class="p">,</span> <span class="n">M</span>
-
-<span class="n">cpu</span> <span class="o">=</span> <span class="n">DT31</span><span class="p">()</span>
-<span class="n">program</span> <span class="o">=</span> <span class="p">[</span>
-    <span class="n">I</span><span class="o">.</span><span class="n">CP</span><span class="p">(</span><span class="n">L</span><span class="p">[</span><span class="mi">5</span><span class="p">],</span> <span class="n">R</span><span class="o">.</span><span class="n">a</span><span class="p">),</span>
-    <span class="n">loop</span> <span class="o">:=</span> <span class="n">Label</span><span class="p">(</span><span class="s2">&quot;loop&quot;</span><span class="p">),</span>
-    <span class="n">I</span><span class="o">.</span><span class="n">NOUT</span><span class="p">(</span><span class="n">R</span><span class="o">.</span><span class="n">a</span><span class="p">,</span> <span class="n">L</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span>
-    <span class="n">I</span><span class="o">.</span><span class="n">SUB</span><span class="p">(</span><span class="n">R</span><span class="o">.</span><span class="n">a</span><span class="p">,</span> <span class="n">L</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span>
-    <span class="n">I</span><span class="o">.</span><span class="n">JGT</span><span class="p">(</span><span class="n">loop</span><span class="p">,</span> <span class="n">R</span><span class="o">.</span><span class="n">a</span><span class="p">,</span> <span class="n">L</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span>
-<span class="p">]</span>
-<span class="n">cpu</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">program</span><span class="p">)</span>
-</code></pre>
-</div>
-
-<p><strong>Text Syntax:</strong></p>
-
-<div class="pdoc-code codehilite">
-<pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">dt31</span><span class="w"> </span><span class="kn">import</span> <span class="n">DT31</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn"><a href="dt31/parser.html">dt31.parser</a></span><span class="w"> </span><span class="kn">import</span> <span class="n">parse_program</span>
-
-<span class="n">cpu</span> <span class="o">=</span> <span class="n">DT31</span><span class="p">()</span>
-<span class="n">assembly</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
-<span class="s2">    CP 5, R.a             ; Copy 5 into register a</span>
-<span class="s2">    loop:                 ; Define loop label</span>
-<span class="s2">        NOUT R.a, 1       ; Output register a</span>
-<span class="s2">        SUB R.a, 1        ; Decrement a</span>
-<span class="s2">        JGT loop, R.a, 0  ; Jump if a &gt; 0</span>
-<span class="s2">&quot;&quot;&quot;</span>
-<span class="n">program</span> <span class="o">=</span> <span class="n">parse_program</span><span class="p">(</span><span class="n">assembly</span><span class="p">)</span>
-<span class="n">cpu</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">program</span><span class="p">)</span>
-</code></pre>
-</div>
-
-<p>Both programs produce the same output: <code>5 4 3 2 1</code></p>
-
 <h2 id="documentation">Documentation</h2>
 
-<p>Full API documentation is available in the <a href="https://daturkel.github.io/dt31/dt31.html">documentation</a>. Generate the latest docs with:</p>
+<p>Full API documentation is available at <a href="https://daturkel.github.io/dt31/dt31.html">the docs site</a>. Generate the latest docs with:</p>
 
 <div class="pdoc-code codehilite">
 <pre><span></span><code>uv<span class="w"> </span>run<span class="w"> </span>invoke<span class="w"> </span>docs
@@ -576,8 +638,8 @@ uv<span class="w"> </span>run<span class="w"> </span>invoke<span class="w"> </sp
 uv<span class="w"> </span>sync<span class="w"> </span>--dev
 
 <span class="c1"># Set up pre-commit hooks</span>
-pre-commit<span class="w"> </span>install
-pre-commit<span class="w"> </span>install<span class="w"> </span>--hook-type<span class="w"> </span>pre-push
+uv<span class="w"> </span>run<span class="w"> </span>prek<span class="w"> </span>install<span class="w"> </span>--install-hooks
+uv<span class="w"> </span>run<span class="w"> </span>prek<span class="w"> </span>install<span class="w"> </span>--hook-type<span class="w"> </span>pre-push
 
 <span class="c1"># Run tests</span>
 uv<span class="w"> </span>run<span class="w"> </span>invoke<span class="w"> </span><span class="nb">test</span>
@@ -592,13 +654,15 @@ uv<span class="w"> </span>run<span class="w"> </span>invoke<span class="w"> </sp
 <li><input type="checkbox" class="task-list-item-checkbox" checked disabled> Character literals?</li>
 <li><input type="checkbox" class="task-list-item-checkbox" checked disabled> Parse and execute <code>.dt</code> files</li>
 <li><input type="checkbox" class="task-list-item-checkbox" checked disabled> Breakpoint instruction</li>
+<li><input type="checkbox" class="task-list-item-checkbox" checked disabled> Clearer handing of input during debug mode</li>
+<li><input type="checkbox" class="task-list-item-checkbox" checked disabled> Python to text output</li>
 <li><input type="checkbox" class="task-list-item-checkbox" disabled> User-definable macros (in both python and assembly syntax)</li>
-<li><input type="checkbox" class="task-list-item-checkbox" disabled> Python to text output</li>
 <li><input type="checkbox" class="task-list-item-checkbox" disabled> File I/O</li>
-<li><input type="checkbox" class="task-list-item-checkbox" disabled> Data handling?</li>
-<li><input type="checkbox" class="task-list-item-checkbox" disabled> Input error handling rather than immediate crash</li>
-<li><input type="checkbox" class="task-list-item-checkbox" disabled> Clearer handing of input during debug mode (currently hard to tell when the user is being prompted for input)</li>
-<li><input type="checkbox" class="task-list-item-checkbox" disabled> Preserve comments in parser?</li>
+<li><input type="checkbox" class="task-list-item-checkbox" disabled> Data handling</li>
+<li><input type="checkbox" class="task-list-item-checkbox" disabled> Input error-handling</li>
+<li><input type="checkbox" class="task-list-item-checkbox" disabled> Preserve comments in parser</li>
+<li><input type="checkbox" class="task-list-item-checkbox" disabled> Formatter</li>
+<li><input type="checkbox" class="task-list-item-checkbox" disabled> Interpreter resume from dump</li>
 </ul>
 
 <h2 id="license">License</h2>

@@ -1,6 +1,6 @@
 [project]
 name = "dt31"
-version = "0.1.0"
+version = "0.3.0"
 description = "A toy computer in Python."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -28,6 +28,7 @@ classifiers = [
     "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: 3.14",
     "Topic :: Software Development :: Interpreters",
+    "Typing :: Typed",
 ]
 
 [project.scripts]
@@ -49,4 +50,5 @@ dev = [
     "sphinx-autodoc-typehints>=2.0.0",
     "myst-parser>=2.0.0",
     "sphinx-rtd-theme>=2.0.0",
+    "prek>=0.2.13",
 ]

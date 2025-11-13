@@ -14,6 +14,7 @@ wheels/
 .python-version
 .coverage
 coverage.xml
+plans/
 
 # Documentation
 docs-sphinx/build/

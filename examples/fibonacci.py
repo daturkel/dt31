@@ -26,6 +26,7 @@ fibonacci = [
     I.RJGT(loop, R.c, 0),
 ]
 
-cpu = DT31(registers=["a", "b", "c"])
-print("Enter number of Fibonacci numbers to generate:")
-cpu.run(fibonacci, debug=False)
+if __name__ == "__main__":
+    cpu = DT31(registers=["a", "b", "c"])
+    print("Enter number of Fibonacci numbers to generate:")
+    cpu.run(fibonacci, debug=False)

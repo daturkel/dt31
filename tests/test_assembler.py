@@ -1,8 +1,13 @@
 import pytest
 
 from dt31 import instructions as I
-from dt31.assembler import AssemblyError, assemble, extract_registers_from_program
-from dt31.operands import L, Label, Literal, M, R
+from dt31.assembler import (
+    AssemblyError,
+    assemble,
+    extract_registers_from_program,
+    program_to_text,
+)
+from dt31.operands import L, LC, Label, Literal, M, R
 
 # ============================================================================
 # Basic Assembly
@@ -461,7 +466,7 @@ def test_modifying_result_does_not_affect_original():
     result[0] = I.NOOP()
 
     # Original should be unchanged
-    assert str(program[0]) == "CP(a=0, out=R.a)"
+    assert repr(program[0]) == "CP(a=0, b=R.a)"
 
 
 # ============================================================================
@@ -603,3 +608,103 @@ def test_extract_registers_sorted():
     ]
     registers = extract_registers_from_program(program)
     assert registers == ["a", "m", "z"]
+
+
+# ============================================================================
+# Program to Text Conversion
+# ============================================================================
+
+
+def test_program_to_text_simple():
+    """Test converting a simple program to text."""
+    program = [
+        I.CP(5, R.a),
+        I.ADD(R.a, L[1]),
+        I.NOUT(R.a, L[1]),
+    ]
+    text = program_to_text(program)
+    expected = "    CP 5, R.a\n    ADD R.a, 1, R.a\n    NOUT R.a, 1"
+    assert text == expected
+
+
+def test_program_to_text_with_labels():
+    """Test converting program with labels to text."""
+    program = [
+        I.CP(5, R.a),
+        loop := Label("loop"),
+        I.NOUT(R.a, L[1]),
+        I.SUB(R.a, L[1]),
+        I.JGT(loop, R.a, L[0]),
+    ]
+    text = program_to_text(program)
+    lines = text.split("\n")
+    assert lines[0] == "    CP 5, R.a"
+    assert lines[1] == "loop:"
+    assert lines[2] == "    NOUT R.a, 1"
+    assert lines[3] == "    SUB R.a, 1, R.a"
+    assert lines[4] == "    JGT loop, R.a, 0"
+
+
+def test_program_to_text_character_literals():
+    """Test that character literals render correctly."""
+    program = [
+        I.OOUT(LC["H"]),
+        I.OOUT(LC["i"], L[1]),
+    ]
+    text = program_to_text(program)
+    lines = text.split("\n")
+    assert lines[0] == "    OOUT 'H', 0"
+    assert lines[1] == "    OOUT 'i', 1"
+
+
+def test_program_to_text_memory_references():
+    """Test that memory references render correctly."""
+    program = [
+        I.CP(100, M[50]),
+        I.CP(M[50], R.a),
+        I.CP(M[R.a], R.b),
+    ]
+    text = program_to_text(program)
+    lines = text.split("\n")
+    assert lines[0] == "    CP 100, [50]"
+    assert lines[1] == "    CP [50], R.a"
+    assert lines[2] == "    CP [R.a], R.b"
+
+
+def test_program_to_text_empty():
+    """Test converting empty program."""
+    program = []
+    text = program_to_text(program)
+    assert text == ""
+
+
+def test_program_to_text_only_labels():
+    """Test converting program with only labels."""
+    program = [
+        Label("start"),
+        Label("end"),
+    ]
+    text = program_to_text(program)
+    assert text == "start:\nend:"
+
+
+def test_program_to_text_complex():
+    """Test converting a complex program with loops and function calls."""
+    program = [
+        I.CALL(func := Label("print_hi")),
+        I.JMP(end := Label("end")),
+        func,
+        I.OOUT(LC["H"]),
+        I.OOUT(LC["i"], L[1]),
+        I.RET(),
+        end,
+    ]
+    text = program_to_text(program)
+    lines = text.split("\n")
+    assert lines[0] == "    CALL print_hi"
+    assert lines[1] == "    JMP end"
+    assert lines[2] == "print_hi:"
+    assert lines[3] == "    OOUT 'H', 0"
+    assert lines[4] == "    OOUT 'i', 1"
+    assert lines[5] == "    RET"
+    assert lines[6] == "end:"

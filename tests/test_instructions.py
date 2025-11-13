@@ -2,6 +2,7 @@ from collections import deque
 from copy import copy
 
 import pytest
+
 from dt31 import instructions as I
 from dt31.operands import L, M, MemoryReference, R
 
@@ -18,6 +19,36 @@ def test_noop(cpu):
     assert I.NOOP()(cpu) == 0
     assert cpu.memory == memory
     assert cpu.registers == registers
+
+
+def test_nullary_operation_advances_one(cpu):
+    I.RND(M[0])(cpu)
+    assert cpu.get_register("ip") == 1
+    I.RND(M[0])(cpu)
+    assert cpu.get_register("ip") == 2
+
+
+def test_nullary_operation_writes_memory(cpu):
+    cpu.set_memory(0, 100)
+    I.RND(M[0])(cpu)
+    assert cpu.get_memory(0) in {0, 1}
+
+
+def test_nullary_operation_writes_register(cpu):
+    cpu.set_register("a", 100)
+    I.RND(R.a)(cpu)
+    assert cpu.get_register("a") in {0, 1}
+
+
+def test_nullary_operation_validates_types(cpu):
+    with pytest.raises(ValueError) as e1:
+        I.RND(L[1])  # type: ignore
+    assert str(e1.value).endswith("must be a Reference")
+
+
+def test_nullary_representations(cpu):
+    assert str(I.RND(M[0])) == "RND [0]"
+    assert repr(I.RND(M[0])) == "RND(out=M[0])"
 
 
 def test_unary_operation_advances_one(cpu):
@@ -54,6 +85,13 @@ def test_unary_operation_writes_to_default_register(cpu):
 def test_unary_operation_writes_to_default_memory(cpu):
     I.BNOT(M[1])(cpu)
     assert cpu.get_memory(1) == -11
+
+
+def test_unary_operation_representations():
+    assert repr(I.BNOT(5, M[10])) == "BNOT(a=5, out=M[10])"
+    assert str(I.BNOT(5, M[10])) == "BNOT 5, [10]"
+    assert repr(I.NOT(R.a, R.b)) == "NOT(a=R.a, out=R.b)"
+    assert str(I.NOT(R.a, R.b)) == "NOT R.a, R.b"
 
 
 def test_binary_operation_advances_one(cpu):
@@ -93,7 +131,14 @@ def test_binary_operation_writes_to_default_memory(cpu):
 
 
 def test_add(cpu):
+    # Test with explicit out parameter
+    assert repr(I.ADD(1, 3, M[10])) == "ADD(a=1, b=3, out=M[10])"
+    assert str(I.ADD(1, 3, M[10])) == "ADD 1, 3, [10]"
     assert I.ADD(1, 3, M[10])(cpu) == 4
+
+    # Test with implicit out (defaults to first operand)
+    assert repr(I.ADD(R.a, R.b)) == "ADD(a=R.a, b=R.b, out=R.a)"
+    assert str(I.ADD(R.a, R.b)) == "ADD R.a, R.b, R.a"
 
 
 def test_sub(cpu):
@@ -203,7 +248,8 @@ def test_jump(cpu):
     inst = I.Jump("foo", M[10])
     assert isinstance(inst.dest, MemoryReference)
     assert inst.dest.address == 10
-    assert str(inst) == "foo(dest=M[10])"
+    assert repr(inst) == "foo(dest=M[10])"
+    assert str(inst) == "foo [10]"
     with pytest.raises(NotImplementedError):
         I.Jump("foo", M[10])(cpu)
 
@@ -220,7 +266,8 @@ def test_jump_with_label(cpu):
     inst = I.Jump("foo", label)
     assert isinstance(inst.dest, Label)
     assert inst.dest.name == "my_label"
-    assert str(inst) == "foo(dest=my_label)"
+    assert repr(inst) == "foo(dest=my_label)"
+    assert str(inst) == "foo my_label"
 
 
 def test_binary_jump_sets_a_and_b(cpu):
@@ -232,13 +279,15 @@ def test_binary_jump_sets_a_and_b(cpu):
 
 
 def test_jmp(cpu):
-    assert str(I.JMP(10)) == "JMP(dest=10)"
+    assert repr(I.JMP(10)) == "JMP(dest=10)"
+    assert str(I.JMP(10)) == "JMP 10"
     I.JMP(10)(cpu)
     assert cpu.get_register("ip") == 10
 
 
 def test_rjmp(cpu):
-    assert str(I.RJMP(10)) == "RJMP(dest=10)"
+    assert repr(I.RJMP(10)) == "RJMP(dest=10)"
+    assert str(I.RJMP(10)) == "RJMP 10"
     I.NOOP()(cpu)
     I.NOOP()(cpu)
     assert cpu.get_register("ip") == 2
@@ -281,7 +330,8 @@ def test_rjne(cpu):
 
 
 def test_jif(cpu):
-    assert str(I.JIF(M[1], 2)) == "JIF(dest=M[1], a=2)"
+    assert repr(I.JIF(M[1], 2)) == "JIF(dest=M[1], a=2)"
+    assert str(I.JIF(M[1], 2)) == "JIF [1], 2"
     assert cpu.get_register("ip") == 0
     I.JIF(M[1], 2)(cpu)
     assert cpu.get_register("ip") == 10
@@ -343,8 +393,12 @@ def test_rjge(cpu):
 
 
 def test_push_pop(cpu):
-    assert str(I.PUSH(2)) == "PUSH(a=2)"
-    assert str(I.POP()) == "POP(out=None)"
+    assert repr(I.PUSH(2)) == "PUSH(a=2)"
+    assert str(I.PUSH(2)) == "PUSH 2"
+    assert repr(I.POP()) == "POP(out=None)"
+    assert str(I.POP()) == "POP"
+    assert repr(I.POP(M[20])) == "POP(out=M[20])"
+    assert str(I.POP(M[20])) == "POP [20]"
     I.PUSH(2)(cpu)
     assert cpu.stack == deque([2])
     I.PUSH(M[1])(cpu)
@@ -368,7 +422,8 @@ def test_push_pop(cpu):
 
 
 def test_cp(cpu):
-    assert str(str(I.CP(2, M[10]))) == "CP(a=2, out=M[10])"
+    assert repr(I.CP(2, M[10])) == "CP(a=2, b=M[10])"
+    assert str(I.CP(2, M[10])) == "CP 2, [10]"
     assert I.CP(2, M[10])(cpu) == 2
     assert cpu.get_memory(10) == 2
     assert I.CP(R.a, M[20])(cpu) == 30
@@ -379,44 +434,56 @@ def test_cp(cpu):
     assert cpu.get_register("b") == 2
 
 
+def test_cp_validates_b_is_reference():
+    with pytest.raises(ValueError) as e:
+        I.CP(5, L[10])  # type: ignore
+    assert "argument `b` must be a Reference" in str(e.value)
+
+
 def test_nout_no_newline(cpu, capsys):
-    assert str(I.NOUT(L[1])) == "NOUT(a=1, b=0)"
+    assert repr(I.NOUT(L[1])) == "NOUT(a=1, b=0)"
+    assert str(I.NOUT(L[1])) == "NOUT 1, 0"
     assert I.NOUT(L[2])(cpu) == 0
     captured = capsys.readouterr()
     assert captured.out == "2"
 
 
 def test_nout_newline(cpu, capsys):
-    assert str(I.NOUT(L[2], L[1])) == "NOUT(a=2, b=1)"
+    assert repr(I.NOUT(L[2], L[1])) == "NOUT(a=2, b=1)"
+    assert str(I.NOUT(L[2], L[1])) == "NOUT 2, 1"
     assert I.NOUT(L[2], L[1])(cpu) == 0
     captured = capsys.readouterr()
     assert captured.out == "2\n"
 
 
 def test_oout_no_newline(cpu, capsys):
-    assert str(I.OOUT(L[1])) == "OOUT(a=1, b=0)"
+    assert repr(I.OOUT(L[1])) == "OOUT(a=1, b=0)"
+    assert str(I.OOUT(L[1])) == "OOUT 1, 0"
     assert I.OOUT(L[65])(cpu) == 0
     captured = capsys.readouterr()
     assert captured.out == "A"
 
 
 def test_oout_newline(cpu, capsys):
-    assert str(I.OOUT(L[2], L[1])) == "OOUT(a=2, b=1)"
+    assert repr(I.OOUT(L[2], L[1])) == "OOUT(a=2, b=1)"
+    assert str(I.OOUT(L[2], L[1])) == "OOUT 2, 1"
     assert I.OOUT(L[65], L[1])(cpu) == 0
     captured = capsys.readouterr()
     assert captured.out == "A\n"
 
 
 def test_nin(cpu, monkeypatch):
-    assert str(I.NIN(M[10])) == "NIN(out=M[10])"
-    monkeypatch.setattr("builtins.input", lambda: "31")
+    assert repr(I.NIN(M[10])) == "NIN(out=M[10])"
+    assert str(I.NIN(M[10])) == "NIN [10]"
+    monkeypatch.setattr("builtins.input", lambda prompt: "31")
     assert I.NIN(R.a)(cpu) == 31
     assert cpu.get_register("a") == 31
 
 
 def test_oin(cpu, monkeypatch):
-    assert str(I.OIN(M[10])) == "OIN(out=M[10])"
-    monkeypatch.setattr("builtins.input", lambda: "A")
+    assert repr(I.OIN(M[10])) == "OIN(out=M[10])"
+    assert str(I.OIN(M[10])) == "OIN [10]"
+    monkeypatch.setattr("builtins.input", lambda prompt: "A")
     assert I.OIN(R.a)(cpu) == 65
     assert cpu.get_register("a") == 65
 
@@ -430,11 +497,13 @@ def test_semp(cpu):
     I.POP()(cpu)
     assert I.SEMP(M[0])(cpu) == 1
     assert cpu.get_memory(0) == 1
-    assert str(I.SEMP(M[10])) == "SEMP(out=M[10])"
+    assert repr(I.SEMP(M[10])) == "SEMP(out=M[10])"
+    assert str(I.SEMP(M[10])) == "SEMP [10]"
 
 
 def test_call_pushes_return_address(cpu):
-    assert str(I.CALL(100)) == "CALL(dest=100)"
+    assert repr(I.CALL(100)) == "CALL(dest=100)"
+    assert str(I.CALL(100)) == "CALL 100"
     assert cpu.get_register("ip") == 0
     assert cpu.stack == deque([])
     I.CALL(100)(cpu)
@@ -464,7 +533,8 @@ def test_call_with_register(cpu):
 
 
 def test_ret_pops_and_jumps(cpu):
-    assert str(I.RET()) == "RET()"
+    assert repr(I.RET()) == "RET()"
+    assert str(I.RET()) == "RET"
     # Simulate a function call sequence
     cpu.set_register("ip", 5)
     I.CALL(100)(cpu)
@@ -512,7 +582,8 @@ def test_call_ret_sequence(cpu):
 
 
 def test_rcall_relative_call(cpu):
-    assert str(I.RCALL(10)) == "RCALL(dest=10)"
+    assert repr(I.RCALL(10)) == "RCALL(dest=10)"
+    assert str(I.RCALL(10)) == "RCALL 10"
     assert cpu.get_register("ip") == 0
     assert cpu.stack == deque([])
     I.RCALL(10)(cpu)
@@ -691,3 +762,76 @@ def test_brk_and_brkd_equality(cpu):
     assert I.BRK() == I.BRK()
     assert I.BRKD() == I.BRKD()
     assert I.BRK() != I.BRKD()
+
+
+def test_rnd(cpu):
+    for i in range(100):
+        I.RND(M[i])(cpu)
+    assert any(cpu.memory[:100])
+    assert not all(cpu.memory[:100])
+    for m in cpu.memory[:100]:
+        assert m in {0, 1}
+
+
+def test_rint(cpu):
+    for i in range(100):
+        I.RINT(4, 10, M[i])(cpu)
+    print(cpu.memory)
+    for i in range(4, 11):
+        assert i in cpu.memory[:100]
+    for i in cpu.memory[:100]:
+        assert i in range(4, 11)
+
+    with pytest.raises(ValueError) as e:
+        I.RINT(5, 1, M[101])(cpu)
+    assert "got a=5, b=1" in str(e.value)
+
+
+def test_exit_default_status_code(cpu):
+    """Test EXIT instruction with default status code (0)."""
+    with pytest.raises(SystemExit) as e:
+        I.EXIT()(cpu)
+    assert e.value.code == 0
+
+
+def test_exit_with_literal_status_code(cpu):
+    """Test EXIT instruction with literal status code."""
+    with pytest.raises(SystemExit) as e:
+        I.EXIT(42)(cpu)
+    assert e.value.code == 42
+
+
+def test_exit_with_register_status_code(cpu):
+    """Test EXIT instruction with status code from register."""
+    cpu.set_register("a", 5)
+    with pytest.raises(SystemExit) as e:
+        I.EXIT(R.a)(cpu)
+    assert e.value.code == 5
+
+
+def test_exit_with_memory_status_code(cpu):
+    """Test EXIT instruction with status code from memory."""
+    cpu.set_memory(10, 7)
+    with pytest.raises(SystemExit) as e:
+        I.EXIT(M[10])(cpu)
+    assert e.value.code == 7
+
+
+def test_exit_representations():
+    """Test string representations of EXIT instruction."""
+    assert str(I.EXIT()) == "EXIT 0"
+    assert str(I.EXIT(42)) == "EXIT 42"
+    assert str(I.EXIT(R.a)) == "EXIT R.a"
+    assert repr(I.EXIT()) == "EXIT(status_code=0)"
+    assert repr(I.EXIT(42)) == "EXIT(status_code=42)"
+    assert repr(I.EXIT(R.a)) == "EXIT(status_code=R.a)"
+
+
+def test_exit_equality():
+    """Test EXIT instruction equality comparison."""
+    assert I.EXIT() == I.EXIT()
+    assert I.EXIT(0) == I.EXIT()
+    assert I.EXIT(42) == I.EXIT(42)
+    assert I.EXIT(42) != I.EXIT(5)
+    assert I.EXIT(R.a) == I.EXIT(R.a)
+    assert I.EXIT(R.a) != I.EXIT(R.b)

@@ -21,13 +21,13 @@ def coverage_badge(c):
 @task
 def docs(c):
     """Update documentation files."""
-    c.run("pdoc --docformat google src/dt31 -o docs/site")
+    c.run("pdoc --docformat google src/dt31 -t docs/templates -o docs/site")
 
 
 @task
 def serve_docs(c):
     """Serve the documentation website locally."""
-    c.run("pdoc --docformat google src/dt31")
+    c.run("pdoc --docformat google -t docs/templates src/dt31")
 
 
 @task

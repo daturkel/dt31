@@ -1,0 +1,4 @@
+; dt31 crash.dt --dump-on-crash
+CP 10, R.a
+CP 0, R.b
+DIV R.a, R.b

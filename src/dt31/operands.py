@@ -39,13 +39,15 @@ class Literal(Operand):
     Literal operands resolve to their constant value regardless of CPU state.
     """
 
-    def __init__(self, value: int):
+    def __init__(self, value: int, is_char: bool = False):
         """Initialize a literal operand.
 
         Args:
             value: The constant integer value this operand represents.
+            is_char: Whether this literal represents a character (for output formatting).
         """
         self.value = value
+        self.is_char = is_char
 
     def resolve(self, cpu: DT31) -> int:
         """Return the literal value.
@@ -58,7 +60,14 @@ class Literal(Operand):
         """
         return self.value
 
+    def __repr__(self) -> str:
+        """Return Python API representation."""
+        return str(self.value)
+
     def __str__(self) -> str:
+        """Return assembly text representation."""
+        if self.is_char:
+            return f"'{chr(self.value)}'"
         return str(self.value)
 
     def __eq__(self, other) -> bool:
@@ -105,14 +114,14 @@ class _MetaCharLiteral(type):
             arg: A single character string.
 
         Returns:
-            A Literal operand with the character's ordinal value.
+            A Literal operand with the character's ordinal value, marked as a character.
 
         Raises:
             ValueError: If arg is not a single character string.
         """
         if not isinstance(arg, str) or len(arg) != 1:
             raise ValueError(f"LC requires a single character, got: {arg}")
-        return Literal(ord(arg))
+        return Literal(ord(arg), is_char=True)
 
 
 class LC(metaclass=_MetaCharLiteral):
@@ -164,8 +173,13 @@ class MemoryReference(Operand):
         """
         return self.address.resolve(cpu)
 
+    def __repr__(self) -> str:
+        """Return Python API representation."""
+        return f"M[{self.address!r}]"
+
     def __str__(self) -> str:
-        return f"M[{self.address}]"
+        """Return assembly text representation."""
+        return f"[{self.address}]"
 
 
 class _MetaMemory(type):
@@ -265,7 +279,12 @@ class RegisterReference(Operand):
         """
         return cpu.get_register(self.register)
 
+    def __repr__(self) -> str:
+        """Return Python API representation."""
+        return f"R.{self.register}"
+
     def __str__(self) -> str:
+        """Return assembly text representation."""
         return f"R.{self.register}"
 
 
@@ -443,7 +462,12 @@ class Label:
             "Labels can only be used as jump/call destinations, not in arithmetic or other operations."
         )
 
+    def __repr__(self) -> str:
+        """Return Python API representation."""
+        return f"{self.name}"
+
     def __str__(self) -> str:
+        """Return assembly text representation (without colon)."""
         return f"{self.name}"
 
     def __eq__(self, other):
