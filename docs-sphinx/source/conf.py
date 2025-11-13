@@ -5,49 +5,27 @@
 
 import os
 import sys
+from datetime import date
 
 # Add the project root to the Python path so autodoc can find the modules
 sys.path.insert(0, os.path.abspath("../../src"))
 
-# -- Project information -----------------------------------------------------
-# https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
-
 project = "dt31"
-copyright = "2025, Dan Turkel"
+copyright = f"{date.today().year}, Dan Turkel"
 author = "Dan Turkel"
-release = "0.1.0"
-
-# -- General configuration ---------------------------------------------------
-# https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
+language = "en"
 
 extensions = [
     "sphinx.ext.autodoc",
-    "sphinx.ext.napoleon",  # Support for Google-style docstrings
-    "sphinx.ext.viewcode",  # Add links to source code
-    "sphinx.ext.intersphinx",  # Link to other projects' documentation
-    "sphinx_autodoc_typehints",  # Better type hint rendering
-    "myst_parser",  # MyST markdown parser with Sphinx directive support
+    "sphinx.ext.napoleon",
+    "sphinx.ext.viewcode",
+    "sphinx_autodoc_typehints",
+    "sphinx_copybutton",
 ]
 
 templates_path = ["_templates"]
 exclude_patterns = []
 
-# Support both .rst and .md files
-source_suffix = {
-    ".rst": "restructuredtext",
-    ".md": "markdown",
-}
-
-language = "en"
-
-# -- MyST settings -----------------------------------------------------------
-# Configure MyST parser for advanced markdown features
-myst_enable_extensions = [
-    "colon_fence",  # Allow ::: fences for directives
-    "deflist",  # Definition lists
-    "fieldlist",  # Field lists
-    "substitution",  # Variable substitutions
-]
 
 # -- Napoleon settings -------------------------------------------------------
 # Configure Napoleon for Google-style docstrings
@@ -66,27 +44,13 @@ napoleon_preprocess_types = False
 napoleon_type_aliases = None
 napoleon_attr_annotations = True
 
-# -- Autodoc settings --------------------------------------------------------
 autodoc_member_order = "bysource"
 autodoc_typehints = "description"
 autodoc_typehints_description_target = "documented"
 
-# -- Intersphinx settings ----------------------------------------------------
-intersphinx_mapping = {
-    "python": ("https://docs.python.org/3", None),
-}
-
-# -- Options for HTML output -------------------------------------------------
-# https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
-
-html_theme = "sphinx_rtd_theme"
+html_theme = "furo"
 html_static_path = ["_static"]
 
-# Theme options
 html_theme_options = {
-    "navigation_depth": 4,
-    "collapse_navigation": False,
-    "sticky_navigation": True,
-    "includehidden": True,
-    "titles_only": False,
+    "top_of_page_buttons": [],
 }

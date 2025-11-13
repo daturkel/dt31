@@ -37,9 +37,9 @@ def docs_sphinx(c):
 
 
 @task
-def serve_docs_sphinx(c, port=8080):
+def serve_docs_sphinx(c):
     """Serve the Sphinx documentation website locally."""
-    c.run(f"python -m http.server {port} --directory docs-sphinx/build")
+    c.run("sphinx-autobuild docs-sphinx/source docs-sphinx/_build/html --open-browser")
 
 
 @task
