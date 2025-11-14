@@ -17,4 +17,5 @@ coverage.xml
 plans/
 
 # Documentation
+docs-sphinx/source/_build/
 docs-sphinx/_build/
