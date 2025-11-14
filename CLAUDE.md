@@ -49,6 +49,14 @@ See @README.md for project overview, features, usage examples, and user-facing d
 - Ruff handles linting and formatting
 - All code changes should pass pre-commit checks before committing
 
+### Git Commits and Pull Requests
+
+- **Commit messages**: Keep concise (1-2 sentences max), focus on the "what" and "why"
+- **PR descriptions**: Keep brief and to the point
+  - Summary: 2-4 bullet points covering key changes
+  - Test plan: Short checklist of what was tested
+  - Avoid verbose explanations unless complexity requires it
+
 ## Instruction Set Guidelines
 
 When adding or modifying instructions:
