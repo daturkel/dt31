@@ -1,6 +1,7 @@
 import pytest
 
 import dt31.instructions as I
+from dt31.assembler import AssemblyError, extract_registers_from_program
 from dt31.cpu import DT31
 from dt31.operands import L, M, R
 
@@ -181,6 +182,30 @@ def test_run_debug(cpu, capsys, monkeypatch):
     ]
 
 
+def test_run_without_load_raises_error(cpu):
+    with pytest.raises(RuntimeError, match="No program loaded"):
+        cpu.run()
+
+
+def test_run_without_arguments_after_load(cpu):
+    program = [I.CP(5, R.a), I.ADD(R.a, L[3]), I.NOOP()]
+    cpu.load(program)
+    cpu.run()
+    assert cpu.get_register("a") == 8
+    assert cpu.get_register("ip") == 3
+
+
+def test_run_without_arguments_resumes_from_ip(cpu):
+    program = [I.CP(1, R.a), I.ADD(R.a, L[1]), I.ADD(R.a, L[1]), I.NOOP()]
+    cpu.load(program)
+    cpu.step()  # Execute first instruction: a = 1
+    assert cpu.get_register("a") == 1
+    assert cpu.get_register("ip") == 1
+    cpu.run()  # Should resume from ip=1
+    assert cpu.get_register("a") == 3
+    assert cpu.get_register("ip") == 4
+
+
 def test_load(cpu):
     insts = [I.ADD(M[1], M[2]), I.NOOP(), I.JGT(0, 100, M[1])]
     cpu.load(insts)
@@ -237,15 +262,8 @@ def test_state(cpu):
     }
 
 
-# ============================================================================
-# Register Validation
-# ============================================================================
-
-
 def test_cpu_validates_missing_registers():
     """Test that CPU raises error when program uses missing registers."""
-    from dt31.assembler import AssemblyError
-
     cpu = DT31(registers=["a", "b"])
     program: list[I.Instruction | I.Label] = [
         I.CP(L[10], R.x)
@@ -260,8 +278,6 @@ def test_cpu_validates_missing_registers():
 
 def test_cpu_validates_multiple_missing_registers():
     """Test error message with multiple missing registers."""
-    from dt31.assembler import AssemblyError
-
     cpu = DT31(registers=["a"])
     program = [
         I.CP(L[10], R.x),
@@ -293,7 +309,6 @@ def test_cpu_accepts_valid_registers():
 
 def test_cpu_run_with_auto_detected_registers():
     """Test running a program with auto-detected registers."""
-    from dt31.assembler import extract_registers_from_program
 
     program = [
         I.CP(L[5], R.counter),
@@ -305,3 +320,15 @@ def test_cpu_run_with_auto_detected_registers():
     cpu.run(program)
 
     assert cpu.get_register("counter") == 5
+
+
+def test_step_count(cpu):
+    program = [I.NOOP(), I.NOOP(), I.NOOP(), I.NOOP()]
+    cpu.load(program)
+    assert cpu.step_count == 0
+    cpu.step()
+    assert cpu.step_count == 1
+    cpu.step()
+    assert cpu.step_count == 2
+    cpu.run(program)
+    assert cpu.step_count == 6
