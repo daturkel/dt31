@@ -4,7 +4,6 @@ from collections import deque
 from typing import TYPE_CHECKING
 
 from dt31.assembler import assemble, extract_registers_from_program, program_to_text
-from dt31.parser import parse_program
 from dt31.exceptions import AssemblyError, EndOfProgram
 from dt31.operands import (
     Label,
@@ -13,6 +12,7 @@ from dt31.operands import (
     RegisterReference,
     validate_register_name,
 )
+from dt31.parser import parse_program
 
 if TYPE_CHECKING:
     from dt31.instructions import Instruction  # pragma: no cover
@@ -83,6 +83,8 @@ class DT31:
         """Instructions currently loaded."""
         self.debug_mode: bool = debug
         """If `True`, the CPU is in debug mode (step-by-step execution)."""
+        self.step_count: int = 0
+        """Cumulative number of steps run by this DT31 instance via `step` or `run`."""
 
     @property
     def state(self):
@@ -229,20 +231,30 @@ class DT31:
         self.registers[register] = value
         return value
 
-    def run(self, instructions: list[Instruction | Label], debug: bool = False):
-        """Load and execute a list of instructions until completion.
+    def run(
+        self, instructions: list[Instruction | Label] | None = None, debug: bool = False
+    ):
+        """Load and execute instructions, or continue from current instruction pointer.
 
         Assembly happens automatically during loading.
 
         Args:
-            instructions: The list of instructions to execute.
+            instructions: The list of instructions to execute. If None, resumes
+                execution from the current instruction pointer without loading.
             debug: If True, prints each instruction result and waits for user input
                 before continuing to the next instruction.
 
         Raises:
+            RuntimeError: If no instructions provided and no program is loaded.
             EndOfProgram: When execution completes normally (caught internally).
         """
-        self.load(instructions)
+        if instructions is not None:
+            self.load(instructions)
+        elif not self.instructions:
+            raise RuntimeError(
+                "No program loaded. Call load() first or pass instructions."
+            )
+
         self.debug_mode = debug
         while True:
             try:
@@ -323,6 +335,7 @@ class DT31:
             raise EndOfProgram("Cannot load negative instructions")
         instruction = self.instructions[self.get_register("ip")]
         output = instruction(self)
+        self.step_count += 1
         if debug:
             print(repr(instruction) + " -> " + str(output))
             print(self.state)
