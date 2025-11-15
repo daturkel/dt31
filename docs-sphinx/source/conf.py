@@ -20,7 +20,7 @@ extensions = [
     "sphinx.ext.napoleon",
     "sphinx.ext.viewcode",
     "sphinx_copybutton",
-    "sphinx_design",
+    "sphinx_inline_tabs",
 ]
 
 templates_path = ["_templates"]

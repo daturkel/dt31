@@ -434,12 +434,3 @@ Execute one instruction at a time:
        cpu.step(debug=True)  # Prints each instruction
 
 Or use ``cpu.run(program, debug=True)`` to debug the entire program.
-
-Next Steps
-----------
-
-- Learn :doc:`advanced-topics` like recursion and stack manipulation
-- Explore :doc:`custom-instructions` to extend dt31
-- See :doc:`cli-guide` for command-line options
-- Check :doc:`/reference/assembly-syntax` for the formal grammar
-- Browse :doc:`/how-to/parsing-assembly` for conversion details

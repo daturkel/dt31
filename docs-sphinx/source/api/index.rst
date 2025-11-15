@@ -1,12 +1,12 @@
 API Documentation
 =================
 
-Complete Python API reference with full method signatures and type hints.
+Python API reference for programmatic access to the dt31 virtual machine.
+
 
 .. toctree::
    :maxdepth: 1
 
-   api-overview
    api-cpu
    api-instructions
    api-operands

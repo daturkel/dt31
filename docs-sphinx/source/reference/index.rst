@@ -6,6 +6,7 @@ Complete technical references for dt31. For reference documentation on the Pytho
 .. toctree::
    :maxdepth: 1
 
+   architecture
    instruction-set
    assembly-syntax
    cli-reference

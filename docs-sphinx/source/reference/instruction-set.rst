@@ -764,11 +764,3 @@ Quick Reference Table
    * - Special
      - NOOP BRK BRKD EXIT
      - Control and debugging
-
-Next Steps
-----------
-
-- See :doc:`/tutorials/writing-programs` for using instructions
-- Check :doc:`assembly-syntax` for formal syntax
-- Learn :doc:`/tutorials/advanced-topics` for complex patterns
-- Browse API docs for implementation details (link to pdoc)

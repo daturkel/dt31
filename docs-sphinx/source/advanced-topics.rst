@@ -475,12 +475,3 @@ An advanced example combining registers and loops:
    cpu.run(program)
 
 **Try:** Input ``10`` to get ``55`` (the 10th Fibonacci number)
-
-Next Steps
-----------
-
-- Learn how to :doc:`custom-instructions` to extend dt31
-- See :doc:`cli-guide` for debugging with ``--debug`` mode
-- Check :doc:`/how-to/debugging-programs` for troubleshooting techniques
-- Browse :doc:`/how-to/working-with-examples` for more complex programs
-- Review :doc:`/reference/instruction-set` for all available instructions

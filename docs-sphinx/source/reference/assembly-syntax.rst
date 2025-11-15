@@ -3,47 +3,32 @@ Assembly Syntax Reference
 
 Formal specification of the dt31 assembly language syntax.
 
+.. NOTE::
+   While the :doc:`parser </api/api-parser>` may be more lenient than the grammar proscribes,
+   users should stick to the grammar specification in order to ensure forwards-compatibility.
+
 Grammar Overview
 ----------------
 
-Assembly programs consist of lines containing:
-
-- Instructions with operands
-- Label definitions
-- Comments
-- Blank lines (ignored)
-
-Basic Structure
----------------
+A line of dt31 assembly source code matches the following syntax:
 
 .. code-block:: text
 
    [label:] [INSTRUCTION [operand [, operand ...]]] [; comment]
 
-**Rules:**
-
-- Square brackets indicate optional elements
-- Whitespace (spaces/tabs) is flexible
-- Newlines separate statements
+Statements must be separated by at least one newline and whitespace is not significant.
 
 Instructions
 ------------
 
-Format
-~~~~~~
+Instruction names are case-insensitive and are automatically converted to all-caps during parsing
+before being looked up.
 
-.. code-block:: text
+The instruction must be separated by the first operand by whitespace while operands are separated
+from each other by commas. Any additional whitespace is ignored.
 
-   INSTRUCTION operand1, operand2, operand3
-
-**Rules:**
-
-- Instruction names are **case-insensitive**
-- Operands are separated by commas
-- Spaces around commas are optional
-- Number of operands depends on instruction
-
-**Examples:**
+The number of operands is instruction-dependent. Some operands support an optional last operand which,
+if omitted, will take on a default value.
 
 .. code-block:: nasm
 
@@ -51,88 +36,13 @@ Format
    ADD R.a, R.b
    JGT loop, R.a, 0
 
-Case Insensitivity
-~~~~~~~~~~~~~~~~~~
-
-All of these are valid:
-
-.. code-block:: nasm
-
-   ADD R.a, 1
-   add R.a, 1
-   Add R.a, 1
-   ADD R.a, 1
-
-Labels
-------
-
-Definition
-~~~~~~~~~~
-
-Labels mark positions in code:
-
-.. code-block:: text
-
-   label_name:
-
-**Rules:**
-
-- Must start with a letter or underscore
-- Can contain letters, numbers, underscores
-- Are **case-sensitive**
-- Must be unique within a program
-- Colon (``:``) is required
-
-**Valid labels:**
-
-.. code-block:: nasm
-
-   loop:
-   my_function:
-   _internal:
-   label123:
-   LOOP:            ; Different from 'loop' (case-sensitive)
-
-**Invalid labels:**
-
-.. code-block:: text
-
-   123label:        ; Can't start with number
-   my-label:        ; Hyphens not allowed
-   loop loop:       ; Spaces not allowed
-
-Label on Same Line
-~~~~~~~~~~~~~~~~~~
-
-Labels can appear on the same line as an instruction:
-
-.. code-block:: nasm
-
-   start: CP 0, R.a
-   loop: ADD R.a, 1
-
-This is equivalent to:
-
-.. code-block:: nasm
-
-   start:
-   CP 0, R.a
-   loop:
-   ADD R.a, 1
-
 Operands
 --------
 
-Numeric Literals
-~~~~~~~~~~~~~~~~
+Literals
+~~~~~~~~
 
-Integer constants:
-
-.. code-block:: text
-
-   [+-]?[0-9]+
-
-**Examples:**
+Integer literals are written without any special syntax. They may not contain preceding zeros or commas.
 
 .. code-block:: nasm
 
@@ -140,16 +50,8 @@ Integer constants:
    CP -5, R.b       ; Negative
    CP 0, R.c        ; Zero
 
-Character Literals
-~~~~~~~~~~~~~~~~~~
-
-Single characters in single quotes:
-
-.. code-block:: text
-
-   '[character]'
-
-**Examples:**
+Character literals are surrounded by single quotes. They are stored as `ordinal values <https://docs.python.org/3/library/functions.html#ord>`_
+under the hood, but metadata is stored such that the :doc:`debugger </debugging-programs>` will display them as characters.
 
 .. code-block:: nasm
 
@@ -165,50 +67,23 @@ Single characters in single quotes:
 - ``\'`` - Single quote
 - ``\\`` - Backslash
 
-Registers
-~~~~~~~~~
+Register References
+~~~~~~~~~~~~~~~~~~~
 
-Register references:
+Registers are written with a ``R.`` preceding the **case-sensitive** register name.
+Register names must be valid `Python identifier <https://docs.python.org/3/reference/lexical_analysis.html#identifiers>`_
+but must not begin with two underscores ``__``.
 
 .. code-block:: text
 
-   R.name
-
-**Rules:**
-
-- ``R.`` prefix is **required**
-- Name must start with letter or underscore
-- Can contain letters, numbers, underscores
-- Names are **case-sensitive**
-
-**Examples:**
-
-.. code-block:: nasm
-
-   CP 5, R.a
-   ADD R.counter, 1
-   MUL R._temp, R.value
-
-**Case sensitivity:**
-
-.. code-block:: nasm
-
-   R.a              ; Different from R.A
-   R.counter        ; Different from R.Counter
+   OOUT R.name
+   ADD R.case_SENSITIVE, R.b_1
 
 Memory References
 ~~~~~~~~~~~~~~~~~
 
-Direct memory access:
-
-.. code-block:: text
-
-   [address]
-   M[address]
-
-Both forms are equivalent. Address can be a literal or register.
-
-**Examples:**
+Memory is written using square brackets ``[]`` surrounding any other valid operand which will be interpreted as the memory address.
+Optionally, the square brackets can be preceded by an ``M`` to match the :class:`dt31.operands.M` shorthand.
 
 .. code-block:: nasm
 
@@ -221,22 +96,62 @@ Both forms are equivalent. Address can be a literal or register.
    CP 42, [R.a]     ; Store at memory[100]
    CP 42, M[R.a]    ; Same as above
 
-Label References
-~~~~~~~~~~~~~~~~
+   ; Arbitrary levels of indirection
+   CP 100, [0]
+   CP 20, [[0]]     ; Store at memory[100]
+   CP 50, [[[R.a]]] ; Store at memory[memory[memory[R.a]]]
 
-Reference to a label (for jumps/calls):
+Labels
+~~~~~~
 
-.. code-block:: text
-
-   label_name
-
-**Examples:**
+Labels are referred to by their names with no special syntax.
 
 .. code-block:: nasm
 
    JMP end
    CALL my_function
    JGT loop, R.a, 0
+
+Label Definitions
+-----------------
+
+Labels mark positions in code and are demarcated by the label name followed by a colon:
+
+.. code-block:: text
+
+   label_name:
+
+**Rules:**
+
+- Labels can contain letters, numbers, underscores
+- Labels are **case-sensitive**
+- Labels must be unique within a program
+
+Labels can appear on the same line as an instruction or before them:
+
+.. code-block:: nasm
+
+   start: CP 0, R.a
+   loop: ADD R.a, 1
+
+This is equivalent to:
+
+.. code-block:: nasm
+
+   start:
+   CP 0, R.a
+   loop:
+   ADD R.a, 1
+
+...which is equivalent to:
+
+.. code-block:: nasm
+
+   start: CP 0, R.a
+
+   loop:
+
+   ADD R.a, 1
 
 Comments
 --------
@@ -252,9 +167,6 @@ Single-line comments start with ``;`` and continue to end of line:
 Whitespace
 ----------
 
-Flexible Spacing
-~~~~~~~~~~~~~~~~
-
 These are all valid:
 
 .. code-block:: nasm
@@ -263,9 +175,6 @@ These are all valid:
    CP    5,    R.a
    CP 5,R.a
    CP 5 , R.a
-
-Indentation
-~~~~~~~~~~~
 
 Indentation is cosmetic (ignored by parser):
 
@@ -281,9 +190,6 @@ Indentation is cosmetic (ignored by parser):
    loop:
        SUB R.a, 1
 
-Blank Lines
-~~~~~~~~~~~
-
 Blank lines are ignored:
 
 .. code-block:: nasm
@@ -294,201 +200,6 @@ Blank lines are ignored:
 
 
    NOUT R.a, 1
-
-Complete Grammar
-----------------
-
-In EBNF-like notation:
-
-.. code-block:: text
-
-   program        = line*
-   line           = [label] [instruction] [comment] NEWLINE
-   label          = IDENTIFIER ":"
-   instruction    = INSTRUCTION [operand ("," operand)*]
-   operand        = literal | register | memory | label_ref
-   literal        = NUMBER | CHARACTER
-   register       = "R." IDENTIFIER
-   memory         = "[" (NUMBER | register) "]"
-                  | "M[" (NUMBER | register) "]"
-   label_ref      = IDENTIFIER
-   comment        = ";" TEXT
-
-   INSTRUCTION    = [A-Za-z]+          ; Case-insensitive
-   IDENTIFIER     = [A-Za-z_][A-Za-z0-9_]*
-   NUMBER         = [+-]?[0-9]+
-   CHARACTER      = "'" . "'"
-
-Operand Type Summary
---------------------
-
-.. list-table::
-   :header-rows: 1
-   :widths: 20 30 50
-
-   * - Type
-     - Syntax
-     - Examples
-   * - Numeric literal
-     - ``NUMBER``
-     - ``42``, ``-5``, ``0``
-   * - Character literal
-     - ``'CHAR'``
-     - ``'A'``, ``'!'``, ``'\n'``
-   * - Register
-     - ``R.name``
-     - ``R.a``, ``R.counter``, ``R._temp``
-   * - Memory (direct)
-     - ``[NUMBER]`` or ``M[NUMBER]``
-     - ``[100]``, ``M[100]``
-   * - Memory (indirect)
-     - ``[R.name]`` or ``M[R.name]``
-     - ``[R.a]``, ``M[R.idx]``
-   * - Label
-     - ``name``
-     - ``loop``, ``my_function``
-
-Case Sensitivity Summary
-------------------------
-
-.. list-table::
-   :header-rows: 1
-   :widths: 30 30 40
-
-   * - Element
-     - Case Sensitive?
-     - Example
-   * - Instructions
-     - No
-     - ``ADD`` = ``add`` = ``Add``
-   * - Registers
-     - Yes
-     - ``R.a`` ≠ ``R.A``
-   * - Labels
-     - Yes
-     - ``loop`` ≠ ``Loop``
-   * - Keywords (R, M)
-     - No
-     - ``R.a`` = ``r.a``, ``M[0]`` = ``m[0]``
-
-Common Syntax Errors
---------------------
-
-Missing Comma
-~~~~~~~~~~~~~
-
-.. code-block:: nasm
-
-   ; Wrong
-   ADD R.a R.b
-
-   ; Correct
-   ADD R.a, R.b
-
-Missing R. Prefix
-~~~~~~~~~~~~~~~~~
-
-.. code-block:: nasm
-
-   ; Wrong
-   CP 5, a
-
-   ; Correct
-   CP 5, R.a
-
-Missing Colon in Label
-~~~~~~~~~~~~~~~~~~~~~~
-
-.. code-block:: nasm
-
-   ; Wrong
-   loop
-       ADD R.a, 1
-
-   ; Correct
-   loop:
-       ADD R.a, 1
-
-Invalid Label Name
-~~~~~~~~~~~~~~~~~~
-
-.. code-block:: text
-
-   ; Wrong (starts with number)
-   1loop:
-
-   ; Wrong (contains hyphen)
-   my-loop:
-
-   ; Correct
-   loop1:
-   my_loop:
-
-Character Without Quotes
-~~~~~~~~~~~~~~~~~~~~~~~~~
-
-.. code-block:: nasm
-
-   ; Wrong
-   OOUT H, 0
-
-   ; Correct
-   OOUT 'H', 0
-   ; Or
-   OOUT 72, 0       ; ASCII code
-
-Example Programs
-----------------
-
-Hello World
-~~~~~~~~~~~
-
-.. code-block:: nasm
-
-   ; Print "Hi!"
-   OOUT 'H', 0
-   OOUT 'i', 0
-   OOUT '!', 1
-
-Countdown Loop
-~~~~~~~~~~~~~~
-
-.. code-block:: nasm
-
-   ; Count from 5 to 1
-   CP 5, R.a             ; Copy 5 into register a
-   loop:
-       NOUT R.a, 1       ; Output a with newline
-       SUB R.a, 1        ; Decrement a
-       JGT loop, R.a, 0  ; Jump if a > 0
-
-Factorial Function
-~~~~~~~~~~~~~~~~~~
-
-.. code-block:: nasm
-
-   ; Calculate factorial of 5
-   CP 5, R.a
-   CALL factorial
-   NOUT R.a, 1
-   JMP end
-
-   factorial:
-       ; Base case: n <= 1
-       JGT recursive, R.a, 1
-       CP 1, R.a
-       RET
-
-   recursive:
-       ; Save n, call factorial(n-1)
-       PUSH R.a
-       SUB R.a, 1
-       CALL factorial
-       POP R.b
-       MUL R.a, R.b
-       RET
-
-   end:
 
 Differences from Python API
 ----------------------------
@@ -515,11 +226,3 @@ Differences from Python API
    * - Instructions
      - ``ADD R.a, 1``
      - ``I.ADD(R.a, L[1])``
-
-Next Steps
-----------
-
-- See :doc:`instruction-set` for all available instructions
-- Learn :doc:`/tutorials/writing-programs` for practical usage
-- Check :doc:`/how-to/parsing-assembly` for conversion between formats
-- Try :doc:`/tutorials/cli-guide` for running assembly files

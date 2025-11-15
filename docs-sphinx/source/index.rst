@@ -19,57 +19,71 @@ Features
    :hidden:
 
    getting-started
-   tutorials/index
-   how-to/index
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Tutorials
+   :hidden:
+
+   writing-programs
+   advanced-topics
+   custom-instructions
+   cli-guide
+
+.. toctree::
+   :maxdepth: 1
+   :caption: How-To Guides
+   :hidden:
+
+   debugging-programs
+   parsing-assembly
+   working-with-examples
 
 .. toctree::
    :maxdepth: 2
    :caption: Reference
    :hidden:
 
-   explanation/index
    reference/index
    api/index
 
 Quick Example
 -------------
 
-Below you can see a simple program which writes constants to the ``a`` and ``b`` registers, adds them up, and prints the output. The program can be written equivalently in both the assembly-style syntax or with the :doc:`Python API </api/api-overview>`.
+Below you can see a simple program which writes constants to the ``a`` and ``b`` registers, adds them up, and prints the output. The program can be written equivalently in both the assembly-style syntax or with the :doc:`Python API </api/api-overview>`. (Click on the tabs to toggle between the two syntaxes.)
 
-.. tab-set::
+.. tab:: dt31
 
-   .. tab-item:: dt31
+   .. code-block:: nasm
 
-      .. code-block:: nasm
+      ; Write to two registers, add them, then print the sum
 
-         ; Write to two registers, add them, then print the sum
+      CP 10, R.a    ; a = 10
+      CP 5, R.b     ; b = 5
+      ADD R.a, R.b  ; a = a + b
+      NOUT R.a, 1   ; print a with a newline
 
-         CP 10, R.a    ; a = 10
-         CP 5, R.b     ; b = 5
-         ADD R.a, R.b  ; a = a + b
-         NOUT R.a, 1   ; print a with a newline
+      ; prints 15
 
-         ; prints 15
+.. tab:: python
 
-   .. tab-item:: python
+   .. code-block:: python
 
-      .. code-block:: python
+      from dt31 import DT31, I, R, L
 
-         from dt31 import DT31, I, R, L
+      # Create a CPU with default settings
+      cpu = DT31()
 
-         # Create a CPU with default settings
-         cpu = DT31()
+      # Write to two registers, add them, then print the sum
+      program = [
+         I.CP(10, R.a),      # a = 10
+         I.CP(5, R.b),       # b = 5
+         I.ADD(R.a, R.b),    # a = a + b
+         I.NOUT(R.a, L[1]),  # Print a with newline
+      ]
 
-         # Write to two registers, add them, then print the sum
-         program = [
-            I.CP(10, R.a),      # a = 10
-            I.CP(5, R.b),       # b = 5
-            I.ADD(R.a, R.b),    # a = a + b
-            I.NOUT(R.a, L[1]),  # Print a with newline
-         ]
-
-         # prints 15
-         cpu.run(program)
+      # prints 15
+      cpu.run(program)
 
 About These Docs
 ----------------

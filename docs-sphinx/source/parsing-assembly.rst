@@ -506,16 +506,3 @@ Indentation and spacing are normalized:
    # Output:
    #   CP 5, R.a
    #   ADD R.a, 1
-
-Relative Jumps May Convert
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Relative jumps might be converted to absolute in some cases depending on the assembler implementation.
-
-Next Steps
-----------
-
-- See :doc:`/tutorials/writing-programs` for assembly syntax details
-- Check :doc:`/reference/assembly-syntax` for formal grammar
-- Learn :doc:`working-with-examples` for practical examples
-- Review :doc:`/explanation/architecture` for understanding the execution model

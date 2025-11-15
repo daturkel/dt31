@@ -284,36 +284,6 @@ Bounds Checking
 - Addresses wrap around: ``address % memory_size``
 - Negative addresses work: ``-1`` → ``memory_size - 1``
 
-Design Decisions
-----------------
-
-Why Python Lists/Dicts?
-~~~~~~~~~~~~~~~~~~~~~~~
-
-**Simplicity:** Native Python data structures are easy to understand and debug.
-
-**Performance:** Adequate for educational/toy CPU. Real CPUs would use arrays/registers.
-
-**Flexibility:** Easy to serialize state (JSON dumps).
-
-Why Separate Stack?
-~~~~~~~~~~~~~~~~~~~
-
-**Clarity:** Stack operations are conceptually different from memory access.
-
-**Safety:** Can't accidentally corrupt stack via memory operations.
-
-**Efficiency:** ``deque`` is optimized for stack operations.
-
-Why Integer-Only?
-~~~~~~~~~~~~~~~~~
-
-**Simplicity:** No type conversions, no floating point edge cases.
-
-**Assembly tradition:** Most assembly languages work with integers.
-
-**Extensibility:** Users can implement floating point via custom instructions if needed.
-
 Performance Characteristics
 ---------------------------
 
@@ -382,11 +352,4 @@ The architecture is designed to be extended:
 - Subclass ``DT31``
 - Override ``step()`` or other methods
 
-See :doc:`/tutorials/custom-instructions` for details.
-
-Next Steps
-----------
-
-- See :doc:`design-philosophy` for why dt31 is designed this way
-- Check :doc:`/api/api-cpu` for CPU API
-- Learn :doc:`/tutorials/advanced-topics` for using these concepts
+See :doc:`/custom-instructions` for details.

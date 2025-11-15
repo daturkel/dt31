@@ -462,11 +462,3 @@ Make sure:
 
    dt31 -i ./instructions.py program.dt  # Relative path
    dt31 -i /full/path/instructions.py program.dt  # Absolute path
-
-Next Steps
-----------
-
-- See :doc:`/how-to/debugging-programs` for troubleshooting techniques
-- Learn :doc:`custom-instructions` for extending dt31
-- Check :doc:`/reference/cli-reference` for complete option details
-- Browse :doc:`/how-to/working-with-examples` for sample programs

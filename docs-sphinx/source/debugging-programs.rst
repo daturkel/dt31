@@ -544,11 +544,3 @@ Tips
 8. **Watch the stack:** Unbalanced PUSH/POP causes issues
 9. **Verify jumps:** Make sure jump conditions are correct
 10. **Use version control:** Git helps track when bugs were introduced
-
-Next Steps
-----------
-
-- See :doc:`/tutorials/cli-guide` for CLI debugging options
-- Check :doc:`/reference/cli-reference` for complete flag documentation
-- Learn :doc:`working-with-examples` to study working programs
-- Review :doc:`/explanation/architecture` to understand execution model

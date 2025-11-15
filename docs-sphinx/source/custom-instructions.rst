@@ -430,11 +430,3 @@ Instructions can maintain state across executions:
    # COUNTER R.c  ; c = 2
 
 **Note:** Stateful instructions can make programs harder to reason about. Use sparingly.
-
-Next Steps
-----------
-
-- See :doc:`/reference/instruction-set` for all built-in instructions
-- Check :doc:`/explanation/architecture` to understand execution model
-- Browse :doc:`cli-guide` for CLI integration details
-- Review the `examples/custom_instructions.py <https://github.com/daturkel/dt31/tree/main/examples>`_ file
