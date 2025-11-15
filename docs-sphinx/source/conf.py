@@ -19,8 +19,8 @@ extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.napoleon",
     "sphinx.ext.viewcode",
-    "sphinx_autodoc_typehints",
     "sphinx_copybutton",
+    "sphinx_design",
 ]
 
 templates_path = ["_templates"]
@@ -50,6 +50,7 @@ autodoc_typehints_description_target = "documented"
 
 html_theme = "furo"
 html_static_path = ["_static"]
+html_title = "dt31"
 
 html_theme_options = {
     "top_of_page_buttons": [],

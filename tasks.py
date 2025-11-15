@@ -39,13 +39,15 @@ def docs_sphinx(c):
 @task
 def serve_docs_sphinx(c):
     """Serve the Sphinx documentation website locally."""
-    c.run("sphinx-autobuild docs-sphinx/source docs-sphinx/_build/html --open-browser")
+    c.run(
+        "sphinx-autobuild -a docs-sphinx/source docs-sphinx/_build/html --open-browser"
+    )
 
 
 @task
 def clean_docs_sphinx(c):
     """Clean Sphinx build directory."""
-    c.run("rm -rf docs-sphinx/build")
+    c.run("rm -rf docs-sphinx/_build")
 
 
 @task

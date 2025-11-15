@@ -91,76 +91,85 @@ Instructions are written using the ``I`` namespace (imported as ``from dt31 impo
 Your First Program
 ------------------
 
-Let's write a simple countdown program:
+Let's write a simple countdown program. You can write dt31 programs in two ways:
 
-.. code-block:: python
+.. tabs::
 
-   from dt31 import DT31, I, Label
-   from dt31.operands import R, L
+   .. group-tab:: Python
 
-   cpu = DT31()
+      Write programs directly using the Python API:
 
-   program = [
-       I.CP(5, R.a),               # Start counter at 5
-       loop := Label("loop"),      # Mark loop start
-       I.NOUT(R.a, L[1]),          # Print counter
-       I.SUB(R.a, L[1]),           # Decrement counter
-       I.JGT(loop, R.a, L[0]),     # Jump to loop if a > 0
-   ]
+      .. code-block:: python
 
-   cpu.run(program)
-   # 5
-   # 4
-   # 3
-   # 2
-   # 1
+         from dt31 import DT31, I, Label
+         from dt31.operands import R, L
 
-Assembly Syntax
----------------
+         cpu = DT31()
 
-You can also write programs in text-based assembly syntax:
+         program = [
+             I.CP(5, R.a),               # Start counter at 5
+             loop := Label("loop"),      # Mark loop start
+             I.NOUT(R.a, L[1]),          # Print counter
+             I.SUB(R.a, L[1]),           # Decrement counter
+             I.JGT(loop, R.a, L[0]),     # Jump to loop if a > 0
+         ]
 
-.. code-block:: python
+         cpu.run(program)
+         # 5
+         # 4
+         # 3
+         # 2
+         # 1
 
-   from dt31 import DT31
-   from dt31.parser import parse_program
+   .. group-tab:: Assembly
 
-   cpu = DT31()
+      Write programs in text-based assembly syntax and parse them:
 
-   assembly = """
-   CP 5, R.a             ; Copy 5 into register a
-   loop:
-       NOUT R.a, 1       ; Output register a with newline
-       SUB R.a, 1        ; Decrement a
-       JGT loop, R.a, 0  ; Jump to loop if a > 0
-   """
+      **Option 1: Parse from string**
 
-   program = parse_program(assembly)
-   cpu.run(program)
-   # 5
-   # 4
-   # 3
-   # 2
-   # 1
+      .. code-block:: python
 
-Using the Command Line
-----------------------
+         from dt31 import DT31
+         from dt31.parser import parse_program
 
-Save your assembly code to a ``.dt`` file and run it directly:
+         cpu = DT31()
 
-.. code-block:: bash
+         assembly = """
+         CP 5, R.a             ; Copy 5 into register a
+         loop:
+             NOUT R.a, 1       ; Output register a with newline
+             SUB R.a, 1        ; Decrement a
+             JGT loop, R.a, 0  ; Jump to loop if a > 0
+         """
 
-   # Create countdown.dt
-   cat > countdown.dt << 'EOF'
-   CP 5, R.a
-   loop:
-       NOUT R.a, 1
-       SUB R.a, 1
-       JGT loop, R.a, 0
-   EOF
+         program = parse_program(assembly)
+         cpu.run(program)
+         # 5
+         # 4
+         # 3
+         # 2
+         # 1
 
-   # Execute it
-   dt31 countdown.dt
+      **Option 2: Execute .dt file directly**
+
+      Save to ``countdown.dt`` and run with the CLI:
+
+      .. code-block:: nasm
+
+         CP 5, R.a
+         loop:
+             NOUT R.a, 1
+             SUB R.a, 1
+             JGT loop, R.a, 0
+
+      .. code-block:: bash
+
+         dt31 countdown.dt
+
+Command-Line Options
+--------------------
+
+The ``dt31`` command provides several useful options:
 
 Debug Mode
 ~~~~~~~~~~
@@ -171,9 +180,27 @@ Run with the ``--debug`` flag to see step-by-step execution:
 
    dt31 --debug countdown.dt
 
-Next Steps
-----------
+Custom Configuration
+~~~~~~~~~~~~~~~~~~~~
 
-- Check out the :doc:`tutorials/index` for more detailed examples
-- Browse the :doc:`api/index` for complete documentation
-- Explore the `examples directory <https://github.com/daturkel/dt31/tree/main/examples>`_ on GitHub
+Customize CPU settings from the command line:
+
+.. code-block:: bash
+
+   # Use custom memory size
+   dt31 --memory 1024 program.dt
+
+   # Specify registers explicitly
+   dt31 --registers a,b,c,d,e program.dt
+
+   # Set stack size
+   dt31 --stack-size 512 program.dt
+
+Parse Only
+~~~~~~~~~~
+
+Validate syntax without executing:
+
+.. code-block:: bash
+
+   dt31 --parse-only program.dt
