@@ -3,10 +3,11 @@ from copy import deepcopy
 from dt31.exceptions import AssemblyError
 from dt31.instructions import Instruction, RelativeJumpMixin
 from dt31.operands import Label, Literal, MemoryReference, Operand, RegisterReference
+from dt31.parser import Comment
 
 
 def assemble(
-    program: list[Instruction | Label] | list[Instruction],
+    program: list[Instruction | Label | Comment] | list[Instruction],
 ) -> list[Instruction]:
     """Assemble a program by resolving labels to instruction positions.
 
@@ -78,6 +79,8 @@ def assemble(
                 raise AssemblyError(f"Label {inst.name} used more than once.")
             used_labels.add(inst.name)
             label_to_ip[inst.name] = ip
+        elif isinstance(inst, Comment):
+            continue
         else:
             new_program.append(deepcopy(inst))
             ip += 1
@@ -99,18 +102,20 @@ def assemble(
     return new_program
 
 
-def program_to_text(program: list[Instruction | Label] | list[Instruction]) -> str:
+def program_to_text(
+    program: list[Instruction | Label | Comment] | list[Instruction],
+) -> str:
     """Convert a program to assembly text format.
 
-    Converts a list of instructions and labels (whether created programmatically
+    Converts a list of instructions, labels, and comments (whether created programmatically
     in Python or parsed from text) into human-readable assembly text syntax.
 
     Args:
-        program: List of instructions and labels in source order.
+        program: List of instructions, labels, and comments in source order.
 
     Returns:
         A string containing the assembly text representation of the program,
-        with one instruction or label per line.
+        with one instruction, label, or comment per line.
 
     Examples:
         Convert Python program to assembly text:
@@ -153,14 +158,24 @@ def program_to_text(program: list[Instruction | Label] | list[Instruction]) -> s
     """
     lines = []
     for item in program:
-        if isinstance(item, Label):
-            lines.append(f"{item.name}:")
+        if isinstance(item, Comment):
+            lines.append(str(item))
+        elif isinstance(item, Label):
+            line = f"{item.name}:"
+            if item.comment:
+                line += f" ; {item.comment}"
+            lines.append(line)
         else:
-            lines.append(f"    {str(item)}")
+            line = f"    {str(item)}"
+            if item.comment:
+                line += f" ; {item.comment}"
+            lines.append(line)
     return "\n".join(lines)
 
 
-def extract_registers_from_program(program: list[Instruction | Label]) -> list[str]:
+def extract_registers_from_program(
+    program: list[Instruction | Label | Comment],
+) -> list[str]:
     """
     Extract all register names used in a program.
 
@@ -196,7 +211,7 @@ def extract_registers_from_program(program: list[Instruction | Label]) -> list[s
             extract_from_operand(operand.address)
 
     for item in program:
-        if isinstance(item, Label):
+        if isinstance(item, (Label, Comment)):
             continue
 
         # Instructions store operands as attributes
