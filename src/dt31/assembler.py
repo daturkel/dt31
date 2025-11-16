@@ -173,7 +173,9 @@ def program_to_text(
     return "\n".join(lines)
 
 
-def extract_registers_from_program(program: list[Instruction | Label]) -> list[str]:
+def extract_registers_from_program(
+    program: list[Instruction | Label | Comment],
+) -> list[str]:
     """
     Extract all register names used in a program.
 
