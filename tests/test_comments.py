@@ -1,4 +1,5 @@
 import dt31.instructions as I
+from dt31 import DT31
 from dt31.assembler import program_to_text
 from dt31.operands import L, Label, R
 from dt31.parser import Comment, parse_program
@@ -230,3 +231,36 @@ def test_comment_inequality_with_other_types():
     assert comment != "Test"
     assert comment != Label("test")
     assert comment != I.CP(5, R.a)
+
+
+# ----------------------------- Debug Output --------------------------------- #
+
+
+def test_comments_in_debug_output(capsys):
+    """Test that inline comments appear in debug output."""
+    code = "CP 5, R.a  ; Initialize counter"
+
+    program = parse_program(code)
+    cpu = DT31()
+
+    cpu.load(program)
+    cpu.step(debug=True)
+
+    captured = capsys.readouterr()
+    lines = captured.out.strip().split("\n")
+    assert lines[0] == "CP(a=5, b=R.a) -> 5  ; Initialize counter"
+
+
+def test_no_comment_in_debug_output(capsys):
+    """Test that instructions without comments don't show semicolons."""
+    code = "CP 5, R.a"
+
+    program = parse_program(code)
+    cpu = DT31()
+
+    cpu.load(program)
+    cpu.step(debug=True)
+
+    captured = capsys.readouterr()
+    lines = captured.out.strip().split("\n")
+    assert lines[0] == "CP(a=5, b=R.a) -> 5"

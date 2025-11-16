@@ -341,7 +341,10 @@ class DT31:
         output = instruction(self)
         self.step_count += 1
         if debug:
-            print(repr(instruction) + " -> " + str(output))
+            output_str = repr(instruction) + " -> " + str(output)
+            if hasattr(instruction, "comment") and instruction.comment:
+                output_str += f"  ; {instruction.comment}"
+            print(output_str)
             print(self.state)
 
     def dump(self) -> dict:
