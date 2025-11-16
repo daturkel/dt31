@@ -512,11 +512,11 @@ DT31 is open-source and contributors are welcome on [Github](https://github.com/
 - [x] Breakpoint instruction
 - [x] Clearer handing of input during debug mode
 - [x] Python to text output
+- [x] Preserve comments in parser
 - [ ] User-definable macros (in both python and assembly syntax)
 - [ ] File I/O
 - [ ] Data handling
 - [ ] Input error-handling
-- [ ] Preserve comments in parser
 - [ ] Formatter
 - [ ] Interpreter resume from dump
 
