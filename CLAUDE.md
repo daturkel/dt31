@@ -22,12 +22,6 @@ See @README.md for project overview, features, usage examples, and user-facing d
 - **[src/dt31/assembler.py](src/dt31/assembler.py)**: Two-pass assembler for label resolution
 - **[src/dt31/cli.py](src/dt31/cli.py)**: Command-line interface for executing `.dt` assembly files
 
-### Design Principles
-
-1. **Intuitive API**: Clean operand syntax (`R.a`, `M[100]`, `L[42]`, `LC['A']`)
-2. **Educational**: Code should be readable and serve as a learning tool
-3. **Type Safety**: Strict type hints for better IDE support and correctness
-
 ## Development Workflow
 
 ### Testing
@@ -75,42 +69,6 @@ Users can extend dt31 with custom instructions via the CLI's `--custom-instructi
 - Follow the same naming, documentation, and testing standards as built-in instructions
 
 See [examples/custom_instructions.py](examples/custom_instructions.py) and [README.md](README.md) for details.
-
-## Common Tasks
-
-### Adding a New Instruction
-
-1. Define the instruction function in [src/dt31/instructions.py](src/dt31/instructions.py)
-2. Add tests covering normal operation and edge cases
-3. Update the README instruction list if it's a significant addition
-
-### Modifying CPU Architecture
-
-1. Changes to registers, memory, or stack should be in [src/dt31/cpu.py](src/dt31/cpu.py)
-2. Ensure backward compatibility or document breaking changes
-3. Update all affected tests in [tests/test_cpu.py](tests/test_cpu.py)
-4. Update docstrings
-
-### Adding Examples
-
-- Place new examples in [examples/](examples/) directory
-- Python examples should be self-contained and runnable with `uv run python example_name.py`
-- Assembly examples (`.dt` files) should be runnable with `dt31 example_name.dt`
-- Include comments explaining key concepts
-- Reference examples in README if they demonstrate important features
-
-## Constraints
-
-- **Memory Model**: Configurable fixed-size array of integers and fixed set of registers
-- **No Runtime Dependencies**: Do not add runtime dependencies
-- **Python 3.10+ Compatibility**: Avoid Python 3.11+ features unless bumping minimum version
-
-## Testing Philosophy
-
-- **Unit Tests**: Test individual instructions and CPU operations in isolation
-- **Integration Tests**: Test complete programs with multiple instructions
-- **Edge Cases**: Test boundary conditions (stack overflow, memory limits, etc.)
-- **Regression Tests**: Add tests for any bugs found and fixed
 
 ## Documentation Standards
 
