@@ -441,6 +441,7 @@ class Label:
             name: The symbolic name for this label.
         """
         self.name = name
+        self.comment: str = ""
 
     def resolve(self, cpu: DT31) -> int:
         """Resolve the label to an instruction position.
@@ -470,9 +471,23 @@ class Label:
         """Return assembly text representation (without colon)."""
         return f"{self.name}"
 
+    def with_comment(self, text: str) -> Label:
+        """Create a new label with the specified comment.
+
+        Args:
+            text: The comment text to associate with the label.
+
+        Returns:
+            A new Label instance with the same name but with the comment set.
+        """
+        new_label = Label(self.name)
+        new_label.comment = text
+        return new_label
+
     def __eq__(self, other):
         if type(self) is not type(other):
             return False
+        # Exclude comment from equality check
         return self.name == other.name
 
 

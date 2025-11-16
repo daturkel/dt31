@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import copy
 import random
 from typing import TYPE_CHECKING
 
@@ -89,6 +90,7 @@ class Instruction:
             name: The name of the instruction (e.g., "ADD", "JMP", "PUSH").
         """
         self.name = name
+        self.comment: str = ""
 
     def _calc(self, cpu: DT31) -> int:
         """Perform the instruction's operation and return a result value.
@@ -159,10 +161,26 @@ class Instruction:
         """
         return self.name
 
+    def with_comment(self, text: str) -> Instruction:
+        """Create a new instruction with the specified comment.
+
+        Args:
+            text: The comment text to associate with the instruction.
+
+        Returns:
+            A new Instruction instance of the same type with the comment set.
+        """
+        new_inst = copy.copy(self)
+        new_inst.comment = text
+        return new_inst
+
     def __eq__(self, other):
         if type(self) is not type(other):
             return False
-        return self.__dict__ == other.__dict__
+        # Exclude comment from equality check
+        self_dict = {k: v for k, v in self.__dict__.items() if k != "comment"}
+        other_dict = {k: v for k, v in other.__dict__.items() if k != "comment"}
+        return self_dict == other_dict
 
 
 class NOOP(Instruction):
