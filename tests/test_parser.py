@@ -1,12 +1,15 @@
 import pytest
 
 import dt31.instructions as I
+from dt31 import DT31
+from dt31.assembler import extract_registers_from_program, program_to_text
 from dt31.instructions import Instruction
 from dt31.operands import LC, L, Label, M, R
 from dt31.parser import (
     MEMORY_PATTERN,
     REGISTER_PREFIX_PATTERN,
     TOKEN_PATTERN,
+    Comment,
     ParserError,
     parse_operand,
     parse_program,
@@ -338,18 +341,30 @@ def test_parse_program_multiple_instructions():
 
 
 def test_parse_program_with_comments():
-    """Test that comments are stripped correctly."""
+    """Test that comments are preserved correctly."""
+    from dt31.parser import Comment
+
     text = """
     CP 5, R.a  ; This is a comment
     ; This entire line is a comment
     ADD R.a, 1 ; Another comment
     """
     program = parse_program(text)
-    expected = [
-        I.CP(5, R.a),
-        I.ADD(R.a, 1),
-    ]
-    assert program == expected
+
+    # Check that we have the right number and types of items
+    assert len(program) == 3
+    assert isinstance(program[0], type(I.CP(5, R.a)))
+    assert isinstance(program[1], Comment)
+    assert isinstance(program[2], type(I.ADD(R.a, 1)))
+
+    # Check comments are attached
+    assert program[0].comment == "This is a comment"
+    assert program[1].comment == "This entire line is a comment"
+    assert program[2].comment == "Another comment"
+
+    # Check instructions are correct (excluding comments)
+    assert program[0] == I.CP(5, R.a)
+    assert program[2] == I.ADD(R.a, 1)
 
 
 def test_parse_program_label_only_line():
@@ -408,6 +423,47 @@ def test_parse_program_multiple_labels():
     assert labels[0].name == "start"
     assert labels[1].name == "loop"
     assert labels[2].name == "end"
+
+
+def test_parse_program_multiple_labels_on_same_line():
+    """Test parsing multiple labels on the same line."""
+    text = "foo: bar: baz: CP R.a, R.b"
+    program = parse_program(text)
+    assert len(program) == 4
+    assert isinstance(program[0], Label)
+    assert program[0].name == "foo"
+    assert isinstance(program[1], Label)
+    assert program[1].name == "bar"
+    assert isinstance(program[2], Label)
+    assert program[2].name == "baz"
+    assert isinstance(program[3], I.CP)
+
+
+def test_parse_program_multiple_labels_with_comment():
+    """Test that comment is attached only to the last label."""
+    text = "foo: bar: baz: CP R.a, R.b ; test comment"
+    program = parse_program(text)
+    assert len(program) == 4
+    # First two labels should have no comment
+    assert program[0].comment == ""
+    assert program[1].comment == ""
+    # Last label should have the comment
+    assert program[2].comment == "test comment"
+    # Instruction should also have the comment
+    assert program[3].comment == "test comment"
+
+
+def test_parse_program_multiple_labels_no_instruction():
+    """Test multiple labels with no instruction after."""
+    text = "foo: bar: baz:"
+    program = parse_program(text)
+    assert len(program) == 3
+    assert isinstance(program[0], Label)
+    assert program[0].name == "foo"
+    assert isinstance(program[1], Label)
+    assert program[1].name == "bar"
+    assert isinstance(program[2], Label)
+    assert program[2].name == "baz"
 
 
 def test_parse_program_label_validation_valid():
@@ -654,3 +710,61 @@ def test_parse_program_function_call_example():
         Label("end"),
     ]
     assert program == expected
+
+
+# ------------------------------- Round-trip test -------------------------------- #
+
+
+def test_round_trip_comprehensive():
+    """Test comprehensive round-trip: text → parse → to_text → parse with all features."""
+    original = """; Countdown program
+CP 5, R.a ; Initialize counter
+loop: ; Main loop
+    NOUT R.a, 1 ; Print value
+    SUB R.a, 1
+    JGT loop, R.a, 0
+; Done"""
+
+    # Parse original
+    program = parse_program(original)
+
+    # Verify structure
+    assert len(program) == 7
+    assert isinstance(program[0], Comment)
+    assert program[0].comment == "Countdown program"
+    assert program[1].comment == "Initialize counter"
+    assert isinstance(program[2], Label)
+    assert program[2].comment == "Main loop"
+    assert program[3].comment == "Print value"
+    assert isinstance(program[6], Comment)
+
+    # Convert to text
+    reconstructed = program_to_text(program)
+
+    # Re-parse
+    re_parsed = parse_program(reconstructed)
+
+    # Verify round-trip preserves structure and comments
+    assert len(program) == len(re_parsed)
+    for orig, reparsed in zip(program, re_parsed):
+        assert type(orig) is type(reparsed)
+        if isinstance(orig, Comment):
+            assert orig.comment == reparsed.comment
+        elif isinstance(orig, Label):
+            assert orig.name == reparsed.name
+            assert orig.comment == reparsed.comment
+        else:
+            assert orig == reparsed
+            assert orig.comment == reparsed.comment
+
+    # Verify programs execute identically
+    registers = extract_registers_from_program(program)
+    cpu1 = DT31(registers=registers)
+    cpu1.run(program)
+    result1 = cpu1.get_register("a")
+
+    cpu2 = DT31(registers=registers)
+    cpu2.run(re_parsed)
+    result2 = cpu2.get_register("a")
+
+    assert result1 == result2 == 0
