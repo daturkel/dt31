@@ -166,123 +166,248 @@
 </span><span id="L-104"><a href="#L-104"><span class="linenos">104</span></a>
 </span><span id="L-105"><a href="#L-105"><span class="linenos">105</span></a><span class="k">def</span><span class="w"> </span><span class="nf">program_to_text</span><span class="p">(</span>
 </span><span id="L-106"><a href="#L-106"><span class="linenos">106</span></a>    <span class="n">program</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Instruction</span> <span class="o">|</span> <span class="n">Label</span> <span class="o">|</span> <span class="n">Comment</span><span class="p">]</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="n">Instruction</span><span class="p">],</span>
-</span><span id="L-107"><a href="#L-107"><span class="linenos">107</span></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-</span><span id="L-108"><a href="#L-108"><span class="linenos">108</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert a program to assembly text format.</span>
-</span><span id="L-109"><a href="#L-109"><span class="linenos">109</span></a>
-</span><span id="L-110"><a href="#L-110"><span class="linenos">110</span></a><span class="sd">    Converts a list of instructions, labels, and comments (whether created programmatically</span>
-</span><span id="L-111"><a href="#L-111"><span class="linenos">111</span></a><span class="sd">    in Python or parsed from text) into human-readable assembly text syntax.</span>
-</span><span id="L-112"><a href="#L-112"><span class="linenos">112</span></a>
-</span><span id="L-113"><a href="#L-113"><span class="linenos">113</span></a><span class="sd">    Args:</span>
-</span><span id="L-114"><a href="#L-114"><span class="linenos">114</span></a><span class="sd">        program: List of instructions, labels, and comments in source order.</span>
-</span><span id="L-115"><a href="#L-115"><span class="linenos">115</span></a>
-</span><span id="L-116"><a href="#L-116"><span class="linenos">116</span></a><span class="sd">    Returns:</span>
-</span><span id="L-117"><a href="#L-117"><span class="linenos">117</span></a><span class="sd">        A string containing the assembly text representation of the program,</span>
-</span><span id="L-118"><a href="#L-118"><span class="linenos">118</span></a><span class="sd">        with one instruction, label, or comment per line.</span>
-</span><span id="L-119"><a href="#L-119"><span class="linenos">119</span></a>
-</span><span id="L-120"><a href="#L-120"><span class="linenos">120</span></a><span class="sd">    Examples:</span>
-</span><span id="L-121"><a href="#L-121"><span class="linenos">121</span></a><span class="sd">        Convert Python program to assembly text:</span>
-</span><span id="L-122"><a href="#L-122"><span class="linenos">122</span></a><span class="sd">        ```python</span>
-</span><span id="L-123"><a href="#L-123"><span class="linenos">123</span></a><span class="sd">        from dt31 import I, R, L, Label</span>
-</span><span id="L-124"><a href="#L-124"><span class="linenos">124</span></a>
-</span><span id="L-125"><a href="#L-125"><span class="linenos">125</span></a><span class="sd">        program = [</span>
-</span><span id="L-126"><a href="#L-126"><span class="linenos">126</span></a><span class="sd">            I.CP(5, R.a),</span>
-</span><span id="L-127"><a href="#L-127"><span class="linenos">127</span></a><span class="sd">            loop := Label(&quot;loop&quot;),</span>
-</span><span id="L-128"><a href="#L-128"><span class="linenos">128</span></a><span class="sd">            I.NOUT(R.a, L[1]),</span>
-</span><span id="L-129"><a href="#L-129"><span class="linenos">129</span></a><span class="sd">            I.SUB(R.a, L[1]),</span>
-</span><span id="L-130"><a href="#L-130"><span class="linenos">130</span></a><span class="sd">            I.JGT(loop, R.a, L[0]),</span>
-</span><span id="L-131"><a href="#L-131"><span class="linenos">131</span></a><span class="sd">        ]</span>
-</span><span id="L-132"><a href="#L-132"><span class="linenos">132</span></a>
-</span><span id="L-133"><a href="#L-133"><span class="linenos">133</span></a><span class="sd">        text = program_to_text(program)</span>
-</span><span id="L-134"><a href="#L-134"><span class="linenos">134</span></a><span class="sd">        print(text)</span>
-</span><span id="L-135"><a href="#L-135"><span class="linenos">135</span></a><span class="sd">        # CP 5, R.a</span>
-</span><span id="L-136"><a href="#L-136"><span class="linenos">136</span></a><span class="sd">        # loop:</span>
-</span><span id="L-137"><a href="#L-137"><span class="linenos">137</span></a><span class="sd">        #     NOUT R.a, 1</span>
-</span><span id="L-138"><a href="#L-138"><span class="linenos">138</span></a><span class="sd">        #     SUB R.a, 1</span>
-</span><span id="L-139"><a href="#L-139"><span class="linenos">139</span></a><span class="sd">        #     JGT loop, R.a, 0</span>
-</span><span id="L-140"><a href="#L-140"><span class="linenos">140</span></a><span class="sd">        ```</span>
-</span><span id="L-141"><a href="#L-141"><span class="linenos">141</span></a>
-</span><span id="L-142"><a href="#L-142"><span class="linenos">142</span></a><span class="sd">        Round-trip conversion (text → Python → text):</span>
-</span><span id="L-143"><a href="#L-143"><span class="linenos">143</span></a><span class="sd">        ```python</span>
-</span><span id="L-144"><a href="#L-144"><span class="linenos">144</span></a><span class="sd">        from dt31.parser import parse_program</span>
-</span><span id="L-145"><a href="#L-145"><span class="linenos">145</span></a>
-</span><span id="L-146"><a href="#L-146"><span class="linenos">146</span></a><span class="sd">        original = &#39;&#39;&#39;</span>
-</span><span id="L-147"><a href="#L-147"><span class="linenos">147</span></a><span class="sd">        CP 5, R.a</span>
-</span><span id="L-148"><a href="#L-148"><span class="linenos">148</span></a><span class="sd">        loop:</span>
-</span><span id="L-149"><a href="#L-149"><span class="linenos">149</span></a><span class="sd">            NOUT R.a, 1</span>
-</span><span id="L-150"><a href="#L-150"><span class="linenos">150</span></a><span class="sd">            SUB R.a, 1</span>
-</span><span id="L-151"><a href="#L-151"><span class="linenos">151</span></a><span class="sd">            JGT loop, R.a, 0</span>
-</span><span id="L-152"><a href="#L-152"><span class="linenos">152</span></a><span class="sd">        &#39;&#39;&#39;</span>
-</span><span id="L-153"><a href="#L-153"><span class="linenos">153</span></a>
-</span><span id="L-154"><a href="#L-154"><span class="linenos">154</span></a><span class="sd">        program = parse_program(original)</span>
-</span><span id="L-155"><a href="#L-155"><span class="linenos">155</span></a><span class="sd">        reconstructed = program_to_text(program)</span>
-</span><span id="L-156"><a href="#L-156"><span class="linenos">156</span></a><span class="sd">        # reconstructed matches original (modulo whitespace)</span>
-</span><span id="L-157"><a href="#L-157"><span class="linenos">157</span></a><span class="sd">        ```</span>
-</span><span id="L-158"><a href="#L-158"><span class="linenos">158</span></a><span class="sd">    &quot;&quot;&quot;</span>
-</span><span id="L-159"><a href="#L-159"><span class="linenos">159</span></a>    <span class="n">lines</span> <span class="o">=</span> <span class="p">[]</span>
-</span><span id="L-160"><a href="#L-160"><span class="linenos">160</span></a>    <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">program</span><span class="p">:</span>
-</span><span id="L-161"><a href="#L-161"><span class="linenos">161</span></a>        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="n">Comment</span><span class="p">):</span>
-</span><span id="L-162"><a href="#L-162"><span class="linenos">162</span></a>            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">item</span><span class="p">))</span>
-</span><span id="L-163"><a href="#L-163"><span class="linenos">163</span></a>        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="n">Label</span><span class="p">):</span>
-</span><span id="L-164"><a href="#L-164"><span class="linenos">164</span></a>            <span class="n">line</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">item</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">:&quot;</span>
-</span><span id="L-165"><a href="#L-165"><span class="linenos">165</span></a>            <span class="k">if</span> <span class="n">item</span><span class="o">.</span><span class="n">comment</span><span class="p">:</span>
-</span><span id="L-166"><a href="#L-166"><span class="linenos">166</span></a>                <span class="n">line</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot; ; </span><span class="si">{</span><span class="n">item</span><span class="o">.</span><span class="n">comment</span><span class="si">}</span><span class="s2">&quot;</span>
-</span><span id="L-167"><a href="#L-167"><span class="linenos">167</span></a>            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
-</span><span id="L-168"><a href="#L-168"><span class="linenos">168</span></a>        <span class="k">else</span><span class="p">:</span>
-</span><span id="L-169"><a href="#L-169"><span class="linenos">169</span></a>            <span class="n">line</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;    </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">item</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
-</span><span id="L-170"><a href="#L-170"><span class="linenos">170</span></a>            <span class="k">if</span> <span class="n">item</span><span class="o">.</span><span class="n">comment</span><span class="p">:</span>
-</span><span id="L-171"><a href="#L-171"><span class="linenos">171</span></a>                <span class="n">line</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot; ; </span><span class="si">{</span><span class="n">item</span><span class="o">.</span><span class="n">comment</span><span class="si">}</span><span class="s2">&quot;</span>
-</span><span id="L-172"><a href="#L-172"><span class="linenos">172</span></a>            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
-</span><span id="L-173"><a href="#L-173"><span class="linenos">173</span></a>    <span class="k">return</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">lines</span><span class="p">)</span>
-</span><span id="L-174"><a href="#L-174"><span class="linenos">174</span></a>
-</span><span id="L-175"><a href="#L-175"><span class="linenos">175</span></a>
-</span><span id="L-176"><a href="#L-176"><span class="linenos">176</span></a><span class="k">def</span><span class="w"> </span><span class="nf">extract_registers_from_program</span><span class="p">(</span>
-</span><span id="L-177"><a href="#L-177"><span class="linenos">177</span></a>    <span class="n">program</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Instruction</span> <span class="o">|</span> <span class="n">Label</span> <span class="o">|</span> <span class="n">Comment</span><span class="p">],</span>
-</span><span id="L-178"><a href="#L-178"><span class="linenos">178</span></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
-</span><span id="L-179"><a href="#L-179"><span class="linenos">179</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-</span><span id="L-180"><a href="#L-180"><span class="linenos">180</span></a><span class="sd">    Extract all register names used in a program.</span>
-</span><span id="L-181"><a href="#L-181"><span class="linenos">181</span></a>
-</span><span id="L-182"><a href="#L-182"><span class="linenos">182</span></a><span class="sd">    This function works on already-parsed programs, whether they were parsed from</span>
-</span><span id="L-183"><a href="#L-183"><span class="linenos">183</span></a><span class="sd">    text or constructed programmatically in Python. Useful for determining which</span>
-</span><span id="L-184"><a href="#L-184"><span class="linenos">184</span></a><span class="sd">    registers need to be initialized in the CPU.</span>
-</span><span id="L-185"><a href="#L-185"><span class="linenos">185</span></a>
-</span><span id="L-186"><a href="#L-186"><span class="linenos">186</span></a><span class="sd">    Args:</span>
-</span><span id="L-187"><a href="#L-187"><span class="linenos">187</span></a><span class="sd">        program: List of Instructions and Labels</span>
-</span><span id="L-188"><a href="#L-188"><span class="linenos">188</span></a>
-</span><span id="L-189"><a href="#L-189"><span class="linenos">189</span></a><span class="sd">    Returns:</span>
-</span><span id="L-190"><a href="#L-190"><span class="linenos">190</span></a><span class="sd">        Sorted list of register names used in the program (excluding &#39;ip&#39;)</span>
-</span><span id="L-191"><a href="#L-191"><span class="linenos">191</span></a>
-</span><span id="L-192"><a href="#L-192"><span class="linenos">192</span></a><span class="sd">    Example:</span>
-</span><span id="L-193"><a href="#L-193"><span class="linenos">193</span></a><span class="sd">        &gt;&gt;&gt; from dt31 import I, R, L</span>
-</span><span id="L-194"><a href="#L-194"><span class="linenos">194</span></a><span class="sd">        &gt;&gt;&gt; program = [</span>
-</span><span id="L-195"><a href="#L-195"><span class="linenos">195</span></a><span class="sd">        ...     I.CP(10, R.x),</span>
-</span><span id="L-196"><a href="#L-196"><span class="linenos">196</span></a><span class="sd">        ...     I.ADD(R.x, L[5]),</span>
-</span><span id="L-197"><a href="#L-197"><span class="linenos">197</span></a><span class="sd">        ...     I.NOUT(R.x, L[1]),</span>
-</span><span id="L-198"><a href="#L-198"><span class="linenos">198</span></a><span class="sd">        ... ]</span>
-</span><span id="L-199"><a href="#L-199"><span class="linenos">199</span></a><span class="sd">        &gt;&gt;&gt; extract_registers_from_program(program)</span>
-</span><span id="L-200"><a href="#L-200"><span class="linenos">200</span></a><span class="sd">        [&#39;x&#39;]</span>
-</span><span id="L-201"><a href="#L-201"><span class="linenos">201</span></a><span class="sd">    &quot;&quot;&quot;</span>
-</span><span id="L-202"><a href="#L-202"><span class="linenos">202</span></a>    <span class="n">registers_used</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
-</span><span id="L-203"><a href="#L-203"><span class="linenos">203</span></a>
-</span><span id="L-204"><a href="#L-204"><span class="linenos">204</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">extract_from_operand</span><span class="p">(</span><span class="n">operand</span><span class="p">:</span> <span class="n">Operand</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-</span><span id="L-205"><a href="#L-205"><span class="linenos">205</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Recursively extract registers from an operand.&quot;&quot;&quot;</span>
-</span><span id="L-206"><a href="#L-206"><span class="linenos">206</span></a>        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">operand</span><span class="p">,</span> <span class="n">RegisterReference</span><span class="p">):</span>
-</span><span id="L-207"><a href="#L-207"><span class="linenos">207</span></a>            <span class="k">if</span> <span class="n">operand</span><span class="o">.</span><span class="n">register</span> <span class="o">!=</span> <span class="s2">&quot;ip&quot;</span><span class="p">:</span>
-</span><span id="L-208"><a href="#L-208"><span class="linenos">208</span></a>                <span class="n">registers_used</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">operand</span><span class="o">.</span><span class="n">register</span><span class="p">)</span>
-</span><span id="L-209"><a href="#L-209"><span class="linenos">209</span></a>        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">operand</span><span class="p">,</span> <span class="n">MemoryReference</span><span class="p">):</span>
-</span><span id="L-210"><a href="#L-210"><span class="linenos">210</span></a>            <span class="c1"># Memory references can contain nested operands (e.g., M[R.a])</span>
-</span><span id="L-211"><a href="#L-211"><span class="linenos">211</span></a>            <span class="n">extract_from_operand</span><span class="p">(</span><span class="n">operand</span><span class="o">.</span><span class="n">address</span><span class="p">)</span>
-</span><span id="L-212"><a href="#L-212"><span class="linenos">212</span></a>
-</span><span id="L-213"><a href="#L-213"><span class="linenos">213</span></a>    <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">program</span><span class="p">:</span>
-</span><span id="L-214"><a href="#L-214"><span class="linenos">214</span></a>        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="p">(</span><span class="n">Label</span><span class="p">,</span> <span class="n">Comment</span><span class="p">)):</span>
-</span><span id="L-215"><a href="#L-215"><span class="linenos">215</span></a>            <span class="k">continue</span>
-</span><span id="L-216"><a href="#L-216"><span class="linenos">216</span></a>
-</span><span id="L-217"><a href="#L-217"><span class="linenos">217</span></a>        <span class="c1"># Instructions store operands as attributes</span>
-</span><span id="L-218"><a href="#L-218"><span class="linenos">218</span></a>        <span class="c1"># Walk through all attributes to find operands</span>
-</span><span id="L-219"><a href="#L-219"><span class="linenos">219</span></a>        <span class="k">for</span> <span class="n">attr_value</span> <span class="ow">in</span> <span class="n">item</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
-</span><span id="L-220"><a href="#L-220"><span class="linenos">220</span></a>            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">attr_value</span><span class="p">,</span> <span class="p">(</span><span class="n">RegisterReference</span><span class="p">,</span> <span class="n">MemoryReference</span><span class="p">)):</span>
-</span><span id="L-221"><a href="#L-221"><span class="linenos">221</span></a>                <span class="n">extract_from_operand</span><span class="p">(</span><span class="n">attr_value</span><span class="p">)</span>
-</span><span id="L-222"><a href="#L-222"><span class="linenos">222</span></a>
-</span><span id="L-223"><a href="#L-223"><span class="linenos">223</span></a>    <span class="k">return</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">registers_used</span><span class="p">)</span>
+</span><span id="L-107"><a href="#L-107"><span class="linenos">107</span></a>    <span class="o">*</span><span class="p">,</span>
+</span><span id="L-108"><a href="#L-108"><span class="linenos">108</span></a>    <span class="n">indent_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
+</span><span id="L-109"><a href="#L-109"><span class="linenos">109</span></a>    <span class="n">comment_spacing</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+</span><span id="L-110"><a href="#L-110"><span class="linenos">110</span></a>    <span class="n">label_inline</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+</span><span id="L-111"><a href="#L-111"><span class="linenos">111</span></a>    <span class="n">blank_line_before_label</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+</span><span id="L-112"><a href="#L-112"><span class="linenos">112</span></a>    <span class="n">align_comments</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+</span><span id="L-113"><a href="#L-113"><span class="linenos">113</span></a>    <span class="n">comment_column</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">40</span><span class="p">,</span>
+</span><span id="L-114"><a href="#L-114"><span class="linenos">114</span></a>    <span class="n">hide_default_out</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+</span><span id="L-115"><a href="#L-115"><span class="linenos">115</span></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+</span><span id="L-116"><a href="#L-116"><span class="linenos">116</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert a program to assembly text format with configurable formatting.</span>
+</span><span id="L-117"><a href="#L-117"><span class="linenos">117</span></a>
+</span><span id="L-118"><a href="#L-118"><span class="linenos">118</span></a><span class="sd">    Converts a list of instructions, labels, and comments (whether created programmatically</span>
+</span><span id="L-119"><a href="#L-119"><span class="linenos">119</span></a><span class="sd">    in Python or parsed from text) into human-readable assembly text syntax.</span>
+</span><span id="L-120"><a href="#L-120"><span class="linenos">120</span></a>
+</span><span id="L-121"><a href="#L-121"><span class="linenos">121</span></a><span class="sd">    Args:</span>
+</span><span id="L-122"><a href="#L-122"><span class="linenos">122</span></a><span class="sd">        program: List of instructions, labels, and comments in source order.</span>
+</span><span id="L-123"><a href="#L-123"><span class="linenos">123</span></a><span class="sd">        indent_size: Number of spaces per indentation level (default: 4).</span>
+</span><span id="L-124"><a href="#L-124"><span class="linenos">124</span></a><span class="sd">        comment_spacing: Number of spaces before inline comment semicolon (default: 1).</span>
+</span><span id="L-125"><a href="#L-125"><span class="linenos">125</span></a><span class="sd">        label_inline: If True, place labels on same line as next instruction (default: False).</span>
+</span><span id="L-126"><a href="#L-126"><span class="linenos">126</span></a><span class="sd">        blank_line_before_label: If True, add blank line before labels (default: True).</span>
+</span><span id="L-127"><a href="#L-127"><span class="linenos">127</span></a><span class="sd">        align_comments: If True, align inline comments at comment_column (default: False).</span>
+</span><span id="L-128"><a href="#L-128"><span class="linenos">128</span></a><span class="sd">        comment_column: Column position for aligned comments when align_comments=True (default: 40).</span>
+</span><span id="L-129"><a href="#L-129"><span class="linenos">129</span></a><span class="sd">        hide_default_out: If True, hide output parameters when they match the default value (default: False).</span>
+</span><span id="L-130"><a href="#L-130"><span class="linenos">130</span></a>
+</span><span id="L-131"><a href="#L-131"><span class="linenos">131</span></a><span class="sd">    Returns:</span>
+</span><span id="L-132"><a href="#L-132"><span class="linenos">132</span></a><span class="sd">        A string containing the assembly text representation of the program,</span>
+</span><span id="L-133"><a href="#L-133"><span class="linenos">133</span></a><span class="sd">        with one instruction, label, or comment per line.</span>
+</span><span id="L-134"><a href="#L-134"><span class="linenos">134</span></a>
+</span><span id="L-135"><a href="#L-135"><span class="linenos">135</span></a><span class="sd">    Examples:</span>
+</span><span id="L-136"><a href="#L-136"><span class="linenos">136</span></a><span class="sd">        Default formatting:</span>
+</span><span id="L-137"><a href="#L-137"><span class="linenos">137</span></a><span class="sd">        ```python</span>
+</span><span id="L-138"><a href="#L-138"><span class="linenos">138</span></a><span class="sd">        from dt31 import I, R, L, Label</span>
+</span><span id="L-139"><a href="#L-139"><span class="linenos">139</span></a>
+</span><span id="L-140"><a href="#L-140"><span class="linenos">140</span></a><span class="sd">        program = [</span>
+</span><span id="L-141"><a href="#L-141"><span class="linenos">141</span></a><span class="sd">            I.CP(5, R.a),</span>
+</span><span id="L-142"><a href="#L-142"><span class="linenos">142</span></a><span class="sd">            loop := Label(&quot;loop&quot;),</span>
+</span><span id="L-143"><a href="#L-143"><span class="linenos">143</span></a><span class="sd">            I.NOUT(R.a, L[1]),</span>
+</span><span id="L-144"><a href="#L-144"><span class="linenos">144</span></a><span class="sd">            I.SUB(R.a, L[1]),</span>
+</span><span id="L-145"><a href="#L-145"><span class="linenos">145</span></a><span class="sd">            I.JGT(loop, R.a, L[0]),</span>
+</span><span id="L-146"><a href="#L-146"><span class="linenos">146</span></a><span class="sd">        ]</span>
+</span><span id="L-147"><a href="#L-147"><span class="linenos">147</span></a>
+</span><span id="L-148"><a href="#L-148"><span class="linenos">148</span></a><span class="sd">        text = program_to_text(program)</span>
+</span><span id="L-149"><a href="#L-149"><span class="linenos">149</span></a><span class="sd">        print(text)</span>
+</span><span id="L-150"><a href="#L-150"><span class="linenos">150</span></a><span class="sd">        #     CP 5, R.a</span>
+</span><span id="L-151"><a href="#L-151"><span class="linenos">151</span></a><span class="sd">        #</span>
+</span><span id="L-152"><a href="#L-152"><span class="linenos">152</span></a><span class="sd">        # loop:</span>
+</span><span id="L-153"><a href="#L-153"><span class="linenos">153</span></a><span class="sd">        #     NOUT R.a, 1</span>
+</span><span id="L-154"><a href="#L-154"><span class="linenos">154</span></a><span class="sd">        #     SUB R.a, 1, R.a</span>
+</span><span id="L-155"><a href="#L-155"><span class="linenos">155</span></a><span class="sd">        #     JGT loop, R.a, 0</span>
+</span><span id="L-156"><a href="#L-156"><span class="linenos">156</span></a><span class="sd">        ```</span>
+</span><span id="L-157"><a href="#L-157"><span class="linenos">157</span></a>
+</span><span id="L-158"><a href="#L-158"><span class="linenos">158</span></a><span class="sd">        Custom formatting with 2-space indent and inline labels:</span>
+</span><span id="L-159"><a href="#L-159"><span class="linenos">159</span></a><span class="sd">        ```python</span>
+</span><span id="L-160"><a href="#L-160"><span class="linenos">160</span></a><span class="sd">        text = program_to_text(</span>
+</span><span id="L-161"><a href="#L-161"><span class="linenos">161</span></a><span class="sd">            program,</span>
+</span><span id="L-162"><a href="#L-162"><span class="linenos">162</span></a><span class="sd">            indent_size=2,</span>
+</span><span id="L-163"><a href="#L-163"><span class="linenos">163</span></a><span class="sd">            label_inline=True,</span>
+</span><span id="L-164"><a href="#L-164"><span class="linenos">164</span></a><span class="sd">            blank_line_before_label=False,</span>
+</span><span id="L-165"><a href="#L-165"><span class="linenos">165</span></a><span class="sd">        )</span>
+</span><span id="L-166"><a href="#L-166"><span class="linenos">166</span></a><span class="sd">        #   CP 5, R.a</span>
+</span><span id="L-167"><a href="#L-167"><span class="linenos">167</span></a><span class="sd">        # loop: NOUT R.a, 1</span>
+</span><span id="L-168"><a href="#L-168"><span class="linenos">168</span></a><span class="sd">        #   SUB R.a, 1, R.a</span>
+</span><span id="L-169"><a href="#L-169"><span class="linenos">169</span></a><span class="sd">        #   JGT loop, R.a, 0</span>
+</span><span id="L-170"><a href="#L-170"><span class="linenos">170</span></a><span class="sd">        ```</span>
+</span><span id="L-171"><a href="#L-171"><span class="linenos">171</span></a>
+</span><span id="L-172"><a href="#L-172"><span class="linenos">172</span></a><span class="sd">        Aligned comments:</span>
+</span><span id="L-173"><a href="#L-173"><span class="linenos">173</span></a><span class="sd">        ```python</span>
+</span><span id="L-174"><a href="#L-174"><span class="linenos">174</span></a><span class="sd">        program_with_comments = [</span>
+</span><span id="L-175"><a href="#L-175"><span class="linenos">175</span></a><span class="sd">            I.CP(5, R.a).with_comment(&quot;Initialize&quot;),</span>
+</span><span id="L-176"><a href="#L-176"><span class="linenos">176</span></a><span class="sd">            I.ADD(R.a, L[1]).with_comment(&quot;Increment&quot;),</span>
+</span><span id="L-177"><a href="#L-177"><span class="linenos">177</span></a><span class="sd">        ]</span>
+</span><span id="L-178"><a href="#L-178"><span class="linenos">178</span></a><span class="sd">        text = program_to_text(program_with_comments, align_comments=True, comment_column=30)</span>
+</span><span id="L-179"><a href="#L-179"><span class="linenos">179</span></a><span class="sd">        #     CP 5, R.a              ; Initialize</span>
+</span><span id="L-180"><a href="#L-180"><span class="linenos">180</span></a><span class="sd">        #     ADD R.a, 1, R.a        ; Increment</span>
+</span><span id="L-181"><a href="#L-181"><span class="linenos">181</span></a><span class="sd">        ```</span>
+</span><span id="L-182"><a href="#L-182"><span class="linenos">182</span></a>
+</span><span id="L-183"><a href="#L-183"><span class="linenos">183</span></a><span class="sd">        Hide default output parameters:</span>
+</span><span id="L-184"><a href="#L-184"><span class="linenos">184</span></a><span class="sd">        ```python</span>
+</span><span id="L-185"><a href="#L-185"><span class="linenos">185</span></a><span class="sd">        program = [</span>
+</span><span id="L-186"><a href="#L-186"><span class="linenos">186</span></a><span class="sd">            I.ADD(R.a, R.b),  # Default out=R.a</span>
+</span><span id="L-187"><a href="#L-187"><span class="linenos">187</span></a><span class="sd">            I.NOUT(R.a),      # Default b=L[0] (no newline)</span>
+</span><span id="L-188"><a href="#L-188"><span class="linenos">188</span></a><span class="sd">        ]</span>
+</span><span id="L-189"><a href="#L-189"><span class="linenos">189</span></a><span class="sd">        text = program_to_text(program, hide_default_out=True)</span>
+</span><span id="L-190"><a href="#L-190"><span class="linenos">190</span></a><span class="sd">        #     ADD R.a, R.b</span>
+</span><span id="L-191"><a href="#L-191"><span class="linenos">191</span></a><span class="sd">        #     NOUT R.a</span>
+</span><span id="L-192"><a href="#L-192"><span class="linenos">192</span></a><span class="sd">        # vs without hide_default_out:</span>
+</span><span id="L-193"><a href="#L-193"><span class="linenos">193</span></a><span class="sd">        #     ADD R.a, R.b, R.a</span>
+</span><span id="L-194"><a href="#L-194"><span class="linenos">194</span></a><span class="sd">        #     NOUT R.a, 0</span>
+</span><span id="L-195"><a href="#L-195"><span class="linenos">195</span></a><span class="sd">        ```</span>
+</span><span id="L-196"><a href="#L-196"><span class="linenos">196</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="L-197"><a href="#L-197"><span class="linenos">197</span></a>    <span class="n">indent</span> <span class="o">=</span> <span class="s2">&quot; &quot;</span> <span class="o">*</span> <span class="n">indent_size</span>
+</span><span id="L-198"><a href="#L-198"><span class="linenos">198</span></a>    <span class="n">lines</span> <span class="o">=</span> <span class="p">[]</span>
+</span><span id="L-199"><a href="#L-199"><span class="linenos">199</span></a>    <span class="n">pending_labels</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Label</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+</span><span id="L-200"><a href="#L-200"><span class="linenos">200</span></a>    <span class="n">prev_was_label</span> <span class="o">=</span> <span class="kc">False</span>
+</span><span id="L-201"><a href="#L-201"><span class="linenos">201</span></a>
+</span><span id="L-202"><a href="#L-202"><span class="linenos">202</span></a>    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">item</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">program</span><span class="p">):</span>
+</span><span id="L-203"><a href="#L-203"><span class="linenos">203</span></a>        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="n">Comment</span><span class="p">):</span>
+</span><span id="L-204"><a href="#L-204"><span class="linenos">204</span></a>            <span class="c1"># Standalone comments are never indented or aligned</span>
+</span><span id="L-205"><a href="#L-205"><span class="linenos">205</span></a>            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">item</span><span class="p">))</span>
+</span><span id="L-206"><a href="#L-206"><span class="linenos">206</span></a>            <span class="n">prev_was_label</span> <span class="o">=</span> <span class="kc">False</span>
+</span><span id="L-207"><a href="#L-207"><span class="linenos">207</span></a>        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="n">Label</span><span class="p">):</span>
+</span><span id="L-208"><a href="#L-208"><span class="linenos">208</span></a>            <span class="c1"># Add blank line before label if requested (but not before first item or consecutive labels)</span>
+</span><span id="L-209"><a href="#L-209"><span class="linenos">209</span></a>            <span class="k">if</span> <span class="n">blank_line_before_label</span> <span class="ow">and</span> <span class="n">lines</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">prev_was_label</span><span class="p">:</span>
+</span><span id="L-210"><a href="#L-210"><span class="linenos">210</span></a>                <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+</span><span id="L-211"><a href="#L-211"><span class="linenos">211</span></a>
+</span><span id="L-212"><a href="#L-212"><span class="linenos">212</span></a>            <span class="k">if</span> <span class="n">label_inline</span><span class="p">:</span>
+</span><span id="L-213"><a href="#L-213"><span class="linenos">213</span></a>                <span class="c1"># Collect labels to put inline with next instruction</span>
+</span><span id="L-214"><a href="#L-214"><span class="linenos">214</span></a>                <span class="n">pending_labels</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
+</span><span id="L-215"><a href="#L-215"><span class="linenos">215</span></a>            <span class="k">else</span><span class="p">:</span>
+</span><span id="L-216"><a href="#L-216"><span class="linenos">216</span></a>                <span class="c1"># Labels on separate lines</span>
+</span><span id="L-217"><a href="#L-217"><span class="linenos">217</span></a>                <span class="n">line</span> <span class="o">=</span> <span class="n">_format_label</span><span class="p">(</span>
+</span><span id="L-218"><a href="#L-218"><span class="linenos">218</span></a>                    <span class="n">item</span><span class="p">,</span> <span class="n">align_comments</span><span class="p">,</span> <span class="n">comment_column</span><span class="p">,</span> <span class="n">comment_spacing</span>
+</span><span id="L-219"><a href="#L-219"><span class="linenos">219</span></a>                <span class="p">)</span>
+</span><span id="L-220"><a href="#L-220"><span class="linenos">220</span></a>                <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+</span><span id="L-221"><a href="#L-221"><span class="linenos">221</span></a>
+</span><span id="L-222"><a href="#L-222"><span class="linenos">222</span></a>            <span class="n">prev_was_label</span> <span class="o">=</span> <span class="kc">True</span>
+</span><span id="L-223"><a href="#L-223"><span class="linenos">223</span></a>        <span class="k">else</span><span class="p">:</span>
+</span><span id="L-224"><a href="#L-224"><span class="linenos">224</span></a>            <span class="c1"># Instruction</span>
+</span><span id="L-225"><a href="#L-225"><span class="linenos">225</span></a>            <span class="n">prev_was_label</span> <span class="o">=</span> <span class="kc">False</span>
+</span><span id="L-226"><a href="#L-226"><span class="linenos">226</span></a>
+</span><span id="L-227"><a href="#L-227"><span class="linenos">227</span></a>            <span class="c1"># Handle pending inline labels</span>
+</span><span id="L-228"><a href="#L-228"><span class="linenos">228</span></a>            <span class="k">if</span> <span class="n">pending_labels</span><span class="p">:</span>
+</span><span id="L-229"><a href="#L-229"><span class="linenos">229</span></a>                <span class="n">label_prefix</span> <span class="o">=</span> <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">lbl</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">:&quot;</span> <span class="k">for</span> <span class="n">lbl</span> <span class="ow">in</span> <span class="n">pending_labels</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span>
+</span><span id="L-230"><a href="#L-230"><span class="linenos">230</span></a>                <span class="c1"># Comments from inline labels are handled by the instruction comment</span>
+</span><span id="L-231"><a href="#L-231"><span class="linenos">231</span></a>                <span class="c1"># (use the instruction&#39;s comment if it exists, otherwise use last label&#39;s comment)</span>
+</span><span id="L-232"><a href="#L-232"><span class="linenos">232</span></a>                <span class="n">comment</span> <span class="o">=</span> <span class="p">(</span>
+</span><span id="L-233"><a href="#L-233"><span class="linenos">233</span></a>                    <span class="n">item</span><span class="o">.</span><span class="n">comment</span>
+</span><span id="L-234"><a href="#L-234"><span class="linenos">234</span></a>                    <span class="k">if</span> <span class="n">item</span><span class="o">.</span><span class="n">comment</span>
+</span><span id="L-235"><a href="#L-235"><span class="linenos">235</span></a>                    <span class="k">else</span> <span class="p">(</span>
+</span><span id="L-236"><a href="#L-236"><span class="linenos">236</span></a>                        <span class="n">pending_labels</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">comment</span> <span class="k">if</span> <span class="n">pending_labels</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">comment</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
+</span><span id="L-237"><a href="#L-237"><span class="linenos">237</span></a>                    <span class="p">)</span>
+</span><span id="L-238"><a href="#L-238"><span class="linenos">238</span></a>                <span class="p">)</span>
+</span><span id="L-239"><a href="#L-239"><span class="linenos">239</span></a>                <span class="n">pending_labels</span> <span class="o">=</span> <span class="p">[]</span>
+</span><span id="L-240"><a href="#L-240"><span class="linenos">240</span></a>            <span class="k">else</span><span class="p">:</span>
+</span><span id="L-241"><a href="#L-241"><span class="linenos">241</span></a>                <span class="n">label_prefix</span> <span class="o">=</span> <span class="n">indent</span>
+</span><span id="L-242"><a href="#L-242"><span class="linenos">242</span></a>                <span class="n">comment</span> <span class="o">=</span> <span class="n">item</span><span class="o">.</span><span class="n">comment</span>
+</span><span id="L-243"><a href="#L-243"><span class="linenos">243</span></a>
+</span><span id="L-244"><a href="#L-244"><span class="linenos">244</span></a>            <span class="n">instruction_text</span> <span class="o">=</span> <span class="n">item</span><span class="o">.</span><span class="n">to_concise_str</span><span class="p">()</span> <span class="k">if</span> <span class="n">hide_default_out</span> <span class="k">else</span> <span class="nb">str</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
+</span><span id="L-245"><a href="#L-245"><span class="linenos">245</span></a>            <span class="n">line</span> <span class="o">=</span> <span class="n">_format_instruction_with_comment</span><span class="p">(</span>
+</span><span id="L-246"><a href="#L-246"><span class="linenos">246</span></a>                <span class="n">label_prefix</span> <span class="o">+</span> <span class="n">instruction_text</span><span class="p">,</span>
+</span><span id="L-247"><a href="#L-247"><span class="linenos">247</span></a>                <span class="n">comment</span><span class="p">,</span>
+</span><span id="L-248"><a href="#L-248"><span class="linenos">248</span></a>                <span class="n">align_comments</span><span class="p">,</span>
+</span><span id="L-249"><a href="#L-249"><span class="linenos">249</span></a>                <span class="n">comment_column</span><span class="p">,</span>
+</span><span id="L-250"><a href="#L-250"><span class="linenos">250</span></a>                <span class="n">comment_spacing</span><span class="p">,</span>
+</span><span id="L-251"><a href="#L-251"><span class="linenos">251</span></a>            <span class="p">)</span>
+</span><span id="L-252"><a href="#L-252"><span class="linenos">252</span></a>            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+</span><span id="L-253"><a href="#L-253"><span class="linenos">253</span></a>
+</span><span id="L-254"><a href="#L-254"><span class="linenos">254</span></a>    <span class="c1"># Handle any remaining labels at end of program</span>
+</span><span id="L-255"><a href="#L-255"><span class="linenos">255</span></a>    <span class="k">for</span> <span class="n">lbl</span> <span class="ow">in</span> <span class="n">pending_labels</span><span class="p">:</span>
+</span><span id="L-256"><a href="#L-256"><span class="linenos">256</span></a>        <span class="n">line</span> <span class="o">=</span> <span class="n">_format_label</span><span class="p">(</span><span class="n">lbl</span><span class="p">,</span> <span class="n">align_comments</span><span class="p">,</span> <span class="n">comment_column</span><span class="p">,</span> <span class="n">comment_spacing</span><span class="p">)</span>
+</span><span id="L-257"><a href="#L-257"><span class="linenos">257</span></a>        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+</span><span id="L-258"><a href="#L-258"><span class="linenos">258</span></a>
+</span><span id="L-259"><a href="#L-259"><span class="linenos">259</span></a>    <span class="k">return</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">lines</span><span class="p">)</span>
+</span><span id="L-260"><a href="#L-260"><span class="linenos">260</span></a>
+</span><span id="L-261"><a href="#L-261"><span class="linenos">261</span></a>
+</span><span id="L-262"><a href="#L-262"><span class="linenos">262</span></a><span class="k">def</span><span class="w"> </span><span class="nf">_format_label</span><span class="p">(</span>
+</span><span id="L-263"><a href="#L-263"><span class="linenos">263</span></a>    <span class="n">label</span><span class="p">:</span> <span class="n">Label</span><span class="p">,</span>
+</span><span id="L-264"><a href="#L-264"><span class="linenos">264</span></a>    <span class="n">align_comments</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
+</span><span id="L-265"><a href="#L-265"><span class="linenos">265</span></a>    <span class="n">comment_column</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+</span><span id="L-266"><a href="#L-266"><span class="linenos">266</span></a>    <span class="n">comment_spacing</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+</span><span id="L-267"><a href="#L-267"><span class="linenos">267</span></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+</span><span id="L-268"><a href="#L-268"><span class="linenos">268</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Format a label with optional comment alignment.&quot;&quot;&quot;</span>
+</span><span id="L-269"><a href="#L-269"><span class="linenos">269</span></a>    <span class="n">line</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">label</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">:&quot;</span>
+</span><span id="L-270"><a href="#L-270"><span class="linenos">270</span></a>    <span class="k">if</span> <span class="n">label</span><span class="o">.</span><span class="n">comment</span><span class="p">:</span>
+</span><span id="L-271"><a href="#L-271"><span class="linenos">271</span></a>        <span class="n">line</span> <span class="o">=</span> <span class="n">_format_instruction_with_comment</span><span class="p">(</span>
+</span><span id="L-272"><a href="#L-272"><span class="linenos">272</span></a>            <span class="n">line</span><span class="p">,</span> <span class="n">label</span><span class="o">.</span><span class="n">comment</span><span class="p">,</span> <span class="n">align_comments</span><span class="p">,</span> <span class="n">comment_column</span><span class="p">,</span> <span class="n">comment_spacing</span>
+</span><span id="L-273"><a href="#L-273"><span class="linenos">273</span></a>        <span class="p">)</span>
+</span><span id="L-274"><a href="#L-274"><span class="linenos">274</span></a>    <span class="k">return</span> <span class="n">line</span>
+</span><span id="L-275"><a href="#L-275"><span class="linenos">275</span></a>
+</span><span id="L-276"><a href="#L-276"><span class="linenos">276</span></a>
+</span><span id="L-277"><a href="#L-277"><span class="linenos">277</span></a><span class="k">def</span><span class="w"> </span><span class="nf">_format_instruction_with_comment</span><span class="p">(</span>
+</span><span id="L-278"><a href="#L-278"><span class="linenos">278</span></a>    <span class="n">instruction_text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+</span><span id="L-279"><a href="#L-279"><span class="linenos">279</span></a>    <span class="n">comment</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+</span><span id="L-280"><a href="#L-280"><span class="linenos">280</span></a>    <span class="n">align_comments</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
+</span><span id="L-281"><a href="#L-281"><span class="linenos">281</span></a>    <span class="n">comment_column</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+</span><span id="L-282"><a href="#L-282"><span class="linenos">282</span></a>    <span class="n">comment_spacing</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+</span><span id="L-283"><a href="#L-283"><span class="linenos">283</span></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+</span><span id="L-284"><a href="#L-284"><span class="linenos">284</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Format an instruction with its comment, handling alignment if requested.&quot;&quot;&quot;</span>
+</span><span id="L-285"><a href="#L-285"><span class="linenos">285</span></a>    <span class="k">if</span> <span class="ow">not</span> <span class="n">comment</span><span class="p">:</span>
+</span><span id="L-286"><a href="#L-286"><span class="linenos">286</span></a>        <span class="k">return</span> <span class="n">instruction_text</span>
+</span><span id="L-287"><a href="#L-287"><span class="linenos">287</span></a>
+</span><span id="L-288"><a href="#L-288"><span class="linenos">288</span></a>    <span class="k">if</span> <span class="n">align_comments</span><span class="p">:</span>
+</span><span id="L-289"><a href="#L-289"><span class="linenos">289</span></a>        <span class="n">current_len</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">instruction_text</span><span class="p">)</span>
+</span><span id="L-290"><a href="#L-290"><span class="linenos">290</span></a>        <span class="k">if</span> <span class="n">current_len</span> <span class="o">&lt;</span> <span class="n">comment_column</span><span class="p">:</span>
+</span><span id="L-291"><a href="#L-291"><span class="linenos">291</span></a>            <span class="n">padding</span> <span class="o">=</span> <span class="n">comment_column</span> <span class="o">-</span> <span class="n">current_len</span>
+</span><span id="L-292"><a href="#L-292"><span class="linenos">292</span></a>            <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">instruction_text</span><span class="si">}{</span><span class="s1">&#39; &#39;</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">padding</span><span class="si">}</span><span class="s2">; </span><span class="si">{</span><span class="n">comment</span><span class="si">}</span><span class="s2">&quot;</span>
+</span><span id="L-293"><a href="#L-293"><span class="linenos">293</span></a>        <span class="k">else</span><span class="p">:</span>
+</span><span id="L-294"><a href="#L-294"><span class="linenos">294</span></a>            <span class="c1"># Instruction exceeds column, fall back to spacing</span>
+</span><span id="L-295"><a href="#L-295"><span class="linenos">295</span></a>            <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">instruction_text</span><span class="si">}{</span><span class="s1">&#39; &#39;</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">comment_spacing</span><span class="si">}</span><span class="s2">; </span><span class="si">{</span><span class="n">comment</span><span class="si">}</span><span class="s2">&quot;</span>
+</span><span id="L-296"><a href="#L-296"><span class="linenos">296</span></a>    <span class="k">else</span><span class="p">:</span>
+</span><span id="L-297"><a href="#L-297"><span class="linenos">297</span></a>        <span class="c1"># No alignment, just use spacing</span>
+</span><span id="L-298"><a href="#L-298"><span class="linenos">298</span></a>        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">instruction_text</span><span class="si">}{</span><span class="s1">&#39; &#39;</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">comment_spacing</span><span class="si">}</span><span class="s2">; </span><span class="si">{</span><span class="n">comment</span><span class="si">}</span><span class="s2">&quot;</span>
+</span><span id="L-299"><a href="#L-299"><span class="linenos">299</span></a>
+</span><span id="L-300"><a href="#L-300"><span class="linenos">300</span></a>
+</span><span id="L-301"><a href="#L-301"><span class="linenos">301</span></a><span class="k">def</span><span class="w"> </span><span class="nf">extract_registers_from_program</span><span class="p">(</span>
+</span><span id="L-302"><a href="#L-302"><span class="linenos">302</span></a>    <span class="n">program</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Instruction</span> <span class="o">|</span> <span class="n">Label</span> <span class="o">|</span> <span class="n">Comment</span><span class="p">],</span>
+</span><span id="L-303"><a href="#L-303"><span class="linenos">303</span></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+</span><span id="L-304"><a href="#L-304"><span class="linenos">304</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="L-305"><a href="#L-305"><span class="linenos">305</span></a><span class="sd">    Extract all register names used in a program.</span>
+</span><span id="L-306"><a href="#L-306"><span class="linenos">306</span></a>
+</span><span id="L-307"><a href="#L-307"><span class="linenos">307</span></a><span class="sd">    This function works on already-parsed programs, whether they were parsed from</span>
+</span><span id="L-308"><a href="#L-308"><span class="linenos">308</span></a><span class="sd">    text or constructed programmatically in Python. Useful for determining which</span>
+</span><span id="L-309"><a href="#L-309"><span class="linenos">309</span></a><span class="sd">    registers need to be initialized in the CPU.</span>
+</span><span id="L-310"><a href="#L-310"><span class="linenos">310</span></a>
+</span><span id="L-311"><a href="#L-311"><span class="linenos">311</span></a><span class="sd">    Args:</span>
+</span><span id="L-312"><a href="#L-312"><span class="linenos">312</span></a><span class="sd">        program: List of Instructions and Labels</span>
+</span><span id="L-313"><a href="#L-313"><span class="linenos">313</span></a>
+</span><span id="L-314"><a href="#L-314"><span class="linenos">314</span></a><span class="sd">    Returns:</span>
+</span><span id="L-315"><a href="#L-315"><span class="linenos">315</span></a><span class="sd">        Sorted list of register names used in the program (excluding &#39;ip&#39;)</span>
+</span><span id="L-316"><a href="#L-316"><span class="linenos">316</span></a>
+</span><span id="L-317"><a href="#L-317"><span class="linenos">317</span></a><span class="sd">    Example:</span>
+</span><span id="L-318"><a href="#L-318"><span class="linenos">318</span></a><span class="sd">        &gt;&gt;&gt; from dt31 import I, R, L</span>
+</span><span id="L-319"><a href="#L-319"><span class="linenos">319</span></a><span class="sd">        &gt;&gt;&gt; program = [</span>
+</span><span id="L-320"><a href="#L-320"><span class="linenos">320</span></a><span class="sd">        ...     I.CP(10, R.x),</span>
+</span><span id="L-321"><a href="#L-321"><span class="linenos">321</span></a><span class="sd">        ...     I.ADD(R.x, L[5]),</span>
+</span><span id="L-322"><a href="#L-322"><span class="linenos">322</span></a><span class="sd">        ...     I.NOUT(R.x, L[1]),</span>
+</span><span id="L-323"><a href="#L-323"><span class="linenos">323</span></a><span class="sd">        ... ]</span>
+</span><span id="L-324"><a href="#L-324"><span class="linenos">324</span></a><span class="sd">        &gt;&gt;&gt; extract_registers_from_program(program)</span>
+</span><span id="L-325"><a href="#L-325"><span class="linenos">325</span></a><span class="sd">        [&#39;x&#39;]</span>
+</span><span id="L-326"><a href="#L-326"><span class="linenos">326</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="L-327"><a href="#L-327"><span class="linenos">327</span></a>    <span class="n">registers_used</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+</span><span id="L-328"><a href="#L-328"><span class="linenos">328</span></a>
+</span><span id="L-329"><a href="#L-329"><span class="linenos">329</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">extract_from_operand</span><span class="p">(</span><span class="n">operand</span><span class="p">:</span> <span class="n">Operand</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+</span><span id="L-330"><a href="#L-330"><span class="linenos">330</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Recursively extract registers from an operand.&quot;&quot;&quot;</span>
+</span><span id="L-331"><a href="#L-331"><span class="linenos">331</span></a>        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">operand</span><span class="p">,</span> <span class="n">RegisterReference</span><span class="p">):</span>
+</span><span id="L-332"><a href="#L-332"><span class="linenos">332</span></a>            <span class="k">if</span> <span class="n">operand</span><span class="o">.</span><span class="n">register</span> <span class="o">!=</span> <span class="s2">&quot;ip&quot;</span><span class="p">:</span>
+</span><span id="L-333"><a href="#L-333"><span class="linenos">333</span></a>                <span class="n">registers_used</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">operand</span><span class="o">.</span><span class="n">register</span><span class="p">)</span>
+</span><span id="L-334"><a href="#L-334"><span class="linenos">334</span></a>        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">operand</span><span class="p">,</span> <span class="n">MemoryReference</span><span class="p">):</span>
+</span><span id="L-335"><a href="#L-335"><span class="linenos">335</span></a>            <span class="c1"># Memory references can contain nested operands (e.g., M[R.a])</span>
+</span><span id="L-336"><a href="#L-336"><span class="linenos">336</span></a>            <span class="n">extract_from_operand</span><span class="p">(</span><span class="n">operand</span><span class="o">.</span><span class="n">address</span><span class="p">)</span>
+</span><span id="L-337"><a href="#L-337"><span class="linenos">337</span></a>
+</span><span id="L-338"><a href="#L-338"><span class="linenos">338</span></a>    <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">program</span><span class="p">:</span>
+</span><span id="L-339"><a href="#L-339"><span class="linenos">339</span></a>        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="p">(</span><span class="n">Label</span><span class="p">,</span> <span class="n">Comment</span><span class="p">)):</span>
+</span><span id="L-340"><a href="#L-340"><span class="linenos">340</span></a>            <span class="k">continue</span>
+</span><span id="L-341"><a href="#L-341"><span class="linenos">341</span></a>
+</span><span id="L-342"><a href="#L-342"><span class="linenos">342</span></a>        <span class="c1"># Instructions store operands as attributes</span>
+</span><span id="L-343"><a href="#L-343"><span class="linenos">343</span></a>        <span class="c1"># Walk through all attributes to find operands</span>
+</span><span id="L-344"><a href="#L-344"><span class="linenos">344</span></a>        <span class="k">for</span> <span class="n">attr_value</span> <span class="ow">in</span> <span class="n">item</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+</span><span id="L-345"><a href="#L-345"><span class="linenos">345</span></a>            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">attr_value</span><span class="p">,</span> <span class="p">(</span><span class="n">RegisterReference</span><span class="p">,</span> <span class="n">MemoryReference</span><span class="p">)):</span>
+</span><span id="L-346"><a href="#L-346"><span class="linenos">346</span></a>                <span class="n">extract_from_operand</span><span class="p">(</span><span class="n">attr_value</span><span class="p">)</span>
+</span><span id="L-347"><a href="#L-347"><span class="linenos">347</span></a>
+</span><span id="L-348"><a href="#L-348"><span class="linenos">348</span></a>    <span class="k">return</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">registers_used</span><span class="p">)</span>
 </span></pre></div>
 
 
@@ -488,7 +613,7 @@ is referenced.</li>
 <div class="attr function">
             
         <span class="def">def</span>
-        <span class="name">program_to_text</span><span class="signature pdoc-code multiline">(<span class="param">	<span class="n">program</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n"><a href="instructions.html#Instruction">dt31.instructions.Instruction</a></span> <span class="o">|</span> <span class="n"><a href="operands.html#Label">dt31.operands.Label</a></span> <span class="o">|</span> <span class="n"><a href="parser.html#Comment">dt31.parser.Comment</a></span><span class="p">]</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="n"><a href="instructions.html#Instruction">dt31.instructions.Instruction</a></span><span class="p">]</span></span><span class="return-annotation">) -> <span class="nb">str</span>:</span></span>
+        <span class="name">program_to_text</span><span class="signature pdoc-code multiline">(<span class="param">	<span class="n">program</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n"><a href="instructions.html#Instruction">dt31.instructions.Instruction</a></span> <span class="o">|</span> <span class="n"><a href="operands.html#Label">dt31.operands.Label</a></span> <span class="o">|</span> <span class="n"><a href="parser.html#Comment">dt31.parser.Comment</a></span><span class="p">]</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="n"><a href="instructions.html#Instruction">dt31.instructions.Instruction</a></span><span class="p">]</span>,</span><span class="param">	<span class="o">*</span>,</span><span class="param">	<span class="n">indent_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4</span>,</span><span class="param">	<span class="n">comment_spacing</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span>,</span><span class="param">	<span class="n">label_inline</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>,</span><span class="param">	<span class="n">blank_line_before_label</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>,</span><span class="param">	<span class="n">align_comments</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>,</span><span class="param">	<span class="n">comment_column</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">40</span>,</span><span class="param">	<span class="n">hide_default_out</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span></span><span class="return-annotation">) -> <span class="nb">str</span>:</span></span>
 
                 <label class="view-source-button" for="program_to_text-view-source"><span>View Source</span></label>
 
@@ -496,77 +621,163 @@ is referenced.</li>
     <a class="headerlink" href="#program_to_text"></a>
             <div class="pdoc-code codehilite"><pre><span></span><span id="program_to_text-106"><a href="#program_to_text-106"><span class="linenos">106</span></a><span class="k">def</span><span class="w"> </span><span class="nf">program_to_text</span><span class="p">(</span>
 </span><span id="program_to_text-107"><a href="#program_to_text-107"><span class="linenos">107</span></a>    <span class="n">program</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Instruction</span> <span class="o">|</span> <span class="n">Label</span> <span class="o">|</span> <span class="n">Comment</span><span class="p">]</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="n">Instruction</span><span class="p">],</span>
-</span><span id="program_to_text-108"><a href="#program_to_text-108"><span class="linenos">108</span></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-</span><span id="program_to_text-109"><a href="#program_to_text-109"><span class="linenos">109</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert a program to assembly text format.</span>
-</span><span id="program_to_text-110"><a href="#program_to_text-110"><span class="linenos">110</span></a>
-</span><span id="program_to_text-111"><a href="#program_to_text-111"><span class="linenos">111</span></a><span class="sd">    Converts a list of instructions, labels, and comments (whether created programmatically</span>
-</span><span id="program_to_text-112"><a href="#program_to_text-112"><span class="linenos">112</span></a><span class="sd">    in Python or parsed from text) into human-readable assembly text syntax.</span>
-</span><span id="program_to_text-113"><a href="#program_to_text-113"><span class="linenos">113</span></a>
-</span><span id="program_to_text-114"><a href="#program_to_text-114"><span class="linenos">114</span></a><span class="sd">    Args:</span>
-</span><span id="program_to_text-115"><a href="#program_to_text-115"><span class="linenos">115</span></a><span class="sd">        program: List of instructions, labels, and comments in source order.</span>
-</span><span id="program_to_text-116"><a href="#program_to_text-116"><span class="linenos">116</span></a>
-</span><span id="program_to_text-117"><a href="#program_to_text-117"><span class="linenos">117</span></a><span class="sd">    Returns:</span>
-</span><span id="program_to_text-118"><a href="#program_to_text-118"><span class="linenos">118</span></a><span class="sd">        A string containing the assembly text representation of the program,</span>
-</span><span id="program_to_text-119"><a href="#program_to_text-119"><span class="linenos">119</span></a><span class="sd">        with one instruction, label, or comment per line.</span>
-</span><span id="program_to_text-120"><a href="#program_to_text-120"><span class="linenos">120</span></a>
-</span><span id="program_to_text-121"><a href="#program_to_text-121"><span class="linenos">121</span></a><span class="sd">    Examples:</span>
-</span><span id="program_to_text-122"><a href="#program_to_text-122"><span class="linenos">122</span></a><span class="sd">        Convert Python program to assembly text:</span>
-</span><span id="program_to_text-123"><a href="#program_to_text-123"><span class="linenos">123</span></a><span class="sd">        ```python</span>
-</span><span id="program_to_text-124"><a href="#program_to_text-124"><span class="linenos">124</span></a><span class="sd">        from dt31 import I, R, L, Label</span>
-</span><span id="program_to_text-125"><a href="#program_to_text-125"><span class="linenos">125</span></a>
-</span><span id="program_to_text-126"><a href="#program_to_text-126"><span class="linenos">126</span></a><span class="sd">        program = [</span>
-</span><span id="program_to_text-127"><a href="#program_to_text-127"><span class="linenos">127</span></a><span class="sd">            I.CP(5, R.a),</span>
-</span><span id="program_to_text-128"><a href="#program_to_text-128"><span class="linenos">128</span></a><span class="sd">            loop := Label(&quot;loop&quot;),</span>
-</span><span id="program_to_text-129"><a href="#program_to_text-129"><span class="linenos">129</span></a><span class="sd">            I.NOUT(R.a, L[1]),</span>
-</span><span id="program_to_text-130"><a href="#program_to_text-130"><span class="linenos">130</span></a><span class="sd">            I.SUB(R.a, L[1]),</span>
-</span><span id="program_to_text-131"><a href="#program_to_text-131"><span class="linenos">131</span></a><span class="sd">            I.JGT(loop, R.a, L[0]),</span>
-</span><span id="program_to_text-132"><a href="#program_to_text-132"><span class="linenos">132</span></a><span class="sd">        ]</span>
-</span><span id="program_to_text-133"><a href="#program_to_text-133"><span class="linenos">133</span></a>
-</span><span id="program_to_text-134"><a href="#program_to_text-134"><span class="linenos">134</span></a><span class="sd">        text = program_to_text(program)</span>
-</span><span id="program_to_text-135"><a href="#program_to_text-135"><span class="linenos">135</span></a><span class="sd">        print(text)</span>
-</span><span id="program_to_text-136"><a href="#program_to_text-136"><span class="linenos">136</span></a><span class="sd">        # CP 5, R.a</span>
-</span><span id="program_to_text-137"><a href="#program_to_text-137"><span class="linenos">137</span></a><span class="sd">        # loop:</span>
-</span><span id="program_to_text-138"><a href="#program_to_text-138"><span class="linenos">138</span></a><span class="sd">        #     NOUT R.a, 1</span>
-</span><span id="program_to_text-139"><a href="#program_to_text-139"><span class="linenos">139</span></a><span class="sd">        #     SUB R.a, 1</span>
-</span><span id="program_to_text-140"><a href="#program_to_text-140"><span class="linenos">140</span></a><span class="sd">        #     JGT loop, R.a, 0</span>
-</span><span id="program_to_text-141"><a href="#program_to_text-141"><span class="linenos">141</span></a><span class="sd">        ```</span>
-</span><span id="program_to_text-142"><a href="#program_to_text-142"><span class="linenos">142</span></a>
-</span><span id="program_to_text-143"><a href="#program_to_text-143"><span class="linenos">143</span></a><span class="sd">        Round-trip conversion (text → Python → text):</span>
-</span><span id="program_to_text-144"><a href="#program_to_text-144"><span class="linenos">144</span></a><span class="sd">        ```python</span>
-</span><span id="program_to_text-145"><a href="#program_to_text-145"><span class="linenos">145</span></a><span class="sd">        from dt31.parser import parse_program</span>
-</span><span id="program_to_text-146"><a href="#program_to_text-146"><span class="linenos">146</span></a>
-</span><span id="program_to_text-147"><a href="#program_to_text-147"><span class="linenos">147</span></a><span class="sd">        original = &#39;&#39;&#39;</span>
-</span><span id="program_to_text-148"><a href="#program_to_text-148"><span class="linenos">148</span></a><span class="sd">        CP 5, R.a</span>
-</span><span id="program_to_text-149"><a href="#program_to_text-149"><span class="linenos">149</span></a><span class="sd">        loop:</span>
-</span><span id="program_to_text-150"><a href="#program_to_text-150"><span class="linenos">150</span></a><span class="sd">            NOUT R.a, 1</span>
-</span><span id="program_to_text-151"><a href="#program_to_text-151"><span class="linenos">151</span></a><span class="sd">            SUB R.a, 1</span>
-</span><span id="program_to_text-152"><a href="#program_to_text-152"><span class="linenos">152</span></a><span class="sd">            JGT loop, R.a, 0</span>
-</span><span id="program_to_text-153"><a href="#program_to_text-153"><span class="linenos">153</span></a><span class="sd">        &#39;&#39;&#39;</span>
-</span><span id="program_to_text-154"><a href="#program_to_text-154"><span class="linenos">154</span></a>
-</span><span id="program_to_text-155"><a href="#program_to_text-155"><span class="linenos">155</span></a><span class="sd">        program = parse_program(original)</span>
-</span><span id="program_to_text-156"><a href="#program_to_text-156"><span class="linenos">156</span></a><span class="sd">        reconstructed = program_to_text(program)</span>
-</span><span id="program_to_text-157"><a href="#program_to_text-157"><span class="linenos">157</span></a><span class="sd">        # reconstructed matches original (modulo whitespace)</span>
-</span><span id="program_to_text-158"><a href="#program_to_text-158"><span class="linenos">158</span></a><span class="sd">        ```</span>
-</span><span id="program_to_text-159"><a href="#program_to_text-159"><span class="linenos">159</span></a><span class="sd">    &quot;&quot;&quot;</span>
-</span><span id="program_to_text-160"><a href="#program_to_text-160"><span class="linenos">160</span></a>    <span class="n">lines</span> <span class="o">=</span> <span class="p">[]</span>
-</span><span id="program_to_text-161"><a href="#program_to_text-161"><span class="linenos">161</span></a>    <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">program</span><span class="p">:</span>
-</span><span id="program_to_text-162"><a href="#program_to_text-162"><span class="linenos">162</span></a>        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="n">Comment</span><span class="p">):</span>
-</span><span id="program_to_text-163"><a href="#program_to_text-163"><span class="linenos">163</span></a>            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">item</span><span class="p">))</span>
-</span><span id="program_to_text-164"><a href="#program_to_text-164"><span class="linenos">164</span></a>        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="n">Label</span><span class="p">):</span>
-</span><span id="program_to_text-165"><a href="#program_to_text-165"><span class="linenos">165</span></a>            <span class="n">line</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">item</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">:&quot;</span>
-</span><span id="program_to_text-166"><a href="#program_to_text-166"><span class="linenos">166</span></a>            <span class="k">if</span> <span class="n">item</span><span class="o">.</span><span class="n">comment</span><span class="p">:</span>
-</span><span id="program_to_text-167"><a href="#program_to_text-167"><span class="linenos">167</span></a>                <span class="n">line</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot; ; </span><span class="si">{</span><span class="n">item</span><span class="o">.</span><span class="n">comment</span><span class="si">}</span><span class="s2">&quot;</span>
-</span><span id="program_to_text-168"><a href="#program_to_text-168"><span class="linenos">168</span></a>            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
-</span><span id="program_to_text-169"><a href="#program_to_text-169"><span class="linenos">169</span></a>        <span class="k">else</span><span class="p">:</span>
-</span><span id="program_to_text-170"><a href="#program_to_text-170"><span class="linenos">170</span></a>            <span class="n">line</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;    </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">item</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
-</span><span id="program_to_text-171"><a href="#program_to_text-171"><span class="linenos">171</span></a>            <span class="k">if</span> <span class="n">item</span><span class="o">.</span><span class="n">comment</span><span class="p">:</span>
-</span><span id="program_to_text-172"><a href="#program_to_text-172"><span class="linenos">172</span></a>                <span class="n">line</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot; ; </span><span class="si">{</span><span class="n">item</span><span class="o">.</span><span class="n">comment</span><span class="si">}</span><span class="s2">&quot;</span>
-</span><span id="program_to_text-173"><a href="#program_to_text-173"><span class="linenos">173</span></a>            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
-</span><span id="program_to_text-174"><a href="#program_to_text-174"><span class="linenos">174</span></a>    <span class="k">return</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">lines</span><span class="p">)</span>
+</span><span id="program_to_text-108"><a href="#program_to_text-108"><span class="linenos">108</span></a>    <span class="o">*</span><span class="p">,</span>
+</span><span id="program_to_text-109"><a href="#program_to_text-109"><span class="linenos">109</span></a>    <span class="n">indent_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
+</span><span id="program_to_text-110"><a href="#program_to_text-110"><span class="linenos">110</span></a>    <span class="n">comment_spacing</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+</span><span id="program_to_text-111"><a href="#program_to_text-111"><span class="linenos">111</span></a>    <span class="n">label_inline</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+</span><span id="program_to_text-112"><a href="#program_to_text-112"><span class="linenos">112</span></a>    <span class="n">blank_line_before_label</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+</span><span id="program_to_text-113"><a href="#program_to_text-113"><span class="linenos">113</span></a>    <span class="n">align_comments</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+</span><span id="program_to_text-114"><a href="#program_to_text-114"><span class="linenos">114</span></a>    <span class="n">comment_column</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">40</span><span class="p">,</span>
+</span><span id="program_to_text-115"><a href="#program_to_text-115"><span class="linenos">115</span></a>    <span class="n">hide_default_out</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+</span><span id="program_to_text-116"><a href="#program_to_text-116"><span class="linenos">116</span></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+</span><span id="program_to_text-117"><a href="#program_to_text-117"><span class="linenos">117</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert a program to assembly text format with configurable formatting.</span>
+</span><span id="program_to_text-118"><a href="#program_to_text-118"><span class="linenos">118</span></a>
+</span><span id="program_to_text-119"><a href="#program_to_text-119"><span class="linenos">119</span></a><span class="sd">    Converts a list of instructions, labels, and comments (whether created programmatically</span>
+</span><span id="program_to_text-120"><a href="#program_to_text-120"><span class="linenos">120</span></a><span class="sd">    in Python or parsed from text) into human-readable assembly text syntax.</span>
+</span><span id="program_to_text-121"><a href="#program_to_text-121"><span class="linenos">121</span></a>
+</span><span id="program_to_text-122"><a href="#program_to_text-122"><span class="linenos">122</span></a><span class="sd">    Args:</span>
+</span><span id="program_to_text-123"><a href="#program_to_text-123"><span class="linenos">123</span></a><span class="sd">        program: List of instructions, labels, and comments in source order.</span>
+</span><span id="program_to_text-124"><a href="#program_to_text-124"><span class="linenos">124</span></a><span class="sd">        indent_size: Number of spaces per indentation level (default: 4).</span>
+</span><span id="program_to_text-125"><a href="#program_to_text-125"><span class="linenos">125</span></a><span class="sd">        comment_spacing: Number of spaces before inline comment semicolon (default: 1).</span>
+</span><span id="program_to_text-126"><a href="#program_to_text-126"><span class="linenos">126</span></a><span class="sd">        label_inline: If True, place labels on same line as next instruction (default: False).</span>
+</span><span id="program_to_text-127"><a href="#program_to_text-127"><span class="linenos">127</span></a><span class="sd">        blank_line_before_label: If True, add blank line before labels (default: True).</span>
+</span><span id="program_to_text-128"><a href="#program_to_text-128"><span class="linenos">128</span></a><span class="sd">        align_comments: If True, align inline comments at comment_column (default: False).</span>
+</span><span id="program_to_text-129"><a href="#program_to_text-129"><span class="linenos">129</span></a><span class="sd">        comment_column: Column position for aligned comments when align_comments=True (default: 40).</span>
+</span><span id="program_to_text-130"><a href="#program_to_text-130"><span class="linenos">130</span></a><span class="sd">        hide_default_out: If True, hide output parameters when they match the default value (default: False).</span>
+</span><span id="program_to_text-131"><a href="#program_to_text-131"><span class="linenos">131</span></a>
+</span><span id="program_to_text-132"><a href="#program_to_text-132"><span class="linenos">132</span></a><span class="sd">    Returns:</span>
+</span><span id="program_to_text-133"><a href="#program_to_text-133"><span class="linenos">133</span></a><span class="sd">        A string containing the assembly text representation of the program,</span>
+</span><span id="program_to_text-134"><a href="#program_to_text-134"><span class="linenos">134</span></a><span class="sd">        with one instruction, label, or comment per line.</span>
+</span><span id="program_to_text-135"><a href="#program_to_text-135"><span class="linenos">135</span></a>
+</span><span id="program_to_text-136"><a href="#program_to_text-136"><span class="linenos">136</span></a><span class="sd">    Examples:</span>
+</span><span id="program_to_text-137"><a href="#program_to_text-137"><span class="linenos">137</span></a><span class="sd">        Default formatting:</span>
+</span><span id="program_to_text-138"><a href="#program_to_text-138"><span class="linenos">138</span></a><span class="sd">        ```python</span>
+</span><span id="program_to_text-139"><a href="#program_to_text-139"><span class="linenos">139</span></a><span class="sd">        from dt31 import I, R, L, Label</span>
+</span><span id="program_to_text-140"><a href="#program_to_text-140"><span class="linenos">140</span></a>
+</span><span id="program_to_text-141"><a href="#program_to_text-141"><span class="linenos">141</span></a><span class="sd">        program = [</span>
+</span><span id="program_to_text-142"><a href="#program_to_text-142"><span class="linenos">142</span></a><span class="sd">            I.CP(5, R.a),</span>
+</span><span id="program_to_text-143"><a href="#program_to_text-143"><span class="linenos">143</span></a><span class="sd">            loop := Label(&quot;loop&quot;),</span>
+</span><span id="program_to_text-144"><a href="#program_to_text-144"><span class="linenos">144</span></a><span class="sd">            I.NOUT(R.a, L[1]),</span>
+</span><span id="program_to_text-145"><a href="#program_to_text-145"><span class="linenos">145</span></a><span class="sd">            I.SUB(R.a, L[1]),</span>
+</span><span id="program_to_text-146"><a href="#program_to_text-146"><span class="linenos">146</span></a><span class="sd">            I.JGT(loop, R.a, L[0]),</span>
+</span><span id="program_to_text-147"><a href="#program_to_text-147"><span class="linenos">147</span></a><span class="sd">        ]</span>
+</span><span id="program_to_text-148"><a href="#program_to_text-148"><span class="linenos">148</span></a>
+</span><span id="program_to_text-149"><a href="#program_to_text-149"><span class="linenos">149</span></a><span class="sd">        text = program_to_text(program)</span>
+</span><span id="program_to_text-150"><a href="#program_to_text-150"><span class="linenos">150</span></a><span class="sd">        print(text)</span>
+</span><span id="program_to_text-151"><a href="#program_to_text-151"><span class="linenos">151</span></a><span class="sd">        #     CP 5, R.a</span>
+</span><span id="program_to_text-152"><a href="#program_to_text-152"><span class="linenos">152</span></a><span class="sd">        #</span>
+</span><span id="program_to_text-153"><a href="#program_to_text-153"><span class="linenos">153</span></a><span class="sd">        # loop:</span>
+</span><span id="program_to_text-154"><a href="#program_to_text-154"><span class="linenos">154</span></a><span class="sd">        #     NOUT R.a, 1</span>
+</span><span id="program_to_text-155"><a href="#program_to_text-155"><span class="linenos">155</span></a><span class="sd">        #     SUB R.a, 1, R.a</span>
+</span><span id="program_to_text-156"><a href="#program_to_text-156"><span class="linenos">156</span></a><span class="sd">        #     JGT loop, R.a, 0</span>
+</span><span id="program_to_text-157"><a href="#program_to_text-157"><span class="linenos">157</span></a><span class="sd">        ```</span>
+</span><span id="program_to_text-158"><a href="#program_to_text-158"><span class="linenos">158</span></a>
+</span><span id="program_to_text-159"><a href="#program_to_text-159"><span class="linenos">159</span></a><span class="sd">        Custom formatting with 2-space indent and inline labels:</span>
+</span><span id="program_to_text-160"><a href="#program_to_text-160"><span class="linenos">160</span></a><span class="sd">        ```python</span>
+</span><span id="program_to_text-161"><a href="#program_to_text-161"><span class="linenos">161</span></a><span class="sd">        text = program_to_text(</span>
+</span><span id="program_to_text-162"><a href="#program_to_text-162"><span class="linenos">162</span></a><span class="sd">            program,</span>
+</span><span id="program_to_text-163"><a href="#program_to_text-163"><span class="linenos">163</span></a><span class="sd">            indent_size=2,</span>
+</span><span id="program_to_text-164"><a href="#program_to_text-164"><span class="linenos">164</span></a><span class="sd">            label_inline=True,</span>
+</span><span id="program_to_text-165"><a href="#program_to_text-165"><span class="linenos">165</span></a><span class="sd">            blank_line_before_label=False,</span>
+</span><span id="program_to_text-166"><a href="#program_to_text-166"><span class="linenos">166</span></a><span class="sd">        )</span>
+</span><span id="program_to_text-167"><a href="#program_to_text-167"><span class="linenos">167</span></a><span class="sd">        #   CP 5, R.a</span>
+</span><span id="program_to_text-168"><a href="#program_to_text-168"><span class="linenos">168</span></a><span class="sd">        # loop: NOUT R.a, 1</span>
+</span><span id="program_to_text-169"><a href="#program_to_text-169"><span class="linenos">169</span></a><span class="sd">        #   SUB R.a, 1, R.a</span>
+</span><span id="program_to_text-170"><a href="#program_to_text-170"><span class="linenos">170</span></a><span class="sd">        #   JGT loop, R.a, 0</span>
+</span><span id="program_to_text-171"><a href="#program_to_text-171"><span class="linenos">171</span></a><span class="sd">        ```</span>
+</span><span id="program_to_text-172"><a href="#program_to_text-172"><span class="linenos">172</span></a>
+</span><span id="program_to_text-173"><a href="#program_to_text-173"><span class="linenos">173</span></a><span class="sd">        Aligned comments:</span>
+</span><span id="program_to_text-174"><a href="#program_to_text-174"><span class="linenos">174</span></a><span class="sd">        ```python</span>
+</span><span id="program_to_text-175"><a href="#program_to_text-175"><span class="linenos">175</span></a><span class="sd">        program_with_comments = [</span>
+</span><span id="program_to_text-176"><a href="#program_to_text-176"><span class="linenos">176</span></a><span class="sd">            I.CP(5, R.a).with_comment(&quot;Initialize&quot;),</span>
+</span><span id="program_to_text-177"><a href="#program_to_text-177"><span class="linenos">177</span></a><span class="sd">            I.ADD(R.a, L[1]).with_comment(&quot;Increment&quot;),</span>
+</span><span id="program_to_text-178"><a href="#program_to_text-178"><span class="linenos">178</span></a><span class="sd">        ]</span>
+</span><span id="program_to_text-179"><a href="#program_to_text-179"><span class="linenos">179</span></a><span class="sd">        text = program_to_text(program_with_comments, align_comments=True, comment_column=30)</span>
+</span><span id="program_to_text-180"><a href="#program_to_text-180"><span class="linenos">180</span></a><span class="sd">        #     CP 5, R.a              ; Initialize</span>
+</span><span id="program_to_text-181"><a href="#program_to_text-181"><span class="linenos">181</span></a><span class="sd">        #     ADD R.a, 1, R.a        ; Increment</span>
+</span><span id="program_to_text-182"><a href="#program_to_text-182"><span class="linenos">182</span></a><span class="sd">        ```</span>
+</span><span id="program_to_text-183"><a href="#program_to_text-183"><span class="linenos">183</span></a>
+</span><span id="program_to_text-184"><a href="#program_to_text-184"><span class="linenos">184</span></a><span class="sd">        Hide default output parameters:</span>
+</span><span id="program_to_text-185"><a href="#program_to_text-185"><span class="linenos">185</span></a><span class="sd">        ```python</span>
+</span><span id="program_to_text-186"><a href="#program_to_text-186"><span class="linenos">186</span></a><span class="sd">        program = [</span>
+</span><span id="program_to_text-187"><a href="#program_to_text-187"><span class="linenos">187</span></a><span class="sd">            I.ADD(R.a, R.b),  # Default out=R.a</span>
+</span><span id="program_to_text-188"><a href="#program_to_text-188"><span class="linenos">188</span></a><span class="sd">            I.NOUT(R.a),      # Default b=L[0] (no newline)</span>
+</span><span id="program_to_text-189"><a href="#program_to_text-189"><span class="linenos">189</span></a><span class="sd">        ]</span>
+</span><span id="program_to_text-190"><a href="#program_to_text-190"><span class="linenos">190</span></a><span class="sd">        text = program_to_text(program, hide_default_out=True)</span>
+</span><span id="program_to_text-191"><a href="#program_to_text-191"><span class="linenos">191</span></a><span class="sd">        #     ADD R.a, R.b</span>
+</span><span id="program_to_text-192"><a href="#program_to_text-192"><span class="linenos">192</span></a><span class="sd">        #     NOUT R.a</span>
+</span><span id="program_to_text-193"><a href="#program_to_text-193"><span class="linenos">193</span></a><span class="sd">        # vs without hide_default_out:</span>
+</span><span id="program_to_text-194"><a href="#program_to_text-194"><span class="linenos">194</span></a><span class="sd">        #     ADD R.a, R.b, R.a</span>
+</span><span id="program_to_text-195"><a href="#program_to_text-195"><span class="linenos">195</span></a><span class="sd">        #     NOUT R.a, 0</span>
+</span><span id="program_to_text-196"><a href="#program_to_text-196"><span class="linenos">196</span></a><span class="sd">        ```</span>
+</span><span id="program_to_text-197"><a href="#program_to_text-197"><span class="linenos">197</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="program_to_text-198"><a href="#program_to_text-198"><span class="linenos">198</span></a>    <span class="n">indent</span> <span class="o">=</span> <span class="s2">&quot; &quot;</span> <span class="o">*</span> <span class="n">indent_size</span>
+</span><span id="program_to_text-199"><a href="#program_to_text-199"><span class="linenos">199</span></a>    <span class="n">lines</span> <span class="o">=</span> <span class="p">[]</span>
+</span><span id="program_to_text-200"><a href="#program_to_text-200"><span class="linenos">200</span></a>    <span class="n">pending_labels</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Label</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+</span><span id="program_to_text-201"><a href="#program_to_text-201"><span class="linenos">201</span></a>    <span class="n">prev_was_label</span> <span class="o">=</span> <span class="kc">False</span>
+</span><span id="program_to_text-202"><a href="#program_to_text-202"><span class="linenos">202</span></a>
+</span><span id="program_to_text-203"><a href="#program_to_text-203"><span class="linenos">203</span></a>    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">item</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">program</span><span class="p">):</span>
+</span><span id="program_to_text-204"><a href="#program_to_text-204"><span class="linenos">204</span></a>        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="n">Comment</span><span class="p">):</span>
+</span><span id="program_to_text-205"><a href="#program_to_text-205"><span class="linenos">205</span></a>            <span class="c1"># Standalone comments are never indented or aligned</span>
+</span><span id="program_to_text-206"><a href="#program_to_text-206"><span class="linenos">206</span></a>            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">item</span><span class="p">))</span>
+</span><span id="program_to_text-207"><a href="#program_to_text-207"><span class="linenos">207</span></a>            <span class="n">prev_was_label</span> <span class="o">=</span> <span class="kc">False</span>
+</span><span id="program_to_text-208"><a href="#program_to_text-208"><span class="linenos">208</span></a>        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="n">Label</span><span class="p">):</span>
+</span><span id="program_to_text-209"><a href="#program_to_text-209"><span class="linenos">209</span></a>            <span class="c1"># Add blank line before label if requested (but not before first item or consecutive labels)</span>
+</span><span id="program_to_text-210"><a href="#program_to_text-210"><span class="linenos">210</span></a>            <span class="k">if</span> <span class="n">blank_line_before_label</span> <span class="ow">and</span> <span class="n">lines</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">prev_was_label</span><span class="p">:</span>
+</span><span id="program_to_text-211"><a href="#program_to_text-211"><span class="linenos">211</span></a>                <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+</span><span id="program_to_text-212"><a href="#program_to_text-212"><span class="linenos">212</span></a>
+</span><span id="program_to_text-213"><a href="#program_to_text-213"><span class="linenos">213</span></a>            <span class="k">if</span> <span class="n">label_inline</span><span class="p">:</span>
+</span><span id="program_to_text-214"><a href="#program_to_text-214"><span class="linenos">214</span></a>                <span class="c1"># Collect labels to put inline with next instruction</span>
+</span><span id="program_to_text-215"><a href="#program_to_text-215"><span class="linenos">215</span></a>                <span class="n">pending_labels</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
+</span><span id="program_to_text-216"><a href="#program_to_text-216"><span class="linenos">216</span></a>            <span class="k">else</span><span class="p">:</span>
+</span><span id="program_to_text-217"><a href="#program_to_text-217"><span class="linenos">217</span></a>                <span class="c1"># Labels on separate lines</span>
+</span><span id="program_to_text-218"><a href="#program_to_text-218"><span class="linenos">218</span></a>                <span class="n">line</span> <span class="o">=</span> <span class="n">_format_label</span><span class="p">(</span>
+</span><span id="program_to_text-219"><a href="#program_to_text-219"><span class="linenos">219</span></a>                    <span class="n">item</span><span class="p">,</span> <span class="n">align_comments</span><span class="p">,</span> <span class="n">comment_column</span><span class="p">,</span> <span class="n">comment_spacing</span>
+</span><span id="program_to_text-220"><a href="#program_to_text-220"><span class="linenos">220</span></a>                <span class="p">)</span>
+</span><span id="program_to_text-221"><a href="#program_to_text-221"><span class="linenos">221</span></a>                <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+</span><span id="program_to_text-222"><a href="#program_to_text-222"><span class="linenos">222</span></a>
+</span><span id="program_to_text-223"><a href="#program_to_text-223"><span class="linenos">223</span></a>            <span class="n">prev_was_label</span> <span class="o">=</span> <span class="kc">True</span>
+</span><span id="program_to_text-224"><a href="#program_to_text-224"><span class="linenos">224</span></a>        <span class="k">else</span><span class="p">:</span>
+</span><span id="program_to_text-225"><a href="#program_to_text-225"><span class="linenos">225</span></a>            <span class="c1"># Instruction</span>
+</span><span id="program_to_text-226"><a href="#program_to_text-226"><span class="linenos">226</span></a>            <span class="n">prev_was_label</span> <span class="o">=</span> <span class="kc">False</span>
+</span><span id="program_to_text-227"><a href="#program_to_text-227"><span class="linenos">227</span></a>
+</span><span id="program_to_text-228"><a href="#program_to_text-228"><span class="linenos">228</span></a>            <span class="c1"># Handle pending inline labels</span>
+</span><span id="program_to_text-229"><a href="#program_to_text-229"><span class="linenos">229</span></a>            <span class="k">if</span> <span class="n">pending_labels</span><span class="p">:</span>
+</span><span id="program_to_text-230"><a href="#program_to_text-230"><span class="linenos">230</span></a>                <span class="n">label_prefix</span> <span class="o">=</span> <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">lbl</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">:&quot;</span> <span class="k">for</span> <span class="n">lbl</span> <span class="ow">in</span> <span class="n">pending_labels</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span>
+</span><span id="program_to_text-231"><a href="#program_to_text-231"><span class="linenos">231</span></a>                <span class="c1"># Comments from inline labels are handled by the instruction comment</span>
+</span><span id="program_to_text-232"><a href="#program_to_text-232"><span class="linenos">232</span></a>                <span class="c1"># (use the instruction&#39;s comment if it exists, otherwise use last label&#39;s comment)</span>
+</span><span id="program_to_text-233"><a href="#program_to_text-233"><span class="linenos">233</span></a>                <span class="n">comment</span> <span class="o">=</span> <span class="p">(</span>
+</span><span id="program_to_text-234"><a href="#program_to_text-234"><span class="linenos">234</span></a>                    <span class="n">item</span><span class="o">.</span><span class="n">comment</span>
+</span><span id="program_to_text-235"><a href="#program_to_text-235"><span class="linenos">235</span></a>                    <span class="k">if</span> <span class="n">item</span><span class="o">.</span><span class="n">comment</span>
+</span><span id="program_to_text-236"><a href="#program_to_text-236"><span class="linenos">236</span></a>                    <span class="k">else</span> <span class="p">(</span>
+</span><span id="program_to_text-237"><a href="#program_to_text-237"><span class="linenos">237</span></a>                        <span class="n">pending_labels</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">comment</span> <span class="k">if</span> <span class="n">pending_labels</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">comment</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
+</span><span id="program_to_text-238"><a href="#program_to_text-238"><span class="linenos">238</span></a>                    <span class="p">)</span>
+</span><span id="program_to_text-239"><a href="#program_to_text-239"><span class="linenos">239</span></a>                <span class="p">)</span>
+</span><span id="program_to_text-240"><a href="#program_to_text-240"><span class="linenos">240</span></a>                <span class="n">pending_labels</span> <span class="o">=</span> <span class="p">[]</span>
+</span><span id="program_to_text-241"><a href="#program_to_text-241"><span class="linenos">241</span></a>            <span class="k">else</span><span class="p">:</span>
+</span><span id="program_to_text-242"><a href="#program_to_text-242"><span class="linenos">242</span></a>                <span class="n">label_prefix</span> <span class="o">=</span> <span class="n">indent</span>
+</span><span id="program_to_text-243"><a href="#program_to_text-243"><span class="linenos">243</span></a>                <span class="n">comment</span> <span class="o">=</span> <span class="n">item</span><span class="o">.</span><span class="n">comment</span>
+</span><span id="program_to_text-244"><a href="#program_to_text-244"><span class="linenos">244</span></a>
+</span><span id="program_to_text-245"><a href="#program_to_text-245"><span class="linenos">245</span></a>            <span class="n">instruction_text</span> <span class="o">=</span> <span class="n">item</span><span class="o">.</span><span class="n">to_concise_str</span><span class="p">()</span> <span class="k">if</span> <span class="n">hide_default_out</span> <span class="k">else</span> <span class="nb">str</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
+</span><span id="program_to_text-246"><a href="#program_to_text-246"><span class="linenos">246</span></a>            <span class="n">line</span> <span class="o">=</span> <span class="n">_format_instruction_with_comment</span><span class="p">(</span>
+</span><span id="program_to_text-247"><a href="#program_to_text-247"><span class="linenos">247</span></a>                <span class="n">label_prefix</span> <span class="o">+</span> <span class="n">instruction_text</span><span class="p">,</span>
+</span><span id="program_to_text-248"><a href="#program_to_text-248"><span class="linenos">248</span></a>                <span class="n">comment</span><span class="p">,</span>
+</span><span id="program_to_text-249"><a href="#program_to_text-249"><span class="linenos">249</span></a>                <span class="n">align_comments</span><span class="p">,</span>
+</span><span id="program_to_text-250"><a href="#program_to_text-250"><span class="linenos">250</span></a>                <span class="n">comment_column</span><span class="p">,</span>
+</span><span id="program_to_text-251"><a href="#program_to_text-251"><span class="linenos">251</span></a>                <span class="n">comment_spacing</span><span class="p">,</span>
+</span><span id="program_to_text-252"><a href="#program_to_text-252"><span class="linenos">252</span></a>            <span class="p">)</span>
+</span><span id="program_to_text-253"><a href="#program_to_text-253"><span class="linenos">253</span></a>            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+</span><span id="program_to_text-254"><a href="#program_to_text-254"><span class="linenos">254</span></a>
+</span><span id="program_to_text-255"><a href="#program_to_text-255"><span class="linenos">255</span></a>    <span class="c1"># Handle any remaining labels at end of program</span>
+</span><span id="program_to_text-256"><a href="#program_to_text-256"><span class="linenos">256</span></a>    <span class="k">for</span> <span class="n">lbl</span> <span class="ow">in</span> <span class="n">pending_labels</span><span class="p">:</span>
+</span><span id="program_to_text-257"><a href="#program_to_text-257"><span class="linenos">257</span></a>        <span class="n">line</span> <span class="o">=</span> <span class="n">_format_label</span><span class="p">(</span><span class="n">lbl</span><span class="p">,</span> <span class="n">align_comments</span><span class="p">,</span> <span class="n">comment_column</span><span class="p">,</span> <span class="n">comment_spacing</span><span class="p">)</span>
+</span><span id="program_to_text-258"><a href="#program_to_text-258"><span class="linenos">258</span></a>        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+</span><span id="program_to_text-259"><a href="#program_to_text-259"><span class="linenos">259</span></a>
+</span><span id="program_to_text-260"><a href="#program_to_text-260"><span class="linenos">260</span></a>    <span class="k">return</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">lines</span><span class="p">)</span>
 </span></pre></div>
 
 
-            <div class="docstring"><p>Convert a program to assembly text format.</p>
+            <div class="docstring"><p>Convert a program to assembly text format with configurable formatting.</p>
 
 <p>Converts a list of instructions, labels, and comments (whether created programmatically
 in Python or parsed from text) into human-readable assembly text syntax.</p>
@@ -575,6 +786,13 @@ in Python or parsed from text) into human-readable assembly text syntax.</p>
 
 <ul>
 <li><strong>program:</strong>  List of instructions, labels, and comments in source order.</li>
+<li><strong>indent_size:</strong>  Number of spaces per indentation level (default: 4).</li>
+<li><strong>comment_spacing:</strong>  Number of spaces before inline comment semicolon (default: 1).</li>
+<li><strong>label_inline:</strong>  If True, place labels on same line as next instruction (default: False).</li>
+<li><strong>blank_line_before_label:</strong>  If True, add blank line before labels (default: True).</li>
+<li><strong>align_comments:</strong>  If True, align inline comments at comment_column (default: False).</li>
+<li><strong>comment_column:</strong>  Column position for aligned comments when align_comments=True (default: 40).</li>
+<li><strong>hide_default_out:</strong>  If True, hide output parameters when they match the default value (default: False).</li>
 </ul>
 
 <h6 id="returns">Returns:</h6>
@@ -587,7 +805,7 @@ in Python or parsed from text) into human-readable assembly text syntax.</p>
 <h6 id="examples">Examples:</h6>
 
 <blockquote>
-  <p>Convert Python program to assembly text:</p>
+  <p>Default formatting:</p>
   
   <div class="pdoc-code codehilite">
 <pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">dt31</span><span class="w"> </span><span class="kn">import</span> <span class="n">I</span><span class="p">,</span> <span class="n">R</span><span class="p">,</span> <span class="n">L</span><span class="p">,</span> <span class="n">Label</span>
@@ -602,30 +820,57 @@ in Python or parsed from text) into human-readable assembly text syntax.</p>
 
 <span class="n">text</span> <span class="o">=</span> <span class="n">program_to_text</span><span class="p">(</span><span class="n">program</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
-<span class="c1"># CP 5, R.a</span>
+<span class="c1">#     CP 5, R.a</span>
+<span class="c1">#</span>
 <span class="c1"># loop:</span>
 <span class="c1">#     NOUT R.a, 1</span>
-<span class="c1">#     SUB R.a, 1</span>
+<span class="c1">#     SUB R.a, 1, R.a</span>
 <span class="c1">#     JGT loop, R.a, 0</span>
 </code></pre>
   </div>
   
-  <p>Round-trip conversion (text → Python → text):</p>
+  <p>Custom formatting with 2-space indent and inline labels:</p>
   
   <div class="pdoc-code codehilite">
-<pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn"><a href="parser.html">dt31.parser</a></span><span class="w"> </span><span class="kn">import</span> <span class="n">parse_program</span>
-
-<span class="n">original</span> <span class="o">=</span> <span class="s1">&#39;&#39;&#39;</span>
-<span class="s1">CP 5, R.a</span>
-<span class="s1">loop:</span>
-<span class="s1">    NOUT R.a, 1</span>
-<span class="s1">    SUB R.a, 1</span>
-<span class="s1">    JGT loop, R.a, 0</span>
-<span class="s1">&#39;&#39;&#39;</span>
-
-<span class="n">program</span> <span class="o">=</span> <span class="n">parse_program</span><span class="p">(</span><span class="n">original</span><span class="p">)</span>
-<span class="n">reconstructed</span> <span class="o">=</span> <span class="n">program_to_text</span><span class="p">(</span><span class="n">program</span><span class="p">)</span>
-<span class="c1"># reconstructed matches original (modulo whitespace)</span>
+<pre><span></span><code><span class="n">text</span> <span class="o">=</span> <span class="n">program_to_text</span><span class="p">(</span>
+    <span class="n">program</span><span class="p">,</span>
+    <span class="n">indent_size</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+    <span class="n">label_inline</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">blank_line_before_label</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="c1">#   CP 5, R.a</span>
+<span class="c1"># loop: NOUT R.a, 1</span>
+<span class="c1">#   SUB R.a, 1, R.a</span>
+<span class="c1">#   JGT loop, R.a, 0</span>
+</code></pre>
+  </div>
+  
+  <p>Aligned comments:</p>
+  
+  <div class="pdoc-code codehilite">
+<pre><span></span><code><span class="n">program_with_comments</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="n">I</span><span class="o">.</span><span class="n">CP</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="n">R</span><span class="o">.</span><span class="n">a</span><span class="p">)</span><span class="o">.</span><span class="n">with_comment</span><span class="p">(</span><span class="s2">&quot;Initialize&quot;</span><span class="p">),</span>
+    <span class="n">I</span><span class="o">.</span><span class="n">ADD</span><span class="p">(</span><span class="n">R</span><span class="o">.</span><span class="n">a</span><span class="p">,</span> <span class="n">L</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">with_comment</span><span class="p">(</span><span class="s2">&quot;Increment&quot;</span><span class="p">),</span>
+<span class="p">]</span>
+<span class="n">text</span> <span class="o">=</span> <span class="n">program_to_text</span><span class="p">(</span><span class="n">program_with_comments</span><span class="p">,</span> <span class="n">align_comments</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">comment_column</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span>
+<span class="c1">#     CP 5, R.a              ; Initialize</span>
+<span class="c1">#     ADD R.a, 1, R.a        ; Increment</span>
+</code></pre>
+  </div>
+  
+  <p>Hide default output parameters:</p>
+  
+  <div class="pdoc-code codehilite">
+<pre><span></span><code><span class="n">program</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="n">I</span><span class="o">.</span><span class="n">ADD</span><span class="p">(</span><span class="n">R</span><span class="o">.</span><span class="n">a</span><span class="p">,</span> <span class="n">R</span><span class="o">.</span><span class="n">b</span><span class="p">),</span>  <span class="c1"># Default out=R.a</span>
+    <span class="n">I</span><span class="o">.</span><span class="n">NOUT</span><span class="p">(</span><span class="n">R</span><span class="o">.</span><span class="n">a</span><span class="p">),</span>      <span class="c1"># Default b=L[0] (no newline)</span>
+<span class="p">]</span>
+<span class="n">text</span> <span class="o">=</span> <span class="n">program_to_text</span><span class="p">(</span><span class="n">program</span><span class="p">,</span> <span class="n">hide_default_out</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="c1">#     ADD R.a, R.b</span>
+<span class="c1">#     NOUT R.a</span>
+<span class="c1"># vs without hide_default_out:</span>
+<span class="c1">#     ADD R.a, R.b, R.a</span>
+<span class="c1">#     NOUT R.a, 0</span>
 </code></pre>
   </div>
 </blockquote>
@@ -644,54 +889,54 @@ in Python or parsed from text) into human-readable assembly text syntax.</p>
 
     </div>
     <a class="headerlink" href="#extract_registers_from_program"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="extract_registers_from_program-177"><a href="#extract_registers_from_program-177"><span class="linenos">177</span></a><span class="k">def</span><span class="w"> </span><span class="nf">extract_registers_from_program</span><span class="p">(</span>
-</span><span id="extract_registers_from_program-178"><a href="#extract_registers_from_program-178"><span class="linenos">178</span></a>    <span class="n">program</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Instruction</span> <span class="o">|</span> <span class="n">Label</span> <span class="o">|</span> <span class="n">Comment</span><span class="p">],</span>
-</span><span id="extract_registers_from_program-179"><a href="#extract_registers_from_program-179"><span class="linenos">179</span></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
-</span><span id="extract_registers_from_program-180"><a href="#extract_registers_from_program-180"><span class="linenos">180</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-</span><span id="extract_registers_from_program-181"><a href="#extract_registers_from_program-181"><span class="linenos">181</span></a><span class="sd">    Extract all register names used in a program.</span>
-</span><span id="extract_registers_from_program-182"><a href="#extract_registers_from_program-182"><span class="linenos">182</span></a>
-</span><span id="extract_registers_from_program-183"><a href="#extract_registers_from_program-183"><span class="linenos">183</span></a><span class="sd">    This function works on already-parsed programs, whether they were parsed from</span>
-</span><span id="extract_registers_from_program-184"><a href="#extract_registers_from_program-184"><span class="linenos">184</span></a><span class="sd">    text or constructed programmatically in Python. Useful for determining which</span>
-</span><span id="extract_registers_from_program-185"><a href="#extract_registers_from_program-185"><span class="linenos">185</span></a><span class="sd">    registers need to be initialized in the CPU.</span>
-</span><span id="extract_registers_from_program-186"><a href="#extract_registers_from_program-186"><span class="linenos">186</span></a>
-</span><span id="extract_registers_from_program-187"><a href="#extract_registers_from_program-187"><span class="linenos">187</span></a><span class="sd">    Args:</span>
-</span><span id="extract_registers_from_program-188"><a href="#extract_registers_from_program-188"><span class="linenos">188</span></a><span class="sd">        program: List of Instructions and Labels</span>
-</span><span id="extract_registers_from_program-189"><a href="#extract_registers_from_program-189"><span class="linenos">189</span></a>
-</span><span id="extract_registers_from_program-190"><a href="#extract_registers_from_program-190"><span class="linenos">190</span></a><span class="sd">    Returns:</span>
-</span><span id="extract_registers_from_program-191"><a href="#extract_registers_from_program-191"><span class="linenos">191</span></a><span class="sd">        Sorted list of register names used in the program (excluding &#39;ip&#39;)</span>
-</span><span id="extract_registers_from_program-192"><a href="#extract_registers_from_program-192"><span class="linenos">192</span></a>
-</span><span id="extract_registers_from_program-193"><a href="#extract_registers_from_program-193"><span class="linenos">193</span></a><span class="sd">    Example:</span>
-</span><span id="extract_registers_from_program-194"><a href="#extract_registers_from_program-194"><span class="linenos">194</span></a><span class="sd">        &gt;&gt;&gt; from dt31 import I, R, L</span>
-</span><span id="extract_registers_from_program-195"><a href="#extract_registers_from_program-195"><span class="linenos">195</span></a><span class="sd">        &gt;&gt;&gt; program = [</span>
-</span><span id="extract_registers_from_program-196"><a href="#extract_registers_from_program-196"><span class="linenos">196</span></a><span class="sd">        ...     I.CP(10, R.x),</span>
-</span><span id="extract_registers_from_program-197"><a href="#extract_registers_from_program-197"><span class="linenos">197</span></a><span class="sd">        ...     I.ADD(R.x, L[5]),</span>
-</span><span id="extract_registers_from_program-198"><a href="#extract_registers_from_program-198"><span class="linenos">198</span></a><span class="sd">        ...     I.NOUT(R.x, L[1]),</span>
-</span><span id="extract_registers_from_program-199"><a href="#extract_registers_from_program-199"><span class="linenos">199</span></a><span class="sd">        ... ]</span>
-</span><span id="extract_registers_from_program-200"><a href="#extract_registers_from_program-200"><span class="linenos">200</span></a><span class="sd">        &gt;&gt;&gt; extract_registers_from_program(program)</span>
-</span><span id="extract_registers_from_program-201"><a href="#extract_registers_from_program-201"><span class="linenos">201</span></a><span class="sd">        [&#39;x&#39;]</span>
-</span><span id="extract_registers_from_program-202"><a href="#extract_registers_from_program-202"><span class="linenos">202</span></a><span class="sd">    &quot;&quot;&quot;</span>
-</span><span id="extract_registers_from_program-203"><a href="#extract_registers_from_program-203"><span class="linenos">203</span></a>    <span class="n">registers_used</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
-</span><span id="extract_registers_from_program-204"><a href="#extract_registers_from_program-204"><span class="linenos">204</span></a>
-</span><span id="extract_registers_from_program-205"><a href="#extract_registers_from_program-205"><span class="linenos">205</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">extract_from_operand</span><span class="p">(</span><span class="n">operand</span><span class="p">:</span> <span class="n">Operand</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-</span><span id="extract_registers_from_program-206"><a href="#extract_registers_from_program-206"><span class="linenos">206</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Recursively extract registers from an operand.&quot;&quot;&quot;</span>
-</span><span id="extract_registers_from_program-207"><a href="#extract_registers_from_program-207"><span class="linenos">207</span></a>        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">operand</span><span class="p">,</span> <span class="n">RegisterReference</span><span class="p">):</span>
-</span><span id="extract_registers_from_program-208"><a href="#extract_registers_from_program-208"><span class="linenos">208</span></a>            <span class="k">if</span> <span class="n">operand</span><span class="o">.</span><span class="n">register</span> <span class="o">!=</span> <span class="s2">&quot;ip&quot;</span><span class="p">:</span>
-</span><span id="extract_registers_from_program-209"><a href="#extract_registers_from_program-209"><span class="linenos">209</span></a>                <span class="n">registers_used</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">operand</span><span class="o">.</span><span class="n">register</span><span class="p">)</span>
-</span><span id="extract_registers_from_program-210"><a href="#extract_registers_from_program-210"><span class="linenos">210</span></a>        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">operand</span><span class="p">,</span> <span class="n">MemoryReference</span><span class="p">):</span>
-</span><span id="extract_registers_from_program-211"><a href="#extract_registers_from_program-211"><span class="linenos">211</span></a>            <span class="c1"># Memory references can contain nested operands (e.g., M[R.a])</span>
-</span><span id="extract_registers_from_program-212"><a href="#extract_registers_from_program-212"><span class="linenos">212</span></a>            <span class="n">extract_from_operand</span><span class="p">(</span><span class="n">operand</span><span class="o">.</span><span class="n">address</span><span class="p">)</span>
-</span><span id="extract_registers_from_program-213"><a href="#extract_registers_from_program-213"><span class="linenos">213</span></a>
-</span><span id="extract_registers_from_program-214"><a href="#extract_registers_from_program-214"><span class="linenos">214</span></a>    <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">program</span><span class="p">:</span>
-</span><span id="extract_registers_from_program-215"><a href="#extract_registers_from_program-215"><span class="linenos">215</span></a>        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="p">(</span><span class="n">Label</span><span class="p">,</span> <span class="n">Comment</span><span class="p">)):</span>
-</span><span id="extract_registers_from_program-216"><a href="#extract_registers_from_program-216"><span class="linenos">216</span></a>            <span class="k">continue</span>
-</span><span id="extract_registers_from_program-217"><a href="#extract_registers_from_program-217"><span class="linenos">217</span></a>
-</span><span id="extract_registers_from_program-218"><a href="#extract_registers_from_program-218"><span class="linenos">218</span></a>        <span class="c1"># Instructions store operands as attributes</span>
-</span><span id="extract_registers_from_program-219"><a href="#extract_registers_from_program-219"><span class="linenos">219</span></a>        <span class="c1"># Walk through all attributes to find operands</span>
-</span><span id="extract_registers_from_program-220"><a href="#extract_registers_from_program-220"><span class="linenos">220</span></a>        <span class="k">for</span> <span class="n">attr_value</span> <span class="ow">in</span> <span class="n">item</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
-</span><span id="extract_registers_from_program-221"><a href="#extract_registers_from_program-221"><span class="linenos">221</span></a>            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">attr_value</span><span class="p">,</span> <span class="p">(</span><span class="n">RegisterReference</span><span class="p">,</span> <span class="n">MemoryReference</span><span class="p">)):</span>
-</span><span id="extract_registers_from_program-222"><a href="#extract_registers_from_program-222"><span class="linenos">222</span></a>                <span class="n">extract_from_operand</span><span class="p">(</span><span class="n">attr_value</span><span class="p">)</span>
-</span><span id="extract_registers_from_program-223"><a href="#extract_registers_from_program-223"><span class="linenos">223</span></a>
-</span><span id="extract_registers_from_program-224"><a href="#extract_registers_from_program-224"><span class="linenos">224</span></a>    <span class="k">return</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">registers_used</span><span class="p">)</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="extract_registers_from_program-302"><a href="#extract_registers_from_program-302"><span class="linenos">302</span></a><span class="k">def</span><span class="w"> </span><span class="nf">extract_registers_from_program</span><span class="p">(</span>
+</span><span id="extract_registers_from_program-303"><a href="#extract_registers_from_program-303"><span class="linenos">303</span></a>    <span class="n">program</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Instruction</span> <span class="o">|</span> <span class="n">Label</span> <span class="o">|</span> <span class="n">Comment</span><span class="p">],</span>
+</span><span id="extract_registers_from_program-304"><a href="#extract_registers_from_program-304"><span class="linenos">304</span></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+</span><span id="extract_registers_from_program-305"><a href="#extract_registers_from_program-305"><span class="linenos">305</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="extract_registers_from_program-306"><a href="#extract_registers_from_program-306"><span class="linenos">306</span></a><span class="sd">    Extract all register names used in a program.</span>
+</span><span id="extract_registers_from_program-307"><a href="#extract_registers_from_program-307"><span class="linenos">307</span></a>
+</span><span id="extract_registers_from_program-308"><a href="#extract_registers_from_program-308"><span class="linenos">308</span></a><span class="sd">    This function works on already-parsed programs, whether they were parsed from</span>
+</span><span id="extract_registers_from_program-309"><a href="#extract_registers_from_program-309"><span class="linenos">309</span></a><span class="sd">    text or constructed programmatically in Python. Useful for determining which</span>
+</span><span id="extract_registers_from_program-310"><a href="#extract_registers_from_program-310"><span class="linenos">310</span></a><span class="sd">    registers need to be initialized in the CPU.</span>
+</span><span id="extract_registers_from_program-311"><a href="#extract_registers_from_program-311"><span class="linenos">311</span></a>
+</span><span id="extract_registers_from_program-312"><a href="#extract_registers_from_program-312"><span class="linenos">312</span></a><span class="sd">    Args:</span>
+</span><span id="extract_registers_from_program-313"><a href="#extract_registers_from_program-313"><span class="linenos">313</span></a><span class="sd">        program: List of Instructions and Labels</span>
+</span><span id="extract_registers_from_program-314"><a href="#extract_registers_from_program-314"><span class="linenos">314</span></a>
+</span><span id="extract_registers_from_program-315"><a href="#extract_registers_from_program-315"><span class="linenos">315</span></a><span class="sd">    Returns:</span>
+</span><span id="extract_registers_from_program-316"><a href="#extract_registers_from_program-316"><span class="linenos">316</span></a><span class="sd">        Sorted list of register names used in the program (excluding &#39;ip&#39;)</span>
+</span><span id="extract_registers_from_program-317"><a href="#extract_registers_from_program-317"><span class="linenos">317</span></a>
+</span><span id="extract_registers_from_program-318"><a href="#extract_registers_from_program-318"><span class="linenos">318</span></a><span class="sd">    Example:</span>
+</span><span id="extract_registers_from_program-319"><a href="#extract_registers_from_program-319"><span class="linenos">319</span></a><span class="sd">        &gt;&gt;&gt; from dt31 import I, R, L</span>
+</span><span id="extract_registers_from_program-320"><a href="#extract_registers_from_program-320"><span class="linenos">320</span></a><span class="sd">        &gt;&gt;&gt; program = [</span>
+</span><span id="extract_registers_from_program-321"><a href="#extract_registers_from_program-321"><span class="linenos">321</span></a><span class="sd">        ...     I.CP(10, R.x),</span>
+</span><span id="extract_registers_from_program-322"><a href="#extract_registers_from_program-322"><span class="linenos">322</span></a><span class="sd">        ...     I.ADD(R.x, L[5]),</span>
+</span><span id="extract_registers_from_program-323"><a href="#extract_registers_from_program-323"><span class="linenos">323</span></a><span class="sd">        ...     I.NOUT(R.x, L[1]),</span>
+</span><span id="extract_registers_from_program-324"><a href="#extract_registers_from_program-324"><span class="linenos">324</span></a><span class="sd">        ... ]</span>
+</span><span id="extract_registers_from_program-325"><a href="#extract_registers_from_program-325"><span class="linenos">325</span></a><span class="sd">        &gt;&gt;&gt; extract_registers_from_program(program)</span>
+</span><span id="extract_registers_from_program-326"><a href="#extract_registers_from_program-326"><span class="linenos">326</span></a><span class="sd">        [&#39;x&#39;]</span>
+</span><span id="extract_registers_from_program-327"><a href="#extract_registers_from_program-327"><span class="linenos">327</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="extract_registers_from_program-328"><a href="#extract_registers_from_program-328"><span class="linenos">328</span></a>    <span class="n">registers_used</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+</span><span id="extract_registers_from_program-329"><a href="#extract_registers_from_program-329"><span class="linenos">329</span></a>
+</span><span id="extract_registers_from_program-330"><a href="#extract_registers_from_program-330"><span class="linenos">330</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">extract_from_operand</span><span class="p">(</span><span class="n">operand</span><span class="p">:</span> <span class="n">Operand</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+</span><span id="extract_registers_from_program-331"><a href="#extract_registers_from_program-331"><span class="linenos">331</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Recursively extract registers from an operand.&quot;&quot;&quot;</span>
+</span><span id="extract_registers_from_program-332"><a href="#extract_registers_from_program-332"><span class="linenos">332</span></a>        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">operand</span><span class="p">,</span> <span class="n">RegisterReference</span><span class="p">):</span>
+</span><span id="extract_registers_from_program-333"><a href="#extract_registers_from_program-333"><span class="linenos">333</span></a>            <span class="k">if</span> <span class="n">operand</span><span class="o">.</span><span class="n">register</span> <span class="o">!=</span> <span class="s2">&quot;ip&quot;</span><span class="p">:</span>
+</span><span id="extract_registers_from_program-334"><a href="#extract_registers_from_program-334"><span class="linenos">334</span></a>                <span class="n">registers_used</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">operand</span><span class="o">.</span><span class="n">register</span><span class="p">)</span>
+</span><span id="extract_registers_from_program-335"><a href="#extract_registers_from_program-335"><span class="linenos">335</span></a>        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">operand</span><span class="p">,</span> <span class="n">MemoryReference</span><span class="p">):</span>
+</span><span id="extract_registers_from_program-336"><a href="#extract_registers_from_program-336"><span class="linenos">336</span></a>            <span class="c1"># Memory references can contain nested operands (e.g., M[R.a])</span>
+</span><span id="extract_registers_from_program-337"><a href="#extract_registers_from_program-337"><span class="linenos">337</span></a>            <span class="n">extract_from_operand</span><span class="p">(</span><span class="n">operand</span><span class="o">.</span><span class="n">address</span><span class="p">)</span>
+</span><span id="extract_registers_from_program-338"><a href="#extract_registers_from_program-338"><span class="linenos">338</span></a>
+</span><span id="extract_registers_from_program-339"><a href="#extract_registers_from_program-339"><span class="linenos">339</span></a>    <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">program</span><span class="p">:</span>
+</span><span id="extract_registers_from_program-340"><a href="#extract_registers_from_program-340"><span class="linenos">340</span></a>        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="p">(</span><span class="n">Label</span><span class="p">,</span> <span class="n">Comment</span><span class="p">)):</span>
+</span><span id="extract_registers_from_program-341"><a href="#extract_registers_from_program-341"><span class="linenos">341</span></a>            <span class="k">continue</span>
+</span><span id="extract_registers_from_program-342"><a href="#extract_registers_from_program-342"><span class="linenos">342</span></a>
+</span><span id="extract_registers_from_program-343"><a href="#extract_registers_from_program-343"><span class="linenos">343</span></a>        <span class="c1"># Instructions store operands as attributes</span>
+</span><span id="extract_registers_from_program-344"><a href="#extract_registers_from_program-344"><span class="linenos">344</span></a>        <span class="c1"># Walk through all attributes to find operands</span>
+</span><span id="extract_registers_from_program-345"><a href="#extract_registers_from_program-345"><span class="linenos">345</span></a>        <span class="k">for</span> <span class="n">attr_value</span> <span class="ow">in</span> <span class="n">item</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+</span><span id="extract_registers_from_program-346"><a href="#extract_registers_from_program-346"><span class="linenos">346</span></a>            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">attr_value</span><span class="p">,</span> <span class="p">(</span><span class="n">RegisterReference</span><span class="p">,</span> <span class="n">MemoryReference</span><span class="p">)):</span>
+</span><span id="extract_registers_from_program-347"><a href="#extract_registers_from_program-347"><span class="linenos">347</span></a>                <span class="n">extract_from_operand</span><span class="p">(</span><span class="n">attr_value</span><span class="p">)</span>
+</span><span id="extract_registers_from_program-348"><a href="#extract_registers_from_program-348"><span class="linenos">348</span></a>
+</span><span id="extract_registers_from_program-349"><a href="#extract_registers_from_program-349"><span class="linenos">349</span></a>    <span class="k">return</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">registers_used</span><span class="p">)</span>
 </span></pre></div>
 
 

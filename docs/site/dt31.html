@@ -528,7 +528,7 @@ dt31<span class="w"> </span>--dump<span class="w"> </span>error<span class="w"> 
 
 <h3 id="converting-programs-to-text">Converting Programs to Text</h3>
 
-<p>Convert Python programs to assembly text format:</p>
+<p>Convert Python programs to assembly text format with configurable formatting:</p>
 
 <div class="pdoc-code codehilite">
 <pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">dt31</span><span class="w"> </span><span class="kn">import</span> <span class="n">I</span><span class="p">,</span> <span class="n">L</span><span class="p">,</span> <span class="n">Label</span><span class="p">,</span> <span class="n">LC</span><span class="p">,</span> <span class="n">R</span>
@@ -543,13 +543,49 @@ dt31<span class="w"> </span>--dump<span class="w"> </span>error<span class="w"> 
     <span class="n">I</span><span class="o">.</span><span class="n">JGT</span><span class="p">(</span><span class="n">loop</span><span class="p">,</span> <span class="n">R</span><span class="o">.</span><span class="n">a</span><span class="p">,</span> <span class="n">L</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span>
 <span class="p">]</span>
 
-<span class="c1"># Convert to assembly text</span>
+<span class="c1"># Convert to assembly text (default formatting)</span>
 <span class="n">text</span> <span class="o">=</span> <span class="n">program_to_text</span><span class="p">(</span><span class="n">program</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
 <span class="c1">#     CP 5, R.a</span>
+<span class="c1">#</span>
 <span class="c1"># loop:</span>
 <span class="c1">#     OOUT &#39;*&#39;, 0</span>
 <span class="c1">#     SUB R.a, 1, R.a</span>
+<span class="c1">#     JGT loop, R.a, 0</span>
+</code></pre>
+</div>
+
+<h4 id="formatting-options">Formatting Options</h4>
+
+<p>The <code>program_to_text</code> function supports various formatting options:</p>
+
+<div class="pdoc-code codehilite">
+<pre><span></span><code><span class="c1"># Custom indentation (default: 4 spaces)</span>
+<span class="n">text</span> <span class="o">=</span> <span class="n">program_to_text</span><span class="p">(</span><span class="n">program</span><span class="p">,</span> <span class="n">indent_size</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+<span class="c1"># Inline labels (default: False, labels on separate lines)</span>
+<span class="n">text</span> <span class="o">=</span> <span class="n">program_to_text</span><span class="p">(</span><span class="n">program</span><span class="p">,</span> <span class="n">label_inline</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="c1"># loop: OOUT &#39;*&#39;, 0</span>
+
+<span class="c1"># No blank lines before labels (default: True)</span>
+<span class="n">text</span> <span class="o">=</span> <span class="n">program_to_text</span><span class="p">(</span><span class="n">program</span><span class="p">,</span> <span class="n">blank_line_before_label</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+<span class="c1"># Align inline comments (default: False)</span>
+<span class="n">commented_program</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="n">I</span><span class="o">.</span><span class="n">CP</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="n">R</span><span class="o">.</span><span class="n">a</span><span class="p">)</span><span class="o">.</span><span class="n">with_comment</span><span class="p">(</span><span class="s2">&quot;Initialize&quot;</span><span class="p">),</span>
+    <span class="n">I</span><span class="o">.</span><span class="n">ADD</span><span class="p">(</span><span class="n">R</span><span class="o">.</span><span class="n">a</span><span class="p">,</span> <span class="n">L</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">with_comment</span><span class="p">(</span><span class="s2">&quot;Increment&quot;</span><span class="p">),</span>
+<span class="p">]</span>
+<span class="n">text</span> <span class="o">=</span> <span class="n">program_to_text</span><span class="p">(</span><span class="n">commented_program</span><span class="p">,</span> <span class="n">align_comments</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">comment_column</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span>
+<span class="c1">#     CP 5, R.a                 ; Initialize</span>
+<span class="c1">#     ADD R.a, 1, R.a           ; Increment</span>
+
+<span class="c1"># Hide default output parameters (default: False)</span>
+<span class="n">text</span> <span class="o">=</span> <span class="n">program_to_text</span><span class="p">(</span><span class="n">program</span><span class="p">,</span> <span class="n">hide_default_out</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="c1">#     CP 5, R.a</span>
+<span class="c1">#</span>
+<span class="c1"># loop:</span>
+<span class="c1">#     OOUT &#39;*&#39;</span>
+<span class="c1">#     SUB R.a, 1</span>
 <span class="c1">#     JGT loop, R.a, 0</span>
 </code></pre>
 </div>

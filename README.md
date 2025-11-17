@@ -393,7 +393,7 @@ cpu.run(program)
 
 ### Converting Programs to Text
 
-Convert Python programs to assembly text format:
+Convert Python programs to assembly text format with configurable formatting:
 
 ```python
 from dt31 import I, L, Label, LC, R
@@ -408,13 +408,48 @@ program = [
     I.JGT(loop, R.a, L[0]),
 ]
 
-# Convert to assembly text
+# Convert to assembly text (default formatting)
 text = program_to_text(program)
 print(text)
 #     CP 5, R.a
+#
 # loop:
 #     OOUT '*', 0
 #     SUB R.a, 1, R.a
+#     JGT loop, R.a, 0
+```
+
+#### Formatting Options
+
+The `program_to_text` function supports various formatting options:
+
+```python
+# Custom indentation (default: 4 spaces)
+text = program_to_text(program, indent_size=2)
+
+# Inline labels (default: False, labels on separate lines)
+text = program_to_text(program, label_inline=True)
+# loop: OOUT '*', 0
+
+# No blank lines before labels (default: True)
+text = program_to_text(program, blank_line_before_label=False)
+
+# Align inline comments (default: False)
+commented_program = [
+    I.CP(5, R.a).with_comment("Initialize"),
+    I.ADD(R.a, L[1]).with_comment("Increment"),
+]
+text = program_to_text(commented_program, align_comments=True, comment_column=30)
+#     CP 5, R.a                 ; Initialize
+#     ADD R.a, 1, R.a           ; Increment
+
+# Hide default output parameters (default: False)
+text = program_to_text(program, hide_default_out=True)
+#     CP 5, R.a
+#
+# loop:
+#     OOUT '*'
+#     SUB R.a, 1
 #     JGT loop, R.a, 0
 ```
 

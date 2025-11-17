@@ -4,6 +4,7 @@ repos:
     hooks:
       - id: check-added-large-files
         args: ['--maxkb=1000']
+        exclude: ^docs/
       - id: end-of-file-fixer
         exclude: ^docs/|\.svg$
       - id: trailing-whitespace
