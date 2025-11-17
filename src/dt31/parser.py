@@ -118,9 +118,9 @@ def parse_program(
         if not line:
             continue
 
-        # Handle label definitions
-        label_name = None
-        if ":" in line:
+        # Handle label definitions (can be multiple labels on same line)
+        labels_found = []
+        while ":" in line:
             label_part, line = line.split(":", 1)
             label_name = label_part.strip()
             line = line.strip()
@@ -132,11 +132,17 @@ def parse_program(
                     f"Labels must contain only alphanumeric characters and underscores."
                 )
 
-        if label_name:
+            if label_name:
+                labels_found.append(label_name)
+
+        # Add all found labels to program
+        for label_name in labels_found:
             label = Label(label_name)
-            if comment_text:
-                label.comment = comment_text
             program.append(label)
+
+        # Attach comment only to the last label (if any labels were found)
+        if comment_text and labels_found:
+            program[-1].comment = comment_text
 
         if not line:
             continue

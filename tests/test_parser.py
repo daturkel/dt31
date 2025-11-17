@@ -425,6 +425,47 @@ def test_parse_program_multiple_labels():
     assert labels[2].name == "end"
 
 
+def test_parse_program_multiple_labels_on_same_line():
+    """Test parsing multiple labels on the same line."""
+    text = "foo: bar: baz: CP R.a, R.b"
+    program = parse_program(text)
+    assert len(program) == 4
+    assert isinstance(program[0], Label)
+    assert program[0].name == "foo"
+    assert isinstance(program[1], Label)
+    assert program[1].name == "bar"
+    assert isinstance(program[2], Label)
+    assert program[2].name == "baz"
+    assert isinstance(program[3], I.CP)
+
+
+def test_parse_program_multiple_labels_with_comment():
+    """Test that comment is attached only to the last label."""
+    text = "foo: bar: baz: CP R.a, R.b ; test comment"
+    program = parse_program(text)
+    assert len(program) == 4
+    # First two labels should have no comment
+    assert program[0].comment == ""
+    assert program[1].comment == ""
+    # Last label should have the comment
+    assert program[2].comment == "test comment"
+    # Instruction should also have the comment
+    assert program[3].comment == "test comment"
+
+
+def test_parse_program_multiple_labels_no_instruction():
+    """Test multiple labels with no instruction after."""
+    text = "foo: bar: baz:"
+    program = parse_program(text)
+    assert len(program) == 3
+    assert isinstance(program[0], Label)
+    assert program[0].name == "foo"
+    assert isinstance(program[1], Label)
+    assert program[1].name == "bar"
+    assert isinstance(program[2], Label)
+    assert program[2].name == "baz"
+
+
 def test_parse_program_label_validation_valid():
     """Test that valid label names are accepted."""
     text = """
