@@ -4,6 +4,7 @@ import dt31.instructions as I
 from dt31.assembler import AssemblyError, extract_registers_from_program
 from dt31.cpu import DT31
 from dt31.operands import L, M, R
+from dt31.parser import parse_program
 
 
 def test_stack_too_small():
@@ -332,3 +333,33 @@ def test_step_count(cpu):
     assert cpu.step_count == 2
     cpu.run(program)
     assert cpu.step_count == 6
+
+
+def test_comments_in_debug_output(capsys):
+    """Test that inline comments appear in debug output."""
+    code = "CP 5, R.a  ; Initialize counter"
+
+    program = parse_program(code)
+    cpu = DT31()
+
+    cpu.load(program)
+    cpu.step(debug=True)
+
+    captured = capsys.readouterr()
+    lines = captured.out.strip().split("\n")
+    assert lines[0] == "CP(a=5, b=R.a) -> 5  ; Initialize counter"
+
+
+def test_no_comment_in_debug_output(capsys):
+    """Test that instructions without comments don't show semicolons."""
+    code = "CP 5, R.a"
+
+    program = parse_program(code)
+    cpu = DT31()
+
+    cpu.load(program)
+    cpu.step(debug=True)
+
+    captured = capsys.readouterr()
+    lines = captured.out.strip().split("\n")
+    assert lines[0] == "CP(a=5, b=R.a) -> 5"

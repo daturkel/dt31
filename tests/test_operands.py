@@ -273,3 +273,13 @@ def test_register_name_validation_via_r_shorthand():
     # Dunder names are intercepted by __getattribute__ before validation
     # so they don't trigger ValueError but return the actual dunder method
     # This is intentional to avoid breaking metaclass behavior
+
+
+def test_with_comment_method_label():
+    """Test the with_comment() method on labels."""
+    label = Label("loop")
+    commented_label = label.with_comment("Loop start")
+
+    assert commented_label.comment == "Loop start"
+    assert commented_label == label
+    assert commented_label is not label

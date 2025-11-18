@@ -18,7 +18,8 @@ def test_basic_imports():
     """Test that all core modules can be imported."""
     try:
         from dt31 import DT31, LC, I, L, Label, M, R  # noqa: F401
-        from dt31.assembler import assemble, program_to_text  # noqa: F401
+        from dt31.assembler import assemble  # noqa: F401
+        from dt31.formatter import program_to_text  # noqa: F401
         from dt31.instructions import ADD, CP, NOUT  # noqa: F401
         from dt31.operands import (  # noqa: F401
             Literal,
@@ -181,7 +182,7 @@ def test_program_to_text():
     """Test program to text conversion."""
     try:
         from dt31 import I, L, Label, R
-        from dt31.assembler import program_to_text
+        from dt31.formatter import program_to_text
 
         program = [
             I.CP(5, R.a),

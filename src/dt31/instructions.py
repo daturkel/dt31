@@ -161,6 +161,18 @@ class Instruction:
         """
         return self.name
 
+    def to_concise_str(self) -> str:
+        """Return concise assembly text representation (hides default output parameters).
+
+        By default, returns the same as `__str__()`. Subclasses with default output
+        parameters should override this to provide a more concise representation that
+        omits parameters when they match the default value.
+
+        Returns:
+            A concise string showing the instruction in assembly text format.
+        """
+        return str(self)
+
     def with_comment(self, text: str) -> Instruction:
         """Create a new instruction with the specified comment.
 
@@ -259,6 +271,19 @@ class UnaryOperation(Instruction):
         """Return assembly text representation."""
         return f"{self.name} {self.a}, {self.out}"
 
+    def to_concise_str(self) -> str:
+        """Return concise assembly text representation (hides default output).
+
+        If the output parameter matches the input operand (the default), it is omitted
+        from the output.
+
+        Returns:
+            Concise string like "NOT R.a" instead of "NOT R.a, R.a".
+        """
+        if self.out == self.a:
+            return f"{self.name} {self.a}"
+        return str(self)
+
 
 # ---------------------------------- bitwise and alu --------------------------------- #
 class BinaryOperation(Instruction):
@@ -302,6 +327,19 @@ class BinaryOperation(Instruction):
     def __str__(self) -> str:
         """Return assembly text representation."""
         return f"{self.name} {self.a}, {self.b}, {self.out}"
+
+    def to_concise_str(self) -> str:
+        """Return concise assembly text representation (hides default output).
+
+        If the output parameter matches the first input operand (the default), it is
+        omitted from the output.
+
+        Returns:
+            Concise string like "ADD R.a, R.b" instead of "ADD R.a, R.b, R.a".
+        """
+        if self.out == self.a:
+            return f"{self.name} {self.a}, {self.b}"
+        return str(self)
 
 
 class ADD(BinaryOperation):
@@ -1275,6 +1313,18 @@ class NOUT(Instruction):
         """Return assembly text representation."""
         return f"NOUT {self.a}, {self.b}"
 
+    def to_concise_str(self) -> str:
+        """Return concise assembly text representation (hides default newline parameter).
+
+        If the newline parameter is L[0] (the default), it is omitted from the output.
+
+        Returns:
+            Concise string like "NOUT R.a" instead of "NOUT R.a, 0".
+        """
+        if self.b == L[0]:
+            return f"NOUT {self.a}"
+        return str(self)
+
 
 class OOUT(Instruction):
     """Output operand as a character (using chr())."""
@@ -1304,6 +1354,18 @@ class OOUT(Instruction):
     def __str__(self) -> str:
         """Return assembly text representation."""
         return f"OOUT {self.a}, {self.b}"
+
+    def to_concise_str(self) -> str:
+        """Return concise assembly text representation (hides default newline parameter).
+
+        If the newline parameter is L[0] (the default), it is omitted from the output.
+
+        Returns:
+            Concise string like "OOUT 'H'" instead of "OOUT 'H', 0".
+        """
+        if self.b == L[0]:
+            return f"OOUT {self.a}"
+        return str(self)
 
 
 class NIN(Instruction):
@@ -1409,6 +1471,18 @@ class EXIT(Instruction):
     def __str__(self) -> str:
         """Return assembly text representation."""
         return f"EXIT {self.status_code}"
+
+    def to_concise_str(self) -> str:
+        """Return concise assembly text representation (hides default status code).
+
+        If the status code is L[0] (the default), it is omitted from the output.
+
+        Returns:
+            Concise string like "EXIT" instead of "EXIT 0".
+        """
+        if self.status_code == L[0]:
+            return "EXIT"
+        return str(self)
 
 
 # ------------------------------------ Randomness ------------------------------------ #

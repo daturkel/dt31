@@ -3,8 +3,9 @@ from __future__ import annotations
 from collections import deque
 from typing import TYPE_CHECKING
 
-from dt31.assembler import assemble, extract_registers_from_program, program_to_text
+from dt31.assembler import assemble, extract_registers_from_program
 from dt31.exceptions import AssemblyError, EndOfProgram
+from dt31.formatter import program_to_text
 from dt31.operands import (
     Label,
     MemoryReference,
