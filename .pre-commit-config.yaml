@@ -36,8 +36,8 @@ repos:
         pass_filenames: false
         stages: [pre-push]
       - id: ty
-        name: Run type checks with type
-        entry: uvx --with ty==0.0.1-alpha.25 ty check src/dt31
+        name: Run type checks with ty
+        entry: uvx --with ty==0.0.1-alpha.26 ty check src/dt31
         language: system
         pass_filenames: false
         stages: [pre-push]
