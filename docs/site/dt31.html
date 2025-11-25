@@ -43,6 +43,7 @@
                     <li><a href="dt31/cli.html">cli</a></li>
                     <li><a href="dt31/cpu.html">cpu</a></li>
                     <li><a href="dt31/exceptions.html">exceptions</a></li>
+                    <li><a href="dt31/formatter.html">formatter</a></li>
                     <li><a href="dt31/instructions.html">instructions</a></li>
                     <li><a href="dt31/operands.html">operands</a></li>
                     <li><a href="dt31/parser.html">parser</a></li>
@@ -267,7 +268,8 @@ dt31    </h1>
 <p>Execute <code>.dt</code> assembly files directly:</p>
 
 <div class="pdoc-code codehilite">
-<pre><span></span><code>dt31<span class="w"> </span>program.dt
+<pre><span></span><code>dt31<span class="w"> </span>run<span class="w"> </span>program.dt<span class="w">       </span><span class="c1"># Execute program</span>
+dt31<span class="w"> </span>format<span class="w"> </span>program.dt<span class="w">    </span><span class="c1"># Format file in-place</span>
 </code></pre>
 </div>
 
@@ -288,26 +290,145 @@ dt31    </h1>
 
 <div class="pdoc-code codehilite">
 <pre><span></span><code><span class="c1"># Parse and validate only (no execution)</span>
-dt31<span class="w"> </span>--parse-only<span class="w"> </span>program.dt
+dt31<span class="w"> </span>run<span class="w"> </span>--parse-only<span class="w"> </span>program.dt
 
 <span class="c1"># Run with debug output</span>
-dt31<span class="w"> </span>--debug<span class="w"> </span>program.dt
+dt31<span class="w"> </span>run<span class="w"> </span>--debug<span class="w"> </span>program.dt
 
 <span class="c1"># Use custom memory size</span>
-dt31<span class="w"> </span>--memory<span class="w"> </span><span class="m">1024</span><span class="w"> </span>program.dt
+dt31<span class="w"> </span>run<span class="w"> </span>--memory<span class="w"> </span><span class="m">1024</span><span class="w"> </span>program.dt
 
 <span class="c1"># Specify registers explicitly</span>
-dt31<span class="w"> </span>--registers<span class="w"> </span>a,b,c,d,e<span class="w"> </span>program.dt
+dt31<span class="w"> </span>run<span class="w"> </span>--registers<span class="w"> </span>a,b,c,d,e<span class="w"> </span>program.dt
 
 <span class="c1"># Use custom instructions</span>
-dt31<span class="w"> </span>--custom-instructions<span class="w"> </span>my_instructions.py<span class="w"> </span>program.dt
+dt31<span class="w"> </span>run<span class="w"> </span>--custom-instructions<span class="w"> </span>my_instructions.py<span class="w"> </span>program.dt
 
 <span class="c1"># Dump CPU state on error (for debugging crashes)</span>
-dt31<span class="w"> </span>--dump<span class="w"> </span>error<span class="w"> </span>program.dt<span class="w">  </span><span class="c1"># Auto-generates program_crash_TIMESTAMP.json</span>
+dt31<span class="w"> </span>run<span class="w"> </span>--dump<span class="w"> </span>error<span class="w"> </span>program.dt<span class="w">  </span><span class="c1"># Auto-generates program_crash_TIMESTAMP.json</span>
 </code></pre>
 </div>
 
 <p>See the <a href="https://daturkel.github.io/dt31/dt31/cli.html">CLI documentation</a> for complete details.</p>
+
+<h3 id="code-formatting">Code Formatting</h3>
+
+<p>The <code>dt31 format</code> command formats <code>.dt</code> assembly files with consistent style, following Black/Ruff conventions (formats in-place by default).</p>
+
+<p><strong>Basic Usage:</strong></p>
+
+<div class="pdoc-code codehilite">
+<pre><span></span><code>dt31<span class="w"> </span>format<span class="w"> </span>program.dt<span class="w">              </span><span class="c1"># Format file in-place</span>
+dt31<span class="w"> </span>format<span class="w"> </span>--check<span class="w"> </span>program.dt<span class="w">      </span><span class="c1"># Check if formatting needed (exit 1 if yes)</span>
+dt31<span class="w"> </span>format<span class="w"> </span>--diff<span class="w"> </span>program.dt<span class="w">       </span><span class="c1"># Show formatting changes without modifying</span>
+</code></pre>
+</div>
+
+<p><strong>Exit Codes:</strong></p>
+
+<table>
+<thead>
+<tr>
+  <th>Code</th>
+  <th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><code>0</code></td>
+  <td>Success (formatted, already formatted, or <code>--check</code> passed)</td>
+</tr>
+<tr>
+  <td><code>1</code></td>
+  <td>Error (file not found, parse error, <code>--check</code> failed, IO error)</td>
+</tr>
+</tbody>
+</table>
+
+<p><strong>Formatting Options:</strong></p>
+
+<p>All formatting options from <code>program_to_text()</code> are available as CLI flags:</p>
+
+<div class="pdoc-code codehilite">
+<pre><span></span><code><span class="c1"># Indentation (default: 4 spaces)</span>
+dt31<span class="w"> </span>format<span class="w"> </span>--indent-size<span class="w"> </span><span class="m">2</span><span class="w"> </span>program.dt
+
+<span class="c1"># Comment spacing (default: 1 space before semicolon)</span>
+dt31<span class="w"> </span>format<span class="w"> </span>--comment-spacing<span class="w"> </span><span class="m">2</span><span class="w"> </span>program.dt
+
+<span class="c1"># Inline labels (default: labels on separate lines)</span>
+dt31<span class="w"> </span>format<span class="w"> </span>--label-inline<span class="w"> </span>program.dt
+
+<span class="c1"># No blank lines before labels (default: blank line before labels)</span>
+dt31<span class="w"> </span>format<span class="w"> </span>--no-blank-line-before-label<span class="w"> </span>program.dt
+
+<span class="c1"># Align inline comments at specific column (default: no alignment)</span>
+dt31<span class="w"> </span>format<span class="w"> </span>--align-comments<span class="w"> </span>--comment-column<span class="w"> </span><span class="m">40</span><span class="w"> </span>program.dt
+
+<span class="c1"># Hide default output parameters (default: show all parameters)</span>
+dt31<span class="w"> </span>format<span class="w"> </span>--hide-default-out<span class="w"> </span>program.dt
+</code></pre>
+</div>
+
+<p><strong>Custom Instructions:</strong></p>
+
+<p>Format files that use custom instructions:</p>
+
+<div class="pdoc-code codehilite">
+<pre><span></span><code>dt31<span class="w"> </span>format<span class="w"> </span>--custom-instructions<span class="w"> </span>my_instructions.py<span class="w"> </span>program.dt
+</code></pre>
+</div>
+
+<p><strong>Common Workflows:</strong></p>
+
+<div class="pdoc-code codehilite">
+<pre><span></span><code><span class="c1"># Check if files need formatting (CI/pre-commit)</span>
+dt31<span class="w"> </span>format<span class="w"> </span>--check<span class="w"> </span>program.dt
+
+<span class="c1"># Preview formatting changes</span>
+dt31<span class="w"> </span>format<span class="w"> </span>--diff<span class="w"> </span>program.dt
+
+<span class="c1"># Format with custom style</span>
+dt31<span class="w"> </span>format<span class="w"> </span>--indent-size<span class="w"> </span><span class="m">2</span><span class="w"> </span>--label-inline<span class="w"> </span>--hide-default-out<span class="w"> </span>program.dt
+
+<span class="c1"># Check formatting and show diff if needed</span>
+dt31<span class="w"> </span>format<span class="w"> </span>--check<span class="w"> </span>--diff<span class="w"> </span>program.dt
+</code></pre>
+</div>
+
+<p><strong>Examples:</strong></p>
+
+<p>Before formatting:</p>
+
+<div class="pdoc-code codehilite">
+<pre><span></span><code><span class="nf">CP</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span><span class="nv">R.a</span>
+<span class="nl">loop:</span><span class="nf">NOUT</span><span class="w"> </span><span class="nv">R.a</span><span class="p">,</span><span class="mi">1</span>
+<span class="nf">SUB</span><span class="w"> </span><span class="nv">R.a</span><span class="p">,</span><span class="mi">1</span>
+<span class="nf">JGT</span><span class="w"> </span><span class="nv">loop</span><span class="p">,</span><span class="nv">R.a</span><span class="p">,</span><span class="mi">0</span>
+</code></pre>
+</div>
+
+<p>After <code>dt31 format program.dt</code>:</p>
+
+<div class="pdoc-code codehilite">
+<pre><span></span><code><span class="w">    </span><span class="nf">CP</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span><span class="w"> </span><span class="nv">R.a</span>
+
+<span class="nl">loop:</span>
+<span class="w">    </span><span class="nf">NOUT</span><span class="w"> </span><span class="nv">R.a</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span>
+<span class="w">    </span><span class="nf">SUB</span><span class="w"> </span><span class="nv">R.a</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="nv">R.a</span>
+<span class="w">    </span><span class="nf">JGT</span><span class="w"> </span><span class="nv">loop</span><span class="p">,</span><span class="w"> </span><span class="nv">R.a</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span>
+</code></pre>
+</div>
+
+<p>After <code>dt31 format --label-inline --hide-default-out program.dt</code>:</p>
+
+<div class="pdoc-code codehilite">
+<pre><span></span><code><span class="w">    </span><span class="nf">CP</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span><span class="w"> </span><span class="nv">R.a</span>
+<span class="nl">loop:</span><span class="w"> </span><span class="nf">NOUT</span><span class="w"> </span><span class="nv">R.a</span>
+<span class="w">    </span><span class="nf">SUB</span><span class="w"> </span><span class="nv">R.a</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span>
+<span class="w">    </span><span class="nf">JGT</span><span class="w"> </span><span class="nv">loop</span><span class="p">,</span><span class="w"> </span><span class="nv">R.a</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span>
+</code></pre>
+</div>
 
 <h3 id="custom-instructions">Custom Instructions</h3>
 
@@ -339,7 +460,7 @@ dt31<span class="w"> </span>--dump<span class="w"> </span>error<span class="w"> 
 </code></pre>
 </div>
 
-<p>Run with: <code>dt31 --custom-instructions my_instructions.py program.dt</code></p>
+<p>Run with: <code>dt31 run --custom-instructions my_instructions.py program.dt</code></p>
 
 <p><strong>Security Warning</strong>: Loading custom instruction files executes arbitrary Python code. Only load files from trusted sources.</p>
 
@@ -528,7 +649,7 @@ dt31<span class="w"> </span>--dump<span class="w"> </span>error<span class="w"> 
 
 <h3 id="converting-programs-to-text">Converting Programs to Text</h3>
 
-<p>Convert Python programs to assembly text format:</p>
+<p>Convert Python programs to assembly text format with configurable formatting:</p>
 
 <div class="pdoc-code codehilite">
 <pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">dt31</span><span class="w"> </span><span class="kn">import</span> <span class="n">I</span><span class="p">,</span> <span class="n">L</span><span class="p">,</span> <span class="n">Label</span><span class="p">,</span> <span class="n">LC</span><span class="p">,</span> <span class="n">R</span>
@@ -543,13 +664,49 @@ dt31<span class="w"> </span>--dump<span class="w"> </span>error<span class="w"> 
     <span class="n">I</span><span class="o">.</span><span class="n">JGT</span><span class="p">(</span><span class="n">loop</span><span class="p">,</span> <span class="n">R</span><span class="o">.</span><span class="n">a</span><span class="p">,</span> <span class="n">L</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span>
 <span class="p">]</span>
 
-<span class="c1"># Convert to assembly text</span>
+<span class="c1"># Convert to assembly text (default formatting)</span>
 <span class="n">text</span> <span class="o">=</span> <span class="n">program_to_text</span><span class="p">(</span><span class="n">program</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
 <span class="c1">#     CP 5, R.a</span>
+<span class="c1">#</span>
 <span class="c1"># loop:</span>
 <span class="c1">#     OOUT &#39;*&#39;, 0</span>
 <span class="c1">#     SUB R.a, 1, R.a</span>
+<span class="c1">#     JGT loop, R.a, 0</span>
+</code></pre>
+</div>
+
+<h4 id="formatting-options">Formatting Options</h4>
+
+<p>The <code>program_to_text</code> function supports various formatting options:</p>
+
+<div class="pdoc-code codehilite">
+<pre><span></span><code><span class="c1"># Custom indentation (default: 4 spaces)</span>
+<span class="n">text</span> <span class="o">=</span> <span class="n">program_to_text</span><span class="p">(</span><span class="n">program</span><span class="p">,</span> <span class="n">indent_size</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+<span class="c1"># Inline labels (default: False, labels on separate lines)</span>
+<span class="n">text</span> <span class="o">=</span> <span class="n">program_to_text</span><span class="p">(</span><span class="n">program</span><span class="p">,</span> <span class="n">label_inline</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="c1"># loop: OOUT &#39;*&#39;, 0</span>
+
+<span class="c1"># No blank lines before labels (default: True)</span>
+<span class="n">text</span> <span class="o">=</span> <span class="n">program_to_text</span><span class="p">(</span><span class="n">program</span><span class="p">,</span> <span class="n">blank_line_before_label</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+<span class="c1"># Align inline comments (default: False)</span>
+<span class="n">commented_program</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="n">I</span><span class="o">.</span><span class="n">CP</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="n">R</span><span class="o">.</span><span class="n">a</span><span class="p">)</span><span class="o">.</span><span class="n">with_comment</span><span class="p">(</span><span class="s2">&quot;Initialize&quot;</span><span class="p">),</span>
+    <span class="n">I</span><span class="o">.</span><span class="n">ADD</span><span class="p">(</span><span class="n">R</span><span class="o">.</span><span class="n">a</span><span class="p">,</span> <span class="n">L</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">with_comment</span><span class="p">(</span><span class="s2">&quot;Increment&quot;</span><span class="p">),</span>
+<span class="p">]</span>
+<span class="n">text</span> <span class="o">=</span> <span class="n">program_to_text</span><span class="p">(</span><span class="n">commented_program</span><span class="p">,</span> <span class="n">align_comments</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">comment_column</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span>
+<span class="c1">#     CP 5, R.a                 ; Initialize</span>
+<span class="c1">#     ADD R.a, 1, R.a           ; Increment</span>
+
+<span class="c1"># Hide default output parameters (default: False)</span>
+<span class="n">text</span> <span class="o">=</span> <span class="n">program_to_text</span><span class="p">(</span><span class="n">program</span><span class="p">,</span> <span class="n">hide_default_out</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="c1">#     CP 5, R.a</span>
+<span class="c1">#</span>
+<span class="c1"># loop:</span>
+<span class="c1">#     OOUT &#39;*&#39;</span>
+<span class="c1">#     SUB R.a, 1</span>
 <span class="c1">#     JGT loop, R.a, 0</span>
 </code></pre>
 </div>
@@ -656,12 +813,12 @@ uv<span class="w"> </span>run<span class="w"> </span>invoke<span class="w"> </sp
 <li><input type="checkbox" class="task-list-item-checkbox" checked disabled> Breakpoint instruction</li>
 <li><input type="checkbox" class="task-list-item-checkbox" checked disabled> Clearer handing of input during debug mode</li>
 <li><input type="checkbox" class="task-list-item-checkbox" checked disabled> Python to text output</li>
+<li><input type="checkbox" class="task-list-item-checkbox" checked disabled> Preserve comments in parser</li>
 <li><input type="checkbox" class="task-list-item-checkbox" disabled> User-definable macros (in both python and assembly syntax)</li>
 <li><input type="checkbox" class="task-list-item-checkbox" disabled> File I/O</li>
 <li><input type="checkbox" class="task-list-item-checkbox" disabled> Data handling</li>
 <li><input type="checkbox" class="task-list-item-checkbox" disabled> Input error-handling</li>
-<li><input type="checkbox" class="task-list-item-checkbox" disabled> Preserve comments in parser</li>
-<li><input type="checkbox" class="task-list-item-checkbox" disabled> Formatter</li>
+<li><input type="checkbox" class="task-list-item-checkbox" checked disabled> Formatter</li>
 <li><input type="checkbox" class="task-list-item-checkbox" disabled> Interpreter resume from dump</li>
 </ul>
 

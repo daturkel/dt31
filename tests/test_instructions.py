@@ -835,3 +835,13 @@ def test_exit_equality():
     assert I.EXIT(42) != I.EXIT(5)
     assert I.EXIT(R.a) == I.EXIT(R.a)
     assert I.EXIT(R.a) != I.EXIT(R.b)
+
+
+def test_with_comment_method_instruction():
+    """Test the with_comment() method on instructions."""
+    inst = I.CP(5, R.a)
+    commented_inst = inst.with_comment("Test comment")
+
+    assert commented_inst.comment == "Test comment"
+    assert commented_inst == inst  # Should be equal (comments excluded from equality)
+    assert commented_inst is not inst  # Should be a new instance
