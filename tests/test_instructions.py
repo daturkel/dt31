@@ -4,7 +4,7 @@ from copy import copy
 import pytest
 
 from dt31 import instructions as I
-from dt31.operands import L, M, MemoryReference, R
+from dt31.operands import LC, L, M, MemoryReference, R
 
 
 def test_bare_instruction(cpu):
@@ -459,6 +459,8 @@ def test_nout_newline(cpu, capsys):
 def test_oout_no_newline(cpu, capsys):
     assert repr(I.OOUT(L[1])) == "OOUT(a=1, b=0)"
     assert str(I.OOUT(L[1])) == "OOUT 1, 0"
+    assert str(I.OOUT(LC["a"])) == "OOUT 'a', 0"
+    assert I.OOUT(LC["a"]).to_concise_str() == "OOUT 'a'"
     assert I.OOUT(L[65])(cpu) == 0
     captured = capsys.readouterr()
     assert captured.out == "A"
@@ -467,6 +469,8 @@ def test_oout_no_newline(cpu, capsys):
 def test_oout_newline(cpu, capsys):
     assert repr(I.OOUT(L[2], L[1])) == "OOUT(a=2, b=1)"
     assert str(I.OOUT(L[2], L[1])) == "OOUT 2, 1"
+    assert str(I.OOUT(LC["a"], 1)) == "OOUT 'a', 1"
+    assert I.OOUT(LC["a"], 1).to_concise_str() == "OOUT 'a', 1"
     assert I.OOUT(L[65], L[1])(cpu) == 0
     captured = capsys.readouterr()
     assert captured.out == "A\n"
@@ -845,3 +849,42 @@ def test_with_comment_method_instruction():
     assert commented_inst.comment == "Test comment"
     assert commented_inst == inst  # Should be equal (comments excluded from equality)
     assert commented_inst is not inst  # Should be a new instance
+
+
+def test_strin(cpu, monkeypatch):
+    assert repr(I.STRIN(M[10])) == "STRIN(out=M[10])"
+    assert str(I.STRIN(M[10])) == "STRIN [10]"
+    monkeypatch.setattr("builtins.input", lambda prompt: "Foobar")
+    cpu.set_memory(16, 999)
+    assert I.STRIN(M[10])(cpu) == 0
+    for i, char in enumerate("Foobar"):
+        assert chr(cpu.get_memory(10 + i)) == char
+    assert cpu.get_memory(11 + i) == 0
+    with pytest.raises(ValueError) as e:
+        I.STRIN(1)  # type: ignore
+    assert str(e.value).endswith("got 1")
+
+
+def test_strout_no_newline(cpu, capsys):
+    with pytest.raises(ValueError) as e:
+        I.STROUT(1)  # type: ignore
+    assert str(e.value).endswith("got 1")
+    assert repr(I.STROUT(M[0])) == "STROUT(a=M[0], b=0)"
+    assert str(I.STROUT(M[0])) == "STROUT [0], 0"
+    assert I.STROUT(M[0]).to_concise_str() == "STROUT [0]"
+    for i, char in enumerate("hello!"):
+        cpu.set_memory(55 + i, ord(char))
+    assert I.STROUT(M[55])(cpu) == 0
+    captured = capsys.readouterr()
+    assert captured.out == "hello!"
+
+
+def test_strout_newline(cpu, capsys):
+    assert repr(I.STROUT(M[0], L[1])) == "STROUT(a=M[0], b=1)"
+    assert str(I.STROUT(M[0], 1)) == "STROUT [0], 1"
+    assert I.STROUT(M[0], L[1]).to_concise_str() == "STROUT [0], 1"
+    for i, char in enumerate("hello!"):
+        cpu.set_memory(55 + i, ord(char))
+    assert I.STROUT(M[55], L[1])(cpu) == 0
+    captured = capsys.readouterr()
+    assert captured.out == "hello!\n"
