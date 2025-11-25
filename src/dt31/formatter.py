@@ -165,7 +165,13 @@ def program_to_text(
         line = _format_label(lbl, align_comments, comment_column, comment_spacing)
         lines.append(line)
 
-    return "\n".join(lines)
+    result = "\n".join(lines)
+
+    # Ensure trailing newline (POSIX standard for text files)
+    if result and not result.endswith("\n"):
+        result += "\n"
+
+    return result
 
 
 def _format_label(

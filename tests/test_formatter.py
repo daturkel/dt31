@@ -12,7 +12,7 @@ def test_program_to_text_simple():
         I.NOUT(R.a, L[1]),
     ]
     text = program_to_text(program)
-    expected = "    CP 5, R.a\n    ADD R.a, 1, R.a\n    NOUT R.a, 1"
+    expected = "    CP 5, R.a\n    ADD R.a, 1, R.a\n    NOUT R.a, 1\n"
     assert text == expected
 
 
@@ -74,7 +74,7 @@ def test_program_to_text_only_labels():
         Label("end"),
     ]
     text = program_to_text(program, blank_line_before_label=False)
-    assert text == "start:\nend:"
+    assert text == "start:\nend:\n"
 
 
 def test_program_to_text_complex():
@@ -107,11 +107,11 @@ def test_program_to_text_custom_indent_size():
     ]
     # 2-space indent
     text = program_to_text(program, indent_size=2)
-    assert text == "  CP 5, R.a\n  ADD R.a, 1, R.a"
+    assert text == "  CP 5, R.a\n  ADD R.a, 1, R.a\n"
 
     # 8-space indent
     text = program_to_text(program, indent_size=8)
-    assert text == "        CP 5, R.a\n        ADD R.a, 1, R.a"
+    assert text == "        CP 5, R.a\n        ADD R.a, 1, R.a\n"
 
 
 def test_program_to_text_comment_spacing():
@@ -124,21 +124,21 @@ def test_program_to_text_comment_spacing():
     # No spacing (default is 1)
     text = program_to_text(program, comment_spacing=0)
     lines = text.split("\n")
-    assert len(lines) == 2
+    assert len(lines) == 3  # 2 lines + empty string from trailing newline
     assert lines[0] == "    CP 5, R.a; Initialize"
     assert lines[1] == "    ADD R.a, 1, R.a; Increment"
 
     # Default spacing (1)
     text = program_to_text(program, comment_spacing=1)
     lines = text.split("\n")
-    assert len(lines) == 2
+    assert len(lines) == 3  # 2 lines + empty string from trailing newline
     assert lines[0] == "    CP 5, R.a ; Initialize"
     assert lines[1] == "    ADD R.a, 1, R.a ; Increment"
 
     # Extra spacing (2)
     text = program_to_text(program, comment_spacing=2)
     lines = text.split("\n")
-    assert len(lines) == 2
+    assert len(lines) == 3  # 2 lines + empty string from trailing newline
     assert lines[0] == "    CP 5, R.a  ; Initialize"
     assert lines[1] == "    ADD R.a, 1, R.a  ; Increment"
 
@@ -156,7 +156,7 @@ def test_program_to_text_label_inline():
     # Separate line style without blank lines
     text = program_to_text(program, label_inline=False, blank_line_before_label=False)
     lines = text.split("\n")
-    assert len(lines) == 5
+    assert len(lines) == 6  # 5 lines + empty string from trailing newline
     assert lines[0] == "    CP 5, R.a"
     assert lines[1] == "loop:"
     assert lines[2] == "    NOUT R.a, 1"
@@ -166,7 +166,7 @@ def test_program_to_text_label_inline():
     # Inline: labels on same line as next instruction
     text = program_to_text(program, label_inline=True, blank_line_before_label=False)
     lines = text.split("\n")
-    assert len(lines) == 4
+    assert len(lines) == 5  # 4 lines + empty string from trailing newline
     assert lines[0] == "    CP 5, R.a"
     assert lines[1] == "loop: NOUT R.a, 1"
     assert lines[2] == "    SUB R.a, 1, R.a"
@@ -183,7 +183,7 @@ def test_program_to_text_label_inline_at_end():
     # Label at end should still appear even when inline style is enabled
     text = program_to_text(program, label_inline=True, blank_line_before_label=False)
     lines = text.split("\n")
-    assert len(lines) == 2
+    assert len(lines) == 3  # 2 lines + empty string from trailing newline
     assert lines[0] == "    CP 5, R.a"
     assert lines[1] == "end:"
 
@@ -201,7 +201,7 @@ def test_program_to_text_label_inline_consecutive_labels():
     # All labels should appear inline before the instruction
     text = program_to_text(program, label_inline=True, blank_line_before_label=False)
     lines = text.split("\n")
-    assert len(lines) == 2
+    assert len(lines) == 3  # 2 lines + empty string from trailing newline
     assert lines[0] == "    CP 5, R.a"
     assert lines[1] == "label1: label2: label3: NOUT R.a, 1"
 
@@ -219,7 +219,7 @@ def test_program_to_text_blank_line_before_label():
     # Default: no blank lines
     text = program_to_text(program, blank_line_before_label=False)
     lines = text.split("\n")
-    assert len(lines) == 5
+    assert len(lines) == 6  # 5 lines + empty string from trailing newline
     assert lines[0] == "    CP 5, R.a"
     assert lines[1] == "loop:"
     assert lines[2] == "    NOUT R.a, 1"
@@ -229,7 +229,7 @@ def test_program_to_text_blank_line_before_label():
     # With blank lines before labels
     text = program_to_text(program, blank_line_before_label=True)
     lines = text.split("\n")
-    assert len(lines) == 7
+    assert len(lines) == 8  # 7 lines + empty string from trailing newline
     assert lines[0] == "    CP 5, R.a"
     assert lines[1] == ""  # blank line before loop
     assert lines[2] == "loop:"
@@ -251,7 +251,7 @@ def test_program_to_text_blank_line_before_label_inline():
     # Inline labels WITH blank line before them
     text = program_to_text(program, label_inline=True, blank_line_before_label=True)
     lines = text.split("\n")
-    assert len(lines) == 4
+    assert len(lines) == 5  # 4 lines + empty string from trailing newline
     assert lines[0] == "    CP 5, R.a"
     assert lines[1] == ""  # blank line before loop
     assert lines[2] == "loop: NOUT R.a, 1"
@@ -269,7 +269,7 @@ def test_program_to_text_blank_line_before_first_label():
 
     text = program_to_text(program, blank_line_before_label=True)
     lines = text.split("\n")
-    assert len(lines) == 5
+    assert len(lines) == 6  # 5 lines + empty string from trailing newline
     assert lines[0] == "start:"  # No blank line before first label
     assert lines[1] == "    CP 5, R.a"
     assert lines[2] == ""  # blank line before loop
@@ -288,7 +288,7 @@ def test_program_to_text_blank_line_consecutive_labels():
 
     text = program_to_text(program, blank_line_before_label=True)
     lines = text.split("\n")
-    assert len(lines) == 5
+    assert len(lines) == 6  # 5 lines + empty string from trailing newline
     assert lines[0] == "    CP 5, R.a"
     assert lines[1] == ""  # blank line before first label
     assert lines[2] == "label1:"
@@ -319,9 +319,10 @@ def test_program_to_text_align_comments():
     assert lines[0] == "    CP 5, R.a                 ; Initialize"
     assert lines[1] == "    ADD R.a, 1, R.a           ; Increment"
     assert lines[2] == "    NOUT R.a, 1               ; Print"
-    # Verify all comments start at column 30
+    # Verify all comments start at column 30 (skip empty trailing line)
     for line in lines:
-        assert line.index(";") == 30
+        if line:  # Skip empty string from trailing newline
+            assert line.index(";") == 30
 
 
 def test_program_to_text_align_comments_exceeds_column():
