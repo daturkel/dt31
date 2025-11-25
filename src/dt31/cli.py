@@ -1,8 +1,8 @@
 """Command-line interface for dt31.
 
-This module provides the `dt31` command-line executable for parsing and executing
-dt31 assembly files. The CLI automatically detects registers used in programs and
-validates syntax before execution.
+This module provides the `dt31` command-line executable for parsing, executing, and
+formatting dt31 assembly files. The CLI automatically detects registers used in programs
+and validates syntax before execution.
 
 ## Installation
 
@@ -12,15 +12,25 @@ After installing the dt31 package, the `dt31` command becomes available:
 pip install dt31
 ```
 
+## Commands
+
+The dt31 CLI provides two main commands:
+
+- **run**: Execute `.dt` assembly files
+- **format**: Format `.dt` assembly files with consistent style
+
 ## Basic Usage
 
-Execute a `.dt` assembly file:
-
 ```bash
-dt31 run program.dt
+dt31 run program.dt       # Execute program
+dt31 format program.dt    # Format file in-place
 ```
 
-## Command-Line Options
+## Run Command
+
+Execute `.dt` assembly files with configurable CPU settings.
+
+**Options:**
 
 - **file** (required): Path to the `.dt` assembly file to execute
 - **-d, --debug**: Enable step-by-step debug output during execution
@@ -32,7 +42,7 @@ dt31 run program.dt
 - **--dump**: When to dump CPU state - 'none' (default), 'error', 'success', or 'all'
 - **--dump-file**: File path for dump (auto-generates timestamped filename if not specified)
 
-## Examples
+**Examples:**
 
 ```bash
 # Execute a program
@@ -64,6 +74,58 @@ dt31 run --dump success program.dt  # Auto-generates program_final_TIMESTAMP.jso
 # Dump on both error and success
 dt31 run --dump all program.dt  # Auto-generates timestamped files
 ```
+
+## Format Command
+
+Format `.dt` assembly files with consistent style, following Black/Ruff conventions
+(formats in-place by default).
+
+**Options:**
+
+- **file** (required): Path to the `.dt` assembly file to format
+- **--check**: Check if formatting is needed without modifying the file (exit 1 if changes needed)
+- **--diff**: Show formatting changes as a unified diff without modifying the file
+- **-i, --custom-instructions**: Path to Python file containing custom instruction definitions
+- **--indent-size**: Number of spaces per indentation level (default: 4)
+- **--comment-spacing**: Number of spaces before inline comment semicolon (default: 1)
+- **--label-inline**: Place labels on same line as next instruction (default: False)
+- **--no-blank-line-before-label**: Don't add blank line before labels (default: False)
+- **--align-comments**: Align inline comments at comment-column (default: False)
+- **--comment-column**: Column position for aligned comments (default: 40)
+- **--hide-default-out**: Hide output parameters when they match defaults (default: False)
+
+**Examples:**
+
+```bash
+# Format file in-place
+dt31 format program.dt
+
+# Check if formatting is needed (CI/pre-commit)
+dt31 format --check program.dt
+
+# Preview formatting changes
+dt31 format --diff program.dt
+
+# Format with custom style
+dt31 format --indent-size 2 --label-inline program.dt
+
+# Hide default output parameters
+dt31 format --hide-default-out program.dt
+
+# Align comments at column 40
+dt31 format --align-comments --comment-column 40 program.dt
+
+# Format file with custom instructions
+dt31 format --custom-instructions my_instructions.py program.dt
+
+# Check and show diff if needed
+dt31 format --check --diff program.dt
+```
+
+**Exit Codes (Format Command):**
+
+- **0**: Success (formatted, already formatted, or `--check` passed)
+- **1**: Error (file not found, parse error, `--check` failed, IO error)
 
 ## Register Auto-Detection
 
