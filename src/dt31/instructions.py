@@ -4,7 +4,15 @@ import copy
 import random
 from typing import TYPE_CHECKING
 
-from dt31.operands import Destination, L, Label, Operand, Reference, as_op
+from dt31.operands import (
+    Destination,
+    L,
+    Label,
+    MemoryReference,
+    Operand,
+    Reference,
+    as_op,
+)
 
 if TYPE_CHECKING:
     from dt31.cpu import DT31  # pragma: no cover
@@ -162,7 +170,7 @@ class Instruction:
         return self.name
 
     def to_concise_str(self) -> str:
-        """Return concise assembly text representation (hides default output parameters).
+        """Return concise assembly text representation (hides default parameters).
 
         By default, returns the same as `__str__()`. Subclasses with default output
         parameters should override this to provide a more concise representation that
@@ -1298,10 +1306,9 @@ class NOUT(Instruction):
         self.b = as_op(b)
 
     def _calc(self, cpu: DT31) -> int:
+        end = ""
         if self.b.resolve(cpu) != 0:
             end = "\n"
-        else:
-            end = ""
         print(self.a.resolve(cpu), end=end)
         return 0
 
@@ -1340,10 +1347,9 @@ class OOUT(Instruction):
         self.b = as_op(b)
 
     def _calc(self, cpu: DT31) -> int:
+        end = ""
         if self.b.resolve(cpu) != 0:
             end = "\n"
-        else:
-            end = ""
         print(chr(self.a.resolve(cpu)), end=end)
         return 0
 
@@ -1418,6 +1424,94 @@ class OIN(Instruction):
     def __str__(self) -> str:
         """Return assembly text representation."""
         return f"OIN {self.out}"
+
+
+class STRIN(Instruction):
+    """Read in a string to memory, terminating with a 0."""
+
+    def __init__(self, out: MemoryReference):
+        """
+        Args:
+            a: The beginning memory address to write to.
+        """
+        super().__init__("STRIN")
+        if not isinstance(out, MemoryReference):
+            raise ValueError(
+                f"STRIN can only be used with a memory reference, got {out}"
+            )
+        self.out = out
+
+    def _calc(self, cpu: DT31) -> int:
+        val = input(INPUT_PROMPT)
+        for i, char in enumerate(val):
+            tmp = self.out.resolve_address(cpu) + i
+            cpu.set_memory(tmp, ord(char))
+        cpu.set_memory(tmp + 1, 0)
+        return 0
+
+    def __repr__(self) -> str:
+        """Return Python API representation."""
+        return f"STRIN(out={self.out!r})"
+
+    def __str__(self) -> str:
+        """Return assembly text representation."""
+        return f"STRIN {self.out}"
+
+
+class STROUT(Instruction):
+    """Print a string from memory until 0 is reached."""
+
+    def __init__(self, a: MemoryReference, b: Operand | int = L[0]):
+        """
+        Args:
+            a: The beginning memory address to print from.
+            b: b: If nonzero, append newline after output. Defaults to L[0] (no newline).
+        """
+        super().__init__("STROUT")
+        if not isinstance(a, MemoryReference):
+            raise ValueError(
+                f"STROUT can only be used with a memory reference, got {a}"
+            )
+        self.a = a
+        self.b = as_op(b)
+
+    def _calc(self, cpu: DT31) -> int:
+        output = []
+        addr = self.a.resolve_address(cpu)
+        while True:
+            next_char = cpu.get_memory(addr)
+            if next_char == 0:
+                break
+            output.append(chr(next_char))
+            addr += 1
+        end = ""
+        if self.b.resolve(cpu) != 0:
+            end = "\n"
+        print("".join(output), end=end)
+        return 0
+
+    def __repr__(self) -> str:
+        """Return Python API representation."""
+        return f"STROUT(a={self.a!r}, b={self.b!r})"
+
+    def __str__(self) -> str:
+        """Return assembly text representation."""
+        return f"STROUT {self.a}, {self.b}"
+
+    def to_concise_str(self) -> str:
+        """Return concise assembly text representation (hides default newline parameter).
+
+        If the newline parameter is L[0] (the default), it is omitted from the output.
+
+        Returns:
+            Concise string like "STROUT 'H'" instead of "STROUT 'H', 0".
+        """
+        if self.b == L[0]:
+            return f"STROUT {self.a}"
+        return str(self)
+
+
+# --------------------------------------- other -------------------------------------- #
 
 
 class BRK(Instruction):
