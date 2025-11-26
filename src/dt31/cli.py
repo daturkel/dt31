@@ -1,8 +1,8 @@
 """Command-line interface for dt31.
 
-This module provides the `dt31` command-line executable for parsing and executing
-dt31 assembly files. The CLI automatically detects registers used in programs and
-validates syntax before execution.
+This module provides the `dt31` command-line executable for parsing, executing, and
+formatting dt31 assembly files. The CLI automatically detects registers used in programs
+and validates syntax before execution.
 
 ## Installation
 
@@ -12,15 +12,25 @@ After installing the dt31 package, the `dt31` command becomes available:
 pip install dt31
 ```
 
+## Commands
+
+The dt31 CLI provides two main commands:
+
+- **run**: Execute `.dt` assembly files
+- **format**: Format `.dt` assembly files with consistent style
+
 ## Basic Usage
 
-Execute a `.dt` assembly file:
-
 ```bash
-dt31 program.dt
+dt31 run program.dt       # Execute program
+dt31 format program.dt    # Format file in-place
 ```
 
-## Command-Line Options
+## Run Command
+
+Execute `.dt` assembly files with configurable CPU settings.
+
+**Options:**
 
 - **file** (required): Path to the `.dt` assembly file to execute
 - **-d, --debug**: Enable step-by-step debug output during execution
@@ -32,38 +42,90 @@ dt31 program.dt
 - **--dump**: When to dump CPU state - 'none' (default), 'error', 'success', or 'all'
 - **--dump-file**: File path for dump (auto-generates timestamped filename if not specified)
 
-## Examples
+**Examples:**
 
 ```bash
 # Execute a program
-dt31 countdown.dt
+dt31 run countdown.dt
 
 # Validate syntax only
-dt31 --parse-only program.dt
+dt31 run --parse-only program.dt
 
 # Run with debug output
-dt31 --debug program.dt
+dt31 run --debug program.dt
 
 # Use custom memory size
-dt31 --memory 1024 program.dt
+dt31 run --memory 1024 program.dt
 
 # Specify registers explicitly
-dt31 --registers a,b,c,d,e program.dt
+dt31 run --registers a,b,c,d,e program.dt
 
 # Load custom instructions
-dt31 --custom-instructions my_instructions.py program.dt
+dt31 run --custom-instructions my_instructions.py program.dt
 
 # Dump CPU state on error
-dt31 --dump error --dump-file crash.json program.dt
-dt31 --dump error program.dt  # Auto-generates program_crash_TIMESTAMP.json
+dt31 run --dump error --dump-file crash.json program.dt
+dt31 run --dump error program.dt  # Auto-generates program_crash_TIMESTAMP.json
 
 # Dump CPU state after successful execution
-dt31 --dump success --dump-file final.json program.dt
-dt31 --dump success program.dt  # Auto-generates program_final_TIMESTAMP.json
+dt31 run --dump success --dump-file final.json program.dt
+dt31 run --dump success program.dt  # Auto-generates program_final_TIMESTAMP.json
 
 # Dump on both error and success
-dt31 --dump all program.dt  # Auto-generates timestamped files
+dt31 run --dump all program.dt  # Auto-generates timestamped files
 ```
+
+## Format Command
+
+Format `.dt` assembly files with consistent style, following Black/Ruff conventions
+(formats in-place by default).
+
+**Options:**
+
+- **file** (required): Path to the `.dt` assembly file to format
+- **--check**: Check if formatting is needed without modifying the file (exit 1 if changes needed)
+- **--diff**: Show formatting changes as a unified diff without modifying the file
+- **-i, --custom-instructions**: Path to Python file containing custom instruction definitions
+- **--indent-size**: Number of spaces per indentation level (default: 4)
+- **--comment-spacing**: Number of spaces before inline comment semicolon (default: 1)
+- **--label-inline**: Place labels on same line as next instruction (default: False)
+- **--no-blank-line-before-label**: Don't add blank line before labels (default: False)
+- **--align-comments**: Align inline comments at comment-column (default: False)
+- **--comment-column**: Column position for aligned comments (default: 40)
+- **--hide-default-out**: Hide output parameters when they match defaults (default: False)
+
+**Examples:**
+
+```bash
+# Format file in-place
+dt31 format program.dt
+
+# Check if formatting is needed (CI/pre-commit)
+dt31 format --check program.dt
+
+# Preview formatting changes
+dt31 format --diff program.dt
+
+# Format with custom style
+dt31 format --indent-size 2 --label-inline program.dt
+
+# Hide default output parameters
+dt31 format --hide-default-out program.dt
+
+# Align comments at column 40
+dt31 format --align-comments --comment-column 40 program.dt
+
+# Format file with custom instructions
+dt31 format --custom-instructions my_instructions.py program.dt
+
+# Check and show diff if needed
+dt31 format --check --diff program.dt
+```
+
+**Exit Codes (Format Command):**
+
+- **0**: Success (formatted, already formatted, or `--check` passed)
+- **1**: Error (file not found, parse error, `--check` failed, IO error)
 
 ## Register Auto-Detection
 
@@ -125,6 +187,7 @@ Example error dump structure:
 """
 
 import argparse
+import difflib
 import importlib.util
 import json
 import sys
@@ -134,132 +197,70 @@ from pathlib import Path
 
 from dt31 import DT31
 from dt31.assembler import extract_registers_from_program
+from dt31.formatter import program_to_text
 from dt31.instructions import Instruction
 from dt31.parser import ParserError, parse_program
 
 
-def main() -> None:
-    """Main entry point for the dt31 CLI.
+def _create_run_parser(subparsers) -> None:
+    """Create the 'run' subcommand parser.
 
-    This function implements the complete CLI workflow:
-
-    1. **Parse arguments**: Process command-line arguments including file path,
-       debug mode, parse-only mode, custom instructions, and CPU configuration options.
-    2. **Load custom instructions** (if provided): Import custom instruction definitions
-       from a Python file.
-    3. **Read file**: Load the `.dt` assembly file from disk.
-    4. **Parse program**: Convert assembly text to dt31 instruction objects, using
-       custom instructions if provided.
-    5. **Auto-detect registers**: Scan the program to identify which registers
-       are used. This allows the CPU to be created with exactly the registers
-       needed by the program.
-    6. **Validate syntax** (if --parse-only): Exit after successful parsing.
-    7. **Create CPU**: Initialize a DT31 CPU with the specified or auto-detected
-       configuration. Validate that user-provided registers (if any) include all
-       registers used by the program.
-    8. **Execute program**: Run the program on the CPU with optional debug output.
-    9. **Handle errors**: Provide clear error messages for file I/O errors, parse
-       errors, runtime errors, and interrupts.
-
-    ## Exit Codes
-
-    - **0**: Program executed successfully or passed validation (--parse-only)
-    - **1**: Error occurred (file not found, parse error, runtime error, etc.)
-    - **130**: User interrupted execution (Ctrl+C)
-
-    ## Error Output
-
-    All error messages are written to stderr. In debug mode, runtime errors
-    include CPU state information (registers and stack size) to aid in debugging.
-
-    ## Examples
-
-    Basic execution:
-    ```shell
-    $ dt31 countdown.dt
-    5
-    4
-    3
-    2
-    1
-    ```
-
-    Validation only:
-    ```shell
-    $ dt31 --parse-only program.dt
-    ✓ program.dt parsed successfully
-    ```
-
-    Debug mode:
-    ```shell
-    $ dt31 --debug program.dt
-    [0] CP 5, R.a
-    Registers: {'R.a': 5, 'R.b': 0}
-    Stack: []
-    ...
-    ```
-
-    Custom configuration:
-
-    ```shell
-    $ dt31 --memory 1024 --stack-size 512 --registers a,b,c,d program.dt
-    ```
+    Args:
+        subparsers: The subparsers object from add_subparsers()
     """
-    parser = argparse.ArgumentParser(
-        prog="dt31",
-        description="Execute dt31 assembly programs",
+    run_parser = subparsers.add_parser(
+        "run",
+        help="Execute a dt31 assembly program",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 examples:
-  dt31 program.dt                     Parse and execute program
-  dt31 --debug program.dt             Execute with debug output
-  dt31 --parse-only program.dt        Validate syntax only
-  dt31 --memory 512 program.dt        Use 512 slots of memory
-  dt31 --registers a,b,c,d program.dt  Use custom registers
+  dt31 run program.dt                     Parse and execute program
+  dt31 run --debug program.dt             Execute with debug output
+  dt31 run --parse-only program.dt        Validate syntax only
+  dt31 run --memory 512 program.dt        Use 512 slots of memory
+  dt31 run --registers a,b,c,d program.dt  Use custom registers
         """,
     )
 
-    parser.add_argument(
+    run_parser.add_argument(
         "file",
         type=str,
         help="Path to .dt assembly file to execute",
     )
 
-    parser.add_argument(
+    run_parser.add_argument(
         "-d",
         "--debug",
         action="store_true",
         help="Enable debug output during execution",
     )
 
-    parser.add_argument(
+    run_parser.add_argument(
         "-p",
         "--parse-only",
         action="store_true",
         help="Parse the file but don't execute (validate syntax only)",
     )
 
-    parser.add_argument(
+    run_parser.add_argument(
         "--registers",
         type=str,
         help="Comma-separated list of register names (e.g., a,b,c,d)",
     )
 
-    parser.add_argument(
+    run_parser.add_argument(
         "--memory",
         type=int,
-        default=256,
         help="Memory size in bytes (default: 256)",
     )
 
-    parser.add_argument(
+    run_parser.add_argument(
         "--stack-size",
         type=int,
-        default=256,
         help="Stack size (default: 256)",
     )
 
-    parser.add_argument(
+    run_parser.add_argument(
         "--custom-instructions",
         "-i",
         type=str,
@@ -267,7 +268,7 @@ examples:
         help="Path to Python file containing custom instruction definitions",
     )
 
-    parser.add_argument(
+    run_parser.add_argument(
         "--dump",
         type=str,
         default="none",
@@ -275,15 +276,33 @@ examples:
         help="When to dump CPU state: 'none' (default), 'error', 'success', or 'all'",
     )
 
-    parser.add_argument(
+    run_parser.add_argument(
         "--dump-file",
         type=str,
         metavar="FILE",
         help="File path for CPU state dump (auto-generates if not specified)",
     )
 
-    args = parser.parse_args()
 
+def run_command(args: argparse.Namespace) -> None:
+    """Execute the 'run' subcommand - parse and execute a dt31 program.
+
+    Args:
+        args: Parsed command-line arguments from argparse
+
+    This function implements the complete execution workflow:
+    1. Load custom instructions (if provided)
+    2. Read and parse the assembly file
+    3. Auto-detect registers used in the program
+    4. Create CPU with appropriate configuration
+    5. Execute the program with optional debug output
+    6. Handle errors and dump CPU state if requested
+
+    Exit codes:
+        0: Program executed successfully or passed validation (--parse-only)
+        1: Error occurred (file not found, parse error, runtime error, etc.)
+        130: User interrupted execution (Ctrl+C)
+    """
     # Load custom instructions if provided
     custom_instructions = None
     if args.custom_instructions:
@@ -326,10 +345,12 @@ examples:
         sys.exit(0)
 
     # Create CPU with custom configuration
-    cpu_kwargs = {
-        "memory_size": args.memory,
-        "stack_size": args.stack_size,
-    }
+    cpu_kwargs = {}
+    if args.memory is not None:
+        cpu_kwargs["memory_size"] = args.memory
+    if args.stack_size is not None:
+        cpu_kwargs["stack_size"] = args.stack_size
+
     if args.registers:
         # User provided explicit registers - validate they include all used registers
         user_registers = args.registers.split(",")
@@ -392,6 +413,282 @@ examples:
 
     # Success
     sys.exit(0)
+
+
+def _create_format_parser(subparsers) -> None:
+    """Create the 'format' subcommand parser.
+
+    Args:
+        subparsers: The subparsers object from add_subparsers()
+    """
+    format_parser = subparsers.add_parser(
+        "format",
+        help="Format a dt31 assembly file",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+examples:
+  dt31 format program.dt                  Format file in-place
+  dt31 format --check program.dt          Check if formatting needed
+  dt31 format --diff program.dt           Show formatting changes
+  dt31 format --check --diff program.dt   Check and show diff
+  dt31 format --hide-default-out prog.dt  Hide default output parameters
+        """,
+    )
+
+    format_parser.add_argument(
+        "file",
+        type=str,
+        help="Path to .dt assembly file to format",
+    )
+
+    # Validation flags
+    format_parser.add_argument(
+        "--check",
+        action="store_true",
+        help="Check if file needs formatting without modifying (exit 1 if changes needed)",
+    )
+
+    format_parser.add_argument(
+        "--diff",
+        action="store_true",
+        help="Show diff of changes without applying them (can combine with --check)",
+    )
+
+    # Formatting options (7 total)
+    format_parser.add_argument(
+        "--indent-size",
+        type=int,
+        default=4,
+        metavar="N",
+        help="Number of spaces per indentation level (default: 4)",
+    )
+
+    format_parser.add_argument(
+        "--comment-spacing",
+        type=int,
+        default=1,
+        metavar="N",
+        help="Number of spaces before inline comment semicolon (default: 1)",
+    )
+
+    format_parser.add_argument(
+        "--label-inline",
+        action="store_true",
+        help="Place labels on same line as next instruction (default: False)",
+    )
+
+    format_parser.add_argument(
+        "--no-blank-line-before-label",
+        action="store_true",
+        help="Don't add blank line before labels (default: add blank line)",
+    )
+
+    format_parser.add_argument(
+        "--align-comments",
+        action="store_true",
+        help="Align inline comments at comment-column (default: False)",
+    )
+
+    format_parser.add_argument(
+        "--comment-column",
+        type=int,
+        default=40,
+        metavar="N",
+        help="Column position for aligned comments when --align-comments is used (default: 40)",
+    )
+
+    format_parser.add_argument(
+        "--hide-default-out",
+        action="store_true",
+        help="Hide output parameters when they match the default value (default: False)",
+    )
+
+    # Custom instructions support (needed for parsing)
+    format_parser.add_argument(
+        "--custom-instructions",
+        "-i",
+        type=str,
+        metavar="PATH",
+        help="Path to Python file containing custom instruction definitions",
+    )
+
+
+def _format_single_file(
+    file_path: str,
+    custom_instructions: dict[str, type[Instruction]] | None,
+    check_mode: bool,
+    show_diff: bool,
+    formatting_options: dict,
+) -> bool:
+    """Format a single dt31 assembly file.
+
+    This is a helper function that handles formatting one file. It's separated
+    to make it easy to add glob support in the future by wrapping this in a loop.
+
+    Args:
+        file_path: Path to the file to format
+        custom_instructions: Optional custom instructions dict
+        check_mode: If True, don't modify file, just check if changes needed
+        show_diff: If True, show unified diff of changes
+        formatting_options: Dict of formatting options to pass to program_to_text()
+
+    Returns:
+        True if file needs formatting (or was formatted), False if already formatted
+
+    Raises:
+        SystemExit: On file not found, parse error, or IO error
+    """
+    path = Path(file_path)
+
+    # Read the input file
+    try:
+        original_text = path.read_text()
+    except FileNotFoundError:
+        print(f"Error: File not found: {file_path}", file=sys.stderr)
+        sys.exit(1)
+    except IOError as e:
+        print(f"Error reading file {file_path}: {e}", file=sys.stderr)
+        sys.exit(1)
+
+    # Parse the program
+    try:
+        program = parse_program(original_text, custom_instructions=custom_instructions)
+    except ParserError as e:
+        print(f"Parse error: {e}", file=sys.stderr)
+        sys.exit(1)
+
+    # Format the program (formatter ensures trailing newline)
+    formatted_text = program_to_text(program, **formatting_options)
+
+    # Check if changes are needed
+    needs_formatting = original_text != formatted_text
+
+    # Handle --diff flag
+    if show_diff:
+        if needs_formatting:
+            # Show unified diff
+            diff = difflib.unified_diff(
+                original_text.splitlines(keepends=True),
+                formatted_text.splitlines(keepends=True),
+                fromfile=f"{file_path} (original)",
+                tofile=f"{file_path} (formatted)",
+            )
+            sys.stdout.writelines(diff)
+        else:
+            print(f"✓ {file_path} is already formatted", file=sys.stderr)
+
+    # Handle --check mode (or --diff mode - both don't modify files)
+    if check_mode or show_diff:
+        if needs_formatting and not show_diff:
+            # Only print this if we didn't already show diff
+            print(f"✗ {file_path} would be reformatted", file=sys.stderr)
+        elif not needs_formatting and not show_diff:
+            # Only print if we didn't already print in diff section
+            print(f"✓ {file_path} is already formatted", file=sys.stderr)
+        return needs_formatting
+
+    # Default mode: write formatted output
+    if needs_formatting:
+        try:
+            path.write_text(formatted_text)
+            print(f"✓ Formatted {file_path}", file=sys.stderr)
+        except IOError as e:
+            print(f"Error writing to {file_path}: {e}", file=sys.stderr)
+            sys.exit(1)
+    else:
+        print(f"✓ {file_path} is already formatted", file=sys.stderr)
+
+    return needs_formatting
+
+
+def format_command(args: argparse.Namespace) -> None:
+    """Execute the 'format' subcommand - format a dt31 assembly file.
+
+    Args:
+        args: Parsed command-line arguments from argparse
+
+    Exit codes:
+        0: Success (file formatted or already formatted, or --check passed)
+        1: Error (file not found, parse error, --check failed, or IO error)
+    """
+    # Load custom instructions if provided
+    custom_instructions = None
+    if args.custom_instructions:
+        try:
+            custom_instructions = load_custom_instructions(args.custom_instructions)
+        except (FileNotFoundError, ImportError, ValueError, TypeError) as e:
+            print(f"Error loading custom instructions: {e}", file=sys.stderr)
+            sys.exit(1)
+
+    # Prepare formatting options
+    formatting_options = {
+        "indent_size": args.indent_size,
+        "comment_spacing": args.comment_spacing,
+        "label_inline": args.label_inline,
+        "blank_line_before_label": not args.no_blank_line_before_label,  # Inverted!
+        "align_comments": args.align_comments,
+        "comment_column": args.comment_column,
+        "hide_default_out": args.hide_default_out,
+    }
+
+    # Format the file
+    needs_formatting = _format_single_file(
+        args.file,
+        custom_instructions,
+        args.check,
+        args.diff,
+        formatting_options,
+    )
+
+    # Exit with appropriate code
+    if args.check and needs_formatting:
+        sys.exit(1)
+    else:
+        sys.exit(0)
+
+
+def main() -> None:
+    """Main entry point for the dt31 CLI.
+
+    Supports two subcommands:
+    - run: Execute a dt31 assembly program
+    - format: Format a dt31 assembly file with consistent style
+
+    Exit codes:
+        0: Success
+        1: Error occurred
+        130: User interrupted execution (Ctrl+C)
+    """
+    # Create main parser with subcommands
+    parser = argparse.ArgumentParser(
+        prog="dt31",
+        description="dt31 assembly language tools",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+
+    subparsers = parser.add_subparsers(
+        dest="command",
+        help="Available commands",
+        required=True,  # Require a subcommand
+    )
+
+    # Create 'run' subcommand
+    _create_run_parser(subparsers)
+
+    # Create 'format' subcommand
+    _create_format_parser(subparsers)
+
+    args = parser.parse_args()
+
+    # Dispatch to appropriate command handler
+    if args.command == "run":
+        run_command(args)
+    elif args.command == "format":
+        format_command(args)
+    else:
+        # Should never reach here due to required subcommand, but handle gracefully
+        parser.print_help()
+        sys.exit(1)
 
 
 def generate_dump_path(program_file: str, user_path: str | None, suffix: str) -> str:

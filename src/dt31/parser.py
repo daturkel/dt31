@@ -4,8 +4,8 @@ import dt31.instructions as I
 from dt31.exceptions import ParserError
 from dt31.instructions import Instruction
 from dt31.operands import (
-    L,
     LC,
+    L,
     Label,
     M,
     Operand,
@@ -13,10 +13,56 @@ from dt31.operands import (
 )
 
 
+class Comment:
+    """A standalone comment line in a DT31 program.
+
+    Comments are preserved when parsing assembly text and can be included in programs
+    created with the Python API. They have no effect on program execution.
+
+    Args:
+        text: The comment text (without the leading semicolon).
+
+    Example:
+        >>> program = [
+        ...     Comment("Initialize counter"),
+        ...     I.CP(5, R.a),
+        ... ]
+    """
+
+    def __init__(self, comment: str):
+        """Initialize a comment with the given text.
+
+        Args:
+            text: The comment text (without the leading semicolon).
+        """
+        self.comment = comment
+
+    def __str__(self) -> str:
+        """Return assembly text representation of the comment.
+
+        Returns:
+            The comment formatted as "; text".
+        """
+        return f"; {self.comment}"
+
+    def __repr__(self) -> str:
+        """Return Python API representation of the comment.
+
+        Returns:
+            A string showing Comment construction.
+        """
+        return f'Comment("{self.comment}")'
+
+    def __eq__(self, other):
+        if type(self) is not type(other):
+            return False
+        return self.comment == other.comment
+
+
 def parse_program(
     text: str,
     custom_instructions: dict[str, type[Instruction]] | None = None,
-) -> list[Instruction | Label]:
+) -> list[Instruction | Label | Comment]:
     """
     Parse DT31 assembly text into a program list.
 
@@ -30,7 +76,7 @@ def parse_program(
             subclasses
 
     Returns:
-        List of Instructions and Labels ready for cpu.run()
+        List of Instructions, Labels, and Comments ready for cpu.run()
 
     Example:
         >>> from dt31 import DT31
@@ -56,27 +102,47 @@ def parse_program(
     program = []
 
     for line_num, line in enumerate(text.splitlines(), start=1):
-        # Strip comments (everything after semicolon)
-        line = line.split(";")[0].strip()
+        # Extract comment (everything after semicolon)
+        comment_text = None
+        if ";" in line:
+            line, comment_part = line.split(";", 1)
+            comment_text = comment_part.strip()
+
+        line = line.strip()
+
+        # Standalone comment line (no code, only comment)
+        if not line and comment_text:
+            program.append(Comment(comment_text))
+            continue
+
         if not line:
             continue
 
-        # Handle label definitions
-        label = None
-        if ":" in line:
+        # Handle label definitions (can be multiple labels on same line)
+        labels_found = []
+        while ":" in line:
             label_part, line = line.split(":", 1)
-            label = label_part.strip()
+            label_name = label_part.strip()
             line = line.strip()
 
             # Validate label name
-            if label and not label.replace("_", "").isalnum():
+            if label_name and not label_name.replace("_", "").isalnum():
                 raise ParserError(
-                    f"Line {line_num}: Invalid label name '{label}'. "
+                    f"Line {line_num}: Invalid label name '{label_name}'. "
                     f"Labels must contain only alphanumeric characters and underscores."
                 )
 
-        if label:
-            program.append(Label(label))
+            if label_name:
+                labels_found.append(label_name)
+
+        # Add all found labels to program
+        for label_name in labels_found:
+            label = Label(label_name)
+            program.append(label)
+
+        # Attach comment only to the last label (if any labels were found)
+        if comment_text and labels_found:
+            program[-1].comment = comment_text
 
         if not line:
             continue
@@ -111,6 +177,11 @@ def parse_program(
             raise ParserError(
                 f"Line {line_num}: Error creating instruction '{inst_name}': {e}"
             ) from e
+
+        # Set comment if present
+        if comment_text:
+            instruction.comment = comment_text
+
         program.append(instruction)
 
     return program

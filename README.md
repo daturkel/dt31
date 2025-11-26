@@ -190,7 +190,8 @@ See the [CPU documentation](https://daturkel.github.io/dt31/dt31/cpu.html) for A
 Execute `.dt` assembly files directly:
 
 ```shell
-dt31 program.dt
+dt31 run program.dt       # Execute program
+dt31 format program.dt    # Format file in-place
 ```
 
 ### CLI Options
@@ -208,25 +209,120 @@ dt31 program.dt
 
 ```shell
 # Parse and validate only (no execution)
-dt31 --parse-only program.dt
+dt31 run --parse-only program.dt
 
 # Run with debug output
-dt31 --debug program.dt
+dt31 run --debug program.dt
 
 # Use custom memory size
-dt31 --memory 1024 program.dt
+dt31 run --memory 1024 program.dt
 
 # Specify registers explicitly
-dt31 --registers a,b,c,d,e program.dt
+dt31 run --registers a,b,c,d,e program.dt
 
 # Use custom instructions
-dt31 --custom-instructions my_instructions.py program.dt
+dt31 run --custom-instructions my_instructions.py program.dt
 
 # Dump CPU state on error (for debugging crashes)
-dt31 --dump error program.dt  # Auto-generates program_crash_TIMESTAMP.json
+dt31 run --dump error program.dt  # Auto-generates program_crash_TIMESTAMP.json
 ```
 
 See the [CLI documentation](https://daturkel.github.io/dt31/dt31/cli.html) for complete details.
+
+### Code Formatting
+
+The `dt31 format` command formats `.dt` assembly files with consistent style, following Black/Ruff conventions (formats in-place by default).
+
+**Basic Usage:**
+
+```shell
+dt31 format program.dt              # Format file in-place
+dt31 format --check program.dt      # Check if formatting needed (exit 1 if yes)
+dt31 format --diff program.dt       # Show formatting changes without modifying
+```
+
+**Exit Codes:**
+
+| Code | Meaning |
+|------|---------|
+| `0` | Success (formatted, already formatted, or `--check` passed) |
+| `1` | Error (file not found, parse error, `--check` failed, IO error) |
+
+**Formatting Options:**
+
+All formatting options from `program_to_text()` are available as CLI flags:
+
+```shell
+# Indentation (default: 4 spaces)
+dt31 format --indent-size 2 program.dt
+
+# Comment spacing (default: 1 space before semicolon)
+dt31 format --comment-spacing 2 program.dt
+
+# Inline labels (default: labels on separate lines)
+dt31 format --label-inline program.dt
+
+# No blank lines before labels (default: blank line before labels)
+dt31 format --no-blank-line-before-label program.dt
+
+# Align inline comments at specific column (default: no alignment)
+dt31 format --align-comments --comment-column 40 program.dt
+
+# Hide default output parameters (default: show all parameters)
+dt31 format --hide-default-out program.dt
+```
+
+**Custom Instructions:**
+
+Format files that use custom instructions:
+
+```shell
+dt31 format --custom-instructions my_instructions.py program.dt
+```
+
+**Common Workflows:**
+
+```shell
+# Check if files need formatting (CI/pre-commit)
+dt31 format --check program.dt
+
+# Preview formatting changes
+dt31 format --diff program.dt
+
+# Format with custom style
+dt31 format --indent-size 2 --label-inline --hide-default-out program.dt
+
+# Check formatting and show diff if needed
+dt31 format --check --diff program.dt
+```
+
+**Examples:**
+
+Before formatting:
+```nasm
+CP 5,R.a
+loop:NOUT R.a,1
+SUB R.a,1
+JGT loop,R.a,0
+```
+
+After `dt31 format program.dt`:
+```nasm
+    CP 5, R.a
+
+loop:
+    NOUT R.a, 1
+    SUB R.a, 1, R.a
+    JGT loop, R.a, 0
+```
+
+After `dt31 format --label-inline --hide-default-out program.dt`:
+```nasm
+    CP 5, R.a
+loop: NOUT R.a
+    SUB R.a, 1
+    JGT loop, R.a, 0
+```
 
 ### Custom Instructions
 
@@ -256,7 +352,7 @@ TRIPLE R.a
 NOUT R.a, 1  ; Outputs 15
 ```
 
-Run with: `dt31 --custom-instructions my_instructions.py program.dt`
+Run with: `dt31 run --custom-instructions my_instructions.py program.dt`
 
 **Security Warning**: Loading custom instruction files executes arbitrary Python code. Only load files from trusted sources.
 
@@ -393,7 +489,7 @@ cpu.run(program)
 
 ### Converting Programs to Text
 
-Convert Python programs to assembly text format:
+Convert Python programs to assembly text format with configurable formatting:
 
 ```python
 from dt31 import I, L, Label, LC, R
@@ -408,13 +504,48 @@ program = [
     I.JGT(loop, R.a, L[0]),
 ]
 
-# Convert to assembly text
+# Convert to assembly text (default formatting)
 text = program_to_text(program)
 print(text)
 #     CP 5, R.a
+#
 # loop:
 #     OOUT '*', 0
 #     SUB R.a, 1, R.a
+#     JGT loop, R.a, 0
+```
+
+#### Formatting Options
+
+The `program_to_text` function supports various formatting options:
+
+```python
+# Custom indentation (default: 4 spaces)
+text = program_to_text(program, indent_size=2)
+
+# Inline labels (default: False, labels on separate lines)
+text = program_to_text(program, label_inline=True)
+# loop: OOUT '*', 0
+
+# No blank lines before labels (default: True)
+text = program_to_text(program, blank_line_before_label=False)
+
+# Align inline comments (default: False)
+commented_program = [
+    I.CP(5, R.a).with_comment("Initialize"),
+    I.ADD(R.a, L[1]).with_comment("Increment"),
+]
+text = program_to_text(commented_program, align_comments=True, comment_column=30)
+#     CP 5, R.a                 ; Initialize
+#     ADD R.a, 1, R.a           ; Increment
+
+# Hide default output parameters (default: False)
+text = program_to_text(program, hide_default_out=True)
+#     CP 5, R.a
+#
+# loop:
+#     OOUT '*'
+#     SUB R.a, 1
 #     JGT loop, R.a, 0
 ```
 
@@ -512,12 +643,12 @@ DT31 is open-source and contributors are welcome on [Github](https://github.com/
 - [x] Breakpoint instruction
 - [x] Clearer handing of input during debug mode
 - [x] Python to text output
+- [x] Preserve comments in parser
 - [ ] User-definable macros (in both python and assembly syntax)
 - [ ] File I/O
 - [ ] Data handling
 - [ ] Input error-handling
-- [ ] Preserve comments in parser
-- [ ] Formatter
+- [x] Formatter
 - [ ] Interpreter resume from dump
 
 ## License

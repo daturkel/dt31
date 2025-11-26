@@ -133,7 +133,13 @@
                                 <a class="variable" href="#Label.name">name</a>
                         </li>
                         <li>
+                                <a class="variable" href="#Label.comment">comment</a>
+                        </li>
+                        <li>
                                 <a class="function" href="#Label.resolve">resolve</a>
+                        </li>
+                        <li>
+                                <a class="function" href="#Label.with_comment">with_comment</a>
                         </li>
                 </ul>
 
@@ -605,43 +611,58 @@
 </span><span id="L-441"><a href="#L-441"><span class="linenos">441</span></a><span class="sd">            name: The symbolic name for this label.</span>
 </span><span id="L-442"><a href="#L-442"><span class="linenos">442</span></a><span class="sd">        &quot;&quot;&quot;</span>
 </span><span id="L-443"><a href="#L-443"><span class="linenos">443</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
-</span><span id="L-444"><a href="#L-444"><span class="linenos">444</span></a>
-</span><span id="L-445"><a href="#L-445"><span class="linenos">445</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">resolve</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cpu</span><span class="p">:</span> <span class="n">DT31</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-</span><span id="L-446"><a href="#L-446"><span class="linenos">446</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Resolve the label to an instruction position.</span>
-</span><span id="L-447"><a href="#L-447"><span class="linenos">447</span></a>
-</span><span id="L-448"><a href="#L-448"><span class="linenos">448</span></a><span class="sd">        This method should never be called during normal execution. Labels must be</span>
-</span><span id="L-449"><a href="#L-449"><span class="linenos">449</span></a><span class="sd">        resolved during the assembly process before the program runs. If this method</span>
-</span><span id="L-450"><a href="#L-450"><span class="linenos">450</span></a><span class="sd">        is called, it indicates the program was not assembled or the label was used</span>
-</span><span id="L-451"><a href="#L-451"><span class="linenos">451</span></a><span class="sd">        incorrectly (e.g., in an arithmetic operation instead of a jump destination).</span>
-</span><span id="L-452"><a href="#L-452"><span class="linenos">452</span></a>
-</span><span id="L-453"><a href="#L-453"><span class="linenos">453</span></a><span class="sd">        Args:</span>
-</span><span id="L-454"><a href="#L-454"><span class="linenos">454</span></a><span class="sd">            cpu: The DT31 CPU instance (unused).</span>
-</span><span id="L-455"><a href="#L-455"><span class="linenos">455</span></a>
-</span><span id="L-456"><a href="#L-456"><span class="linenos">456</span></a><span class="sd">        Raises:</span>
-</span><span id="L-457"><a href="#L-457"><span class="linenos">457</span></a><span class="sd">            RuntimeError: Always raised, as labels must be resolved during assembly.</span>
-</span><span id="L-458"><a href="#L-458"><span class="linenos">458</span></a><span class="sd">        &quot;&quot;&quot;</span>
-</span><span id="L-459"><a href="#L-459"><span class="linenos">459</span></a>        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
-</span><span id="L-460"><a href="#L-460"><span class="linenos">460</span></a>            <span class="sa">f</span><span class="s2">&quot;Unresolved label &#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; encountered at runtime. &quot;</span>
-</span><span id="L-461"><a href="#L-461"><span class="linenos">461</span></a>            <span class="s2">&quot;Programs containing labels must be assembled using assemble() before execution. &quot;</span>
-</span><span id="L-462"><a href="#L-462"><span class="linenos">462</span></a>            <span class="s2">&quot;Labels can only be used as jump/call destinations, not in arithmetic or other operations.&quot;</span>
-</span><span id="L-463"><a href="#L-463"><span class="linenos">463</span></a>        <span class="p">)</span>
-</span><span id="L-464"><a href="#L-464"><span class="linenos">464</span></a>
-</span><span id="L-465"><a href="#L-465"><span class="linenos">465</span></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-</span><span id="L-466"><a href="#L-466"><span class="linenos">466</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Return Python API representation.&quot;&quot;&quot;</span>
-</span><span id="L-467"><a href="#L-467"><span class="linenos">467</span></a>        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span>
-</span><span id="L-468"><a href="#L-468"><span class="linenos">468</span></a>
-</span><span id="L-469"><a href="#L-469"><span class="linenos">469</span></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-</span><span id="L-470"><a href="#L-470"><span class="linenos">470</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Return assembly text representation (without colon).&quot;&quot;&quot;</span>
-</span><span id="L-471"><a href="#L-471"><span class="linenos">471</span></a>        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span>
-</span><span id="L-472"><a href="#L-472"><span class="linenos">472</span></a>
-</span><span id="L-473"><a href="#L-473"><span class="linenos">473</span></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
-</span><span id="L-474"><a href="#L-474"><span class="linenos">474</span></a>        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="nb">type</span><span class="p">(</span><span class="n">other</span><span class="p">):</span>
-</span><span id="L-475"><a href="#L-475"><span class="linenos">475</span></a>            <span class="k">return</span> <span class="kc">False</span>
-</span><span id="L-476"><a href="#L-476"><span class="linenos">476</span></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">name</span>
-</span><span id="L-477"><a href="#L-477"><span class="linenos">477</span></a>
-</span><span id="L-478"><a href="#L-478"><span class="linenos">478</span></a>
-</span><span id="L-479"><a href="#L-479"><span class="linenos">479</span></a><span class="c1"># Type alias for jump/call destination operands</span>
-</span><span id="L-480"><a href="#L-480"><span class="linenos">480</span></a><span class="n">Destination</span> <span class="o">=</span> <span class="n">Label</span> <span class="o">|</span> <span class="n">Operand</span> <span class="o">|</span> <span class="nb">int</span>
+</span><span id="L-444"><a href="#L-444"><span class="linenos">444</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">comment</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+</span><span id="L-445"><a href="#L-445"><span class="linenos">445</span></a>
+</span><span id="L-446"><a href="#L-446"><span class="linenos">446</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">resolve</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cpu</span><span class="p">:</span> <span class="n">DT31</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+</span><span id="L-447"><a href="#L-447"><span class="linenos">447</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Resolve the label to an instruction position.</span>
+</span><span id="L-448"><a href="#L-448"><span class="linenos">448</span></a>
+</span><span id="L-449"><a href="#L-449"><span class="linenos">449</span></a><span class="sd">        This method should never be called during normal execution. Labels must be</span>
+</span><span id="L-450"><a href="#L-450"><span class="linenos">450</span></a><span class="sd">        resolved during the assembly process before the program runs. If this method</span>
+</span><span id="L-451"><a href="#L-451"><span class="linenos">451</span></a><span class="sd">        is called, it indicates the program was not assembled or the label was used</span>
+</span><span id="L-452"><a href="#L-452"><span class="linenos">452</span></a><span class="sd">        incorrectly (e.g., in an arithmetic operation instead of a jump destination).</span>
+</span><span id="L-453"><a href="#L-453"><span class="linenos">453</span></a>
+</span><span id="L-454"><a href="#L-454"><span class="linenos">454</span></a><span class="sd">        Args:</span>
+</span><span id="L-455"><a href="#L-455"><span class="linenos">455</span></a><span class="sd">            cpu: The DT31 CPU instance (unused).</span>
+</span><span id="L-456"><a href="#L-456"><span class="linenos">456</span></a>
+</span><span id="L-457"><a href="#L-457"><span class="linenos">457</span></a><span class="sd">        Raises:</span>
+</span><span id="L-458"><a href="#L-458"><span class="linenos">458</span></a><span class="sd">            RuntimeError: Always raised, as labels must be resolved during assembly.</span>
+</span><span id="L-459"><a href="#L-459"><span class="linenos">459</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="L-460"><a href="#L-460"><span class="linenos">460</span></a>        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+</span><span id="L-461"><a href="#L-461"><span class="linenos">461</span></a>            <span class="sa">f</span><span class="s2">&quot;Unresolved label &#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; encountered at runtime. &quot;</span>
+</span><span id="L-462"><a href="#L-462"><span class="linenos">462</span></a>            <span class="s2">&quot;Programs containing labels must be assembled using assemble() before execution. &quot;</span>
+</span><span id="L-463"><a href="#L-463"><span class="linenos">463</span></a>            <span class="s2">&quot;Labels can only be used as jump/call destinations, not in arithmetic or other operations.&quot;</span>
+</span><span id="L-464"><a href="#L-464"><span class="linenos">464</span></a>        <span class="p">)</span>
+</span><span id="L-465"><a href="#L-465"><span class="linenos">465</span></a>
+</span><span id="L-466"><a href="#L-466"><span class="linenos">466</span></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+</span><span id="L-467"><a href="#L-467"><span class="linenos">467</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Return Python API representation.&quot;&quot;&quot;</span>
+</span><span id="L-468"><a href="#L-468"><span class="linenos">468</span></a>        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span>
+</span><span id="L-469"><a href="#L-469"><span class="linenos">469</span></a>
+</span><span id="L-470"><a href="#L-470"><span class="linenos">470</span></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+</span><span id="L-471"><a href="#L-471"><span class="linenos">471</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Return assembly text representation (without colon).&quot;&quot;&quot;</span>
+</span><span id="L-472"><a href="#L-472"><span class="linenos">472</span></a>        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span>
+</span><span id="L-473"><a href="#L-473"><span class="linenos">473</span></a>
+</span><span id="L-474"><a href="#L-474"><span class="linenos">474</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">with_comment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Label</span><span class="p">:</span>
+</span><span id="L-475"><a href="#L-475"><span class="linenos">475</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a new label with the specified comment.</span>
+</span><span id="L-476"><a href="#L-476"><span class="linenos">476</span></a>
+</span><span id="L-477"><a href="#L-477"><span class="linenos">477</span></a><span class="sd">        Args:</span>
+</span><span id="L-478"><a href="#L-478"><span class="linenos">478</span></a><span class="sd">            text: The comment text to associate with the label.</span>
+</span><span id="L-479"><a href="#L-479"><span class="linenos">479</span></a>
+</span><span id="L-480"><a href="#L-480"><span class="linenos">480</span></a><span class="sd">        Returns:</span>
+</span><span id="L-481"><a href="#L-481"><span class="linenos">481</span></a><span class="sd">            A new Label instance with the same name but with the comment set.</span>
+</span><span id="L-482"><a href="#L-482"><span class="linenos">482</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="L-483"><a href="#L-483"><span class="linenos">483</span></a>        <span class="n">new_label</span> <span class="o">=</span> <span class="n">Label</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+</span><span id="L-484"><a href="#L-484"><span class="linenos">484</span></a>        <span class="n">new_label</span><span class="o">.</span><span class="n">comment</span> <span class="o">=</span> <span class="n">text</span>
+</span><span id="L-485"><a href="#L-485"><span class="linenos">485</span></a>        <span class="k">return</span> <span class="n">new_label</span>
+</span><span id="L-486"><a href="#L-486"><span class="linenos">486</span></a>
+</span><span id="L-487"><a href="#L-487"><span class="linenos">487</span></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+</span><span id="L-488"><a href="#L-488"><span class="linenos">488</span></a>        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="nb">type</span><span class="p">(</span><span class="n">other</span><span class="p">):</span>
+</span><span id="L-489"><a href="#L-489"><span class="linenos">489</span></a>            <span class="k">return</span> <span class="kc">False</span>
+</span><span id="L-490"><a href="#L-490"><span class="linenos">490</span></a>        <span class="c1"># Exclude comment from equality check</span>
+</span><span id="L-491"><a href="#L-491"><span class="linenos">491</span></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">name</span>
+</span><span id="L-492"><a href="#L-492"><span class="linenos">492</span></a>
+</span><span id="L-493"><a href="#L-493"><span class="linenos">493</span></a>
+</span><span id="L-494"><a href="#L-494"><span class="linenos">494</span></a><span class="c1"># Type alias for jump/call destination operands</span>
+</span><span id="L-495"><a href="#L-495"><span class="linenos">495</span></a><span class="n">Destination</span> <span class="o">=</span> <span class="n">Label</span> <span class="o">|</span> <span class="n">Operand</span> <span class="o">|</span> <span class="nb">int</span>
 </span></pre></div>
 
 
@@ -1674,39 +1695,54 @@ for dunder methods).</p>
 </span><span id="Label-442"><a href="#Label-442"><span class="linenos">442</span></a><span class="sd">            name: The symbolic name for this label.</span>
 </span><span id="Label-443"><a href="#Label-443"><span class="linenos">443</span></a><span class="sd">        &quot;&quot;&quot;</span>
 </span><span id="Label-444"><a href="#Label-444"><span class="linenos">444</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
-</span><span id="Label-445"><a href="#Label-445"><span class="linenos">445</span></a>
-</span><span id="Label-446"><a href="#Label-446"><span class="linenos">446</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">resolve</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cpu</span><span class="p">:</span> <span class="n">DT31</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-</span><span id="Label-447"><a href="#Label-447"><span class="linenos">447</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Resolve the label to an instruction position.</span>
-</span><span id="Label-448"><a href="#Label-448"><span class="linenos">448</span></a>
-</span><span id="Label-449"><a href="#Label-449"><span class="linenos">449</span></a><span class="sd">        This method should never be called during normal execution. Labels must be</span>
-</span><span id="Label-450"><a href="#Label-450"><span class="linenos">450</span></a><span class="sd">        resolved during the assembly process before the program runs. If this method</span>
-</span><span id="Label-451"><a href="#Label-451"><span class="linenos">451</span></a><span class="sd">        is called, it indicates the program was not assembled or the label was used</span>
-</span><span id="Label-452"><a href="#Label-452"><span class="linenos">452</span></a><span class="sd">        incorrectly (e.g., in an arithmetic operation instead of a jump destination).</span>
-</span><span id="Label-453"><a href="#Label-453"><span class="linenos">453</span></a>
-</span><span id="Label-454"><a href="#Label-454"><span class="linenos">454</span></a><span class="sd">        Args:</span>
-</span><span id="Label-455"><a href="#Label-455"><span class="linenos">455</span></a><span class="sd">            cpu: The DT31 CPU instance (unused).</span>
-</span><span id="Label-456"><a href="#Label-456"><span class="linenos">456</span></a>
-</span><span id="Label-457"><a href="#Label-457"><span class="linenos">457</span></a><span class="sd">        Raises:</span>
-</span><span id="Label-458"><a href="#Label-458"><span class="linenos">458</span></a><span class="sd">            RuntimeError: Always raised, as labels must be resolved during assembly.</span>
-</span><span id="Label-459"><a href="#Label-459"><span class="linenos">459</span></a><span class="sd">        &quot;&quot;&quot;</span>
-</span><span id="Label-460"><a href="#Label-460"><span class="linenos">460</span></a>        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
-</span><span id="Label-461"><a href="#Label-461"><span class="linenos">461</span></a>            <span class="sa">f</span><span class="s2">&quot;Unresolved label &#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; encountered at runtime. &quot;</span>
-</span><span id="Label-462"><a href="#Label-462"><span class="linenos">462</span></a>            <span class="s2">&quot;Programs containing labels must be assembled using assemble() before execution. &quot;</span>
-</span><span id="Label-463"><a href="#Label-463"><span class="linenos">463</span></a>            <span class="s2">&quot;Labels can only be used as jump/call destinations, not in arithmetic or other operations.&quot;</span>
-</span><span id="Label-464"><a href="#Label-464"><span class="linenos">464</span></a>        <span class="p">)</span>
-</span><span id="Label-465"><a href="#Label-465"><span class="linenos">465</span></a>
-</span><span id="Label-466"><a href="#Label-466"><span class="linenos">466</span></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-</span><span id="Label-467"><a href="#Label-467"><span class="linenos">467</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Return Python API representation.&quot;&quot;&quot;</span>
-</span><span id="Label-468"><a href="#Label-468"><span class="linenos">468</span></a>        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span>
-</span><span id="Label-469"><a href="#Label-469"><span class="linenos">469</span></a>
-</span><span id="Label-470"><a href="#Label-470"><span class="linenos">470</span></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-</span><span id="Label-471"><a href="#Label-471"><span class="linenos">471</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Return assembly text representation (without colon).&quot;&quot;&quot;</span>
-</span><span id="Label-472"><a href="#Label-472"><span class="linenos">472</span></a>        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span>
-</span><span id="Label-473"><a href="#Label-473"><span class="linenos">473</span></a>
-</span><span id="Label-474"><a href="#Label-474"><span class="linenos">474</span></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
-</span><span id="Label-475"><a href="#Label-475"><span class="linenos">475</span></a>        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="nb">type</span><span class="p">(</span><span class="n">other</span><span class="p">):</span>
-</span><span id="Label-476"><a href="#Label-476"><span class="linenos">476</span></a>            <span class="k">return</span> <span class="kc">False</span>
-</span><span id="Label-477"><a href="#Label-477"><span class="linenos">477</span></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">name</span>
+</span><span id="Label-445"><a href="#Label-445"><span class="linenos">445</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">comment</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+</span><span id="Label-446"><a href="#Label-446"><span class="linenos">446</span></a>
+</span><span id="Label-447"><a href="#Label-447"><span class="linenos">447</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">resolve</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cpu</span><span class="p">:</span> <span class="n">DT31</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+</span><span id="Label-448"><a href="#Label-448"><span class="linenos">448</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Resolve the label to an instruction position.</span>
+</span><span id="Label-449"><a href="#Label-449"><span class="linenos">449</span></a>
+</span><span id="Label-450"><a href="#Label-450"><span class="linenos">450</span></a><span class="sd">        This method should never be called during normal execution. Labels must be</span>
+</span><span id="Label-451"><a href="#Label-451"><span class="linenos">451</span></a><span class="sd">        resolved during the assembly process before the program runs. If this method</span>
+</span><span id="Label-452"><a href="#Label-452"><span class="linenos">452</span></a><span class="sd">        is called, it indicates the program was not assembled or the label was used</span>
+</span><span id="Label-453"><a href="#Label-453"><span class="linenos">453</span></a><span class="sd">        incorrectly (e.g., in an arithmetic operation instead of a jump destination).</span>
+</span><span id="Label-454"><a href="#Label-454"><span class="linenos">454</span></a>
+</span><span id="Label-455"><a href="#Label-455"><span class="linenos">455</span></a><span class="sd">        Args:</span>
+</span><span id="Label-456"><a href="#Label-456"><span class="linenos">456</span></a><span class="sd">            cpu: The DT31 CPU instance (unused).</span>
+</span><span id="Label-457"><a href="#Label-457"><span class="linenos">457</span></a>
+</span><span id="Label-458"><a href="#Label-458"><span class="linenos">458</span></a><span class="sd">        Raises:</span>
+</span><span id="Label-459"><a href="#Label-459"><span class="linenos">459</span></a><span class="sd">            RuntimeError: Always raised, as labels must be resolved during assembly.</span>
+</span><span id="Label-460"><a href="#Label-460"><span class="linenos">460</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="Label-461"><a href="#Label-461"><span class="linenos">461</span></a>        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+</span><span id="Label-462"><a href="#Label-462"><span class="linenos">462</span></a>            <span class="sa">f</span><span class="s2">&quot;Unresolved label &#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; encountered at runtime. &quot;</span>
+</span><span id="Label-463"><a href="#Label-463"><span class="linenos">463</span></a>            <span class="s2">&quot;Programs containing labels must be assembled using assemble() before execution. &quot;</span>
+</span><span id="Label-464"><a href="#Label-464"><span class="linenos">464</span></a>            <span class="s2">&quot;Labels can only be used as jump/call destinations, not in arithmetic or other operations.&quot;</span>
+</span><span id="Label-465"><a href="#Label-465"><span class="linenos">465</span></a>        <span class="p">)</span>
+</span><span id="Label-466"><a href="#Label-466"><span class="linenos">466</span></a>
+</span><span id="Label-467"><a href="#Label-467"><span class="linenos">467</span></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+</span><span id="Label-468"><a href="#Label-468"><span class="linenos">468</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Return Python API representation.&quot;&quot;&quot;</span>
+</span><span id="Label-469"><a href="#Label-469"><span class="linenos">469</span></a>        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span>
+</span><span id="Label-470"><a href="#Label-470"><span class="linenos">470</span></a>
+</span><span id="Label-471"><a href="#Label-471"><span class="linenos">471</span></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+</span><span id="Label-472"><a href="#Label-472"><span class="linenos">472</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Return assembly text representation (without colon).&quot;&quot;&quot;</span>
+</span><span id="Label-473"><a href="#Label-473"><span class="linenos">473</span></a>        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span>
+</span><span id="Label-474"><a href="#Label-474"><span class="linenos">474</span></a>
+</span><span id="Label-475"><a href="#Label-475"><span class="linenos">475</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">with_comment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Label</span><span class="p">:</span>
+</span><span id="Label-476"><a href="#Label-476"><span class="linenos">476</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a new label with the specified comment.</span>
+</span><span id="Label-477"><a href="#Label-477"><span class="linenos">477</span></a>
+</span><span id="Label-478"><a href="#Label-478"><span class="linenos">478</span></a><span class="sd">        Args:</span>
+</span><span id="Label-479"><a href="#Label-479"><span class="linenos">479</span></a><span class="sd">            text: The comment text to associate with the label.</span>
+</span><span id="Label-480"><a href="#Label-480"><span class="linenos">480</span></a>
+</span><span id="Label-481"><a href="#Label-481"><span class="linenos">481</span></a><span class="sd">        Returns:</span>
+</span><span id="Label-482"><a href="#Label-482"><span class="linenos">482</span></a><span class="sd">            A new Label instance with the same name but with the comment set.</span>
+</span><span id="Label-483"><a href="#Label-483"><span class="linenos">483</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="Label-484"><a href="#Label-484"><span class="linenos">484</span></a>        <span class="n">new_label</span> <span class="o">=</span> <span class="n">Label</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+</span><span id="Label-485"><a href="#Label-485"><span class="linenos">485</span></a>        <span class="n">new_label</span><span class="o">.</span><span class="n">comment</span> <span class="o">=</span> <span class="n">text</span>
+</span><span id="Label-486"><a href="#Label-486"><span class="linenos">486</span></a>        <span class="k">return</span> <span class="n">new_label</span>
+</span><span id="Label-487"><a href="#Label-487"><span class="linenos">487</span></a>
+</span><span id="Label-488"><a href="#Label-488"><span class="linenos">488</span></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+</span><span id="Label-489"><a href="#Label-489"><span class="linenos">489</span></a>        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="nb">type</span><span class="p">(</span><span class="n">other</span><span class="p">):</span>
+</span><span id="Label-490"><a href="#Label-490"><span class="linenos">490</span></a>            <span class="k">return</span> <span class="kc">False</span>
+</span><span id="Label-491"><a href="#Label-491"><span class="linenos">491</span></a>        <span class="c1"># Exclude comment from equality check</span>
+</span><span id="Label-492"><a href="#Label-492"><span class="linenos">492</span></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">name</span>
 </span></pre></div>
 
 
@@ -1821,6 +1857,7 @@ indices. Labels can only be used as destinations for jump and call instructions.
 </span><span id="Label.__init__-442"><a href="#Label.__init__-442"><span class="linenos">442</span></a><span class="sd">            name: The symbolic name for this label.</span>
 </span><span id="Label.__init__-443"><a href="#Label.__init__-443"><span class="linenos">443</span></a><span class="sd">        &quot;&quot;&quot;</span>
 </span><span id="Label.__init__-444"><a href="#Label.__init__-444"><span class="linenos">444</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+</span><span id="Label.__init__-445"><a href="#Label.__init__-445"><span class="linenos">445</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">comment</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
 </span></pre></div>
 
 
@@ -1846,6 +1883,17 @@ indices. Labels can only be used as destinations for jump and call instructions.
     
 
                             </div>
+                            <div id="Label.comment" class="classattr">
+                                <div class="attr variable">
+            <span class="name">comment</span><span class="annotation">: str</span>
+
+        
+    </div>
+    <a class="headerlink" href="#Label.comment"></a>
+    
+    
+
+                            </div>
                             <div id="Label.resolve" class="classattr">
                                         <input id="Label.resolve-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
 <div class="attr function">
@@ -1857,25 +1905,25 @@ indices. Labels can only be used as destinations for jump and call instructions.
 
     </div>
     <a class="headerlink" href="#Label.resolve"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="Label.resolve-446"><a href="#Label.resolve-446"><span class="linenos">446</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">resolve</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cpu</span><span class="p">:</span> <span class="n">DT31</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-</span><span id="Label.resolve-447"><a href="#Label.resolve-447"><span class="linenos">447</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Resolve the label to an instruction position.</span>
-</span><span id="Label.resolve-448"><a href="#Label.resolve-448"><span class="linenos">448</span></a>
-</span><span id="Label.resolve-449"><a href="#Label.resolve-449"><span class="linenos">449</span></a><span class="sd">        This method should never be called during normal execution. Labels must be</span>
-</span><span id="Label.resolve-450"><a href="#Label.resolve-450"><span class="linenos">450</span></a><span class="sd">        resolved during the assembly process before the program runs. If this method</span>
-</span><span id="Label.resolve-451"><a href="#Label.resolve-451"><span class="linenos">451</span></a><span class="sd">        is called, it indicates the program was not assembled or the label was used</span>
-</span><span id="Label.resolve-452"><a href="#Label.resolve-452"><span class="linenos">452</span></a><span class="sd">        incorrectly (e.g., in an arithmetic operation instead of a jump destination).</span>
-</span><span id="Label.resolve-453"><a href="#Label.resolve-453"><span class="linenos">453</span></a>
-</span><span id="Label.resolve-454"><a href="#Label.resolve-454"><span class="linenos">454</span></a><span class="sd">        Args:</span>
-</span><span id="Label.resolve-455"><a href="#Label.resolve-455"><span class="linenos">455</span></a><span class="sd">            cpu: The DT31 CPU instance (unused).</span>
-</span><span id="Label.resolve-456"><a href="#Label.resolve-456"><span class="linenos">456</span></a>
-</span><span id="Label.resolve-457"><a href="#Label.resolve-457"><span class="linenos">457</span></a><span class="sd">        Raises:</span>
-</span><span id="Label.resolve-458"><a href="#Label.resolve-458"><span class="linenos">458</span></a><span class="sd">            RuntimeError: Always raised, as labels must be resolved during assembly.</span>
-</span><span id="Label.resolve-459"><a href="#Label.resolve-459"><span class="linenos">459</span></a><span class="sd">        &quot;&quot;&quot;</span>
-</span><span id="Label.resolve-460"><a href="#Label.resolve-460"><span class="linenos">460</span></a>        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
-</span><span id="Label.resolve-461"><a href="#Label.resolve-461"><span class="linenos">461</span></a>            <span class="sa">f</span><span class="s2">&quot;Unresolved label &#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; encountered at runtime. &quot;</span>
-</span><span id="Label.resolve-462"><a href="#Label.resolve-462"><span class="linenos">462</span></a>            <span class="s2">&quot;Programs containing labels must be assembled using assemble() before execution. &quot;</span>
-</span><span id="Label.resolve-463"><a href="#Label.resolve-463"><span class="linenos">463</span></a>            <span class="s2">&quot;Labels can only be used as jump/call destinations, not in arithmetic or other operations.&quot;</span>
-</span><span id="Label.resolve-464"><a href="#Label.resolve-464"><span class="linenos">464</span></a>        <span class="p">)</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="Label.resolve-447"><a href="#Label.resolve-447"><span class="linenos">447</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">resolve</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cpu</span><span class="p">:</span> <span class="n">DT31</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+</span><span id="Label.resolve-448"><a href="#Label.resolve-448"><span class="linenos">448</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Resolve the label to an instruction position.</span>
+</span><span id="Label.resolve-449"><a href="#Label.resolve-449"><span class="linenos">449</span></a>
+</span><span id="Label.resolve-450"><a href="#Label.resolve-450"><span class="linenos">450</span></a><span class="sd">        This method should never be called during normal execution. Labels must be</span>
+</span><span id="Label.resolve-451"><a href="#Label.resolve-451"><span class="linenos">451</span></a><span class="sd">        resolved during the assembly process before the program runs. If this method</span>
+</span><span id="Label.resolve-452"><a href="#Label.resolve-452"><span class="linenos">452</span></a><span class="sd">        is called, it indicates the program was not assembled or the label was used</span>
+</span><span id="Label.resolve-453"><a href="#Label.resolve-453"><span class="linenos">453</span></a><span class="sd">        incorrectly (e.g., in an arithmetic operation instead of a jump destination).</span>
+</span><span id="Label.resolve-454"><a href="#Label.resolve-454"><span class="linenos">454</span></a>
+</span><span id="Label.resolve-455"><a href="#Label.resolve-455"><span class="linenos">455</span></a><span class="sd">        Args:</span>
+</span><span id="Label.resolve-456"><a href="#Label.resolve-456"><span class="linenos">456</span></a><span class="sd">            cpu: The DT31 CPU instance (unused).</span>
+</span><span id="Label.resolve-457"><a href="#Label.resolve-457"><span class="linenos">457</span></a>
+</span><span id="Label.resolve-458"><a href="#Label.resolve-458"><span class="linenos">458</span></a><span class="sd">        Raises:</span>
+</span><span id="Label.resolve-459"><a href="#Label.resolve-459"><span class="linenos">459</span></a><span class="sd">            RuntimeError: Always raised, as labels must be resolved during assembly.</span>
+</span><span id="Label.resolve-460"><a href="#Label.resolve-460"><span class="linenos">460</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="Label.resolve-461"><a href="#Label.resolve-461"><span class="linenos">461</span></a>        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+</span><span id="Label.resolve-462"><a href="#Label.resolve-462"><span class="linenos">462</span></a>            <span class="sa">f</span><span class="s2">&quot;Unresolved label &#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; encountered at runtime. &quot;</span>
+</span><span id="Label.resolve-463"><a href="#Label.resolve-463"><span class="linenos">463</span></a>            <span class="s2">&quot;Programs containing labels must be assembled using assemble() before execution. &quot;</span>
+</span><span id="Label.resolve-464"><a href="#Label.resolve-464"><span class="linenos">464</span></a>            <span class="s2">&quot;Labels can only be used as jump/call destinations, not in arithmetic or other operations.&quot;</span>
+</span><span id="Label.resolve-465"><a href="#Label.resolve-465"><span class="linenos">465</span></a>        <span class="p">)</span>
 </span></pre></div>
 
 
@@ -1897,6 +1945,49 @@ incorrectly (e.g., in an arithmetic operation instead of a jump destination).</p
 <ul>
 <li><strong>RuntimeError:</strong>  Always raised, as labels must be resolved during assembly.</li>
 </ul>
+</div>
+
+
+                            </div>
+                            <div id="Label.with_comment" class="classattr">
+                                        <input id="Label.with_comment-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
+<div class="attr function">
+            
+        <span class="def">def</span>
+        <span class="name">with_comment</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span>, </span><span class="param"><span class="n">text</span><span class="p">:</span> <span class="nb">str</span></span><span class="return-annotation">) -> <span class="n"><a href="#Label">Label</a></span>:</span></span>
+
+                <label class="view-source-button" for="Label.with_comment-view-source"><span>View Source</span></label>
+
+    </div>
+    <a class="headerlink" href="#Label.with_comment"></a>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="Label.with_comment-475"><a href="#Label.with_comment-475"><span class="linenos">475</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">with_comment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Label</span><span class="p">:</span>
+</span><span id="Label.with_comment-476"><a href="#Label.with_comment-476"><span class="linenos">476</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a new label with the specified comment.</span>
+</span><span id="Label.with_comment-477"><a href="#Label.with_comment-477"><span class="linenos">477</span></a>
+</span><span id="Label.with_comment-478"><a href="#Label.with_comment-478"><span class="linenos">478</span></a><span class="sd">        Args:</span>
+</span><span id="Label.with_comment-479"><a href="#Label.with_comment-479"><span class="linenos">479</span></a><span class="sd">            text: The comment text to associate with the label.</span>
+</span><span id="Label.with_comment-480"><a href="#Label.with_comment-480"><span class="linenos">480</span></a>
+</span><span id="Label.with_comment-481"><a href="#Label.with_comment-481"><span class="linenos">481</span></a><span class="sd">        Returns:</span>
+</span><span id="Label.with_comment-482"><a href="#Label.with_comment-482"><span class="linenos">482</span></a><span class="sd">            A new Label instance with the same name but with the comment set.</span>
+</span><span id="Label.with_comment-483"><a href="#Label.with_comment-483"><span class="linenos">483</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="Label.with_comment-484"><a href="#Label.with_comment-484"><span class="linenos">484</span></a>        <span class="n">new_label</span> <span class="o">=</span> <span class="n">Label</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+</span><span id="Label.with_comment-485"><a href="#Label.with_comment-485"><span class="linenos">485</span></a>        <span class="n">new_label</span><span class="o">.</span><span class="n">comment</span> <span class="o">=</span> <span class="n">text</span>
+</span><span id="Label.with_comment-486"><a href="#Label.with_comment-486"><span class="linenos">486</span></a>        <span class="k">return</span> <span class="n">new_label</span>
+</span></pre></div>
+
+
+            <div class="docstring"><p>Create a new label with the specified comment.</p>
+
+<h6 id="arguments">Arguments:</h6>
+
+<ul>
+<li><strong>text:</strong>  The comment text to associate with the label.</li>
+</ul>
+
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>A new Label instance with the same name but with the comment set.</p>
+</blockquote>
 </div>
 
 

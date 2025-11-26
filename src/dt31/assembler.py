@@ -3,10 +3,11 @@ from copy import deepcopy
 from dt31.exceptions import AssemblyError
 from dt31.instructions import Instruction, RelativeJumpMixin
 from dt31.operands import Label, Literal, MemoryReference, Operand, RegisterReference
+from dt31.parser import Comment
 
 
 def assemble(
-    program: list[Instruction | Label] | list[Instruction],
+    program: list[Instruction | Label | Comment] | list[Instruction],
 ) -> list[Instruction]:
     """Assemble a program by resolving labels to instruction positions.
 
@@ -78,6 +79,8 @@ def assemble(
                 raise AssemblyError(f"Label {inst.name} used more than once.")
             used_labels.add(inst.name)
             label_to_ip[inst.name] = ip
+        elif isinstance(inst, Comment):
+            continue
         else:
             new_program.append(deepcopy(inst))
             ip += 1
@@ -99,68 +102,9 @@ def assemble(
     return new_program
 
 
-def program_to_text(program: list[Instruction | Label] | list[Instruction]) -> str:
-    """Convert a program to assembly text format.
-
-    Converts a list of instructions and labels (whether created programmatically
-    in Python or parsed from text) into human-readable assembly text syntax.
-
-    Args:
-        program: List of instructions and labels in source order.
-
-    Returns:
-        A string containing the assembly text representation of the program,
-        with one instruction or label per line.
-
-    Examples:
-        Convert Python program to assembly text:
-        ```python
-        from dt31 import I, R, L, Label
-
-        program = [
-            I.CP(5, R.a),
-            loop := Label("loop"),
-            I.NOUT(R.a, L[1]),
-            I.SUB(R.a, L[1]),
-            I.JGT(loop, R.a, L[0]),
-        ]
-
-        text = program_to_text(program)
-        print(text)
-        # CP 5, R.a
-        # loop:
-        #     NOUT R.a, 1
-        #     SUB R.a, 1
-        #     JGT loop, R.a, 0
-        ```
-
-        Round-trip conversion (text → Python → text):
-        ```python
-        from dt31.parser import parse_program
-
-        original = '''
-        CP 5, R.a
-        loop:
-            NOUT R.a, 1
-            SUB R.a, 1
-            JGT loop, R.a, 0
-        '''
-
-        program = parse_program(original)
-        reconstructed = program_to_text(program)
-        # reconstructed matches original (modulo whitespace)
-        ```
-    """
-    lines = []
-    for item in program:
-        if isinstance(item, Label):
-            lines.append(f"{item.name}:")
-        else:
-            lines.append(f"    {str(item)}")
-    return "\n".join(lines)
-
-
-def extract_registers_from_program(program: list[Instruction | Label]) -> list[str]:
+def extract_registers_from_program(
+    program: list[Instruction | Label | Comment],
+) -> list[str]:
     """
     Extract all register names used in a program.
 
@@ -196,7 +140,7 @@ def extract_registers_from_program(program: list[Instruction | Label]) -> list[s
             extract_from_operand(operand.address)
 
     for item in program:
-        if isinstance(item, Label):
+        if isinstance(item, (Label, Comment)):
             continue
 
         # Instructions store operands as attributes
