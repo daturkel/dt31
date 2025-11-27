@@ -3,7 +3,7 @@
 [![PyPI - Version](https://img.shields.io/pypi/v/dt31?color=yellow)](https://pypi.org/project/dt31/)
  [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](https://opensource.org/licenses/MIT) [![pdoc](https://img.shields.io/badge/docs-pdoc.dev-green)](https://pdoc.dev/docs/pdoc.html) [![Ruff](https://img.shields.io/badge/style-ruff-green.svg)](https://github.com/astral-sh/ruff) ![Coverage Badge](coverage-badge.svg)
 
-A toy computer emulator and assembly language written in Python. Build programs with 60+ built-in instructions for interacting with registers, memory, and the stack. Write your programs in the native assembly syntax or directly with the Python API.
+A toy computer and assembly language written in Python. Build programs with 60+ built-in instructions for interacting with registers, memory, and the stack. Write your programs in the native assembly syntax or directly with the Python API.
 
 <table>
 <tr>
