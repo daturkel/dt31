@@ -269,15 +269,17 @@ dt31    </h1>
 
 <div class="pdoc-code codehilite">
 <pre><span></span><code>dt31<span class="w"> </span>run<span class="w"> </span>program.dt<span class="w">       </span><span class="c1"># Execute program</span>
+dt31<span class="w"> </span>check<span class="w"> </span>program.dt<span class="w">     </span><span class="c1"># Validate syntax</span>
 dt31<span class="w"> </span>format<span class="w"> </span>program.dt<span class="w">    </span><span class="c1"># Format file in-place</span>
 </code></pre>
 </div>
 
 <h3 id="cli-options">CLI Options</h3>
 
+<h4 id="run-command">Run Command</h4>
+
 <ul>
 <li><code>--debug</code> or <code>-d</code>: Enable step-by-step debug output</li>
-<li><code>--parse-only</code> or <code>-p</code>: Validate syntax without executing</li>
 <li><code>--registers a,b,c,d</code>: Specify custom registers (auto-detected by default)</li>
 <li><code>--memory 512</code>: Set memory size in bytes (default: 256)</li>
 <li><code>--stack-size 512</code>: Set stack size (default: 256)</li>
@@ -286,11 +288,20 @@ dt31<span class="w"> </span>format<span class="w"> </span>program.dt<span class=
 <li><code>--dump-file FILE</code>: File path for CPU state dump (auto-generates timestamped filename if not specified)</li>
 </ul>
 
+<h4 id="check-command">Check Command</h4>
+
+<ul>
+<li><code>--custom-instructions PATH</code> or <code>-i PATH</code>: Load custom instruction definitions from a Python file</li>
+</ul>
+
 <p><strong>Examples:</strong></p>
 
 <div class="pdoc-code codehilite">
-<pre><span></span><code><span class="c1"># Parse and validate only (no execution)</span>
-dt31<span class="w"> </span>run<span class="w"> </span>--parse-only<span class="w"> </span>program.dt
+<pre><span></span><code><span class="c1"># Validate syntax only (no execution)</span>
+dt31<span class="w"> </span>check<span class="w"> </span>program.dt
+
+<span class="c1"># Validate with custom instructions</span>
+dt31<span class="w"> </span>check<span class="w"> </span>--custom-instructions<span class="w"> </span>my_instructions.py<span class="w"> </span>program.dt
 
 <span class="c1"># Run with debug output</span>
 dt31<span class="w"> </span>run<span class="w"> </span>--debug<span class="w"> </span>program.dt

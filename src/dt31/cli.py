@@ -14,15 +14,17 @@ pip install dt31
 
 ## Commands
 
-The dt31 CLI provides two main commands:
+The dt31 CLI provides three main commands:
 
 - **run**: Execute `.dt` assembly files
+- **check**: Validate syntax of `.dt` assembly files
 - **format**: Format `.dt` assembly files with consistent style
 
 ## Basic Usage
 
 ```bash
 dt31 run program.dt       # Execute program
+dt31 check program.dt     # Validate syntax
 dt31 format program.dt    # Format file in-place
 ```
 
@@ -34,7 +36,6 @@ Execute `.dt` assembly files with configurable CPU settings.
 
 - **file** (required): Path to the `.dt` assembly file to execute
 - **-d, --debug**: Enable step-by-step debug output during execution
-- **-p, --parse-only**: Validate syntax without executing the program
 - **-i, --custom-instructions**: Path to Python file containing custom instruction definitions
 - **--registers**: Comma-separated list of register names (auto-detected by default)
 - **--memory**: Memory size in bytes (default: 256)
@@ -47,9 +48,6 @@ Execute `.dt` assembly files with configurable CPU settings.
 ```bash
 # Execute a program
 dt31 run countdown.dt
-
-# Validate syntax only
-dt31 run --parse-only program.dt
 
 # Run with debug output
 dt31 run --debug program.dt
@@ -74,6 +72,30 @@ dt31 run --dump success program.dt  # Auto-generates program_final_TIMESTAMP.jso
 # Dump on both error and success
 dt31 run --dump all program.dt  # Auto-generates timestamped files
 ```
+
+## Check Command
+
+Validate the syntax of `.dt` assembly files without executing them.
+
+**Options:**
+
+- **file** (required): Path to the `.dt` assembly file to validate
+- **-i, --custom-instructions**: Path to Python file containing custom instruction definitions
+
+**Examples:**
+
+```bash
+# Validate syntax of a program
+dt31 check program.dt
+
+# Validate with custom instructions
+dt31 check --custom-instructions custom.py program.dt
+```
+
+**Exit Codes (Check Command):**
+
+- **0**: File is valid
+- **1**: Error (file not found, parse error, or custom instruction error)
 
 ## Format Command
 
@@ -216,7 +238,6 @@ def _create_run_parser(subparsers) -> None:
 examples:
   dt31 run program.dt                     Parse and execute program
   dt31 run --debug program.dt             Execute with debug output
-  dt31 run --parse-only program.dt        Validate syntax only
   dt31 run --memory 512 program.dt        Use 512 slots of memory
   dt31 run --registers a,b,c,d program.dt  Use custom registers
         """,
@@ -233,13 +254,6 @@ examples:
         "--debug",
         action="store_true",
         help="Enable debug output during execution",
-    )
-
-    run_parser.add_argument(
-        "-p",
-        "--parse-only",
-        action="store_true",
-        help="Parse the file but don't execute (validate syntax only)",
     )
 
     run_parser.add_argument(
@@ -281,6 +295,38 @@ examples:
         type=str,
         metavar="FILE",
         help="File path for CPU state dump (auto-generates if not specified)",
+    )
+
+
+def _create_check_parser(subparsers) -> None:
+    """Create the 'check' subcommand parser.
+
+    Args:
+        subparsers: The subparsers object from add_subparsers()
+    """
+    check_parser = subparsers.add_parser(
+        "check",
+        help="Validate syntax of a dt31 assembly file",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+examples:
+  dt31 check program.dt                               Validate syntax
+  dt31 check --custom-instructions custom.py prog.dt  Validate with custom instructions
+        """,
+    )
+
+    check_parser.add_argument(
+        "file",
+        type=str,
+        help="Path to .dt assembly file to validate",
+    )
+
+    check_parser.add_argument(
+        "--custom-instructions",
+        "-i",
+        type=str,
+        metavar="PATH",
+        help="Path to Python file containing custom instruction definitions",
     )
 
 
@@ -338,11 +384,6 @@ def run_command(args: argparse.Namespace) -> None:
 
     # Extract registers used in the program
     registers_used = extract_registers_from_program(program)
-
-    # If parse-only mode, we're done
-    if args.parse_only:
-        print(f"✓ {args.file} parsed successfully", file=sys.stderr)
-        sys.exit(0)
 
     # Create CPU with custom configuration
     cpu_kwargs = {}
@@ -412,6 +453,53 @@ def run_command(args: argparse.Namespace) -> None:
             print(f"Failed to dump CPU state: {dump_error}", file=sys.stderr)
 
     # Success
+    sys.exit(0)
+
+
+def check_command(args: argparse.Namespace) -> None:
+    """Execute the 'check' subcommand - validate syntax of a dt31 program.
+
+    Args:
+        args: Parsed command-line arguments from argparse
+
+    This function implements the syntax validation workflow:
+    1. Load custom instructions (if provided)
+    2. Read and parse the assembly file
+    3. Report success or error
+
+    Exit codes:
+        0: File is valid
+        1: Error occurred (file not found, parse error, etc.)
+    """
+    # Load custom instructions if provided
+    custom_instructions = None
+    if args.custom_instructions:
+        try:
+            custom_instructions = load_custom_instructions(args.custom_instructions)
+        except (FileNotFoundError, ImportError, ValueError, TypeError) as e:
+            print(f"Error loading custom instructions: {e}", file=sys.stderr)
+            sys.exit(1)
+
+    # Read the input file
+    file_path = Path(args.file)
+    try:
+        assembly_text = file_path.read_text()
+    except FileNotFoundError:
+        print(f"Error: File not found: {args.file}", file=sys.stderr)
+        sys.exit(1)
+    except IOError as e:
+        print(f"Error reading file {args.file}: {e}", file=sys.stderr)
+        sys.exit(1)
+
+    # Parse the assembly program with custom instructions
+    try:
+        parse_program(assembly_text, custom_instructions=custom_instructions)
+    except ParserError as e:
+        print(f"Parse error: {e}", file=sys.stderr)
+        sys.exit(1)
+
+    # Success
+    print(f"✓ {args.file} is valid", file=sys.stderr)
     sys.exit(0)
 
 
@@ -675,6 +763,9 @@ def main() -> None:
     # Create 'run' subcommand
     _create_run_parser(subparsers)
 
+    # Create 'check' subcommand
+    _create_check_parser(subparsers)
+
     # Create 'format' subcommand
     _create_format_parser(subparsers)
 
@@ -683,6 +774,8 @@ def main() -> None:
     # Dispatch to appropriate command handler
     if args.command == "run":
         run_command(args)
+    elif args.command == "check":
+        check_command(args)
     elif args.command == "format":
         format_command(args)
     else:

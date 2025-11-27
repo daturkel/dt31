@@ -191,13 +191,15 @@ Execute `.dt` assembly files directly:
 
 ```shell
 dt31 run program.dt       # Execute program
+dt31 check program.dt     # Validate syntax
 dt31 format program.dt    # Format file in-place
 ```
 
 ### CLI Options
 
+#### Run Command
+
 - `--debug` or `-d`: Enable step-by-step debug output
-- `--parse-only` or `-p`: Validate syntax without executing
 - `--registers a,b,c,d`: Specify custom registers (auto-detected by default)
 - `--memory 512`: Set memory size in bytes (default: 256)
 - `--stack-size 512`: Set stack size (default: 256)
@@ -205,11 +207,18 @@ dt31 format program.dt    # Format file in-place
 - `--dump {none,error,success,all}`: When to dump CPU state (default: none)
 - `--dump-file FILE`: File path for CPU state dump (auto-generates timestamped filename if not specified)
 
+#### Check Command
+
+- `--custom-instructions PATH` or `-i PATH`: Load custom instruction definitions from a Python file
+
 **Examples:**
 
 ```shell
-# Parse and validate only (no execution)
-dt31 run --parse-only program.dt
+# Validate syntax only (no execution)
+dt31 check program.dt
+
+# Validate with custom instructions
+dt31 check --custom-instructions my_instructions.py program.dt
 
 # Run with debug output
 dt31 run --debug program.dt
