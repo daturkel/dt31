@@ -21,6 +21,7 @@ Highlights
    :glob:
 
    getting-started
+   common-instructions
    *
 
 .. toctree::

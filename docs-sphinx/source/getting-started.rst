@@ -13,18 +13,13 @@ Install dt31 using pip:
 "Hello world!" two ways
 ------------------------
 
-Rather than putting a bunch of syntax and technicalities up front, let's jump straight into writing some programs.
-
-To build up our understanding, we'll write a `"Hello world!" <https://en.wikipedia.org/wiki/%22Hello,_World!%22_program>`_ program,
-which simply prints ``Hello world!``, in a couple of different ways.
+Let's jump straight into writing programs. We'll write a `"Hello world!" <https://en.wikipedia.org/wiki/%22Hello,_World!%22_program>`_ program in a couple of different ways.
 
 One character at a time
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-For our first attempt, we'll only use just one instruction, but we're going to use it many times.
-The :class:`OOUT <dt31.instructions.OOUT>` instruction lets us print a single character. It's syntax is ``OOUT a, b`` where
-``a`` is the character to be printed, and if ``b`` is nonzero, we append a newline. If we don't need a newline,
-we can omit ``b`` completely.
+For our first attempt, we'll use the :class:`OOUT <dt31.instructions.OOUT>` instruction to print a single character.
+Its syntax is ``OOUT a, b`` where ``a`` is the character, and ``b`` (optional) adds a newline if nonzero.
 
 .. code-block:: nasm
 
@@ -42,27 +37,22 @@ we can omit ``b`` completely.
    OOUT '!', 1 ; add a newline after the "!"
 
 .. NOTE::
-   Notice how the last line of our program has a comment. Any text following a ``;`` character is ignored
-   by the assembler.
+   Text following a ``;`` character is treated as a comment and ignored by the assembler.
 
-We can now run this program with ``dt31 run``. Save it to a file called ``hello_world_1.dt`` and run::
+Save this to ``hello_world_1.dt`` and run::
 
-   dt31 run hello_world_1.dt
-
-and you will see the output::
-
+   $ dt31 run hello_world_1.dt
    Hello world!
 
-Great, we've just written our first dt31 program!
+Congrats, you've just written your first dt31 program!
 
 Hello *you*!
-------------
+~~~~~~~~~~~~
 
-Next up we're going to customize our program. It's going to prompt the user to enter their name. If they
-provide a name, we'll print ``Hello <name>!`` If the user just hits enter without entering anything, we'll
-print ``Hello world!`` as before.
+Now let's add a feature: we'll prompt for a name and print ``Hello <name>!`` if provided,
+or ``Hello world!`` if the user just hits enter.
 
-Let's take a look at the full program first, then we'll break down what's going on:
+Here's the full program:
 
 .. code-block:: nasm
 
@@ -89,28 +79,43 @@ Let's take a look at the full program first, then we'll break down what's going 
    end:
       OOUT '!', 1    ; print "!" with a newline
 
+If you save this to ``hello_world_2.dt``, you can test it out::
 
-There's a lot going on here, so let's take it piece by piece.
+   $ dt31 run hello_world_2.dt
+   > Joe
+   Hello Joe!
 
-First off, you'll notice that most of the program is indented. The dt31 assembler doesn't care
-about whitespace, so indentation and newlines can be used purely to make it more human-readable.
-In this case, we indent the code to make the labels stand out, which is fairly common in *real* assembly languages.
+   $ dt31 run hello_world_2.dt
+   >
+   Hello world!
 
-The aforementioned labels are the lines ending in a colon: ``world:``, ``name:``, ``end:`` These
-allow us to set positions in the code that we can jump to with special jump instructions. Labels are
-detected and reference to labels (e.g. ``JMP end``) are replaced with with
-numeric references to the instruction number to jump to. In this case, ``JMP end`` becomes ``JMP 16`` because
-the next instruction after the label (``OOUT '!', 1``) is instruction 16.
+Let's break this down. First, note that indentation is purely for readability—the assembler ignores whitespace.
 
-At the start of the program, we see a new instruction: :class:`STRIN <dt31.instructions.STRIN>`. This instruction
-takes a single argument that must be a reference to a point in memory. The dt31 virtual computer has a fixed
-amount of memory, where each index can hold an integer or character (encoded as their Unicode codepoint). References
-to memory are written with square brackets, so ``[123]`` refers to index 123 in memory. Putting this together,
-``STRIN [0]`` prompts the user for a string and writes it to memory, one character at a time, starting at index 0.
-At the end of the string, we write a 0 to indicate the end of the string. If the user provided ``Bob``, then we'll
-write 66 (the Unicode codepoint for "B") at index 0, 111 to index 1 ("o"), 98 to index 2 ("b"), and 0 to index 3.
+The unindented lines, ending with ``:``, are labels, which mark positions we can jump to: ``world:``, ``name:``, and ``end:``.
 
-Since we're going to print "Hello " no matter what, we then proceed directly into that with a series of ``OOUT`` instructions.
+The program starts with :class:`STRIN <dt31.instructions.STRIN>`, which prompts for a string and stores it in memory.
+dt31 has fixed-size memory where each index holds an integer or character (as its Unicode codepoint). Memory references
+use square brackets: ``[123]`` refers to index 123.
 
-Next we have to make a decision: do we print "world!" or the user's name? If it's not told otherwise, dt31 programs will
-just run straight from top to bottom, so we need some way to decide which section of code to run. Blah blah :class:`JIF <dt31.instructions.JIF>`
+``STRIN [0]`` writes the string to memory starting at index 0, one character at a time, ending with a 0 terminator.
+For ``Bob``, we write: 66 (the Unicode codepoint for "B") at ``[0]``, 111 ("o") at ``[1]``, 98 ("b") at ``[2]``, and 0 at ``[3]``.
+
+Next we print "Hello " with a series of ``OOUT`` instructions like before.
+
+Now we need to decide: do we print "world" or the user's name? Programs run top-to-bottom unless we jump, so
+we use :class:`JIF <dt31.instructions.JIF>`—"jump if," written ``JIF dest, a``—to jump to ``dest`` if ``a`` is nonzero.
+
+``JIF name, [0]`` checks ``[0]``: if it contains a character (the first letter of the name), we jump to the ``name`` label.
+Otherwise, ``[0]`` is 0, so we fall through to the next instruction and print "world" with ``OOUT`` instructions.
+At the end of the ``world`` section, :class:`JMP <dt31.instructions.JMP>` (unconditional jump) skips to ``end``.
+
+In the scenario where there *is* a name, we pick up from the ``name`` label, which uses :class:`STROUT <dt31.instructions.STROUT>` to print the string from memory.
+``STROUT [0]`` reads characters starting at ``[0]`` until it hits the 0 terminator (which you'll recall ``STRIN`` adds after every string).
+
+In both scenarios, we end up at the ``end:`` label, which prints ``!`` with a newline.
+
+Next steps
+----------
+
+Now that you've seen the basics of writing dt31 programs, we'll take a tour of some common instructions you'll need. Click
+the "Next" button below to continue.
