@@ -1443,8 +1443,16 @@ class STRIN(Instruction):
 
     def _calc(self, cpu: DT31) -> int:
         val = input(INPUT_PROMPT)
+        base = self.out.resolve_address(cpu)
+        tmp = base
+
+        # empty string just writes 0 to out
+        if not val:
+            cpu.set_memory(tmp, 0)
+            return 0
+
         for i, char in enumerate(val):
-            tmp = self.out.resolve_address(cpu) + i
+            tmp = base + i
             cpu.set_memory(tmp, ord(char))
         cpu.set_memory(tmp + 1, 0)
         return 0
