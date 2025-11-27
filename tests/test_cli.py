@@ -56,20 +56,21 @@ def test_cli_user_provided_registers_validated(temp_dt_file, capsys):
     assert "y" in captured.err
 
 
-def test_cli_parse_only(temp_dt_file, capsys):
+def test_check_valid_file(temp_dt_file, capsys):
+    """Test check command with valid file."""
     assembly = """
     CP 10, R.x
     NOUT R.x, 1
     """
     file_path = temp_dt_file(assembly)
 
-    with patch.object(sys, "argv", ["dt31", "run", "--parse-only", file_path]):
+    with patch.object(sys, "argv", ["dt31", "check", file_path]):
         with pytest.raises(SystemExit) as exc_info:
             main()
 
     assert exc_info.value.code == 0
     captured = capsys.readouterr()
-    assert "parsed successfully" in captured.err
+    assert "is valid" in captured.err
 
 
 def test_cli_file_not_found(capsys):
@@ -521,8 +522,8 @@ NOUT R.a, 1
     assert "15" in captured.out
 
 
-def test_custom_instructions_with_parse_only(tmp_path, capsys) -> None:
-    """Test that custom instructions work with --parse-only flag."""
+def test_check_with_custom_instructions(tmp_path, capsys) -> None:
+    """Test that custom instructions work with check command."""
     custom_file = tmp_path / "custom.py"
     custom_file.write_text(
         """
@@ -555,8 +556,7 @@ NOUT R.a, 1
         "argv",
         [
             "dt31",
-            "run",
-            "--parse-only",
+            "check",
             "--custom-instructions",
             str(custom_file),
             str(program_file),
@@ -567,11 +567,76 @@ NOUT R.a, 1
 
     assert exc_info.value.code == 0
     captured = capsys.readouterr()
-    assert "parsed successfully" in captured.err
+    assert "is valid" in captured.err
+
+
+def test_check_parse_error(temp_dt_file, capsys) -> None:
+    """Test check command with parse error."""
+    assembly = "INVALID_INSTRUCTION R.x"
+    file_path = temp_dt_file(assembly)
+
+    with patch.object(sys, "argv", ["dt31", "check", file_path]):
+        with pytest.raises(SystemExit) as exc_info:
+            main()
+
+    assert exc_info.value.code == 1
+    captured = capsys.readouterr()
+    assert "Parse error" in captured.err
+
+
+def test_check_file_not_found(capsys) -> None:
+    """Test check command with nonexistent file."""
+    with patch.object(sys, "argv", ["dt31", "check", "nonexistent.dt"]):
+        with pytest.raises(SystemExit) as exc_info:
+            main()
+
+    assert exc_info.value.code == 1
+    captured = capsys.readouterr()
+    assert "File not found" in captured.err
+
+
+def test_check_custom_instructions_error(tmp_path, capsys) -> None:
+    """Test check command with invalid custom instructions file."""
+    program_file = tmp_path / "program.dt"
+    program_file.write_text("CP 5, R.a")
+
+    with patch.object(
+        sys,
+        "argv",
+        ["dt31", "check", "--custom-instructions", "nonexistent.py", str(program_file)],
+    ):
+        with pytest.raises(SystemExit) as exc_info:
+            main()
+
+    assert exc_info.value.code == 1
+    captured = capsys.readouterr()
+    assert "Error loading custom instructions" in captured.err
+
+
+def test_check_io_error_reading_file(tmp_path, capsys) -> None:
+    """Test IOError when reading file with check command (permission denied, etc.)."""
+    # Create a real file path that exists
+    file_path = tmp_path / "test.dt"
+    file_path.write_text("CP 1, R.a")
+
+    # Mock Path.read_text to raise IOError
+    with patch("dt31.cli.Path") as mock_path:
+        mock_path_instance = MagicMock()
+        mock_path_instance.read_text.side_effect = IOError("Permission denied")
+        mock_path.return_value = mock_path_instance
+
+        with patch.object(sys, "argv", ["dt31", "check", str(file_path)]):
+            with pytest.raises(SystemExit) as exc_info:
+                main()
+
+    assert exc_info.value.code == 1
+    captured = capsys.readouterr()
+    assert "Error reading file" in captured.err
+    assert "Permission denied" in captured.err
 
 
 def test_custom_instructions_debug_output(tmp_path, capsys) -> None:
-    """Test debug output when loading custom instructions."""
+    """Test debug output when loading custom instructions with run command."""
     # Create custom instruction file with multiple instructions
     custom_file = tmp_path / "custom.py"
     custom_file.write_text(
@@ -600,22 +665,26 @@ INSTRUCTIONS = {"DOUBLE": DOUBLE, "TRIPLE": TRIPLE}
     program_file = tmp_path / "program.dt"
     program_file.write_text("CP 5, R.a")
 
-    # Use --parse-only with --debug to avoid interactive execution
-    with patch.object(
-        sys,
-        "argv",
-        [
-            "dt31",
-            "run",
-            "--debug",
-            "--parse-only",
-            "--custom-instructions",
-            str(custom_file),
-            str(program_file),
-        ],
-    ):
-        with pytest.raises(SystemExit) as exc_info:
-            main()
+    # Mock DT31.run to avoid interactive debug mode
+    with patch("dt31.cli.DT31") as mock_dt31_class:
+        mock_cpu = MagicMock()
+        mock_cpu.run.return_value = None
+        mock_dt31_class.return_value = mock_cpu
+
+        with patch.object(
+            sys,
+            "argv",
+            [
+                "dt31",
+                "run",
+                "--debug",
+                "--custom-instructions",
+                str(custom_file),
+                str(program_file),
+            ],
+        ):
+            with pytest.raises(SystemExit) as exc_info:
+                main()
 
     assert exc_info.value.code == 0
     captured = capsys.readouterr()
