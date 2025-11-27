@@ -865,6 +865,14 @@ def test_strin(cpu, monkeypatch):
     assert str(e.value).endswith("got 1")
 
 
+def test_strin_empty_string(cpu, monkeypatch):
+    """Test that STRIN handles empty string input correctly."""
+    monkeypatch.setattr("builtins.input", lambda prompt: "")
+    cpu.set_memory(10, 999)
+    assert I.STRIN(M[10])(cpu) == 0
+    assert cpu.get_memory(10) == 0
+
+
 def test_strout_no_newline(cpu, capsys):
     with pytest.raises(ValueError) as e:
         I.STROUT(1)  # type: ignore
