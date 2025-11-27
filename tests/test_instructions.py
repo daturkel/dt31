@@ -3,6 +3,7 @@ from copy import copy
 
 import pytest
 
+from dt31 import DT31
 from dt31 import instructions as I
 from dt31.operands import LC, L, M, MemoryReference, R
 
@@ -896,3 +897,67 @@ def test_strout_newline(cpu, capsys):
     assert I.STROUT(M[55], L[1])(cpu) == 0
     captured = capsys.readouterr()
     assert captured.out == "hello!\n"
+
+
+def test_next_finds_zero_at_start(cpu):
+    cpu.set_memory(5, 0)
+    I.NEXT(5, R.a)(cpu)
+    assert cpu.get_register("a") == 5
+
+
+def test_next_finds_zero_after_start(cpu):
+    cpu.set_memory(5, 100)
+    cpu.set_memory(6, 100)
+    cpu.set_memory(7, 0)
+    I.NEXT(5, R.a)(cpu)
+    assert cpu.get_register("a") == 7
+
+
+def test_next_returns_negative_one_when_no_zero(cpu):
+    # Fill memory with non-zero values
+    for i in range(cpu.memory_size):
+        cpu.set_memory(i, 100)
+    I.NEXT(0, R.a)(cpu)
+    assert cpu.get_register("a") == -1
+
+
+def test_next_wraps_around_when_enabled():
+    # Enable wrap_memory
+    cpu_wrap = DT31(wrap_memory=True)
+
+    # Fill memory with non-zero except at index 2
+    for i in range(cpu_wrap.memory_size):
+        cpu_wrap.set_memory(i, 100)
+    cpu_wrap.set_memory(2, 0)
+
+    # Start searching from index 10, should wrap around and find 2
+    I.NEXT(10, R.a)(cpu_wrap)
+    assert cpu_wrap.get_register("a") == 2
+
+
+def test_next_no_wrap_returns_negative_one(cpu):
+    # Put zero at index 5, but start searching from index 10
+    cpu.set_memory(5, 0)
+    for i in range(10, cpu.memory_size):
+        cpu.set_memory(i, 100)
+
+    I.NEXT(10, R.a)(cpu)
+    assert cpu.get_register("a") == -1
+
+
+def test_next_with_memory_operand(cpu):
+    cpu.set_memory(0, 15)  # Start index stored in memory
+    cpu.set_memory(20, 0)  # Zero at index 20
+    for i in range(15, 20):
+        cpu.set_memory(i, 100)
+
+    I.NEXT(M[0], R.a)(cpu)
+    assert cpu.get_register("a") == 20
+
+
+def test_next_representations():
+    """Test string representations of NEXT instruction."""
+    assert repr(I.NEXT(5, R.a)) == "NEXT(a=5, out=R.a)"
+    assert str(I.NEXT(5, R.a)) == "NEXT 5, R.a"
+    assert repr(I.NEXT(M[10], M[20])) == "NEXT(a=M[10], out=M[20])"
+    assert str(I.NEXT(M[10], M[20])) == "NEXT [10], [20]"

@@ -69,26 +69,6 @@ class Instruction:
             val = self.a.resolve(cpu)
             return val * val
     ```
-
-    Custom instruction with multiple operands (swap two registers):
-    ```python
-    class SWAP(Instruction):
-        \"\"\"Swap the values of two registers.\"\"\"
-        def __init__(self, a: Reference, b: Reference):
-            super().__init__("SWAP")
-            self.a = a
-            self.b = b
-
-        def _calc(self, cpu: DT31) -> int:
-            val_a = self.a.resolve(cpu)
-            val_b = self.b.resolve(cpu)
-            self.a.assign(cpu, val_b)
-            self.b.assign(cpu, val_a)
-            return 0
-
-        def __str__(self) -> str:
-            return f"{self.name}({self.a}, {self.b})"
-    ```
     """
 
     def __init__(self, name: str):
@@ -1519,6 +1499,52 @@ class STROUT(Instruction):
         return str(self)
 
 
+class NEXT(Instruction):
+    """Find the next zero-valued memory location starting from a given index.
+
+    Searches memory from the starting index forward. If wrap_memory is enabled and no zero
+    is found before the end of memory, wraps around and searches from index 0. Stores the
+    index of the first zero found, or -1 if no zero exists.
+    """
+
+    def __init__(self, a: Operand | int, out: Reference):
+        """
+        Args:
+            a: Index to start checking from (inclusive).
+            out: Output reference to store the index of the next zero, or -1 if none found.
+        """
+        super().__init__("NEXT")
+        self.a = as_op(a)
+        self.out = out
+
+    def _calc(self, cpu: DT31) -> int:
+        a = self.a.resolve(cpu)
+        idx = a
+        while idx < cpu.memory_size:
+            if cpu.get_memory(idx) == 0:
+                cpu[self.out] = idx
+                return idx
+            idx += 1
+        if cpu.wrap_memory:
+            idx = 0
+            while idx < a:
+                if cpu.get_memory(idx) == 0:
+                    cpu[self.out] = idx
+                    return idx
+                idx += 1
+
+        cpu[self.out] = -1
+        return -1
+
+    def __repr__(self) -> str:
+        """Return Python API representation."""
+        return f"NEXT(a={self.a!r}, out={self.out!r})"
+
+    def __str__(self) -> str:
+        """Return assembly text representation."""
+        return f"NEXT {self.a}, {self.out}"
+
+
 # --------------------------------------- other -------------------------------------- #
 
 
@@ -1613,11 +1639,11 @@ class RINT(BinaryOperation):
         """
         Args:
             a: Lowest integer value allowed
-            b: Second operand of the addition.
+            b: Highest integer value allowed.
             out: Optional output reference for result. If not provided, result stored in
                 first operand.
         """
-        super().__init__("ADD", a, b, out)
+        super().__init__("RINT", a, b, out)
 
     def _calc(self, cpu: DT31) -> int:
         a = self.a.resolve(cpu)
