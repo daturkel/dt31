@@ -511,7 +511,7 @@ Comparison with Python API
 See Also
 --------
 
-- :doc:`/tutorials/cli-guide` - Tutorial and examples
-- :doc:`instruction-set` - Available instructions
-- :doc:`assembly-syntax` - Assembly language syntax
-- :doc:`/how-to/debugging-programs` - Debugging techniques
+- :doc:`/cli-guide` - Tutorial and examples
+- :doc:`/reference/instruction-set` - Available instructions
+- :doc:`/reference/assembly-syntax` - Assembly language syntax
+- :doc:`/debugging-programs` - Debugging techniques

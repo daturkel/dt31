@@ -49,7 +49,7 @@ autodoc_typehints = "description"
 autodoc_typehints_description_target = "documented"
 
 html_theme = "furo"
-html_static_path = ["_static"]
+# html_static_path = ["_static"]
 html_title = "dt31"
 
 html_theme_options = {

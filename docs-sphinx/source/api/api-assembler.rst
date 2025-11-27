@@ -7,5 +7,3 @@ The ``dt31.assembler`` module converts Python programs to assembly text.
    :members:
    :undoc-members:
    :show-inheritance:
-
-See :doc:`/how-to/parsing-assembly` for detailed usage examples.

@@ -7,5 +7,3 @@ The ``dt31.parser`` module converts assembly text to Python programs.
    :members:
    :undoc-members:
    :show-inheritance:
-
-See :doc:`/how-to/parsing-assembly` for detailed usage examples.

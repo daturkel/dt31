@@ -3,45 +3,29 @@ dt31 Documentation
 
 dt31 is a toy computer emulator in Python with a simple instruction set and virtual machine.
 
-Features
+Highlights
 --------
 
 - **Simple CPU Architecture**: Configurable registers, memory, and stack.
-- **Rich Instruction Set**: 60+ instructions including arithmetic, logic, control flow, and simple I/O.
-- **Dual-Syntax**: Write programs directly in Python or with assembly-like syntax.
+- **Rich Instruction Set**: Dozens of instructions for arithmetic, logic, etc.
+- **Native and Python Syntax**: Write directly with an assembly-like syntax or directly in Python.
 - **Two-Pass Assembler**: Automatic resolution of labels for jumps and function calls.
 - **Debug Mode**: Step-by-step execution with state inspection.
+- **Command-line tools**: Run, syntax-check, or format code from the command line.
 - **Pure Python Implementation**: Zero dependencies.
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: Guides
    :hidden:
+   :glob:
 
    getting-started
-
-.. toctree::
-   :maxdepth: 1
-   :caption: Tutorials
-   :hidden:
-
-   writing-programs
-   advanced-topics
-   custom-instructions
-   cli-guide
-
-.. toctree::
-   :maxdepth: 1
-   :caption: How-To Guides
-   :hidden:
-
-   debugging-programs
-   parsing-assembly
-   working-with-examples
+   *
 
 .. toctree::
    :maxdepth: 2
-   :caption: Reference
+   :caption: Reference and API
    :hidden:
 
    reference/index
@@ -50,7 +34,9 @@ Features
 Quick Example
 -------------
 
-Below you can see a simple program which writes constants to the ``a`` and ``b`` registers, adds them up, and prints the output. The program can be written equivalently in both the assembly-style syntax or with the :doc:`Python API </api/api-overview>`. (Click on the tabs to toggle between the two syntaxes.)
+Below you can see a simple program which writes constants to the ``a`` and ``b`` registers, adds them up, and prints the output.
+The program can be written equivalently in both the assembly-style syntax or with the :doc:`Python API </api/index>`.
+Click on the tabs to toggle between the two syntaxes.
 
 .. tab:: dt31
 

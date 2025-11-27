@@ -10,197 +10,107 @@ Install dt31 using pip:
 
    pip install dt31
 
-Hello World
------------
+"Hello world!" two ways
+------------------------
 
-Let's start with a simple "Hello World" example:
+Rather than putting a bunch of syntax and technicalities up front, let's jump straight into writing some programs.
 
-.. code-block:: python
+To build up our understanding, we'll write a `"Hello world!" <https://en.wikipedia.org/wiki/%22Hello,_World!%22_program>`_ program,
+which simply prints ``Hello world!``, in a couple of different ways.
 
-   from dt31 import DT31, LC, I
+One character at a time
+~~~~~~~~~~~~~~~~~~~~~~~
 
-   cpu = DT31()
+For our first attempt, we'll only use just one instruction, but we're going to use it many times.
+The :class:`OOUT <dt31.instructions.OOUT>` instruction lets us print a single character. It's syntax is ``OOUT a, b`` where
+``a`` is the character to be printed, and if ``b`` is nonzero, we append a newline. If we don't need a newline,
+we can omit ``b`` completely.
 
-   program = [
-       I.OOUT(LC["H"]),  # Output 'H'
-       I.OOUT(LC["e"]),  # Output 'e'
-       I.OOUT(LC["l"]),  # Output 'l'
-       I.OOUT(LC["l"]),  # Output 'l'
-       I.OOUT(LC["o"]),  # Output 'o'
-   ]
+.. code-block:: nasm
 
-   cpu.run(program)
-   # Hello
+   OOUT 'H'
+   OOUT 'e'
+   OOUT 'l'
+   OOUT 'l'
+   OOUT 'o'
+   OOUT ' '
+   OOUT 'w'
+   OOUT 'o'
+   OOUT 'r'
+   OOUT 'l'
+   OOUT 'd'
+   OOUT '!', 1 ; add a newline after the "!"
 
-Basic Concepts
---------------
+.. NOTE::
+   Notice how the last line of our program has a comment. Any text following a ``;`` character is ignored
+   by the assembler.
 
-The CPU
-~~~~~~~
+We can now run this program with ``dt31 run``. Save it to a file called ``hello_world_1.dt`` and run::
 
-The DT31 CPU is the core of the emulator. It manages:
+   dt31 run hello_world_1.dt
 
-- **Registers**: General-purpose storage (default: ``a``, ``b``, ``c``)
-- **Memory**: Fixed-size byte array (default: 256 slots)
-- **Stack**: For temporary values and function calls (default: 256 slots)
-- **Instruction Pointer**: Tracks current instruction (register ``ip``)
+and you will see the output::
 
-Create a CPU instance:
+   Hello world!
 
-.. code-block:: python
+Great, we've just written our first dt31 program!
 
-   from dt31 import DT31
+Hello *you*!
+------------
 
-   # Default configuration
-   cpu = DT31()
+Next up we're going to customize our program. It's going to prompt the user to enter their name. If they
+provide a name, we'll print ``Hello <name>!`` If the user just hits enter without entering anything, we'll
+print ``Hello world!`` as before.
 
-   # Custom configuration
-   cpu = DT31(
-       registers=['a', 'b', 'c', 'd', 'e'],  # 5 registers
-       memory_size=512,  # 512 bytes of memory
-       stack_size=512    # 512-slot stack
-   )
+Let's take a look at the full program first, then we'll break down what's going on:
 
-Operands
-~~~~~~~~
+.. code-block:: nasm
 
-dt31 provides several operand types for referencing values:
+      STRIN [0]      ; write name starting at index 0
+      OOUT 'H'       ; print "Hello "
+      OOUT 'e'
+      OOUT 'l'
+      OOUT 'l'
+      OOUT 'o'
+      OOUT ' '
+      JIF name, [0]  ; jump to `name` if index 0 is nonzero
 
-- **Literals**: ``L[42]`` - Constant value 42
-- **Character Literals**: ``LC["A"]`` - Shortcut for ``L[ord("A")]``
-- **Registers**: ``R.a`` - Reference to register 'a'
-- **Memory (Direct)**: ``M[100]`` - Memory address 100
-- **Memory (Indirect)**: ``M[R.a]`` - Memory at address stored in register 'a'
-- **Labels**: ``Label("loop")`` - Named jump targets
+   world:             ; print "world"
+      OOUT 'w'
+      OOUT 'o'
+      OOUT 'r'
+      OOUT 'l'
+      OOUT 'd'
+      JMP end        ; jump to `end`
 
-Instructions
-~~~~~~~~~~~~
+   name:
+      STROUT [0]     ; print string starting at [0]
 
-Instructions are written using the ``I`` namespace (imported as ``from dt31 import I`` or ``from dt31 import instructions as I``):
+   end:
+      OOUT '!', 1    ; print "!" with a newline
 
-.. code-block:: python
 
-   from dt31 import I, R, L
+There's a lot going on here, so let's take it piece by piece.
 
-   program = [
-       I.CP(42, R.a),      # Copy 42 into register a
-       I.ADD(R.a, L[10]),  # Add 10 to register a (a = 52)
-       I.NOUT(R.a, L[1]),  # Output register a with newline
-   ]
+First off, you'll notice that most of the program is indented. The dt31 assembler doesn't care
+about whitespace, so indentation and newlines can be used purely to make it more human-readable.
+In this case, we indent the code to make the labels stand out, which is fairly common in *real* assembly languages.
 
-Your First Program
-------------------
+The aforementioned labels are the lines ending in a colon: ``world:``, ``name:``, ``end:`` These
+allow us to set positions in the code that we can jump to with special jump instructions. Labels are
+detected and reference to labels (e.g. ``JMP end``) are replaced with with
+numeric references to the instruction number to jump to. In this case, ``JMP end`` becomes ``JMP 16`` because
+the next instruction after the label (``OOUT '!', 1``) is instruction 16.
 
-Let's write a simple countdown program. You can write dt31 programs in two ways:
+At the start of the program, we see a new instruction: :class:`STRIN <dt31.instructions.STRIN>`. This instruction
+takes a single argument that must be a reference to a point in memory. The dt31 virtual computer has a fixed
+amount of memory, where each index can hold an integer or character (encoded as their Unicode codepoint). References
+to memory are written with square brackets, so ``[123]`` refers to index 123 in memory. Putting this together,
+``STRIN [0]`` prompts the user for a string and writes it to memory, one character at a time, starting at index 0.
+At the end of the string, we write a 0 to indicate the end of the string. If the user provided ``Bob``, then we'll
+write 66 (the Unicode codepoint for "B") at index 0, 111 to index 1 ("o"), 98 to index 2 ("b"), and 0 to index 3.
 
-.. tabs::
+Since we're going to print "Hello " no matter what, we then proceed directly into that with a series of ``OOUT`` instructions.
 
-   .. group-tab:: Python
-
-      Write programs directly using the Python API:
-
-      .. code-block:: python
-
-         from dt31 import DT31, I, Label
-         from dt31.operands import R, L
-
-         cpu = DT31()
-
-         program = [
-             I.CP(5, R.a),               # Start counter at 5
-             loop := Label("loop"),      # Mark loop start
-             I.NOUT(R.a, L[1]),          # Print counter
-             I.SUB(R.a, L[1]),           # Decrement counter
-             I.JGT(loop, R.a, L[0]),     # Jump to loop if a > 0
-         ]
-
-         cpu.run(program)
-         # 5
-         # 4
-         # 3
-         # 2
-         # 1
-
-   .. group-tab:: Assembly
-
-      Write programs in text-based assembly syntax and parse them:
-
-      **Option 1: Parse from string**
-
-      .. code-block:: python
-
-         from dt31 import DT31
-         from dt31.parser import parse_program
-
-         cpu = DT31()
-
-         assembly = """
-         CP 5, R.a             ; Copy 5 into register a
-         loop:
-             NOUT R.a, 1       ; Output register a with newline
-             SUB R.a, 1        ; Decrement a
-             JGT loop, R.a, 0  ; Jump to loop if a > 0
-         """
-
-         program = parse_program(assembly)
-         cpu.run(program)
-         # 5
-         # 4
-         # 3
-         # 2
-         # 1
-
-      **Option 2: Execute .dt file directly**
-
-      Save to ``countdown.dt`` and run with the CLI:
-
-      .. code-block:: nasm
-
-         CP 5, R.a
-         loop:
-             NOUT R.a, 1
-             SUB R.a, 1
-             JGT loop, R.a, 0
-
-      .. code-block:: bash
-
-         dt31 countdown.dt
-
-Command-Line Options
---------------------
-
-The ``dt31`` command provides several useful options:
-
-Debug Mode
-~~~~~~~~~~
-
-Run with the ``--debug`` flag to see step-by-step execution:
-
-.. code-block:: bash
-
-   dt31 --debug countdown.dt
-
-Custom Configuration
-~~~~~~~~~~~~~~~~~~~~
-
-Customize CPU settings from the command line:
-
-.. code-block:: bash
-
-   # Use custom memory size
-   dt31 --memory 1024 program.dt
-
-   # Specify registers explicitly
-   dt31 --registers a,b,c,d,e program.dt
-
-   # Set stack size
-   dt31 --stack-size 512 program.dt
-
-Parse Only
-~~~~~~~~~~
-
-Validate syntax without executing:
-
-.. code-block:: bash
-
-   dt31 --parse-only program.dt
+Next we have to make a decision: do we print "world!" or the user's name? If it's not told otherwise, dt31 programs will
+just run straight from top to bottom, so we need some way to decide which section of code to run. Blah blah :class:`JIF <dt31.instructions.JIF>`

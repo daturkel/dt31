@@ -7,5 +7,3 @@ The ``dt31.operands`` module contains operand types and convenience objects.
    :members:
    :undoc-members:
    :show-inheritance:
-
-See :doc:`/tutorials/writing-programs` for operand usage examples.
