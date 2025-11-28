@@ -655,3 +655,77 @@ def test_program_to_text_hide_default_out_mixed_defaults_non_defaults():
     assert lines[1] == "    ADD R.a, R.b, R.c"
     assert lines[2] == "    SUB R.x, 1"
     assert lines[3] == "    SUB R.x, 1, R.y"
+
+
+def test_strip_comments_basic():
+    """Test that strip_comments removes all comment types."""
+    program = [
+        Comment("Standalone comment"),
+        I.CP(5, R.a).with_comment("Inline comment"),
+        Label("loop").with_comment("Label comment"),
+        I.ADD(R.a, L[1]).with_comment("Another inline"),
+    ]
+
+    text = program_to_text(program, strip_comments=True, blank_line_before_label=False)
+    expected = "    CP 5, R.a\nloop:\n    ADD R.a, 1, R.a\n"
+    assert text == expected
+
+
+def test_strip_comments_overrides_align():
+    """Test that strip_comments takes precedence over align_comments."""
+    program = [
+        I.CP(5, R.a).with_comment("Comment 1"),
+        I.ADD(R.a, L[1]).with_comment("Comment 2"),
+    ]
+
+    # Both flags set, strip should win
+    text = program_to_text(
+        program, strip_comments=True, align_comments=True, comment_column=40
+    )
+    expected = "    CP 5, R.a\n    ADD R.a, 1, R.a\n"
+    assert text == expected
+
+
+def test_strip_comments_preserves_structure():
+    """Test that stripping comments preserves blank lines and formatting."""
+    program = [
+        I.CP(5, R.a).with_comment("Init"),
+        Label("loop"),
+        I.ADD(R.a, L[1]),
+        I.JGT(Label("loop"), R.a, L[0]),
+    ]
+
+    text = program_to_text(program, strip_comments=True)
+    expected = "    CP 5, R.a\n\nloop:\n    ADD R.a, 1, R.a\n    JGT loop, R.a, 0\n"
+    assert text == expected
+
+
+def test_strip_comments_edge_cases():
+    """Test strip_comments with edge cases."""
+    # Only comments
+    program = [Comment("Only comment")]
+    text = program_to_text(program, strip_comments=True)
+    assert text == ""
+
+    # No comments to strip
+    program = [I.CP(5, R.a), I.ADD(R.a, L[1])]
+    text_normal = program_to_text(program, strip_comments=False)
+    text_stripped = program_to_text(program, strip_comments=True)
+    assert text_normal == text_stripped
+    expected = "    CP 5, R.a\n    ADD R.a, 1, R.a\n"
+    assert text_stripped == expected
+
+
+def test_strip_comments_inline_labels():
+    """Test strip_comments with inline labels that have comments."""
+    program = [
+        I.CP(5, R.a),
+        Label("loop").with_comment("Loop start"),
+        I.ADD(R.a, L[1]).with_comment("Increment"),
+    ]
+
+    text = program_to_text(
+        program, strip_comments=True, label_inline=True, blank_line_before_label=False
+    )
+    expected = "    CP 5, R.a\nloop: ADD R.a, 1, R.a\n"
+    assert text == expected

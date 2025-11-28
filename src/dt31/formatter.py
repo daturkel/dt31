@@ -19,6 +19,7 @@ def program_to_text(
     blank_line_before_label: bool = True,
     align_comments: bool = False,
     comment_column: int = 40,
+    strip_comments: bool = False,
     hide_default_out: bool = False,
 ) -> str:
     """Convert a program to assembly text format with configurable formatting.
@@ -34,6 +35,7 @@ def program_to_text(
         blank_line_before_label: If True, add blank line before labels (default: True).
         align_comments: If True, align inline comments at comment_column (default: False).
         comment_column: Column position for aligned comments when align_comments=True (default: 40).
+        strip_comments: If True, remove all comments from output. (default: False).
         hide_default_out: If True, hide output parameters when they match the default value (default: False).
 
     Returns:
@@ -111,7 +113,8 @@ def program_to_text(
     for i, item in enumerate(program):
         if isinstance(item, Comment):
             # Standalone comments are never indented or aligned
-            lines.append(str(item))
+            if not strip_comments:
+                lines.append(str(item))
             prev_was_label = False
         elif isinstance(item, Label):
             # Add blank line before label if requested (but not before first item or consecutive labels)
@@ -124,7 +127,11 @@ def program_to_text(
             else:
                 # Labels on separate lines
                 line = _format_label(
-                    item, align_comments, comment_column, comment_spacing
+                    item,
+                    align_comments,
+                    comment_column,
+                    comment_spacing,
+                    strip_comments,
                 )
                 lines.append(line)
 
@@ -138,17 +145,14 @@ def program_to_text(
                 label_prefix = " ".join(f"{lbl.name}:" for lbl in pending_labels) + " "
                 # Comments from inline labels are handled by the instruction comment
                 # (use the instruction's comment if it exists, otherwise use last label's comment)
-                comment = (
-                    item.comment
-                    if item.comment
-                    else (
-                        pending_labels[-1].comment if pending_labels[-1].comment else ""
-                    )
-                )
+                if strip_comments:
+                    comment = ""
+                else:
+                    comment = item.comment or pending_labels[-1].comment or ""
                 pending_labels = []
             else:
                 label_prefix = indent
-                comment = item.comment
+                comment = "" if strip_comments else item.comment
 
             instruction_text = item.to_concise_str() if hide_default_out else str(item)
             line = _format_instruction_with_comment(
@@ -162,7 +166,9 @@ def program_to_text(
 
     # Handle any remaining labels at end of program
     for lbl in pending_labels:
-        line = _format_label(lbl, align_comments, comment_column, comment_spacing)
+        line = _format_label(
+            lbl, align_comments, comment_column, comment_spacing, strip_comments
+        )
         lines.append(line)
 
     result = "\n".join(lines)
@@ -179,10 +185,11 @@ def _format_label(
     align_comments: bool,
     comment_column: int,
     comment_spacing: int,
+    strip_comments: bool = False,
 ) -> str:
     """Format a label with optional comment alignment."""
     line = f"{label.name}:"
-    if label.comment:
+    if label.comment and not strip_comments:
         line = _format_instruction_with_comment(
             line, label.comment, align_comments, comment_column, comment_spacing
         )

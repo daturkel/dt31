@@ -591,6 +591,12 @@ examples:
         help="Hide output parameters when they match the default value (default: False)",
     )
 
+    format_parser.add_argument(
+        "--strip-comments",
+        action="store_true",
+        help="Remove all comments from output (standalone and inline). Overrides --align-comments (default: False)",
+    )
+
     # Custom instructions support (needed for parsing)
     format_parser.add_argument(
         "--custom-instructions",
@@ -716,6 +722,7 @@ def format_command(args: argparse.Namespace) -> None:
         "blank_line_before_label": not args.no_blank_line_before_label,  # Inverted!
         "align_comments": args.align_comments,
         "comment_column": args.comment_column,
+        "strip_comments": args.strip_comments,
         "hide_default_out": args.hide_default_out,
     }
 
