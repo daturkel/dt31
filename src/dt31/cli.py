@@ -267,26 +267,29 @@ examples:
     )
 
     run_parser.add_argument(
+        "-r",
         "--registers",
         type=str,
         help="Comma-separated list of register names (e.g., a,b,c,d)",
     )
 
     run_parser.add_argument(
+        "-m",
         "--memory",
         type=int,
         help="Memory size in bytes (default: 256)",
     )
 
     run_parser.add_argument(
+        "-s",
         "--stack-size",
         type=int,
         help="Stack size (default: 256)",
     )
 
     run_parser.add_argument(
-        "--custom-instructions",
         "-i",
+        "--custom-instructions",
         type=str,
         metavar="PATH",
         help="Path to Python file containing custom instruction definitions",
@@ -541,12 +544,14 @@ examples:
 
     # Validation flags
     format_parser.add_argument(
+        "-c",
         "--check",
         action="store_true",
         help="Check if file needs formatting without modifying (exit 1 if changes needed)",
     )
 
     format_parser.add_argument(
+        "-d",
         "--diff",
         action="store_true",
         help="Show diff of changes without applying them (can combine with --check)",
@@ -554,6 +559,7 @@ examples:
 
     # Formatting options (7 total)
     format_parser.add_argument(
+        "-I",
         "--indent-size",
         type=int,
         default=4,
@@ -562,24 +568,28 @@ examples:
     )
 
     format_parser.add_argument(
+        "-l",
         "--label-inline",
         action="store_true",
         help="Place labels on same line as next instruction (default: False)",
     )
 
     format_parser.add_argument(
+        "-b",
         "--no-blank-line-before-label",
         action="store_true",
         help="Don't add blank line before labels (default: add blank line)",
     )
 
     format_parser.add_argument(
+        "-a",
         "--align-comments",
         action="store_true",
         help="Align inline comments at comment-column (default: False)",
     )
 
     format_parser.add_argument(
+        "-C",
         "--comment-column",
         type=int,
         default=None,
@@ -589,6 +599,7 @@ examples:
     )
 
     format_parser.add_argument(
+        "-m",
         "--comment-margin",
         type=int,
         default=2,
@@ -598,6 +609,7 @@ examples:
     )
 
     format_parser.add_argument(
+        "-D",
         "--show-default-args",
         action="store_false",
         dest="hide_default_args",
@@ -605,6 +617,7 @@ examples:
     )
 
     format_parser.add_argument(
+        "-s",
         "--strip-comments",
         action="store_true",
         help="Remove all comments from output (standalone and inline). Overrides --align-comments (default: False)",
@@ -612,8 +625,8 @@ examples:
 
     # Custom instructions support (needed for parsing)
     format_parser.add_argument(
-        "--custom-instructions",
         "-i",
+        "--custom-instructions",
         type=str,
         metavar="PATH",
         help="Path to Python file containing custom instruction definitions",
