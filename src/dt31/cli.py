@@ -220,6 +220,7 @@ Example error dump structure:
 
 import argparse
 import difflib
+import glob
 import importlib.util
 import json
 import sys
@@ -232,6 +233,36 @@ from dt31.assembler import extract_registers_from_program
 from dt31.formatter import program_to_text
 from dt31.instructions import Instruction
 from dt31.parser import ParserError, parse_program
+
+
+def expand_file_patterns(patterns: list[str]) -> list[str]:
+    """Expand glob patterns to actual file paths.
+
+    Args:
+        patterns: List of file paths and/or glob patterns
+
+    Returns:
+        List of resolved file paths (sorted)
+
+    Example:
+        >>> expand_file_patterns(["program.dt", "*.dt"])
+        ['program.dt', 'hello.dt', 'countdown.dt']
+    """
+    expanded_files = []
+    for pattern in patterns:
+        # Check if pattern contains glob characters
+        if any(char in pattern for char in ["*", "?", "[", "]"]):
+            # Use glob to expand the pattern
+            matches = glob.glob(pattern, recursive=True)
+            if matches:
+                expanded_files.extend(matches)
+            # If no matches, keep the original pattern (will error later)
+        else:
+            # Not a glob pattern, add as-is
+            expanded_files.append(pattern)
+
+    # Remove duplicates and sort
+    return sorted(set(expanded_files))
 
 
 def _create_run_parser(subparsers) -> None:
@@ -325,13 +356,18 @@ def _create_check_parser(subparsers) -> None:
 examples:
   dt31 check program.dt                               Validate syntax
   dt31 check --custom-instructions custom.py prog.dt  Validate with custom instructions
+  dt31 check program1.dt program2.dt                  Validate multiple files
+  dt31 check "*.dt"                                   Validate all .dt files (glob pattern)
+  dt31 check "**/*.dt"                                Validate all .dt files recursively
         """,
     )
 
     check_parser.add_argument(
-        "file",
+        "files",
         type=str,
-        help="Path to .dt assembly file to validate",
+        nargs="+",
+        metavar="FILE",
+        help="Path(s) to .dt assembly file(s) to validate (supports glob patterns)",
     )
 
     check_parser.add_argument(
@@ -477,11 +513,12 @@ def check_command(args: argparse.Namespace) -> None:
 
     This function implements the syntax validation workflow:
     1. Load custom instructions (if provided)
-    2. Read and parse the assembly file
-    3. Report success or error
+    2. Expand glob patterns to file paths
+    3. Read and parse each assembly file
+    4. Report success or error for each file
 
     Exit codes:
-        0: File is valid
+        0: All files are valid
         1: Error occurred (file not found, parse error, etc.)
     """
     # Load custom instructions if provided
@@ -493,27 +530,55 @@ def check_command(args: argparse.Namespace) -> None:
             print(f"Error loading custom instructions: {e}", file=sys.stderr)
             sys.exit(1)
 
-    # Read the input file
-    file_path = Path(args.file)
-    try:
-        assembly_text = file_path.read_text()
-    except FileNotFoundError:
-        print(f"Error: File not found: {args.file}", file=sys.stderr)
-        sys.exit(1)
-    except IOError as e:
-        print(f"Error reading file {args.file}: {e}", file=sys.stderr)
+    # Expand glob patterns
+    file_paths = expand_file_patterns(args.files)
+
+    if not file_paths:
+        print("Error: No files matched the provided patterns", file=sys.stderr)
         sys.exit(1)
 
-    # Parse the assembly program with custom instructions
-    try:
-        parse_program(assembly_text, custom_instructions=custom_instructions)
-    except ParserError as e:
-        print(f"Parse error: {e}", file=sys.stderr)
-        sys.exit(1)
+    # Track results
+    failed_files = []
 
-    # Success
-    print(f"✓ {args.file} is valid", file=sys.stderr)
-    sys.exit(0)
+    # Process each file
+    for file_path_str in file_paths:
+        file_path = Path(file_path_str)
+
+        # Read the input file
+        try:
+            assembly_text = file_path.read_text()
+        except FileNotFoundError:
+            print(f"Error: File not found: {file_path_str}", file=sys.stderr)
+            failed_files.append(file_path_str)
+            continue
+        except IOError as e:
+            print(f"Error reading file {file_path_str}: {e}", file=sys.stderr)
+            failed_files.append(file_path_str)
+            continue
+
+        # Parse the assembly program with custom instructions
+        try:
+            parse_program(assembly_text, custom_instructions=custom_instructions)
+        except ParserError as e:
+            print(f"Parse error in {file_path_str}: {e}", file=sys.stderr)
+            failed_files.append(file_path_str)
+            continue
+
+        # Success for this file
+        print(f"✓ {file_path_str} is valid", file=sys.stderr)
+
+    # Exit with appropriate code
+    if failed_files:
+        if len(file_paths) > 1:
+            print(
+                f"\n✗ {len(failed_files)} of {len(file_paths)} file(s) failed validation",
+                file=sys.stderr,
+            )
+        sys.exit(1)
+    else:
+        if len(file_paths) > 1:
+            print(f"\n✓ All {len(file_paths)} file(s) are valid", file=sys.stderr)
+        sys.exit(0)
 
 
 def _create_format_parser(subparsers) -> None:
@@ -533,13 +598,18 @@ examples:
   dt31 format --diff program.dt            Show formatting changes
   dt31 format --check --diff program.dt    Check and show diff
   dt31 format --show-default-args prog.dt  Show default arguments
+  dt31 format program1.dt program2.dt      Format multiple files
+  dt31 format "*.dt"                       Format all .dt files (glob pattern)
+  dt31 format "**/*.dt"                    Format all .dt files recursively
         """,
     )
 
     format_parser.add_argument(
-        "file",
+        "files",
         type=str,
-        help="Path to .dt assembly file to format",
+        nargs="+",
+        metavar="FILE",
+        help="Path(s) to .dt assembly file(s) to format (supports glob patterns)",
     )
 
     # Validation flags
@@ -722,13 +792,13 @@ def _format_single_file(
 
 
 def format_command(args: argparse.Namespace) -> None:
-    """Execute the 'format' subcommand - format a dt31 assembly file.
+    """Execute the 'format' subcommand - format dt31 assembly files.
 
     Args:
         args: Parsed command-line arguments from argparse
 
     Exit codes:
-        0: Success (file formatted or already formatted, or --check passed)
+        0: Success (all files formatted or already formatted, or --check passed)
         1: Error (file not found, parse error, --check failed, or IO error)
     """
     # Load custom instructions if provided
@@ -752,19 +822,53 @@ def format_command(args: argparse.Namespace) -> None:
         "hide_default_args": args.hide_default_args,
     }
 
-    # Format the file
-    needs_formatting = _format_single_file(
-        args.file,
-        custom_instructions,
-        args.check,
-        args.diff,
-        formatting_options,
-    )
+    # Expand glob patterns
+    file_paths = expand_file_patterns(args.files)
+
+    if not file_paths:
+        print("Error: No files matched the provided patterns", file=sys.stderr)
+        sys.exit(1)
+
+    # Track results
+    files_needing_formatting = []
+
+    # Format each file
+    for file_path in file_paths:
+        needs_formatting = _format_single_file(
+            file_path,
+            custom_instructions,
+            args.check,
+            args.diff,
+            formatting_options,
+        )
+        if needs_formatting:
+            files_needing_formatting.append(file_path)
 
     # Exit with appropriate code
-    if args.check and needs_formatting:
+    if args.check and files_needing_formatting:
+        if len(file_paths) > 1:
+            print(
+                f"\n✗ {len(files_needing_formatting)} of {len(file_paths)} file(s) would be reformatted",
+                file=sys.stderr,
+            )
         sys.exit(1)
     else:
+        if len(file_paths) > 1 and not args.diff:
+            if files_needing_formatting and not args.check:
+                print(
+                    f"\n✓ Formatted {len(files_needing_formatting)} of {len(file_paths)} file(s)",
+                    file=sys.stderr,
+                )
+            elif not args.check:
+                print(
+                    f"\n✓ All {len(file_paths)} file(s) are already formatted",
+                    file=sys.stderr,
+                )
+            else:
+                print(
+                    f"\n✓ All {len(file_paths)} file(s) are already formatted",
+                    file=sys.stderr,
+                )
         sys.exit(0)
 
 

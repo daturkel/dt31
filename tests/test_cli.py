@@ -1722,3 +1722,187 @@ def test_cli_unknown_command(capsys):
     assert exc_info.value.code == 1
     # The help message should be printed (captured in stderr by argparse)
     # but we can't easily verify it since parser.print_help() goes directly to stdout
+
+
+# ===== Globbing Tests =====
+
+
+def test_check_multiple_files(temp_dt_file, capsys):
+    """Test check command with multiple files."""
+    file1 = temp_dt_file("CP 10, R.a", "file1.dt")
+    file2 = temp_dt_file("CP 20, R.b", "file2.dt")
+
+    with patch.object(sys, "argv", ["dt31", "check", file1, file2]):
+        with pytest.raises(SystemExit) as exc_info:
+            main()
+
+    assert exc_info.value.code == 0
+    captured = capsys.readouterr()
+    assert "file1.dt is valid" in captured.err
+    assert "file2.dt is valid" in captured.err
+    assert "All 2 file(s) are valid" in captured.err
+
+
+def test_check_multiple_files_with_errors(temp_dt_file, capsys):
+    """Test check command with multiple files where some have errors."""
+    file1 = temp_dt_file("CP 10, R.a", "file1.dt")
+    file2 = temp_dt_file("INVALID_INSTRUCTION R.x", "file2.dt")
+    file3 = temp_dt_file("CP 30, R.c", "file3.dt")
+
+    with patch.object(sys, "argv", ["dt31", "check", file1, file2, file3]):
+        with pytest.raises(SystemExit) as exc_info:
+            main()
+
+    assert exc_info.value.code == 1
+    captured = capsys.readouterr()
+    assert "file1.dt is valid" in captured.err
+    assert "Parse error in file2.dt" in captured.err
+    assert "file3.dt is valid" in captured.err
+    assert "1 of 3 file(s) failed validation" in captured.err
+
+
+def test_check_glob_pattern(tmp_path, capsys):
+    """Test check command with glob pattern."""
+    # Create multiple .dt files
+    (tmp_path / "prog1.dt").write_text("CP 1, R.a")
+    (tmp_path / "prog2.dt").write_text("CP 2, R.b")
+    (tmp_path / "prog3.dt").write_text("CP 3, R.c")
+
+    # Change to temp directory for glob to work
+    import os
+
+    old_cwd = os.getcwd()
+    os.chdir(tmp_path)
+    try:
+        with patch.object(sys, "argv", ["dt31", "check", "*.dt"]):
+            with pytest.raises(SystemExit) as exc_info:
+                main()
+    finally:
+        os.chdir(old_cwd)
+
+    assert exc_info.value.code == 0
+    captured = capsys.readouterr()
+    assert "prog1.dt is valid" in captured.err
+    assert "prog2.dt is valid" in captured.err
+    assert "prog3.dt is valid" in captured.err
+    assert "All 3 file(s) are valid" in captured.err
+
+
+def test_format_multiple_files(temp_dt_file, capsys):
+    """Test format command with multiple files."""
+    file1 = temp_dt_file("CP 10,R.a", "file1.dt")
+    file2 = temp_dt_file("CP 20,R.b", "file2.dt")
+
+    with patch.object(sys, "argv", ["dt31", "format", file1, file2]):
+        with pytest.raises(SystemExit) as exc_info:
+            main()
+
+    assert exc_info.value.code == 0
+    captured = capsys.readouterr()
+    assert "Formatted file1.dt" in captured.err or "file1.dt" in captured.err
+    assert "Formatted file2.dt" in captured.err or "file2.dt" in captured.err
+    assert "Formatted 2 of 2 file(s)" in captured.err
+
+
+def test_format_multiple_files_check_mode(temp_dt_file, capsys):
+    """Test format --check with multiple files."""
+    file1 = temp_dt_file("CP 10,R.a", "file1.dt")  # Needs formatting
+    file2 = temp_dt_file("    CP 20, R.b\n", "file2.dt")  # Already formatted
+
+    with patch.object(sys, "argv", ["dt31", "format", "--check", file1, file2]):
+        with pytest.raises(SystemExit) as exc_info:
+            main()
+
+    assert exc_info.value.code == 1  # Should fail since file1 needs formatting
+    captured = capsys.readouterr()
+    assert "file1.dt would be reformatted" in captured.err
+    assert "file2.dt is already formatted" in captured.err
+    assert "1 of 2 file(s) would be reformatted" in captured.err
+
+
+def test_format_glob_pattern(tmp_path, capsys):
+    """Test format command with glob pattern."""
+    # Create multiple .dt files
+    (tmp_path / "prog1.dt").write_text("CP 1,R.a")
+    (tmp_path / "prog2.dt").write_text("CP 2,R.b")
+
+    # Change to temp directory for glob to work
+    import os
+
+    old_cwd = os.getcwd()
+    os.chdir(tmp_path)
+    try:
+        with patch.object(sys, "argv", ["dt31", "format", "*.dt"]):
+            with pytest.raises(SystemExit) as exc_info:
+                main()
+    finally:
+        os.chdir(old_cwd)
+
+    assert exc_info.value.code == 0
+    captured = capsys.readouterr()
+    assert "Formatted 2 of 2 file(s)" in captured.err
+
+
+def test_check_no_files_match_pattern(tmp_path, capsys):
+    """Test check command when glob pattern matches no files."""
+    # Change to empty temp directory
+    import os
+
+    old_cwd = os.getcwd()
+    os.chdir(tmp_path)
+    try:
+        with patch.object(sys, "argv", ["dt31", "check", "*.dt"]):
+            with pytest.raises(SystemExit) as exc_info:
+                main()
+    finally:
+        os.chdir(old_cwd)
+
+    assert exc_info.value.code == 1
+    captured = capsys.readouterr()
+    assert "No files matched the provided patterns" in captured.err
+
+
+def test_format_no_files_match_pattern(tmp_path, capsys):
+    """Test format command when glob pattern matches no files."""
+    # Change to empty temp directory
+    import os
+
+    old_cwd = os.getcwd()
+    os.chdir(tmp_path)
+    try:
+        with patch.object(sys, "argv", ["dt31", "format", "*.dt"]):
+            with pytest.raises(SystemExit) as exc_info:
+                main()
+    finally:
+        os.chdir(old_cwd)
+
+    assert exc_info.value.code == 1
+    captured = capsys.readouterr()
+    assert "No files matched the provided patterns" in captured.err
+
+
+def test_check_recursive_glob(tmp_path, capsys):
+    """Test check command with recursive glob pattern."""
+    # Create nested directories with .dt files
+    (tmp_path / "subdir1").mkdir()
+    (tmp_path / "subdir2").mkdir()
+    (tmp_path / "prog1.dt").write_text("CP 1, R.a")
+    (tmp_path / "subdir1" / "prog2.dt").write_text("CP 2, R.b")
+    (tmp_path / "subdir2" / "prog3.dt").write_text("CP 3, R.c")
+
+    # Change to temp directory for glob to work
+    import os
+
+    old_cwd = os.getcwd()
+    os.chdir(tmp_path)
+    try:
+        with patch.object(sys, "argv", ["dt31", "check", "**/*.dt"]):
+            with pytest.raises(SystemExit) as exc_info:
+                main()
+    finally:
+        os.chdir(old_cwd)
+
+    assert exc_info.value.code == 0
+    captured = capsys.readouterr()
+    # Should find all 3 files
+    assert "All 3 file(s) are valid" in captured.err
