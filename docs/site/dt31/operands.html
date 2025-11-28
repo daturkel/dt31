@@ -595,8 +595,8 @@
 </span><span id="L-425"><a href="#L-425"><span class="linenos">425</span></a><span class="sd">        I.JMP(Label(&quot;end&quot;)),</span>
 </span><span id="L-426"><a href="#L-426"><span class="linenos">426</span></a>
 </span><span id="L-427"><a href="#L-427"><span class="linenos">427</span></a><span class="sd">        Label(&quot;greet&quot;),</span>
-</span><span id="L-428"><a href="#L-428"><span class="linenos">428</span></a><span class="sd">        I.OOUT(LC[&#39;H&#39;]),</span>
-</span><span id="L-429"><a href="#L-429"><span class="linenos">429</span></a><span class="sd">        I.OOUT(LC[&#39;i&#39;]),</span>
+</span><span id="L-428"><a href="#L-428"><span class="linenos">428</span></a><span class="sd">        I.COUT(LC[&#39;H&#39;]),</span>
+</span><span id="L-429"><a href="#L-429"><span class="linenos">429</span></a><span class="sd">        I.COUT(LC[&#39;i&#39;]),</span>
 </span><span id="L-430"><a href="#L-430"><span class="linenos">430</span></a><span class="sd">        I.RET(),</span>
 </span><span id="L-431"><a href="#L-431"><span class="linenos">431</span></a>
 </span><span id="L-432"><a href="#L-432"><span class="linenos">432</span></a><span class="sd">        Label(&quot;end&quot;),</span>
@@ -1679,8 +1679,8 @@ for dunder methods).</p>
 </span><span id="Label-426"><a href="#Label-426"><span class="linenos">426</span></a><span class="sd">        I.JMP(Label(&quot;end&quot;)),</span>
 </span><span id="Label-427"><a href="#Label-427"><span class="linenos">427</span></a>
 </span><span id="Label-428"><a href="#Label-428"><span class="linenos">428</span></a><span class="sd">        Label(&quot;greet&quot;),</span>
-</span><span id="Label-429"><a href="#Label-429"><span class="linenos">429</span></a><span class="sd">        I.OOUT(LC[&#39;H&#39;]),</span>
-</span><span id="Label-430"><a href="#Label-430"><span class="linenos">430</span></a><span class="sd">        I.OOUT(LC[&#39;i&#39;]),</span>
+</span><span id="Label-429"><a href="#Label-429"><span class="linenos">429</span></a><span class="sd">        I.COUT(LC[&#39;H&#39;]),</span>
+</span><span id="Label-430"><a href="#Label-430"><span class="linenos">430</span></a><span class="sd">        I.COUT(LC[&#39;i&#39;]),</span>
 </span><span id="Label-431"><a href="#Label-431"><span class="linenos">431</span></a><span class="sd">        I.RET(),</span>
 </span><span id="Label-432"><a href="#Label-432"><span class="linenos">432</span></a>
 </span><span id="Label-433"><a href="#Label-433"><span class="linenos">433</span></a><span class="sd">        Label(&quot;end&quot;),</span>
@@ -1829,8 +1829,8 @@ indices. Labels can only be used as destinations for jump and call instructions.
     <span class="n">I</span><span class="o">.</span><span class="n">JMP</span><span class="p">(</span><span class="n">Label</span><span class="p">(</span><span class="s2">&quot;end&quot;</span><span class="p">)),</span>
 
     <span class="n">Label</span><span class="p">(</span><span class="s2">&quot;greet&quot;</span><span class="p">),</span>
-    <span class="n">I</span><span class="o">.</span><span class="n">OOUT</span><span class="p">(</span><span class="n">LC</span><span class="p">[</span><span class="s1">&#39;H&#39;</span><span class="p">]),</span>
-    <span class="n">I</span><span class="o">.</span><span class="n">OOUT</span><span class="p">(</span><span class="n">LC</span><span class="p">[</span><span class="s1">&#39;i&#39;</span><span class="p">]),</span>
+    <span class="n">I</span><span class="o">.</span><span class="n">COUT</span><span class="p">(</span><span class="n">LC</span><span class="p">[</span><span class="s1">&#39;H&#39;</span><span class="p">]),</span>
+    <span class="n">I</span><span class="o">.</span><span class="n">COUT</span><span class="p">(</span><span class="n">LC</span><span class="p">[</span><span class="s1">&#39;i&#39;</span><span class="p">]),</span>
     <span class="n">I</span><span class="o">.</span><span class="n">RET</span><span class="p">(),</span>
 
     <span class="n">Label</span><span class="p">(</span><span class="s2">&quot;end&quot;</span><span class="p">),</span>

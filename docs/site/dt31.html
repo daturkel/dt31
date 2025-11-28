@@ -146,9 +146,9 @@ dt31    </h1>
 
 <div class="pdoc-code codehilite">
 <pre><span></span><code><span class="c1">; Output &quot;Hi!&quot;</span>
-<span class="nf">OOUT</span><span class="w"> </span><span class="s">&#39;H&#39;</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span>
-<span class="nf">OOUT</span><span class="w"> </span><span class="s">&#39;i&#39;</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span>
-<span class="nf">OOUT</span><span class="w"> </span><span class="s">&#39;!&#39;</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span>
+<span class="nf">COUT</span><span class="w"> </span><span class="s">&#39;H&#39;</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span>
+<span class="nf">COUT</span><span class="w"> </span><span class="s">&#39;i&#39;</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span>
+<span class="nf">COUT</span><span class="w"> </span><span class="s">&#39;!&#39;</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span>
 </code></pre>
 </div>
 
@@ -200,10 +200,10 @@ dt31    </h1>
 
 <span class="nl">greet:</span>
 <span class="w">    </span><span class="c1">; Reusable greeting function</span>
-<span class="w">    </span><span class="nf">OOUT</span><span class="w"> </span><span class="s">&#39;H&#39;</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span>
-<span class="w">    </span><span class="nf">OOUT</span><span class="w"> </span><span class="s">&#39;i&#39;</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span>
-<span class="w">    </span><span class="nf">OOUT</span><span class="w"> </span><span class="s">&#39;!&#39;</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span>
-<span class="w">    </span><span class="nf">OOUT</span><span class="w"> </span><span class="s">&#39; &#39;</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span>
+<span class="w">    </span><span class="nf">COUT</span><span class="w"> </span><span class="s">&#39;H&#39;</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span>
+<span class="w">    </span><span class="nf">COUT</span><span class="w"> </span><span class="s">&#39;i&#39;</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span>
+<span class="w">    </span><span class="nf">COUT</span><span class="w"> </span><span class="s">&#39;!&#39;</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span>
+<span class="w">    </span><span class="nf">COUT</span><span class="w"> </span><span class="s">&#39; &#39;</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span>
 <span class="w">    </span><span class="nf">RET</span>
 
 <span class="nl">end:</span>
@@ -240,7 +240,7 @@ dt31    </h1>
 <li><strong>Control Flow</strong>: <code>JMP</code>, <code>RJMP</code>, <code>JEQ</code>, <code>JNE</code>, <code>JGT</code>, <code>JGE</code>, <code>JIF</code></li>
 <li><strong>Functions</strong>: <code>CALL</code>, <code>RCALL</code>, <code>RET</code></li>
 <li><strong>Stack</strong>: <code>PUSH</code>, <code>POP</code>, <code>SEMP</code></li>
-<li><strong>I/O</strong>: <code>NOUT</code>, <code>OOUT</code>, <code>NIN</code>, <code>OIN</code></li>
+<li><strong>I/O</strong>: <code>NOUT</code>, <code>COUT</code>, <code>NIN</code>, <code>CIN</code></li>
 <li><strong>Data Movement</strong>: <code>CP</code></li>
 </ul>
 
@@ -575,7 +575,7 @@ dt31<span class="w"> </span>format<span class="w"> </span>--check<span class="w"
   <td><strong>Character Literal</strong></td>
   <td><code>'A'</code></td>
   <td><code>LC["A"]</code></td>
-  <td><code>OOUT 'H', 0</code></td>
+  <td><code>COUT 'H', 0</code></td>
 </tr>
 <tr>
   <td><strong>Register</strong></td>
@@ -692,7 +692,7 @@ dt31<span class="w"> </span>format<span class="w"> </span>--check<span class="w"
 <span class="n">program</span> <span class="o">=</span> <span class="p">[</span>
     <span class="n">I</span><span class="o">.</span><span class="n">CP</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="n">R</span><span class="o">.</span><span class="n">a</span><span class="p">),</span>
     <span class="n">loop</span> <span class="o">:=</span> <span class="n">Label</span><span class="p">(</span><span class="s2">&quot;loop&quot;</span><span class="p">),</span>
-    <span class="n">I</span><span class="o">.</span><span class="n">OOUT</span><span class="p">(</span><span class="n">LC</span><span class="p">[</span><span class="s2">&quot;*&quot;</span><span class="p">]),</span>
+    <span class="n">I</span><span class="o">.</span><span class="n">COUT</span><span class="p">(</span><span class="n">LC</span><span class="p">[</span><span class="s2">&quot;*&quot;</span><span class="p">]),</span>
     <span class="n">I</span><span class="o">.</span><span class="n">SUB</span><span class="p">(</span><span class="n">R</span><span class="o">.</span><span class="n">a</span><span class="p">,</span> <span class="n">L</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span>
     <span class="n">I</span><span class="o">.</span><span class="n">JGT</span><span class="p">(</span><span class="n">loop</span><span class="p">,</span> <span class="n">R</span><span class="o">.</span><span class="n">a</span><span class="p">,</span> <span class="n">L</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span>
 <span class="p">]</span>
@@ -703,7 +703,7 @@ dt31<span class="w"> </span>format<span class="w"> </span>--check<span class="w"
 <span class="c1">#     CP 5, R.a</span>
 <span class="c1">#</span>
 <span class="c1"># loop:</span>
-<span class="c1">#     OOUT &#39;*&#39;, 0</span>
+<span class="c1">#     COUT &#39;*&#39;, 0</span>
 <span class="c1">#     SUB R.a, 1, R.a</span>
 <span class="c1">#     JGT loop, R.a, 0</span>
 </code></pre>
@@ -719,7 +719,7 @@ dt31<span class="w"> </span>format<span class="w"> </span>--check<span class="w"
 
 <span class="c1"># Inline labels (default: False, labels on separate lines)</span>
 <span class="n">text</span> <span class="o">=</span> <span class="n">program_to_text</span><span class="p">(</span><span class="n">program</span><span class="p">,</span> <span class="n">label_inline</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="c1"># loop: OOUT &#39;*&#39;, 0</span>
+<span class="c1"># loop: COUT &#39;*&#39;, 0</span>
 
 <span class="c1"># No blank lines before labels (default: True)</span>
 <span class="n">text</span> <span class="o">=</span> <span class="n">program_to_text</span><span class="p">(</span><span class="n">program</span><span class="p">,</span> <span class="n">blank_line_before_label</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
@@ -753,7 +753,7 @@ dt31<span class="w"> </span>format<span class="w"> </span>--check<span class="w"
 <span class="c1">#     CP 5, R.a</span>
 <span class="c1">#</span>
 <span class="c1"># loop:</span>
-<span class="c1">#     OOUT &#39;*&#39;, 0</span>
+<span class="c1">#     COUT &#39;*&#39;, 0</span>
 <span class="c1">#     SUB R.a, 1, R.a</span>
 <span class="c1">#     JGT loop, R.a, 0</span>
 </code></pre>
@@ -771,8 +771,8 @@ dt31<span class="w"> </span>format<span class="w"> </span>--check<span class="w"
     <span class="n">I</span><span class="o">.</span><span class="n">JMP</span><span class="p">(</span><span class="n">end</span> <span class="o">:=</span> <span class="n">Label</span><span class="p">(</span><span class="s2">&quot;end&quot;</span><span class="p">)),</span>
 
     <span class="n">print_hi</span><span class="p">,</span>
-    <span class="n">I</span><span class="o">.</span><span class="n">OOUT</span><span class="p">(</span><span class="n">LC</span><span class="p">[</span><span class="s1">&#39;H&#39;</span><span class="p">]),</span>
-    <span class="n">I</span><span class="o">.</span><span class="n">OOUT</span><span class="p">(</span><span class="n">LC</span><span class="p">[</span><span class="s1">&#39;i&#39;</span><span class="p">]),</span>
+    <span class="n">I</span><span class="o">.</span><span class="n">COUT</span><span class="p">(</span><span class="n">LC</span><span class="p">[</span><span class="s1">&#39;H&#39;</span><span class="p">]),</span>
+    <span class="n">I</span><span class="o">.</span><span class="n">COUT</span><span class="p">(</span><span class="n">LC</span><span class="p">[</span><span class="s1">&#39;i&#39;</span><span class="p">]),</span>
     <span class="n">I</span><span class="o">.</span><span class="n">RET</span><span class="p">(),</span>
 
     <span class="n">end</span><span class="p">,</span>

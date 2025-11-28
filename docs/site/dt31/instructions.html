@@ -589,19 +589,19 @@
 
             </li>
             <li>
-                    <a class="class" href="#OOUT">OOUT</a>
+                    <a class="class" href="#COUT">COUT</a>
                             <ul class="memberlist">
                         <li>
-                                <a class="function" href="#OOUT.__init__">OOUT</a>
+                                <a class="function" href="#COUT.__init__">COUT</a>
                         </li>
                         <li>
-                                <a class="variable" href="#OOUT.a">a</a>
+                                <a class="variable" href="#COUT.a">a</a>
                         </li>
                         <li>
-                                <a class="variable" href="#OOUT.b">b</a>
+                                <a class="variable" href="#COUT.b">b</a>
                         </li>
                         <li>
-                                <a class="function" href="#OOUT.to_concise_str">to_concise_str</a>
+                                <a class="function" href="#COUT.to_concise_str">to_concise_str</a>
                         </li>
                 </ul>
 
@@ -619,13 +619,13 @@
 
             </li>
             <li>
-                    <a class="class" href="#OIN">OIN</a>
+                    <a class="class" href="#CIN">CIN</a>
                             <ul class="memberlist">
                         <li>
-                                <a class="function" href="#OIN.__init__">OIN</a>
+                                <a class="function" href="#CIN.__init__">CIN</a>
                         </li>
                         <li>
-                                <a class="variable" href="#OIN.out">out</a>
+                                <a class="variable" href="#CIN.out">out</a>
                         </li>
                 </ul>
 
@@ -2062,7 +2062,7 @@
 </span><span id="L-1313"><a href="#L-1313"><span class="linenos">1313</span></a>        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
 </span><span id="L-1314"><a href="#L-1314"><span class="linenos">1314</span></a>
 </span><span id="L-1315"><a href="#L-1315"><span class="linenos">1315</span></a>
-</span><span id="L-1316"><a href="#L-1316"><span class="linenos">1316</span></a><span class="k">class</span><span class="w"> </span><span class="nc">OOUT</span><span class="p">(</span><span class="n">Instruction</span><span class="p">):</span>
+</span><span id="L-1316"><a href="#L-1316"><span class="linenos">1316</span></a><span class="k">class</span><span class="w"> </span><span class="nc">COUT</span><span class="p">(</span><span class="n">Instruction</span><span class="p">):</span>
 </span><span id="L-1317"><a href="#L-1317"><span class="linenos">1317</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Output operand as a character (using chr()).&quot;&quot;&quot;</span>
 </span><span id="L-1318"><a href="#L-1318"><span class="linenos">1318</span></a>
 </span><span id="L-1319"><a href="#L-1319"><span class="linenos">1319</span></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">a</span><span class="p">:</span> <span class="n">Operand</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="n">Operand</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">L</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
@@ -2071,7 +2071,7 @@
 </span><span id="L-1322"><a href="#L-1322"><span class="linenos">1322</span></a><span class="sd">            a: Operand value to output as a character.</span>
 </span><span id="L-1323"><a href="#L-1323"><span class="linenos">1323</span></a><span class="sd">            b: If nonzero, append newline after output. Defaults to L[0] (no newline).</span>
 </span><span id="L-1324"><a href="#L-1324"><span class="linenos">1324</span></a><span class="sd">        &quot;&quot;&quot;</span>
-</span><span id="L-1325"><a href="#L-1325"><span class="linenos">1325</span></a>        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="s2">&quot;OOUT&quot;</span><span class="p">)</span>
+</span><span id="L-1325"><a href="#L-1325"><span class="linenos">1325</span></a>        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="s2">&quot;COUT&quot;</span><span class="p">)</span>
 </span><span id="L-1326"><a href="#L-1326"><span class="linenos">1326</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">a</span> <span class="o">=</span> <span class="n">as_op</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
 </span><span id="L-1327"><a href="#L-1327"><span class="linenos">1327</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">b</span> <span class="o">=</span> <span class="n">as_op</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
 </span><span id="L-1328"><a href="#L-1328"><span class="linenos">1328</span></a>
@@ -2084,11 +2084,11 @@
 </span><span id="L-1335"><a href="#L-1335"><span class="linenos">1335</span></a>
 </span><span id="L-1336"><a href="#L-1336"><span class="linenos">1336</span></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 </span><span id="L-1337"><a href="#L-1337"><span class="linenos">1337</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Return Python API representation.&quot;&quot;&quot;</span>
-</span><span id="L-1338"><a href="#L-1338"><span class="linenos">1338</span></a>        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;OOUT(a=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">a</span><span class="si">!r}</span><span class="s2">, b=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">b</span><span class="si">!r}</span><span class="s2">)&quot;</span>
+</span><span id="L-1338"><a href="#L-1338"><span class="linenos">1338</span></a>        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;COUT(a=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">a</span><span class="si">!r}</span><span class="s2">, b=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">b</span><span class="si">!r}</span><span class="s2">)&quot;</span>
 </span><span id="L-1339"><a href="#L-1339"><span class="linenos">1339</span></a>
 </span><span id="L-1340"><a href="#L-1340"><span class="linenos">1340</span></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 </span><span id="L-1341"><a href="#L-1341"><span class="linenos">1341</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Return assembly text representation.&quot;&quot;&quot;</span>
-</span><span id="L-1342"><a href="#L-1342"><span class="linenos">1342</span></a>        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;OOUT </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">a</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">b</span><span class="si">}</span><span class="s2">&quot;</span>
+</span><span id="L-1342"><a href="#L-1342"><span class="linenos">1342</span></a>        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;COUT </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">a</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">b</span><span class="si">}</span><span class="s2">&quot;</span>
 </span><span id="L-1343"><a href="#L-1343"><span class="linenos">1343</span></a>
 </span><span id="L-1344"><a href="#L-1344"><span class="linenos">1344</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">to_concise_str</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 </span><span id="L-1345"><a href="#L-1345"><span class="linenos">1345</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Return concise assembly text representation (hides default newline argument).</span>
@@ -2096,10 +2096,10 @@
 </span><span id="L-1347"><a href="#L-1347"><span class="linenos">1347</span></a><span class="sd">        If the newline argument is L[0] (the default), it is omitted from the output.</span>
 </span><span id="L-1348"><a href="#L-1348"><span class="linenos">1348</span></a>
 </span><span id="L-1349"><a href="#L-1349"><span class="linenos">1349</span></a><span class="sd">        Returns:</span>
-</span><span id="L-1350"><a href="#L-1350"><span class="linenos">1350</span></a><span class="sd">            Concise string like &quot;OOUT &#39;H&#39;&quot; instead of &quot;OOUT &#39;H&#39;, 0&quot;.</span>
+</span><span id="L-1350"><a href="#L-1350"><span class="linenos">1350</span></a><span class="sd">            Concise string like &quot;COUT &#39;H&#39;&quot; instead of &quot;COUT &#39;H&#39;, 0&quot;.</span>
 </span><span id="L-1351"><a href="#L-1351"><span class="linenos">1351</span></a><span class="sd">        &quot;&quot;&quot;</span>
 </span><span id="L-1352"><a href="#L-1352"><span class="linenos">1352</span></a>        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">b</span> <span class="o">==</span> <span class="n">L</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
-</span><span id="L-1353"><a href="#L-1353"><span class="linenos">1353</span></a>            <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;OOUT </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">a</span><span class="si">}</span><span class="s2">&quot;</span>
+</span><span id="L-1353"><a href="#L-1353"><span class="linenos">1353</span></a>            <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;COUT </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">a</span><span class="si">}</span><span class="s2">&quot;</span>
 </span><span id="L-1354"><a href="#L-1354"><span class="linenos">1354</span></a>        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
 </span><span id="L-1355"><a href="#L-1355"><span class="linenos">1355</span></a>
 </span><span id="L-1356"><a href="#L-1356"><span class="linenos">1356</span></a>
@@ -2129,7 +2129,7 @@
 </span><span id="L-1380"><a href="#L-1380"><span class="linenos">1380</span></a>        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;NIN </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">out</span><span class="si">}</span><span class="s2">&quot;</span>
 </span><span id="L-1381"><a href="#L-1381"><span class="linenos">1381</span></a>
 </span><span id="L-1382"><a href="#L-1382"><span class="linenos">1382</span></a>
-</span><span id="L-1383"><a href="#L-1383"><span class="linenos">1383</span></a><span class="k">class</span><span class="w"> </span><span class="nc">OIN</span><span class="p">(</span><span class="n">Instruction</span><span class="p">):</span>
+</span><span id="L-1383"><a href="#L-1383"><span class="linenos">1383</span></a><span class="k">class</span><span class="w"> </span><span class="nc">CIN</span><span class="p">(</span><span class="n">Instruction</span><span class="p">):</span>
 </span><span id="L-1384"><a href="#L-1384"><span class="linenos">1384</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Read character input from user and store as ordinal value.&quot;&quot;&quot;</span>
 </span><span id="L-1385"><a href="#L-1385"><span class="linenos">1385</span></a>
 </span><span id="L-1386"><a href="#L-1386"><span class="linenos">1386</span></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">out</span><span class="p">:</span> <span class="n">Reference</span><span class="p">):</span>
@@ -2137,7 +2137,7 @@
 </span><span id="L-1388"><a href="#L-1388"><span class="linenos">1388</span></a><span class="sd">        Args:</span>
 </span><span id="L-1389"><a href="#L-1389"><span class="linenos">1389</span></a><span class="sd">            out: Output reference to store the ordinal value of the input character.</span>
 </span><span id="L-1390"><a href="#L-1390"><span class="linenos">1390</span></a><span class="sd">        &quot;&quot;&quot;</span>
-</span><span id="L-1391"><a href="#L-1391"><span class="linenos">1391</span></a>        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="s2">&quot;OIN&quot;</span><span class="p">)</span>
+</span><span id="L-1391"><a href="#L-1391"><span class="linenos">1391</span></a>        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="s2">&quot;CIN&quot;</span><span class="p">)</span>
 </span><span id="L-1392"><a href="#L-1392"><span class="linenos">1392</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">out</span> <span class="o">=</span> <span class="n">as_op</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
 </span><span id="L-1393"><a href="#L-1393"><span class="linenos">1393</span></a>
 </span><span id="L-1394"><a href="#L-1394"><span class="linenos">1394</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">_calc</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cpu</span><span class="p">:</span> <span class="n">DT31</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
@@ -2148,11 +2148,11 @@
 </span><span id="L-1399"><a href="#L-1399"><span class="linenos">1399</span></a>
 </span><span id="L-1400"><a href="#L-1400"><span class="linenos">1400</span></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 </span><span id="L-1401"><a href="#L-1401"><span class="linenos">1401</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Return Python API representation.&quot;&quot;&quot;</span>
-</span><span id="L-1402"><a href="#L-1402"><span class="linenos">1402</span></a>        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;OIN(out=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">out</span><span class="si">!r}</span><span class="s2">)&quot;</span>
+</span><span id="L-1402"><a href="#L-1402"><span class="linenos">1402</span></a>        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;CIN(out=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">out</span><span class="si">!r}</span><span class="s2">)&quot;</span>
 </span><span id="L-1403"><a href="#L-1403"><span class="linenos">1403</span></a>
 </span><span id="L-1404"><a href="#L-1404"><span class="linenos">1404</span></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 </span><span id="L-1405"><a href="#L-1405"><span class="linenos">1405</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Return assembly text representation.&quot;&quot;&quot;</span>
-</span><span id="L-1406"><a href="#L-1406"><span class="linenos">1406</span></a>        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;OIN </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">out</span><span class="si">}</span><span class="s2">&quot;</span>
+</span><span id="L-1406"><a href="#L-1406"><span class="linenos">1406</span></a>        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;CIN </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">out</span><span class="si">}</span><span class="s2">&quot;</span>
 </span><span id="L-1407"><a href="#L-1407"><span class="linenos">1407</span></a>
 </span><span id="L-1408"><a href="#L-1408"><span class="linenos">1408</span></a>
 </span><span id="L-1409"><a href="#L-1409"><span class="linenos">1409</span></a><span class="k">class</span><span class="w"> </span><span class="nc">STRIN</span><span class="p">(</span><span class="n">Instruction</span><span class="p">):</span>
@@ -7663,56 +7663,56 @@ is popped but not stored.</li>
                                 </dl>
                             </div>
                 </section>
-                <section id="OOUT">
-                            <input id="OOUT-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
+                <section id="COUT">
+                            <input id="COUT-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
 <div class="attr class">
             
     <span class="def">class</span>
-    <span class="name">OOUT</span><wbr>(<span class="base"><a href="#Instruction">Instruction</a></span>):
+    <span class="name">COUT</span><wbr>(<span class="base"><a href="#Instruction">Instruction</a></span>):
 
-                <label class="view-source-button" for="OOUT-view-source"><span>View Source</span></label>
+                <label class="view-source-button" for="COUT-view-source"><span>View Source</span></label>
 
     </div>
-    <a class="headerlink" href="#OOUT"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="OOUT-1317"><a href="#OOUT-1317"><span class="linenos">1317</span></a><span class="k">class</span><span class="w"> </span><span class="nc">OOUT</span><span class="p">(</span><span class="n">Instruction</span><span class="p">):</span>
-</span><span id="OOUT-1318"><a href="#OOUT-1318"><span class="linenos">1318</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Output operand as a character (using chr()).&quot;&quot;&quot;</span>
-</span><span id="OOUT-1319"><a href="#OOUT-1319"><span class="linenos">1319</span></a>
-</span><span id="OOUT-1320"><a href="#OOUT-1320"><span class="linenos">1320</span></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">a</span><span class="p">:</span> <span class="n">Operand</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="n">Operand</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">L</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
-</span><span id="OOUT-1321"><a href="#OOUT-1321"><span class="linenos">1321</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-</span><span id="OOUT-1322"><a href="#OOUT-1322"><span class="linenos">1322</span></a><span class="sd">        Args:</span>
-</span><span id="OOUT-1323"><a href="#OOUT-1323"><span class="linenos">1323</span></a><span class="sd">            a: Operand value to output as a character.</span>
-</span><span id="OOUT-1324"><a href="#OOUT-1324"><span class="linenos">1324</span></a><span class="sd">            b: If nonzero, append newline after output. Defaults to L[0] (no newline).</span>
-</span><span id="OOUT-1325"><a href="#OOUT-1325"><span class="linenos">1325</span></a><span class="sd">        &quot;&quot;&quot;</span>
-</span><span id="OOUT-1326"><a href="#OOUT-1326"><span class="linenos">1326</span></a>        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="s2">&quot;OOUT&quot;</span><span class="p">)</span>
-</span><span id="OOUT-1327"><a href="#OOUT-1327"><span class="linenos">1327</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">a</span> <span class="o">=</span> <span class="n">as_op</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
-</span><span id="OOUT-1328"><a href="#OOUT-1328"><span class="linenos">1328</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">b</span> <span class="o">=</span> <span class="n">as_op</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
-</span><span id="OOUT-1329"><a href="#OOUT-1329"><span class="linenos">1329</span></a>
-</span><span id="OOUT-1330"><a href="#OOUT-1330"><span class="linenos">1330</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">_calc</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cpu</span><span class="p">:</span> <span class="n">DT31</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-</span><span id="OOUT-1331"><a href="#OOUT-1331"><span class="linenos">1331</span></a>        <span class="n">end</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
-</span><span id="OOUT-1332"><a href="#OOUT-1332"><span class="linenos">1332</span></a>        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">b</span><span class="o">.</span><span class="n">resolve</span><span class="p">(</span><span class="n">cpu</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
-</span><span id="OOUT-1333"><a href="#OOUT-1333"><span class="linenos">1333</span></a>            <span class="n">end</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
-</span><span id="OOUT-1334"><a href="#OOUT-1334"><span class="linenos">1334</span></a>        <span class="nb">print</span><span class="p">(</span><span class="nb">chr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">a</span><span class="o">.</span><span class="n">resolve</span><span class="p">(</span><span class="n">cpu</span><span class="p">)),</span> <span class="n">end</span><span class="o">=</span><span class="n">end</span><span class="p">)</span>
-</span><span id="OOUT-1335"><a href="#OOUT-1335"><span class="linenos">1335</span></a>        <span class="k">return</span> <span class="mi">0</span>
-</span><span id="OOUT-1336"><a href="#OOUT-1336"><span class="linenos">1336</span></a>
-</span><span id="OOUT-1337"><a href="#OOUT-1337"><span class="linenos">1337</span></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-</span><span id="OOUT-1338"><a href="#OOUT-1338"><span class="linenos">1338</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Return Python API representation.&quot;&quot;&quot;</span>
-</span><span id="OOUT-1339"><a href="#OOUT-1339"><span class="linenos">1339</span></a>        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;OOUT(a=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">a</span><span class="si">!r}</span><span class="s2">, b=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">b</span><span class="si">!r}</span><span class="s2">)&quot;</span>
-</span><span id="OOUT-1340"><a href="#OOUT-1340"><span class="linenos">1340</span></a>
-</span><span id="OOUT-1341"><a href="#OOUT-1341"><span class="linenos">1341</span></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-</span><span id="OOUT-1342"><a href="#OOUT-1342"><span class="linenos">1342</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Return assembly text representation.&quot;&quot;&quot;</span>
-</span><span id="OOUT-1343"><a href="#OOUT-1343"><span class="linenos">1343</span></a>        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;OOUT </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">a</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">b</span><span class="si">}</span><span class="s2">&quot;</span>
-</span><span id="OOUT-1344"><a href="#OOUT-1344"><span class="linenos">1344</span></a>
-</span><span id="OOUT-1345"><a href="#OOUT-1345"><span class="linenos">1345</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">to_concise_str</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-</span><span id="OOUT-1346"><a href="#OOUT-1346"><span class="linenos">1346</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Return concise assembly text representation (hides default newline argument).</span>
-</span><span id="OOUT-1347"><a href="#OOUT-1347"><span class="linenos">1347</span></a>
-</span><span id="OOUT-1348"><a href="#OOUT-1348"><span class="linenos">1348</span></a><span class="sd">        If the newline argument is L[0] (the default), it is omitted from the output.</span>
-</span><span id="OOUT-1349"><a href="#OOUT-1349"><span class="linenos">1349</span></a>
-</span><span id="OOUT-1350"><a href="#OOUT-1350"><span class="linenos">1350</span></a><span class="sd">        Returns:</span>
-</span><span id="OOUT-1351"><a href="#OOUT-1351"><span class="linenos">1351</span></a><span class="sd">            Concise string like &quot;OOUT &#39;H&#39;&quot; instead of &quot;OOUT &#39;H&#39;, 0&quot;.</span>
-</span><span id="OOUT-1352"><a href="#OOUT-1352"><span class="linenos">1352</span></a><span class="sd">        &quot;&quot;&quot;</span>
-</span><span id="OOUT-1353"><a href="#OOUT-1353"><span class="linenos">1353</span></a>        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">b</span> <span class="o">==</span> <span class="n">L</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
-</span><span id="OOUT-1354"><a href="#OOUT-1354"><span class="linenos">1354</span></a>            <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;OOUT </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">a</span><span class="si">}</span><span class="s2">&quot;</span>
-</span><span id="OOUT-1355"><a href="#OOUT-1355"><span class="linenos">1355</span></a>        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+    <a class="headerlink" href="#COUT"></a>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="COUT-1317"><a href="#COUT-1317"><span class="linenos">1317</span></a><span class="k">class</span><span class="w"> </span><span class="nc">COUT</span><span class="p">(</span><span class="n">Instruction</span><span class="p">):</span>
+</span><span id="COUT-1318"><a href="#COUT-1318"><span class="linenos">1318</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Output operand as a character (using chr()).&quot;&quot;&quot;</span>
+</span><span id="COUT-1319"><a href="#COUT-1319"><span class="linenos">1319</span></a>
+</span><span id="COUT-1320"><a href="#COUT-1320"><span class="linenos">1320</span></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">a</span><span class="p">:</span> <span class="n">Operand</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="n">Operand</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">L</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+</span><span id="COUT-1321"><a href="#COUT-1321"><span class="linenos">1321</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="COUT-1322"><a href="#COUT-1322"><span class="linenos">1322</span></a><span class="sd">        Args:</span>
+</span><span id="COUT-1323"><a href="#COUT-1323"><span class="linenos">1323</span></a><span class="sd">            a: Operand value to output as a character.</span>
+</span><span id="COUT-1324"><a href="#COUT-1324"><span class="linenos">1324</span></a><span class="sd">            b: If nonzero, append newline after output. Defaults to L[0] (no newline).</span>
+</span><span id="COUT-1325"><a href="#COUT-1325"><span class="linenos">1325</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="COUT-1326"><a href="#COUT-1326"><span class="linenos">1326</span></a>        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="s2">&quot;COUT&quot;</span><span class="p">)</span>
+</span><span id="COUT-1327"><a href="#COUT-1327"><span class="linenos">1327</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">a</span> <span class="o">=</span> <span class="n">as_op</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+</span><span id="COUT-1328"><a href="#COUT-1328"><span class="linenos">1328</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">b</span> <span class="o">=</span> <span class="n">as_op</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
+</span><span id="COUT-1329"><a href="#COUT-1329"><span class="linenos">1329</span></a>
+</span><span id="COUT-1330"><a href="#COUT-1330"><span class="linenos">1330</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">_calc</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cpu</span><span class="p">:</span> <span class="n">DT31</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+</span><span id="COUT-1331"><a href="#COUT-1331"><span class="linenos">1331</span></a>        <span class="n">end</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+</span><span id="COUT-1332"><a href="#COUT-1332"><span class="linenos">1332</span></a>        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">b</span><span class="o">.</span><span class="n">resolve</span><span class="p">(</span><span class="n">cpu</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+</span><span id="COUT-1333"><a href="#COUT-1333"><span class="linenos">1333</span></a>            <span class="n">end</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
+</span><span id="COUT-1334"><a href="#COUT-1334"><span class="linenos">1334</span></a>        <span class="nb">print</span><span class="p">(</span><span class="nb">chr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">a</span><span class="o">.</span><span class="n">resolve</span><span class="p">(</span><span class="n">cpu</span><span class="p">)),</span> <span class="n">end</span><span class="o">=</span><span class="n">end</span><span class="p">)</span>
+</span><span id="COUT-1335"><a href="#COUT-1335"><span class="linenos">1335</span></a>        <span class="k">return</span> <span class="mi">0</span>
+</span><span id="COUT-1336"><a href="#COUT-1336"><span class="linenos">1336</span></a>
+</span><span id="COUT-1337"><a href="#COUT-1337"><span class="linenos">1337</span></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+</span><span id="COUT-1338"><a href="#COUT-1338"><span class="linenos">1338</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Return Python API representation.&quot;&quot;&quot;</span>
+</span><span id="COUT-1339"><a href="#COUT-1339"><span class="linenos">1339</span></a>        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;COUT(a=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">a</span><span class="si">!r}</span><span class="s2">, b=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">b</span><span class="si">!r}</span><span class="s2">)&quot;</span>
+</span><span id="COUT-1340"><a href="#COUT-1340"><span class="linenos">1340</span></a>
+</span><span id="COUT-1341"><a href="#COUT-1341"><span class="linenos">1341</span></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+</span><span id="COUT-1342"><a href="#COUT-1342"><span class="linenos">1342</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Return assembly text representation.&quot;&quot;&quot;</span>
+</span><span id="COUT-1343"><a href="#COUT-1343"><span class="linenos">1343</span></a>        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;COUT </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">a</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">b</span><span class="si">}</span><span class="s2">&quot;</span>
+</span><span id="COUT-1344"><a href="#COUT-1344"><span class="linenos">1344</span></a>
+</span><span id="COUT-1345"><a href="#COUT-1345"><span class="linenos">1345</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">to_concise_str</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+</span><span id="COUT-1346"><a href="#COUT-1346"><span class="linenos">1346</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Return concise assembly text representation (hides default newline argument).</span>
+</span><span id="COUT-1347"><a href="#COUT-1347"><span class="linenos">1347</span></a>
+</span><span id="COUT-1348"><a href="#COUT-1348"><span class="linenos">1348</span></a><span class="sd">        If the newline argument is L[0] (the default), it is omitted from the output.</span>
+</span><span id="COUT-1349"><a href="#COUT-1349"><span class="linenos">1349</span></a>
+</span><span id="COUT-1350"><a href="#COUT-1350"><span class="linenos">1350</span></a><span class="sd">        Returns:</span>
+</span><span id="COUT-1351"><a href="#COUT-1351"><span class="linenos">1351</span></a><span class="sd">            Concise string like &quot;COUT &#39;H&#39;&quot; instead of &quot;COUT &#39;H&#39;, 0&quot;.</span>
+</span><span id="COUT-1352"><a href="#COUT-1352"><span class="linenos">1352</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="COUT-1353"><a href="#COUT-1353"><span class="linenos">1353</span></a>        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">b</span> <span class="o">==</span> <span class="n">L</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+</span><span id="COUT-1354"><a href="#COUT-1354"><span class="linenos">1354</span></a>            <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;COUT </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">a</span><span class="si">}</span><span class="s2">&quot;</span>
+</span><span id="COUT-1355"><a href="#COUT-1355"><span class="linenos">1355</span></a>        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
 </span></pre></div>
 
 
@@ -7720,25 +7720,25 @@ is popped but not stored.</li>
 </div>
 
 
-                            <div id="OOUT.__init__" class="classattr">
-                                        <input id="OOUT.__init__-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
+                            <div id="COUT.__init__" class="classattr">
+                                        <input id="COUT.__init__-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
 <div class="attr function">
             
-        <span class="name">OOUT</span><span class="signature pdoc-code condensed">(<span class="param"><span class="n">a</span><span class="p">:</span> <span class="n"><a href="operands.html#Operand">dt31.operands.Operand</a></span>, </span><span class="param"><span class="n">b</span><span class="p">:</span> <span class="n"><a href="operands.html#Operand">dt31.operands.Operand</a></span> <span class="o">|</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span></span>)</span>
+        <span class="name">COUT</span><span class="signature pdoc-code condensed">(<span class="param"><span class="n">a</span><span class="p">:</span> <span class="n"><a href="operands.html#Operand">dt31.operands.Operand</a></span>, </span><span class="param"><span class="n">b</span><span class="p">:</span> <span class="n"><a href="operands.html#Operand">dt31.operands.Operand</a></span> <span class="o">|</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span></span>)</span>
 
-                <label class="view-source-button" for="OOUT.__init__-view-source"><span>View Source</span></label>
+                <label class="view-source-button" for="COUT.__init__-view-source"><span>View Source</span></label>
 
     </div>
-    <a class="headerlink" href="#OOUT.__init__"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="OOUT.__init__-1320"><a href="#OOUT.__init__-1320"><span class="linenos">1320</span></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">a</span><span class="p">:</span> <span class="n">Operand</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="n">Operand</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">L</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
-</span><span id="OOUT.__init__-1321"><a href="#OOUT.__init__-1321"><span class="linenos">1321</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-</span><span id="OOUT.__init__-1322"><a href="#OOUT.__init__-1322"><span class="linenos">1322</span></a><span class="sd">        Args:</span>
-</span><span id="OOUT.__init__-1323"><a href="#OOUT.__init__-1323"><span class="linenos">1323</span></a><span class="sd">            a: Operand value to output as a character.</span>
-</span><span id="OOUT.__init__-1324"><a href="#OOUT.__init__-1324"><span class="linenos">1324</span></a><span class="sd">            b: If nonzero, append newline after output. Defaults to L[0] (no newline).</span>
-</span><span id="OOUT.__init__-1325"><a href="#OOUT.__init__-1325"><span class="linenos">1325</span></a><span class="sd">        &quot;&quot;&quot;</span>
-</span><span id="OOUT.__init__-1326"><a href="#OOUT.__init__-1326"><span class="linenos">1326</span></a>        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="s2">&quot;OOUT&quot;</span><span class="p">)</span>
-</span><span id="OOUT.__init__-1327"><a href="#OOUT.__init__-1327"><span class="linenos">1327</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">a</span> <span class="o">=</span> <span class="n">as_op</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
-</span><span id="OOUT.__init__-1328"><a href="#OOUT.__init__-1328"><span class="linenos">1328</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">b</span> <span class="o">=</span> <span class="n">as_op</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
+    <a class="headerlink" href="#COUT.__init__"></a>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="COUT.__init__-1320"><a href="#COUT.__init__-1320"><span class="linenos">1320</span></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">a</span><span class="p">:</span> <span class="n">Operand</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="n">Operand</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">L</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+</span><span id="COUT.__init__-1321"><a href="#COUT.__init__-1321"><span class="linenos">1321</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="COUT.__init__-1322"><a href="#COUT.__init__-1322"><span class="linenos">1322</span></a><span class="sd">        Args:</span>
+</span><span id="COUT.__init__-1323"><a href="#COUT.__init__-1323"><span class="linenos">1323</span></a><span class="sd">            a: Operand value to output as a character.</span>
+</span><span id="COUT.__init__-1324"><a href="#COUT.__init__-1324"><span class="linenos">1324</span></a><span class="sd">            b: If nonzero, append newline after output. Defaults to L[0] (no newline).</span>
+</span><span id="COUT.__init__-1325"><a href="#COUT.__init__-1325"><span class="linenos">1325</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="COUT.__init__-1326"><a href="#COUT.__init__-1326"><span class="linenos">1326</span></a>        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="s2">&quot;COUT&quot;</span><span class="p">)</span>
+</span><span id="COUT.__init__-1327"><a href="#COUT.__init__-1327"><span class="linenos">1327</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">a</span> <span class="o">=</span> <span class="n">as_op</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+</span><span id="COUT.__init__-1328"><a href="#COUT.__init__-1328"><span class="linenos">1328</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">b</span> <span class="o">=</span> <span class="n">as_op</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
 </span></pre></div>
 
 
@@ -7752,50 +7752,50 @@ is popped but not stored.</li>
 
 
                             </div>
-                            <div id="OOUT.a" class="classattr">
+                            <div id="COUT.a" class="classattr">
                                 <div class="attr variable">
             <span class="name">a</span>
 
         
     </div>
-    <a class="headerlink" href="#OOUT.a"></a>
+    <a class="headerlink" href="#COUT.a"></a>
     
     
 
                             </div>
-                            <div id="OOUT.b" class="classattr">
+                            <div id="COUT.b" class="classattr">
                                 <div class="attr variable">
             <span class="name">b</span>
 
         
     </div>
-    <a class="headerlink" href="#OOUT.b"></a>
+    <a class="headerlink" href="#COUT.b"></a>
     
     
 
                             </div>
-                            <div id="OOUT.to_concise_str" class="classattr">
-                                        <input id="OOUT.to_concise_str-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
+                            <div id="COUT.to_concise_str" class="classattr">
+                                        <input id="COUT.to_concise_str-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
 <div class="attr function">
             
         <span class="def">def</span>
         <span class="name">to_concise_str</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span></span><span class="return-annotation">) -> <span class="nb">str</span>:</span></span>
 
-                <label class="view-source-button" for="OOUT.to_concise_str-view-source"><span>View Source</span></label>
+                <label class="view-source-button" for="COUT.to_concise_str-view-source"><span>View Source</span></label>
 
     </div>
-    <a class="headerlink" href="#OOUT.to_concise_str"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="OOUT.to_concise_str-1345"><a href="#OOUT.to_concise_str-1345"><span class="linenos">1345</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">to_concise_str</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-</span><span id="OOUT.to_concise_str-1346"><a href="#OOUT.to_concise_str-1346"><span class="linenos">1346</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Return concise assembly text representation (hides default newline argument).</span>
-</span><span id="OOUT.to_concise_str-1347"><a href="#OOUT.to_concise_str-1347"><span class="linenos">1347</span></a>
-</span><span id="OOUT.to_concise_str-1348"><a href="#OOUT.to_concise_str-1348"><span class="linenos">1348</span></a><span class="sd">        If the newline argument is L[0] (the default), it is omitted from the output.</span>
-</span><span id="OOUT.to_concise_str-1349"><a href="#OOUT.to_concise_str-1349"><span class="linenos">1349</span></a>
-</span><span id="OOUT.to_concise_str-1350"><a href="#OOUT.to_concise_str-1350"><span class="linenos">1350</span></a><span class="sd">        Returns:</span>
-</span><span id="OOUT.to_concise_str-1351"><a href="#OOUT.to_concise_str-1351"><span class="linenos">1351</span></a><span class="sd">            Concise string like &quot;OOUT &#39;H&#39;&quot; instead of &quot;OOUT &#39;H&#39;, 0&quot;.</span>
-</span><span id="OOUT.to_concise_str-1352"><a href="#OOUT.to_concise_str-1352"><span class="linenos">1352</span></a><span class="sd">        &quot;&quot;&quot;</span>
-</span><span id="OOUT.to_concise_str-1353"><a href="#OOUT.to_concise_str-1353"><span class="linenos">1353</span></a>        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">b</span> <span class="o">==</span> <span class="n">L</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
-</span><span id="OOUT.to_concise_str-1354"><a href="#OOUT.to_concise_str-1354"><span class="linenos">1354</span></a>            <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;OOUT </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">a</span><span class="si">}</span><span class="s2">&quot;</span>
-</span><span id="OOUT.to_concise_str-1355"><a href="#OOUT.to_concise_str-1355"><span class="linenos">1355</span></a>        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+    <a class="headerlink" href="#COUT.to_concise_str"></a>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="COUT.to_concise_str-1345"><a href="#COUT.to_concise_str-1345"><span class="linenos">1345</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">to_concise_str</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+</span><span id="COUT.to_concise_str-1346"><a href="#COUT.to_concise_str-1346"><span class="linenos">1346</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Return concise assembly text representation (hides default newline argument).</span>
+</span><span id="COUT.to_concise_str-1347"><a href="#COUT.to_concise_str-1347"><span class="linenos">1347</span></a>
+</span><span id="COUT.to_concise_str-1348"><a href="#COUT.to_concise_str-1348"><span class="linenos">1348</span></a><span class="sd">        If the newline argument is L[0] (the default), it is omitted from the output.</span>
+</span><span id="COUT.to_concise_str-1349"><a href="#COUT.to_concise_str-1349"><span class="linenos">1349</span></a>
+</span><span id="COUT.to_concise_str-1350"><a href="#COUT.to_concise_str-1350"><span class="linenos">1350</span></a><span class="sd">        Returns:</span>
+</span><span id="COUT.to_concise_str-1351"><a href="#COUT.to_concise_str-1351"><span class="linenos">1351</span></a><span class="sd">            Concise string like &quot;COUT &#39;H&#39;&quot; instead of &quot;COUT &#39;H&#39;, 0&quot;.</span>
+</span><span id="COUT.to_concise_str-1352"><a href="#COUT.to_concise_str-1352"><span class="linenos">1352</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="COUT.to_concise_str-1353"><a href="#COUT.to_concise_str-1353"><span class="linenos">1353</span></a>        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">b</span> <span class="o">==</span> <span class="n">L</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+</span><span id="COUT.to_concise_str-1354"><a href="#COUT.to_concise_str-1354"><span class="linenos">1354</span></a>            <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;COUT </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">a</span><span class="si">}</span><span class="s2">&quot;</span>
+</span><span id="COUT.to_concise_str-1355"><a href="#COUT.to_concise_str-1355"><span class="linenos">1355</span></a>        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
 </span></pre></div>
 
 
@@ -7806,7 +7806,7 @@ is popped but not stored.</li>
 <h6 id="returns">Returns:</h6>
 
 <blockquote>
-  <p>Concise string like "OOUT 'H'" instead of "OOUT 'H', 0".</p>
+  <p>Concise string like "COUT 'H'" instead of "COUT 'H', 0".</p>
 </blockquote>
 </div>
 
@@ -7816,9 +7816,9 @@ is popped but not stored.</li>
                                 <h5>Inherited Members</h5>
                                 <dl>
                                     <div><dt><a href="#Instruction">Instruction</a></dt>
-                                <dd id="OOUT.name" class="variable"><a href="#Instruction.name">name</a></dd>
-                <dd id="OOUT.comment" class="variable"><a href="#Instruction.comment">comment</a></dd>
-                <dd id="OOUT.with_comment" class="function"><a href="#Instruction.with_comment">with_comment</a></dd>
+                                <dd id="COUT.name" class="variable"><a href="#Instruction.name">name</a></dd>
+                <dd id="COUT.comment" class="variable"><a href="#Instruction.comment">comment</a></dd>
+                <dd id="COUT.with_comment" class="function"><a href="#Instruction.with_comment">with_comment</a></dd>
 
             </div>
                                 </dl>
@@ -7919,41 +7919,41 @@ is popped but not stored.</li>
                                 </dl>
                             </div>
                 </section>
-                <section id="OIN">
-                            <input id="OIN-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
+                <section id="CIN">
+                            <input id="CIN-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
 <div class="attr class">
             
     <span class="def">class</span>
-    <span class="name">OIN</span><wbr>(<span class="base"><a href="#Instruction">Instruction</a></span>):
+    <span class="name">CIN</span><wbr>(<span class="base"><a href="#Instruction">Instruction</a></span>):
 
-                <label class="view-source-button" for="OIN-view-source"><span>View Source</span></label>
+                <label class="view-source-button" for="CIN-view-source"><span>View Source</span></label>
 
     </div>
-    <a class="headerlink" href="#OIN"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="OIN-1384"><a href="#OIN-1384"><span class="linenos">1384</span></a><span class="k">class</span><span class="w"> </span><span class="nc">OIN</span><span class="p">(</span><span class="n">Instruction</span><span class="p">):</span>
-</span><span id="OIN-1385"><a href="#OIN-1385"><span class="linenos">1385</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Read character input from user and store as ordinal value.&quot;&quot;&quot;</span>
-</span><span id="OIN-1386"><a href="#OIN-1386"><span class="linenos">1386</span></a>
-</span><span id="OIN-1387"><a href="#OIN-1387"><span class="linenos">1387</span></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">out</span><span class="p">:</span> <span class="n">Reference</span><span class="p">):</span>
-</span><span id="OIN-1388"><a href="#OIN-1388"><span class="linenos">1388</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-</span><span id="OIN-1389"><a href="#OIN-1389"><span class="linenos">1389</span></a><span class="sd">        Args:</span>
-</span><span id="OIN-1390"><a href="#OIN-1390"><span class="linenos">1390</span></a><span class="sd">            out: Output reference to store the ordinal value of the input character.</span>
-</span><span id="OIN-1391"><a href="#OIN-1391"><span class="linenos">1391</span></a><span class="sd">        &quot;&quot;&quot;</span>
-</span><span id="OIN-1392"><a href="#OIN-1392"><span class="linenos">1392</span></a>        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="s2">&quot;OIN&quot;</span><span class="p">)</span>
-</span><span id="OIN-1393"><a href="#OIN-1393"><span class="linenos">1393</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">out</span> <span class="o">=</span> <span class="n">as_op</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
-</span><span id="OIN-1394"><a href="#OIN-1394"><span class="linenos">1394</span></a>
-</span><span id="OIN-1395"><a href="#OIN-1395"><span class="linenos">1395</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">_calc</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cpu</span><span class="p">:</span> <span class="n">DT31</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-</span><span id="OIN-1396"><a href="#OIN-1396"><span class="linenos">1396</span></a>        <span class="n">val</span> <span class="o">=</span> <span class="nb">input</span><span class="p">(</span><span class="s2">&quot;&gt; &quot;</span><span class="p">)</span>
-</span><span id="OIN-1397"><a href="#OIN-1397"><span class="linenos">1397</span></a>        <span class="n">val_ord</span> <span class="o">=</span> <span class="nb">ord</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
-</span><span id="OIN-1398"><a href="#OIN-1398"><span class="linenos">1398</span></a>        <span class="n">cpu</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">out</span><span class="p">]</span> <span class="o">=</span> <span class="n">val_ord</span>
-</span><span id="OIN-1399"><a href="#OIN-1399"><span class="linenos">1399</span></a>        <span class="k">return</span> <span class="n">val_ord</span>
-</span><span id="OIN-1400"><a href="#OIN-1400"><span class="linenos">1400</span></a>
-</span><span id="OIN-1401"><a href="#OIN-1401"><span class="linenos">1401</span></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-</span><span id="OIN-1402"><a href="#OIN-1402"><span class="linenos">1402</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Return Python API representation.&quot;&quot;&quot;</span>
-</span><span id="OIN-1403"><a href="#OIN-1403"><span class="linenos">1403</span></a>        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;OIN(out=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">out</span><span class="si">!r}</span><span class="s2">)&quot;</span>
-</span><span id="OIN-1404"><a href="#OIN-1404"><span class="linenos">1404</span></a>
-</span><span id="OIN-1405"><a href="#OIN-1405"><span class="linenos">1405</span></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-</span><span id="OIN-1406"><a href="#OIN-1406"><span class="linenos">1406</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Return assembly text representation.&quot;&quot;&quot;</span>
-</span><span id="OIN-1407"><a href="#OIN-1407"><span class="linenos">1407</span></a>        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;OIN </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">out</span><span class="si">}</span><span class="s2">&quot;</span>
+    <a class="headerlink" href="#CIN"></a>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="CIN-1384"><a href="#CIN-1384"><span class="linenos">1384</span></a><span class="k">class</span><span class="w"> </span><span class="nc">CIN</span><span class="p">(</span><span class="n">Instruction</span><span class="p">):</span>
+</span><span id="CIN-1385"><a href="#CIN-1385"><span class="linenos">1385</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Read character input from user and store as ordinal value.&quot;&quot;&quot;</span>
+</span><span id="CIN-1386"><a href="#CIN-1386"><span class="linenos">1386</span></a>
+</span><span id="CIN-1387"><a href="#CIN-1387"><span class="linenos">1387</span></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">out</span><span class="p">:</span> <span class="n">Reference</span><span class="p">):</span>
+</span><span id="CIN-1388"><a href="#CIN-1388"><span class="linenos">1388</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="CIN-1389"><a href="#CIN-1389"><span class="linenos">1389</span></a><span class="sd">        Args:</span>
+</span><span id="CIN-1390"><a href="#CIN-1390"><span class="linenos">1390</span></a><span class="sd">            out: Output reference to store the ordinal value of the input character.</span>
+</span><span id="CIN-1391"><a href="#CIN-1391"><span class="linenos">1391</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="CIN-1392"><a href="#CIN-1392"><span class="linenos">1392</span></a>        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="s2">&quot;CIN&quot;</span><span class="p">)</span>
+</span><span id="CIN-1393"><a href="#CIN-1393"><span class="linenos">1393</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">out</span> <span class="o">=</span> <span class="n">as_op</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+</span><span id="CIN-1394"><a href="#CIN-1394"><span class="linenos">1394</span></a>
+</span><span id="CIN-1395"><a href="#CIN-1395"><span class="linenos">1395</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">_calc</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cpu</span><span class="p">:</span> <span class="n">DT31</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+</span><span id="CIN-1396"><a href="#CIN-1396"><span class="linenos">1396</span></a>        <span class="n">val</span> <span class="o">=</span> <span class="nb">input</span><span class="p">(</span><span class="s2">&quot;&gt; &quot;</span><span class="p">)</span>
+</span><span id="CIN-1397"><a href="#CIN-1397"><span class="linenos">1397</span></a>        <span class="n">val_ord</span> <span class="o">=</span> <span class="nb">ord</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+</span><span id="CIN-1398"><a href="#CIN-1398"><span class="linenos">1398</span></a>        <span class="n">cpu</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">out</span><span class="p">]</span> <span class="o">=</span> <span class="n">val_ord</span>
+</span><span id="CIN-1399"><a href="#CIN-1399"><span class="linenos">1399</span></a>        <span class="k">return</span> <span class="n">val_ord</span>
+</span><span id="CIN-1400"><a href="#CIN-1400"><span class="linenos">1400</span></a>
+</span><span id="CIN-1401"><a href="#CIN-1401"><span class="linenos">1401</span></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+</span><span id="CIN-1402"><a href="#CIN-1402"><span class="linenos">1402</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Return Python API representation.&quot;&quot;&quot;</span>
+</span><span id="CIN-1403"><a href="#CIN-1403"><span class="linenos">1403</span></a>        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;CIN(out=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">out</span><span class="si">!r}</span><span class="s2">)&quot;</span>
+</span><span id="CIN-1404"><a href="#CIN-1404"><span class="linenos">1404</span></a>
+</span><span id="CIN-1405"><a href="#CIN-1405"><span class="linenos">1405</span></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+</span><span id="CIN-1406"><a href="#CIN-1406"><span class="linenos">1406</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Return assembly text representation.&quot;&quot;&quot;</span>
+</span><span id="CIN-1407"><a href="#CIN-1407"><span class="linenos">1407</span></a>        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;CIN </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">out</span><span class="si">}</span><span class="s2">&quot;</span>
 </span></pre></div>
 
 
@@ -7961,23 +7961,23 @@ is popped but not stored.</li>
 </div>
 
 
-                            <div id="OIN.__init__" class="classattr">
-                                        <input id="OIN.__init__-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
+                            <div id="CIN.__init__" class="classattr">
+                                        <input id="CIN.__init__-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
 <div class="attr function">
             
-        <span class="name">OIN</span><span class="signature pdoc-code condensed">(<span class="param"><span class="n">out</span><span class="p">:</span> <span class="n"><a href="operands.html#RegisterReference">dt31.operands.RegisterReference</a></span> <span class="o">|</span> <span class="n"><a href="operands.html#MemoryReference">dt31.operands.MemoryReference</a></span></span>)</span>
+        <span class="name">CIN</span><span class="signature pdoc-code condensed">(<span class="param"><span class="n">out</span><span class="p">:</span> <span class="n"><a href="operands.html#RegisterReference">dt31.operands.RegisterReference</a></span> <span class="o">|</span> <span class="n"><a href="operands.html#MemoryReference">dt31.operands.MemoryReference</a></span></span>)</span>
 
-                <label class="view-source-button" for="OIN.__init__-view-source"><span>View Source</span></label>
+                <label class="view-source-button" for="CIN.__init__-view-source"><span>View Source</span></label>
 
     </div>
-    <a class="headerlink" href="#OIN.__init__"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="OIN.__init__-1387"><a href="#OIN.__init__-1387"><span class="linenos">1387</span></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">out</span><span class="p">:</span> <span class="n">Reference</span><span class="p">):</span>
-</span><span id="OIN.__init__-1388"><a href="#OIN.__init__-1388"><span class="linenos">1388</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-</span><span id="OIN.__init__-1389"><a href="#OIN.__init__-1389"><span class="linenos">1389</span></a><span class="sd">        Args:</span>
-</span><span id="OIN.__init__-1390"><a href="#OIN.__init__-1390"><span class="linenos">1390</span></a><span class="sd">            out: Output reference to store the ordinal value of the input character.</span>
-</span><span id="OIN.__init__-1391"><a href="#OIN.__init__-1391"><span class="linenos">1391</span></a><span class="sd">        &quot;&quot;&quot;</span>
-</span><span id="OIN.__init__-1392"><a href="#OIN.__init__-1392"><span class="linenos">1392</span></a>        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="s2">&quot;OIN&quot;</span><span class="p">)</span>
-</span><span id="OIN.__init__-1393"><a href="#OIN.__init__-1393"><span class="linenos">1393</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">out</span> <span class="o">=</span> <span class="n">as_op</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+    <a class="headerlink" href="#CIN.__init__"></a>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="CIN.__init__-1387"><a href="#CIN.__init__-1387"><span class="linenos">1387</span></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">out</span><span class="p">:</span> <span class="n">Reference</span><span class="p">):</span>
+</span><span id="CIN.__init__-1388"><a href="#CIN.__init__-1388"><span class="linenos">1388</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="CIN.__init__-1389"><a href="#CIN.__init__-1389"><span class="linenos">1389</span></a><span class="sd">        Args:</span>
+</span><span id="CIN.__init__-1390"><a href="#CIN.__init__-1390"><span class="linenos">1390</span></a><span class="sd">            out: Output reference to store the ordinal value of the input character.</span>
+</span><span id="CIN.__init__-1391"><a href="#CIN.__init__-1391"><span class="linenos">1391</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="CIN.__init__-1392"><a href="#CIN.__init__-1392"><span class="linenos">1392</span></a>        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="s2">&quot;CIN&quot;</span><span class="p">)</span>
+</span><span id="CIN.__init__-1393"><a href="#CIN.__init__-1393"><span class="linenos">1393</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">out</span> <span class="o">=</span> <span class="n">as_op</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
 </span></pre></div>
 
 
@@ -7990,13 +7990,13 @@ is popped but not stored.</li>
 
 
                             </div>
-                            <div id="OIN.out" class="classattr">
+                            <div id="CIN.out" class="classattr">
                                 <div class="attr variable">
             <span class="name">out</span>
 
         
     </div>
-    <a class="headerlink" href="#OIN.out"></a>
+    <a class="headerlink" href="#CIN.out"></a>
     
     
 
@@ -8005,10 +8005,10 @@ is popped but not stored.</li>
                                 <h5>Inherited Members</h5>
                                 <dl>
                                     <div><dt><a href="#Instruction">Instruction</a></dt>
-                                <dd id="OIN.name" class="variable"><a href="#Instruction.name">name</a></dd>
-                <dd id="OIN.comment" class="variable"><a href="#Instruction.comment">comment</a></dd>
-                <dd id="OIN.to_concise_str" class="function"><a href="#Instruction.to_concise_str">to_concise_str</a></dd>
-                <dd id="OIN.with_comment" class="function"><a href="#Instruction.with_comment">with_comment</a></dd>
+                                <dd id="CIN.name" class="variable"><a href="#Instruction.name">name</a></dd>
+                <dd id="CIN.comment" class="variable"><a href="#Instruction.comment">comment</a></dd>
+                <dd id="CIN.to_concise_str" class="function"><a href="#Instruction.to_concise_str">to_concise_str</a></dd>
+                <dd id="CIN.with_comment" class="function"><a href="#Instruction.with_comment">with_comment</a></dd>
 
             </div>
                                 </dl>

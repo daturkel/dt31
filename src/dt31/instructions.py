@@ -1313,7 +1313,7 @@ class NOUT(Instruction):
         return str(self)
 
 
-class OOUT(Instruction):
+class COUT(Instruction):
     """Output operand as a character (using chr())."""
 
     def __init__(self, a: Operand, b: Operand | int = L[0]):
@@ -1322,7 +1322,7 @@ class OOUT(Instruction):
             a: Operand value to output as a character.
             b: If nonzero, append newline after output. Defaults to L[0] (no newline).
         """
-        super().__init__("OOUT")
+        super().__init__("COUT")
         self.a = as_op(a)
         self.b = as_op(b)
 
@@ -1335,11 +1335,11 @@ class OOUT(Instruction):
 
     def __repr__(self) -> str:
         """Return Python API representation."""
-        return f"OOUT(a={self.a!r}, b={self.b!r})"
+        return f"COUT(a={self.a!r}, b={self.b!r})"
 
     def __str__(self) -> str:
         """Return assembly text representation."""
-        return f"OOUT {self.a}, {self.b}"
+        return f"COUT {self.a}, {self.b}"
 
     def to_concise_str(self) -> str:
         """Return concise assembly text representation (hides default newline argument).
@@ -1347,10 +1347,10 @@ class OOUT(Instruction):
         If the newline argument is L[0] (the default), it is omitted from the output.
 
         Returns:
-            Concise string like "OOUT 'H'" instead of "OOUT 'H', 0".
+            Concise string like "COUT 'H'" instead of "COUT 'H', 0".
         """
         if self.b == L[0]:
-            return f"OOUT {self.a}"
+            return f"COUT {self.a}"
         return str(self)
 
 
@@ -1380,7 +1380,7 @@ class NIN(Instruction):
         return f"NIN {self.out}"
 
 
-class OIN(Instruction):
+class CIN(Instruction):
     """Read character input from user and store as ordinal value."""
 
     def __init__(self, out: Reference):
@@ -1388,7 +1388,7 @@ class OIN(Instruction):
         Args:
             out: Output reference to store the ordinal value of the input character.
         """
-        super().__init__("OIN")
+        super().__init__("CIN")
         self.out = as_op(out)
 
     def _calc(self, cpu: DT31) -> int:
@@ -1399,11 +1399,11 @@ class OIN(Instruction):
 
     def __repr__(self) -> str:
         """Return Python API representation."""
-        return f"OIN(out={self.out!r})"
+        return f"CIN(out={self.out!r})"
 
     def __str__(self) -> str:
         """Return assembly text representation."""
-        return f"OIN {self.out}"
+        return f"CIN {self.out}"
 
 
 class STRIN(Instruction):

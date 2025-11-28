@@ -425,8 +425,8 @@ class Label:
         I.JMP(Label("end")),
 
         Label("greet"),
-        I.OOUT(LC['H']),
-        I.OOUT(LC['i']),
+        I.COUT(LC['H']),
+        I.COUT(LC['i']),
         I.RET(),
 
         Label("end"),

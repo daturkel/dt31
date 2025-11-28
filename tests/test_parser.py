@@ -42,7 +42,7 @@ def test_token_pattern_memory_references():
 
 def test_token_pattern_character_literals():
     assert TOKEN_PATTERN.findall("'H'") == ["'H'"]
-    assert TOKEN_PATTERN.findall("OOUT 'A'") == ["OOUT", "'A'"]
+    assert TOKEN_PATTERN.findall("COUT 'A'") == ["COUT", "'A'"]
     assert TOKEN_PATTERN.findall("CP 'x', R.a") == ["CP", "'x'", "R.a"]
     assert TOKEN_PATTERN.findall("CP 'x',R.a") == ["CP", "'x'", "R.a"]
 
@@ -499,15 +499,15 @@ def test_parse_program_label_validation_invalid():
 def test_parse_program_character_literals():
     """Test parsing character literals in instructions."""
     text = """
-    OOUT 'H', 0
-    OOUT 'i', 0
-    OOUT '!', 0
+    COUT 'H', 0
+    COUT 'i', 0
+    COUT '!', 0
     """
     program = parse_program(text)
     expected = [
-        I.OOUT(LC["H"], 0),
-        I.OOUT(LC["i"], 0),
-        I.OOUT(LC["!"], 0),
+        I.COUT(LC["H"], 0),
+        I.COUT(LC["i"], 0),
+        I.COUT(LC["!"], 0),
     ]
     assert program == expected
 
@@ -537,7 +537,7 @@ def test_parse_program_mixed_operands():
     CP R.a, M[100]
     ADD R.a, 10
     JMP loop
-    OOUT 'X', 0
+    COUT 'X', 0
     """
     program = parse_program(text)
     expected = [
@@ -545,7 +545,7 @@ def test_parse_program_mixed_operands():
         I.CP(R.a, M[100]),
         I.ADD(R.a, 10),
         I.JMP(Label("loop")),
-        I.OOUT(LC["X"], 0),
+        I.COUT(LC["X"], 0),
     ]
     assert program == expected
 
@@ -694,8 +694,8 @@ def test_parse_program_function_call_example():
     JMP end
 
     print_hi:
-        OOUT 'H', 0
-        OOUT 'i', 0
+        COUT 'H', 0
+        COUT 'i', 0
         RET
 
     end:
@@ -705,8 +705,8 @@ def test_parse_program_function_call_example():
         I.CALL(Label("print_hi")),
         I.JMP(Label("end")),
         Label("print_hi"),
-        I.OOUT(LC["H"], 0),
-        I.OOUT(LC["i"], 0),
+        I.COUT(LC["H"], 0),
+        I.COUT(LC["i"], 0),
         I.RET(),
         Label("end"),
     ]

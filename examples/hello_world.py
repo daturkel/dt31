@@ -22,7 +22,7 @@ hello_world = [
     # If stack is empty, set M[2] = 1, else 0
     I.SEMP(M[2]),
     # Print M[1]; add a newline if M[2] == 1 (i.e. if stack is empty)
-    I.OOUT(M[1], M[2]),
+    I.COUT(M[1], M[2]),
     # if M[2] is 0 (i.e. stack is not empty), loop back
     I.RJEQ(L[-3], M[2], 0),
 ]

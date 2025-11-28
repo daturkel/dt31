@@ -79,9 +79,9 @@ Create a file `hello.dt`
 
 ```nasm
 ; Output "Hi!"
-OOUT 'H', 0
-OOUT 'i', 0
-OOUT '!', 0
+COUT 'H', 0
+COUT 'i', 0
+COUT '!', 0
 ```
 
 and run it with the `dt31` interpreter
@@ -129,10 +129,10 @@ JMP end
 
 greet:
     ; Reusable greeting function
-    OOUT 'H', 0
-    OOUT 'i', 0
-    OOUT '!', 0
-    OOUT ' ', 0
+    COUT 'H', 0
+    COUT 'i', 0
+    COUT '!', 0
+    COUT ' ', 0
     RET
 
 end:
@@ -165,7 +165,7 @@ The instruction set includes:
 - **Control Flow**: `JMP`, `RJMP`, `JEQ`, `JNE`, `JGT`, `JGE`, `JIF`
 - **Functions**: `CALL`, `RCALL`, `RET`
 - **Stack**: `PUSH`, `POP`, `SEMP`
-- **I/O**: `NOUT`, `OOUT`, `NIN`, `OIN`
+- **I/O**: `NOUT`, `COUT`, `NIN`, `CIN`
 - **Data Movement**: `CP`
 
 Users can easily define their own custom instructions by subclassing `dt31.instructions.Instruction`.
@@ -439,7 +439,7 @@ The assembly text syntax differs from Python syntax:
 | Operand Type | Assembly Syntax | Python Syntax | Example |
 |--------------|---------------|-------------|---------|
 | **Numeric Literal** | `42`, `-5` | `L[42]`, `L[-5]` | `CP 42, R.a` |
-| **Character Literal** | `'A'` | `LC["A"]` | `OOUT 'H', 0` |
+| **Character Literal** | `'A'` | `LC["A"]` | `COUT 'H', 0` |
 | **Register** | `R.a` | `R.a` | `ADD R.a, R.b` |
 | **Memory (direct)** | `[100]` or `M[100]` | `M[100]` | `CP 42, [100]` |
 | **Memory (indirect)** | `[R.a]` or `M[R.a]` | `M[R.a]` | `CP [R.a], R.b` |
@@ -528,7 +528,7 @@ from dt31.assembler import program_to_text
 program = [
     I.CP(5, R.a),
     loop := Label("loop"),
-    I.OOUT(LC["*"]),
+    I.COUT(LC["*"]),
     I.SUB(R.a, L[1]),
     I.JGT(loop, R.a, L[0]),
 ]
@@ -539,7 +539,7 @@ print(text)
 #     CP 5, R.a
 #
 # loop:
-#     OOUT '*', 0
+#     COUT '*', 0
 #     SUB R.a, 1, R.a
 #     JGT loop, R.a, 0
 ```
@@ -554,7 +554,7 @@ text = program_to_text(program, indent_size=2)
 
 # Inline labels (default: False, labels on separate lines)
 text = program_to_text(program, label_inline=True)
-# loop: OOUT '*', 0
+# loop: COUT '*', 0
 
 # No blank lines before labels (default: True)
 text = program_to_text(program, blank_line_before_label=False)
@@ -588,7 +588,7 @@ text = program_to_text(program, hide_default_args=False)
 #     CP 5, R.a
 #
 # loop:
-#     OOUT '*', 0
+#     COUT '*', 0
 #     SUB R.a, 1, R.a
 #     JGT loop, R.a, 0
 ```
@@ -605,8 +605,8 @@ program = [
     I.JMP(end := Label("end")),
 
     print_hi,
-    I.OOUT(LC['H']),
-    I.OOUT(LC['i']),
+    I.COUT(LC['H']),
+    I.COUT(LC['i']),
     I.RET(),
 
     end,

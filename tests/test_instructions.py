@@ -457,22 +457,22 @@ def test_nout_newline(cpu, capsys):
     assert captured.out == "2\n"
 
 
-def test_oout_no_newline(cpu, capsys):
-    assert repr(I.OOUT(L[1])) == "OOUT(a=1, b=0)"
-    assert str(I.OOUT(L[1])) == "OOUT 1, 0"
-    assert str(I.OOUT(LC["a"])) == "OOUT 'a', 0"
-    assert I.OOUT(LC["a"]).to_concise_str() == "OOUT 'a'"
-    assert I.OOUT(L[65])(cpu) == 0
+def test_cout_no_newline(cpu, capsys):
+    assert repr(I.COUT(L[1])) == "COUT(a=1, b=0)"
+    assert str(I.COUT(L[1])) == "COUT 1, 0"
+    assert str(I.COUT(LC["a"])) == "COUT 'a', 0"
+    assert I.COUT(LC["a"]).to_concise_str() == "COUT 'a'"
+    assert I.COUT(L[65])(cpu) == 0
     captured = capsys.readouterr()
     assert captured.out == "A"
 
 
-def test_oout_newline(cpu, capsys):
-    assert repr(I.OOUT(L[2], L[1])) == "OOUT(a=2, b=1)"
-    assert str(I.OOUT(L[2], L[1])) == "OOUT 2, 1"
-    assert str(I.OOUT(LC["a"], 1)) == "OOUT 'a', 1"
-    assert I.OOUT(LC["a"], 1).to_concise_str() == "OOUT 'a', 1"
-    assert I.OOUT(L[65], L[1])(cpu) == 0
+def test_cout_newline(cpu, capsys):
+    assert repr(I.COUT(L[2], L[1])) == "COUT(a=2, b=1)"
+    assert str(I.COUT(L[2], L[1])) == "COUT 2, 1"
+    assert str(I.COUT(LC["a"], 1)) == "COUT 'a', 1"
+    assert I.COUT(LC["a"], 1).to_concise_str() == "COUT 'a', 1"
+    assert I.COUT(L[65], L[1])(cpu) == 0
     captured = capsys.readouterr()
     assert captured.out == "A\n"
 
@@ -485,11 +485,11 @@ def test_nin(cpu, monkeypatch):
     assert cpu.get_register("a") == 31
 
 
-def test_oin(cpu, monkeypatch):
-    assert repr(I.OIN(M[10])) == "OIN(out=M[10])"
-    assert str(I.OIN(M[10])) == "OIN [10]"
+def test_cin(cpu, monkeypatch):
+    assert repr(I.CIN(M[10])) == "CIN(out=M[10])"
+    assert str(I.CIN(M[10])) == "CIN [10]"
     monkeypatch.setattr("builtins.input", lambda prompt: "A")
-    assert I.OIN(R.a)(cpu) == 65
+    assert I.CIN(R.a)(cpu) == 65
     assert cpu.get_register("a") == 65
 
 

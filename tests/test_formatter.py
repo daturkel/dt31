@@ -37,13 +37,13 @@ def test_program_to_text_with_labels():
 def test_program_to_text_character_literals():
     """Test that character literals render correctly."""
     program = [
-        I.OOUT(LC["H"]),
-        I.OOUT(LC["i"], L[1]),
+        I.COUT(LC["H"]),
+        I.COUT(LC["i"], L[1]),
     ]
     text = program_to_text(program)
     lines = text.split("\n")
-    assert lines[0] == "    OOUT 'H'"
-    assert lines[1] == "    OOUT 'i', 1"
+    assert lines[0] == "    COUT 'H'"
+    assert lines[1] == "    COUT 'i', 1"
 
 
 def test_program_to_text_memory_references():
@@ -83,8 +83,8 @@ def test_program_to_text_complex():
         I.CALL(func := Label("print_hi")),
         I.JMP(end := Label("end")),
         func,
-        I.OOUT(LC["H"]),
-        I.OOUT(LC["i"], L[1]),
+        I.COUT(LC["H"]),
+        I.COUT(LC["i"], L[1]),
         I.RET(),
         end,
     ]
@@ -93,8 +93,8 @@ def test_program_to_text_complex():
     assert lines[0] == "    CALL print_hi"
     assert lines[1] == "    JMP end"
     assert lines[2] == "print_hi:"
-    assert lines[3] == "    OOUT 'H'"
-    assert lines[4] == "    OOUT 'i', 1"
+    assert lines[3] == "    COUT 'H'"
+    assert lines[4] == "    COUT 'i', 1"
     assert lines[5] == "    RET"
     assert lines[6] == "end:"
 
@@ -536,26 +536,26 @@ def test_program_to_text_hide_default_args_nout():
     assert lines[1] == "    NOUT R.a, 1"
 
 
-def test_program_to_text_hide_default_args_oout():
-    """Test hide_default_args with OOUT instruction."""
+def test_program_to_text_hide_default_args_cout():
+    """Test hide_default_args with COUT instruction."""
     program = [
-        I.OOUT(LC["H"]),  # Default b=L[0] (no newline)
-        I.OOUT(LC["i"], L[1]),  # Non-default b=L[1] (with newline)
+        I.COUT(LC["H"]),  # Default b=L[0] (no newline)
+        I.COUT(LC["i"], L[1]),  # Non-default b=L[1] (with newline)
     ]
 
     # With hide_default_args (default)
     text = program_to_text(program, blank_line_before_label=False)
     lines = text.split("\n")
-    assert lines[0] == "    OOUT 'H'"
-    assert lines[1] == "    OOUT 'i', 1"
+    assert lines[0] == "    COUT 'H'"
+    assert lines[1] == "    COUT 'i', 1"
 
     # Without hide_default_args
     text = program_to_text(
         program, hide_default_args=False, blank_line_before_label=False
     )
     lines = text.split("\n")
-    assert lines[0] == "    OOUT 'H', 0"
-    assert lines[1] == "    OOUT 'i', 1"
+    assert lines[0] == "    COUT 'H', 0"
+    assert lines[1] == "    COUT 'i', 1"
 
 
 def test_program_to_text_hide_default_args_exit():
@@ -622,7 +622,7 @@ def test_program_to_text_hide_default_args_all_instruction_types():
         I.ADD(R.a, L[1]),  # BinaryOperation with default out
         I.NOT(R.a),  # UnaryOperation with default out
         I.NOUT(R.a),  # NOUT with default newline
-        I.OOUT(LC["!"]),  # OOUT with default newline
+        I.COUT(LC["!"]),  # COUT with default newline
         I.EXIT(),  # EXIT with default status
     ]
 
@@ -634,7 +634,7 @@ def test_program_to_text_hide_default_args_all_instruction_types():
     assert lines[1] == "    ADD R.a, 1"
     assert lines[2] == "    NOT R.a"
     assert lines[3] == "    NOUT R.a"
-    assert lines[4] == "    OOUT '!'"
+    assert lines[4] == "    COUT '!'"
     assert lines[5] == "    EXIT"
 
 
