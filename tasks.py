@@ -71,6 +71,9 @@ def bump(c, level, dry_run=False):
         print(f"[DRY RUN] Would create and push tag {version}")
         return
 
+    # Pull latest changes
+    c.run("git pull", pty=True)
+
     # Bump version
     result = c.run(f"uv version --bump {level}", hide=True)
     # Parse version from output (format: "Updated version from X.Y.Z to A.B.C")
