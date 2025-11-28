@@ -543,16 +543,22 @@ def check_command(args: argparse.Namespace) -> None:
     # Process each file
     for file_path_str in file_paths:
         file_path = Path(file_path_str)
+        # Use relative path for display if possible, otherwise use the original path
+        try:
+            display_path = file_path.relative_to(Path.cwd())
+        except ValueError:
+            # File is not relative to cwd, use original path
+            display_path = file_path
 
         # Read the input file
         try:
             assembly_text = file_path.read_text()
         except FileNotFoundError:
-            print(f"Error: File not found: {file_path_str}", file=sys.stderr)
+            print(f"Error: File not found: {display_path}", file=sys.stderr)
             failed_files.append(file_path_str)
             continue
         except IOError as e:
-            print(f"Error reading file {file_path_str}: {e}", file=sys.stderr)
+            print(f"Error reading file {display_path}: {e}", file=sys.stderr)
             failed_files.append(file_path_str)
             continue
 
@@ -560,12 +566,12 @@ def check_command(args: argparse.Namespace) -> None:
         try:
             parse_program(assembly_text, custom_instructions=custom_instructions)
         except ParserError as e:
-            print(f"Parse error in {file_path_str}: {e}", file=sys.stderr)
+            print(f"Parse error in {display_path}: {e}", file=sys.stderr)
             failed_files.append(file_path_str)
             continue
 
         # Success for this file
-        print(f"✓ {file_path_str} is valid", file=sys.stderr)
+        print(f"✓ {display_path} is valid", file=sys.stderr)
 
     # Exit with appropriate code
     if failed_files:

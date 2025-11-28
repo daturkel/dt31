@@ -1,5 +1,6 @@
 """Tests for the CLI."""
 
+import os
 import sys
 from unittest.mock import MagicMock, patch
 
@@ -1743,15 +1744,25 @@ def test_check_multiple_files(temp_dt_file, capsys):
     assert "All 2 file(s) are valid" in captured.err
 
 
-def test_check_multiple_files_with_errors(temp_dt_file, capsys):
+def test_check_multiple_files_with_errors(tmp_path, capsys):
     """Test check command with multiple files where some have errors."""
-    file1 = temp_dt_file("CP 10, R.a", "file1.dt")
-    file2 = temp_dt_file("INVALID_INSTRUCTION R.x", "file2.dt")
-    file3 = temp_dt_file("CP 30, R.c", "file3.dt")
+    (tmp_path / "file1.dt").write_text("CP 10, R.a")
+    (tmp_path / "file2.dt").write_text("INVALID_INSTRUCTION R.x")
+    (tmp_path / "file3.dt").write_text("CP 30, R.c")
 
-    with patch.object(sys, "argv", ["dt31", "check", file1, file2, file3]):
-        with pytest.raises(SystemExit) as exc_info:
-            main()
+    # Change to temp directory to avoid full paths in output
+    import os
+
+    old_cwd = os.getcwd()
+    os.chdir(tmp_path)
+    try:
+        with patch.object(
+            sys, "argv", ["dt31", "check", "file1.dt", "file2.dt", "file3.dt"]
+        ):
+            with pytest.raises(SystemExit) as exc_info:
+                main()
+    finally:
+        os.chdir(old_cwd)
 
     assert exc_info.value.code == 1
     captured = capsys.readouterr()
@@ -1767,9 +1778,6 @@ def test_check_glob_pattern(tmp_path, capsys):
     (tmp_path / "prog1.dt").write_text("CP 1, R.a")
     (tmp_path / "prog2.dt").write_text("CP 2, R.b")
     (tmp_path / "prog3.dt").write_text("CP 3, R.c")
-
-    # Change to temp directory for glob to work
-    import os
 
     old_cwd = os.getcwd()
     os.chdir(tmp_path)
@@ -1826,9 +1834,6 @@ def test_format_glob_pattern(tmp_path, capsys):
     (tmp_path / "prog1.dt").write_text("CP 1,R.a")
     (tmp_path / "prog2.dt").write_text("CP 2,R.b")
 
-    # Change to temp directory for glob to work
-    import os
-
     old_cwd = os.getcwd()
     os.chdir(tmp_path)
     try:
@@ -1845,8 +1850,6 @@ def test_format_glob_pattern(tmp_path, capsys):
 
 def test_check_no_files_match_pattern(tmp_path, capsys):
     """Test check command when glob pattern matches no files."""
-    # Change to empty temp directory
-    import os
 
     old_cwd = os.getcwd()
     os.chdir(tmp_path)
@@ -1863,10 +1866,6 @@ def test_check_no_files_match_pattern(tmp_path, capsys):
 
 
 def test_format_no_files_match_pattern(tmp_path, capsys):
-    """Test format command when glob pattern matches no files."""
-    # Change to empty temp directory
-    import os
-
     old_cwd = os.getcwd()
     os.chdir(tmp_path)
     try:
@@ -1891,7 +1890,6 @@ def test_check_recursive_glob(tmp_path, capsys):
     (tmp_path / "subdir2" / "prog3.dt").write_text("CP 3, R.c")
 
     # Change to temp directory for glob to work
-    import os
 
     old_cwd = os.getcwd()
     os.chdir(tmp_path)
@@ -1906,3 +1904,29 @@ def test_check_recursive_glob(tmp_path, capsys):
     captured = capsys.readouterr()
     # Should find all 3 files
     assert "All 3 file(s) are valid" in captured.err
+
+
+def test_format_multiple_files_already_formatted(temp_dt_file, capsys):
+    file1 = temp_dt_file("    CP 10, R.a\n", "file1.dt")  # Already formatted
+    file2 = temp_dt_file("    CP 20, R.b\n", "file2.dt")  # Already formatted
+
+    with patch.object(sys, "argv", ["dt31", "format", file1, file2]):
+        with pytest.raises(SystemExit) as exc_info:
+            main()
+
+    assert exc_info.value.code == 0
+    captured = capsys.readouterr()
+    assert "All 2 file(s) are already formatted" in captured.err
+
+
+def test_format_multiple_files_check_mode_all_formatted(temp_dt_file, capsys):
+    file1 = temp_dt_file("    CP 10, R.a\n", "file1.dt")  # Already formatted
+    file2 = temp_dt_file("    CP 20, R.b\n", "file2.dt")  # Already formatted
+
+    with patch.object(sys, "argv", ["dt31", "format", "--check", file1, file2]):
+        with pytest.raises(SystemExit) as exc_info:
+            main()
+
+    assert exc_info.value.code == 0
+    captured = capsys.readouterr()
+    assert "All 2 file(s) are already formatted" in captured.err
