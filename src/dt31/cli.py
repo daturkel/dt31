@@ -109,12 +109,11 @@ Format `.dt` assembly files with consistent style, following Black/Ruff conventi
 - **--diff**: Show formatting changes as a unified diff without modifying the file
 - **-i, --custom-instructions**: Path to Python file containing custom instruction definitions
 - **--indent-size**: Number of spaces per indentation level (default: 4)
-- **--comment-spacing**: Number of spaces before inline comment semicolon (default: 1)
 - **--label-inline**: Place labels on same line as next instruction (default: False)
 - **--no-blank-line-before-label**: Don't add blank line before labels (default: False)
 - **--align-comments**: Align inline comments (auto-calculates column if --comment-column not specified)
 - **--comment-column**: Column position for aligned comments (default: auto-calculate)
-- **--comment-margin**: Spaces after longest instruction for auto-aligned comments (default: 2)
+- **--comment-margin**: Spaces before inline comments and margin for auto-alignment (default: 2)
 - **--strip-comments**: Remove all comments from output (default: False)
 - **--hide-default-out**: Hide output parameters when they match defaults (default: False)
 
@@ -563,14 +562,6 @@ examples:
     )
 
     format_parser.add_argument(
-        "--comment-spacing",
-        type=int,
-        default=1,
-        metavar="N",
-        help="Number of spaces before inline comment semicolon (default: 1)",
-    )
-
-    format_parser.add_argument(
         "--label-inline",
         action="store_true",
         help="Place labels on same line as next instruction (default: False)",
@@ -602,8 +593,8 @@ examples:
         type=int,
         default=2,
         metavar="N",
-        help="Spaces after longest instruction for auto-aligned comments (default: 2). "
-        "Only used when --align-comments is specified without --comment-column.",
+        help="Spaces before inline comment semicolon. Also used as margin when auto-aligning "
+        "comments (default: 2).",
     )
 
     format_parser.add_argument(
@@ -738,7 +729,6 @@ def format_command(args: argparse.Namespace) -> None:
     # Prepare formatting options
     formatting_options = {
         "indent_size": args.indent_size,
-        "comment_spacing": args.comment_spacing,
         "label_inline": args.label_inline,
         "blank_line_before_label": not args.no_blank_line_before_label,  # Inverted!
         "align_comments": args.align_comments,

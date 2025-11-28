@@ -115,28 +115,28 @@ def test_program_to_text_custom_indent_size():
 
 
 def test_program_to_text_comment_spacing():
-    """Test custom spacing before inline comments."""
+    """Test custom margin before inline comments."""
     program = [
         I.CP(5, R.a).with_comment("Initialize"),
         I.ADD(R.a, L[1]).with_comment("Increment"),
     ]
 
-    # No spacing (default is 1)
-    text = program_to_text(program, comment_spacing=0)
+    # No margin
+    text = program_to_text(program, comment_margin=0)
     lines = text.split("\n")
     assert len(lines) == 3  # 2 lines + empty string from trailing newline
     assert lines[0] == "    CP 5, R.a; Initialize"
     assert lines[1] == "    ADD R.a, 1, R.a; Increment"
 
-    # Default spacing (1)
-    text = program_to_text(program, comment_spacing=1)
+    # Single space margin
+    text = program_to_text(program, comment_margin=1)
     lines = text.split("\n")
     assert len(lines) == 3  # 2 lines + empty string from trailing newline
     assert lines[0] == "    CP 5, R.a ; Initialize"
     assert lines[1] == "    ADD R.a, 1, R.a ; Increment"
 
-    # Extra spacing (2)
-    text = program_to_text(program, comment_spacing=2)
+    # Default margin (2)
+    text = program_to_text(program, comment_margin=2)
     lines = text.split("\n")
     assert len(lines) == 3  # 2 lines + empty string from trailing newline
     assert lines[0] == "    CP 5, R.a  ; Initialize"
@@ -304,12 +304,12 @@ def test_program_to_text_align_comments():
         I.NOUT(R.a, L[1]).with_comment("Print"),
     ]
 
-    # Default: no alignment
+    # Default: no alignment (default margin is 2)
     text = program_to_text(program, align_comments=False, blank_line_before_label=False)
     lines = text.split("\n")
-    assert lines[0] == "    CP 5, R.a ; Initialize"
-    assert lines[1] == "    ADD R.a, 1, R.a ; Increment"
-    assert lines[2] == "    NOUT R.a, 1 ; Print"
+    assert lines[0] == "    CP 5, R.a  ; Initialize"
+    assert lines[1] == "    ADD R.a, 1, R.a  ; Increment"
+    assert lines[2] == "    NOUT R.a, 1  ; Print"
 
     # Align at column 30
     text = program_to_text(
@@ -342,22 +342,22 @@ def test_program_to_text_align_comments_exceeds_column():
     assert lines[0] == "    CP 5, R.a       ; Short"
     assert lines[0].index(";") == 20
 
-    # Second line exceeds column, should fall back to comment_spacing
-    assert lines[1] == "    ADD R.a, R.b, [R.a] ; Very long instruction"
+    # Second line exceeds column, should fall back to comment_margin
+    assert lines[1] == "    ADD R.a, R.b, [R.a]  ; Very long instruction"
 
 
 def test_program_to_text_align_comments_custom_spacing_fallback():
-    """Test that comment_spacing is used when instruction exceeds column."""
+    """Test that comment_margin is used when instruction exceeds column."""
     program = [
         I.ADD(R.a, R.b, M[R.a]).with_comment("Long instruction"),
     ]
 
-    # Column 10 will be exceeded, fallback to comment_spacing=3
+    # Column 10 will be exceeded, fallback to comment_margin=3
     text = program_to_text(
         program,
         align_comments=True,
         comment_column=10,
-        comment_spacing=3,
+        comment_margin=3,
         blank_line_before_label=False,
     )
     lines = text.split("\n")
@@ -425,7 +425,7 @@ def test_program_to_text_combination_all_options():
     text = program_to_text(
         program,
         indent_size=2,
-        comment_spacing=2,
+        comment_margin=2,
         label_inline=True,
         blank_line_before_label=True,
         align_comments=True,
@@ -591,8 +591,8 @@ def test_program_to_text_hide_default_out_with_comments():
         program, hide_default_out=True, blank_line_before_label=False
     )
     lines = text.split("\n")
-    assert lines[0] == "    ADD R.a, R.b ; Sum"
-    assert lines[1] == "    NOUT R.a ; Print"
+    assert lines[0] == "    ADD R.a, R.b  ; Sum"
+    assert lines[1] == "    NOUT R.a  ; Print"
 
 
 def test_program_to_text_hide_default_out_with_aligned_comments():

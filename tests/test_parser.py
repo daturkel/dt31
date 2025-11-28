@@ -914,8 +914,8 @@ def test_program_to_text_with_comments():
     text = program_to_text(program)
 
     assert "; Program start" in text
-    assert "loop: ; Main loop" in text
-    assert "NOUT R.a, 1 ; Print" in text
+    assert "loop:  ; Main loop" in text  # 2 spaces (default margin)
+    assert "NOUT R.a, 1  ; Print" in text  # 2 spaces (default margin)
     # SUB should not have comment
     assert "SUB R.a, 1, R.a" in text
     assert "SUB R.a, 1, R.a ;" not in text

@@ -14,7 +14,6 @@ def program_to_text(
     program: list[Instruction | Label | Comment] | list[Instruction],
     *,
     indent_size: int = 4,
-    comment_spacing: int = 1,
     label_inline: bool = False,
     blank_line_before_label: bool = True,
     align_comments: bool = False,
@@ -31,14 +30,13 @@ def program_to_text(
     Args:
         program: List of instructions, labels, and comments in source order.
         indent_size: Number of spaces per indentation level (default: 4).
-        comment_spacing: Number of spaces before inline comment semicolon (default: 1).
         label_inline: If True, place labels on same line as next instruction (default: False).
         blank_line_before_label: If True, add blank line before labels (default: True).
         align_comments: If True, align inline comments at comment_column (default: False).
         comment_column: Column position for aligned comments. If None and align_comments=True,
             automatically calculated based on longest instruction + comment_margin (default: None).
-        comment_margin: Spaces to add after longest instruction when auto-calculating
-            comment_column. Ignored if comment_column is specified (default: 2).
+        comment_margin: Spaces before inline comment semicolon. Also used when auto-calculating
+            comment_column for aligned comments (default: 2).
         strip_comments: If True, remove all comments from output. (default: False).
         hide_default_out: If True, hide output parameters when they match the default value (default: False).
 
@@ -173,7 +171,7 @@ def program_to_text(
                     item,
                     align_comments,
                     comment_column,
-                    comment_spacing,
+                    comment_margin,
                     strip_comments,
                 )
                 lines.append(line)
@@ -203,14 +201,14 @@ def program_to_text(
                 comment,
                 align_comments,
                 comment_column,
-                comment_spacing,
+                comment_margin,
             )
             lines.append(line)
 
     # Handle any remaining labels at end of program
     for lbl in pending_labels:
         line = _format_label(
-            lbl, align_comments, comment_column, comment_spacing, strip_comments
+            lbl, align_comments, comment_column, comment_margin, strip_comments
         )
         lines.append(line)
 
@@ -227,14 +225,14 @@ def _format_label(
     label: Label,
     align_comments: bool,
     comment_column: int | None,
-    comment_spacing: int,
+    comment_margin: int,
     strip_comments: bool = False,
 ) -> str:
     """Format a label with optional comment alignment."""
     line = f"{label.name}:"
     if label.comment and not strip_comments:
         line = _format_instruction_with_comment(
-            line, label.comment, align_comments, comment_column, comment_spacing
+            line, label.comment, align_comments, comment_column, comment_margin
         )
     return line
 
@@ -244,7 +242,7 @@ def _format_instruction_with_comment(
     comment: str,
     align_comments: bool,
     comment_column: int | None,
-    comment_spacing: int,
+    comment_margin: int,
 ) -> str:
     """Format an instruction with its comment, handling alignment if requested."""
     if not comment:
@@ -256,8 +254,8 @@ def _format_instruction_with_comment(
             padding = comment_column - current_len
             return f"{instruction_text}{' ' * padding}; {comment}"
         else:
-            # Instruction exceeds column, fall back to spacing
-            return f"{instruction_text}{' ' * comment_spacing}; {comment}"
+            # Instruction exceeds column, fall back to margin
+            return f"{instruction_text}{' ' * comment_margin}; {comment}"
     else:
-        # No alignment, just use spacing
-        return f"{instruction_text}{' ' * comment_spacing}; {comment}"
+        # No alignment, just use margin
+        return f"{instruction_text}{' ' * comment_margin}; {comment}"

@@ -1320,14 +1320,14 @@ def test_format_indent_size(temp_dt_file, capsys):
 
 
 def test_format_comment_spacing(temp_dt_file, capsys):
-    """Test --comment-spacing option."""
+    """Test --comment-margin option."""
     assembly = """
 CP 5, R.a ; Initialize
 """
     file_path = temp_dt_file(assembly)
 
     with patch.object(
-        sys, "argv", ["dt31", "format", "--comment-spacing", "3", file_path]
+        sys, "argv", ["dt31", "format", "--comment-margin", "3", file_path]
     ):
         with pytest.raises(SystemExit) as exc_info:
             main()

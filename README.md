@@ -265,8 +265,8 @@ All formatting options from `program_to_text()` are available as CLI flags:
 # Indentation (default: 4 spaces)
 dt31 format --indent-size 2 program.dt
 
-# Comment spacing (default: 1 space before semicolon)
-dt31 format --comment-spacing 2 program.dt
+# Comment margin (default: 2 spaces before semicolon)
+dt31 format --comment-margin 3 program.dt
 
 # Inline labels (default: labels on separate lines)
 dt31 format --label-inline program.dt
