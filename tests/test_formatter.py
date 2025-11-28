@@ -729,3 +729,115 @@ def test_strip_comments_inline_labels():
     )
     expected = "    CP 5, R.a\nloop: ADD R.a, 1, R.a\n"
     assert text == expected
+
+
+def test_auto_align_comments():
+    """Test automatic comment column calculation."""
+    program = [
+        I.CP(5, R.a).with_comment("Short"),
+        I.ADD(R.a, R.b, R.c).with_comment("Longer instruction"),
+        I.SUB(R.a, L[1]).with_comment("Medium"),
+    ]
+
+    text = program_to_text(program, align_comments=True)
+
+    # Longest line is "    ADD R.a, R.b, R.c" = 21 chars
+    # With default margin=2, comments should start at column 23
+    expected = "    CP 5, R.a          ; Short\n    ADD R.a, R.b, R.c  ; Longer instruction\n    SUB R.a, 1, R.a    ; Medium\n"
+    assert text == expected
+
+
+def test_auto_align_custom_margin():
+    """Test custom comment margin."""
+    program = [
+        I.CP(5, R.a).with_comment("Comment"),
+        I.ADD(R.a, R.b).with_comment("Another"),
+    ]
+
+    text = program_to_text(program, align_comments=True, comment_margin=4)
+
+    # Longest line is "    ADD R.a, R.b, R.a" = 21 chars
+    # With margin=4, comments should start at column 25
+    expected = (
+        "    CP 5, R.a            ; Comment\n    ADD R.a, R.b, R.a    ; Another\n"
+    )
+    assert text == expected
+
+
+def test_fixed_column_overrides_auto():
+    """Test that explicit comment_column disables auto-calculation."""
+    program = [
+        I.CP(5, R.a).with_comment("Short"),
+        I.ADD(R.a, R.b, R.c).with_comment("Long"),
+    ]
+
+    # Use fixed column 30
+    text = program_to_text(program, align_comments=True, comment_column=30)
+
+    expected = (
+        "    CP 5, R.a                 ; Short\n    ADD R.a, R.b, R.c         ; Long\n"
+    )
+    assert text == expected
+
+
+def test_auto_align_with_hide_default_out():
+    """Test that auto-calculation respects hide_default_out."""
+    program = [
+        I.ADD(R.a, R.b).with_comment("Test"),
+    ]
+
+    # With hide_default_out, instruction is shorter
+    text_hidden = program_to_text(program, align_comments=True, hide_default_out=True)
+    text_shown = program_to_text(program, align_comments=True, hide_default_out=False)
+
+    # Extract semicolon positions
+    pos_hidden = text_hidden.index(";")
+    pos_shown = text_shown.index(";")
+
+    # Comment should be closer when output is hidden
+    assert pos_hidden < pos_shown
+
+    # Verify exact output
+    # "    ADD R.a, R.b" = 16 chars, +2 margin = 18
+    expected_hidden = "    ADD R.a, R.b  ; Test\n"
+    assert text_hidden == expected_hidden
+
+    # "    ADD R.a, R.b, R.a" = 21 chars, +2 margin = 23
+    expected_shown = "    ADD R.a, R.b, R.a  ; Test\n"
+    assert text_shown == expected_shown
+
+
+def test_auto_align_edge_cases():
+    """Test auto-align with edge cases."""
+    # Empty program
+    text = program_to_text([], align_comments=True)
+    assert text == ""
+
+    # Only comments (no instructions to measure)
+    program = [Comment("Only comment")]
+    text = program_to_text(program, align_comments=True)
+    # Should not crash, comment_column will be 0 + margin = 2
+    assert text == "; Only comment\n"
+
+    # No comments to align
+    program = [I.CP(5, R.a), I.ADD(R.a, L[1])]
+    text = program_to_text(program, align_comments=True)
+    expected = "    CP 5, R.a\n    ADD R.a, 1, R.a\n"
+    assert text == expected
+
+
+def test_margin_ignored_with_column():
+    """Test that comment_margin is ignored when comment_column is specified."""
+    program = [I.CP(5, R.a).with_comment("Test")]
+
+    # Both should produce identical output
+    text1 = program_to_text(
+        program, align_comments=True, comment_column=40, comment_margin=2
+    )
+    text2 = program_to_text(
+        program, align_comments=True, comment_column=40, comment_margin=10
+    )
+
+    assert text1 == text2
+    expected = "    CP 5, R.a                           ; Test\n"
+    assert text1 == expected

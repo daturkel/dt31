@@ -18,7 +18,8 @@ def program_to_text(
     label_inline: bool = False,
     blank_line_before_label: bool = True,
     align_comments: bool = False,
-    comment_column: int = 40,
+    comment_column: int | None = None,
+    comment_margin: int = 2,
     strip_comments: bool = False,
     hide_default_out: bool = False,
 ) -> str:
@@ -34,7 +35,10 @@ def program_to_text(
         label_inline: If True, place labels on same line as next instruction (default: False).
         blank_line_before_label: If True, add blank line before labels (default: True).
         align_comments: If True, align inline comments at comment_column (default: False).
-        comment_column: Column position for aligned comments when align_comments=True (default: 40).
+        comment_column: Column position for aligned comments. If None and align_comments=True,
+            automatically calculated based on longest instruction + comment_margin (default: None).
+        comment_margin: Spaces to add after longest instruction when auto-calculating
+            comment_column. Ignored if comment_column is specified (default: 2).
         strip_comments: If True, remove all comments from output. (default: False).
         hide_default_out: If True, hide output parameters when they match the default value (default: False).
 
@@ -105,6 +109,24 @@ def program_to_text(
         #     NOUT R.a, 0
         ```
     """
+    # Auto-calculate comment column if not specified
+    if align_comments and comment_column is None and not strip_comments:
+        # Generate program without comments to measure instruction widths
+        stripped_text = program_to_text(
+            program,
+            indent_size=indent_size,
+            label_inline=label_inline,
+            blank_line_before_label=blank_line_before_label,
+            strip_comments=True,  # Remove comments for measurement
+            hide_default_out=hide_default_out,
+        )
+
+        # Find longest line
+        max_length = max((len(line) for line in stripped_text.splitlines()), default=0)
+
+        # Calculate comment column
+        comment_column = max_length + comment_margin
+
     indent = " " * indent_size
     lines = []
     pending_labels: list[Label] = []
@@ -183,7 +205,7 @@ def program_to_text(
 def _format_label(
     label: Label,
     align_comments: bool,
-    comment_column: int,
+    comment_column: int | None,
     comment_spacing: int,
     strip_comments: bool = False,
 ) -> str:
@@ -200,14 +222,14 @@ def _format_instruction_with_comment(
     instruction_text: str,
     comment: str,
     align_comments: bool,
-    comment_column: int,
+    comment_column: int | None,
     comment_spacing: int,
 ) -> str:
     """Format an instruction with its comment, handling alignment if requested."""
     if not comment:
         return instruction_text
 
-    if align_comments:
+    if align_comments and comment_column is not None:
         current_len = len(instruction_text)
         if current_len < comment_column:
             padding = comment_column - current_len

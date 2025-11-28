@@ -580,9 +580,19 @@ examples:
     format_parser.add_argument(
         "--comment-column",
         type=int,
-        default=40,
+        default=None,
         metavar="N",
-        help="Column position for aligned comments when --align-comments is used (default: 40)",
+        help="Column position for aligned comments. If not specified and --align-comments "
+        "is used, column is auto-calculated based on longest instruction + --comment-margin.",
+    )
+
+    format_parser.add_argument(
+        "--comment-margin",
+        type=int,
+        default=2,
+        metavar="N",
+        help="Spaces after longest instruction for auto-aligned comments (default: 2). "
+        "Only used when --align-comments is specified without --comment-column.",
     )
 
     format_parser.add_argument(
@@ -722,6 +732,7 @@ def format_command(args: argparse.Namespace) -> None:
         "blank_line_before_label": not args.no_blank_line_before_label,  # Inverted!
         "align_comments": args.align_comments,
         "comment_column": args.comment_column,
+        "comment_margin": args.comment_margin,
         "strip_comments": args.strip_comments,
         "hide_default_out": args.hide_default_out,
     }
