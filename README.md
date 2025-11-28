@@ -274,8 +274,17 @@ dt31 format --label-inline program.dt
 # No blank lines before labels (default: blank line before labels)
 dt31 format --no-blank-line-before-label program.dt
 
-# Align inline comments at specific column (default: no alignment)
+# Auto-align inline comments (calculates column based on longest instruction)
+dt31 format --align-comments program.dt
+
+# Align inline comments at specific column
 dt31 format --align-comments --comment-column 40 program.dt
+
+# Auto-align with custom margin (default: 2 spaces after longest instruction)
+dt31 format --align-comments --comment-margin 4 program.dt
+
+# Strip all comments from output
+dt31 format --strip-comments program.dt
 
 # Hide default output parameters (default: show all parameters)
 dt31 format --hide-default-out program.dt
@@ -331,6 +340,17 @@ After `dt31 format --label-inline --hide-default-out program.dt`:
 loop: NOUT R.a
     SUB R.a, 1
     JGT loop, R.a, 0
+```
+
+After `dt31 format --align-comments program.dt` (with comments):
+```nasm
+; Input with unaligned comments
+CP 5, R.a ; Initialize counter
+ADD R.a, R.b, R.c ; Add values
+
+; Output with auto-aligned comments
+    CP 5, R.a          ; Initialize counter
+    ADD R.a, R.b, R.c  ; Add values
 ```
 
 ### Custom Instructions
@@ -539,14 +559,29 @@ text = program_to_text(program, label_inline=True)
 # No blank lines before labels (default: True)
 text = program_to_text(program, blank_line_before_label=False)
 
-# Align inline comments (default: False)
+# Auto-align inline comments (default: False, comment_column: None)
 commented_program = [
     I.CP(5, R.a).with_comment("Initialize"),
     I.ADD(R.a, L[1]).with_comment("Increment"),
 ]
+text = program_to_text(commented_program, align_comments=True)
+#     CP 5, R.a        ; Initialize
+#     ADD R.a, 1, R.a  ; Increment
+
+# Align comments at specific column
 text = program_to_text(commented_program, align_comments=True, comment_column=30)
 #     CP 5, R.a                 ; Initialize
 #     ADD R.a, 1, R.a           ; Increment
+
+# Auto-align with custom margin (default: 2)
+text = program_to_text(commented_program, align_comments=True, comment_margin=4)
+#     CP 5, R.a            ; Initialize
+#     ADD R.a, 1, R.a      ; Increment
+
+# Strip all comments
+text = program_to_text(commented_program, strip_comments=True)
+#     CP 5, R.a
+#     ADD R.a, 1, R.a
 
 # Hide default output parameters (default: False)
 text = program_to_text(program, hide_default_out=True)

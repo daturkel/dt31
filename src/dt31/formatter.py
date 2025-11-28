@@ -84,15 +84,36 @@ def program_to_text(
         #   JGT loop, R.a, 0
         ```
 
-        Aligned comments:
+        Auto-aligned comments:
         ```python
         program_with_comments = [
             I.CP(5, R.a).with_comment("Initialize"),
             I.ADD(R.a, L[1]).with_comment("Increment"),
         ]
+        text = program_to_text(program_with_comments, align_comments=True)
+        #     CP 5, R.a        ; Initialize
+        #     ADD R.a, 1, R.a  ; Increment
+        ```
+
+        Aligned comments at specific column:
+        ```python
         text = program_to_text(program_with_comments, align_comments=True, comment_column=30)
         #     CP 5, R.a              ; Initialize
         #     ADD R.a, 1, R.a        ; Increment
+        ```
+
+        Auto-aligned comments with custom margin:
+        ```python
+        text = program_to_text(program_with_comments, align_comments=True, comment_margin=4)
+        #     CP 5, R.a            ; Initialize
+        #     ADD R.a, 1, R.a      ; Increment
+        ```
+
+        Strip all comments:
+        ```python
+        text = program_to_text(program_with_comments, strip_comments=True)
+        #     CP 5, R.a
+        #     ADD R.a, 1, R.a
         ```
 
         Hide default output parameters:

@@ -373,8 +373,17 @@ dt31<span class="w"> </span>format<span class="w"> </span>--label-inline<span cl
 <span class="c1"># No blank lines before labels (default: blank line before labels)</span>
 dt31<span class="w"> </span>format<span class="w"> </span>--no-blank-line-before-label<span class="w"> </span>program.dt
 
-<span class="c1"># Align inline comments at specific column (default: no alignment)</span>
+<span class="c1"># Auto-align inline comments (calculates column based on longest instruction)</span>
+dt31<span class="w"> </span>format<span class="w"> </span>--align-comments<span class="w"> </span>program.dt
+
+<span class="c1"># Align inline comments at specific column</span>
 dt31<span class="w"> </span>format<span class="w"> </span>--align-comments<span class="w"> </span>--comment-column<span class="w"> </span><span class="m">40</span><span class="w"> </span>program.dt
+
+<span class="c1"># Auto-align with custom margin (default: 2 spaces after longest instruction)</span>
+dt31<span class="w"> </span>format<span class="w"> </span>--align-comments<span class="w"> </span>--comment-margin<span class="w"> </span><span class="m">4</span><span class="w"> </span>program.dt
+
+<span class="c1"># Strip all comments from output</span>
+dt31<span class="w"> </span>format<span class="w"> </span>--strip-comments<span class="w"> </span>program.dt
 
 <span class="c1"># Hide default output parameters (default: show all parameters)</span>
 dt31<span class="w"> </span>format<span class="w"> </span>--hide-default-out<span class="w"> </span>program.dt
@@ -438,6 +447,19 @@ dt31<span class="w"> </span>format<span class="w"> </span>--check<span class="w"
 <span class="nl">loop:</span><span class="w"> </span><span class="nf">NOUT</span><span class="w"> </span><span class="nv">R.a</span>
 <span class="w">    </span><span class="nf">SUB</span><span class="w"> </span><span class="nv">R.a</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span>
 <span class="w">    </span><span class="nf">JGT</span><span class="w"> </span><span class="nv">loop</span><span class="p">,</span><span class="w"> </span><span class="nv">R.a</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span>
+</code></pre>
+</div>
+
+<p>After <code>dt31 format --align-comments program.dt</code> (with comments):</p>
+
+<div class="pdoc-code codehilite">
+<pre><span></span><code><span class="c1">; Input with unaligned comments</span>
+<span class="nf">CP</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span><span class="w"> </span><span class="nv">R.a</span><span class="w"> </span><span class="c1">; Initialize counter</span>
+<span class="nf">ADD</span><span class="w"> </span><span class="nv">R.a</span><span class="p">,</span><span class="w"> </span><span class="nv">R.b</span><span class="p">,</span><span class="w"> </span><span class="nv">R.c</span><span class="w"> </span><span class="c1">; Add values</span>
+
+<span class="c1">; Output with auto-aligned comments</span>
+<span class="w">    </span><span class="nf">CP</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span><span class="w"> </span><span class="nv">R.a</span><span class="w">          </span><span class="c1">; Initialize counter</span>
+<span class="w">    </span><span class="nf">ADD</span><span class="w"> </span><span class="nv">R.a</span><span class="p">,</span><span class="w"> </span><span class="nv">R.b</span><span class="p">,</span><span class="w"> </span><span class="nv">R.c</span><span class="w">  </span><span class="c1">; Add values</span>
 </code></pre>
 </div>
 
@@ -702,14 +724,29 @@ dt31<span class="w"> </span>format<span class="w"> </span>--check<span class="w"
 <span class="c1"># No blank lines before labels (default: True)</span>
 <span class="n">text</span> <span class="o">=</span> <span class="n">program_to_text</span><span class="p">(</span><span class="n">program</span><span class="p">,</span> <span class="n">blank_line_before_label</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
-<span class="c1"># Align inline comments (default: False)</span>
+<span class="c1"># Auto-align inline comments (default: False, comment_column: None)</span>
 <span class="n">commented_program</span> <span class="o">=</span> <span class="p">[</span>
     <span class="n">I</span><span class="o">.</span><span class="n">CP</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="n">R</span><span class="o">.</span><span class="n">a</span><span class="p">)</span><span class="o">.</span><span class="n">with_comment</span><span class="p">(</span><span class="s2">&quot;Initialize&quot;</span><span class="p">),</span>
     <span class="n">I</span><span class="o">.</span><span class="n">ADD</span><span class="p">(</span><span class="n">R</span><span class="o">.</span><span class="n">a</span><span class="p">,</span> <span class="n">L</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">with_comment</span><span class="p">(</span><span class="s2">&quot;Increment&quot;</span><span class="p">),</span>
 <span class="p">]</span>
+<span class="n">text</span> <span class="o">=</span> <span class="n">program_to_text</span><span class="p">(</span><span class="n">commented_program</span><span class="p">,</span> <span class="n">align_comments</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="c1">#     CP 5, R.a        ; Initialize</span>
+<span class="c1">#     ADD R.a, 1, R.a  ; Increment</span>
+
+<span class="c1"># Align comments at specific column</span>
 <span class="n">text</span> <span class="o">=</span> <span class="n">program_to_text</span><span class="p">(</span><span class="n">commented_program</span><span class="p">,</span> <span class="n">align_comments</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">comment_column</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span>
 <span class="c1">#     CP 5, R.a                 ; Initialize</span>
 <span class="c1">#     ADD R.a, 1, R.a           ; Increment</span>
+
+<span class="c1"># Auto-align with custom margin (default: 2)</span>
+<span class="n">text</span> <span class="o">=</span> <span class="n">program_to_text</span><span class="p">(</span><span class="n">commented_program</span><span class="p">,</span> <span class="n">align_comments</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">comment_margin</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+<span class="c1">#     CP 5, R.a            ; Initialize</span>
+<span class="c1">#     ADD R.a, 1, R.a      ; Increment</span>
+
+<span class="c1"># Strip all comments</span>
+<span class="n">text</span> <span class="o">=</span> <span class="n">program_to_text</span><span class="p">(</span><span class="n">commented_program</span><span class="p">,</span> <span class="n">strip_comments</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="c1">#     CP 5, R.a</span>
+<span class="c1">#     ADD R.a, 1, R.a</span>
 
 <span class="c1"># Hide default output parameters (default: False)</span>
 <span class="n">text</span> <span class="o">=</span> <span class="n">program_to_text</span><span class="p">(</span><span class="n">program</span><span class="p">,</span> <span class="n">hide_default_out</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>

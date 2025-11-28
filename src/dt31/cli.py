@@ -112,8 +112,10 @@ Format `.dt` assembly files with consistent style, following Black/Ruff conventi
 - **--comment-spacing**: Number of spaces before inline comment semicolon (default: 1)
 - **--label-inline**: Place labels on same line as next instruction (default: False)
 - **--no-blank-line-before-label**: Don't add blank line before labels (default: False)
-- **--align-comments**: Align inline comments at comment-column (default: False)
-- **--comment-column**: Column position for aligned comments (default: 40)
+- **--align-comments**: Align inline comments (auto-calculates column if --comment-column not specified)
+- **--comment-column**: Column position for aligned comments (default: auto-calculate)
+- **--comment-margin**: Spaces after longest instruction for auto-aligned comments (default: 2)
+- **--strip-comments**: Remove all comments from output (default: False)
 - **--hide-default-out**: Hide output parameters when they match defaults (default: False)
 
 **Examples:**
@@ -134,8 +136,17 @@ dt31 format --indent-size 2 --label-inline program.dt
 # Hide default output parameters
 dt31 format --hide-default-out program.dt
 
-# Align comments at column 40
+# Auto-align comments (calculates optimal column)
+dt31 format --align-comments program.dt
+
+# Align comments at specific column
 dt31 format --align-comments --comment-column 40 program.dt
+
+# Auto-align with custom margin
+dt31 format --align-comments --comment-margin 4 program.dt
+
+# Strip all comments from output
+dt31 format --strip-comments program.dt
 
 # Format file with custom instructions
 dt31 format --custom-instructions my_instructions.py program.dt
