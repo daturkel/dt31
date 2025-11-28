@@ -132,7 +132,7 @@ def test_binary_operation_writes_to_default_memory(cpu):
 
 
 def test_add(cpu):
-    # Test with explicit out parameter
+    # Test with explicit out argument
     assert repr(I.ADD(1, 3, M[10])) == "ADD(a=1, b=3, out=M[10])"
     assert str(I.ADD(1, 3, M[10])) == "ADD 1, 3, [10]"
     assert I.ADD(1, 3, M[10])(cpu) == 4
@@ -683,7 +683,7 @@ def test_brk_displays_state_and_waits(cpu, capsys, monkeypatch):
     cpu.set_register("a", 42)
     cpu.set_memory(10, 100)
 
-    # Mock input to simulate pressing Enter (accept optional prompt parameter)
+    # Mock input to simulate pressing Enter (accept optional prompt argument)
     monkeypatch.setattr("builtins.input", lambda prompt="": "")
 
     # Execute BRK instruction
@@ -704,7 +704,7 @@ def test_brk_displays_state_and_waits(cpu, capsys, monkeypatch):
 
 def test_brk_in_program(cpu, capsys, monkeypatch):
     """Test BRK in a complete program."""
-    # Mock input to simulate pressing Enter (accept optional prompt parameter)
+    # Mock input to simulate pressing Enter (accept optional prompt argument)
     monkeypatch.setattr("builtins.input", lambda prompt="": "")
 
     program = [

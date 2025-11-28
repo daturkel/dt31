@@ -14,12 +14,13 @@ def program_to_text(
     program: list[Instruction | Label | Comment] | list[Instruction],
     *,
     indent_size: int = 4,
-    comment_spacing: int = 1,
     label_inline: bool = False,
     blank_line_before_label: bool = True,
     align_comments: bool = False,
-    comment_column: int = 40,
-    hide_default_out: bool = False,
+    comment_column: int | None = None,
+    comment_margin: int = 2,
+    strip_comments: bool = False,
+    hide_default_args: bool = True,
 ) -> str:
     """Convert a program to assembly text format with configurable formatting.
 
@@ -29,12 +30,15 @@ def program_to_text(
     Args:
         program: List of instructions, labels, and comments in source order.
         indent_size: Number of spaces per indentation level (default: 4).
-        comment_spacing: Number of spaces before inline comment semicolon (default: 1).
         label_inline: If True, place labels on same line as next instruction (default: False).
         blank_line_before_label: If True, add blank line before labels (default: True).
         align_comments: If True, align inline comments at comment_column (default: False).
-        comment_column: Column position for aligned comments when align_comments=True (default: 40).
-        hide_default_out: If True, hide output parameters when they match the default value (default: False).
+        comment_column: Column position for aligned comments. If None and align_comments=True,
+            automatically calculated based on longest instruction + comment_margin (default: None).
+        comment_margin: Spaces before inline comment semicolon. Also used when auto-calculating
+            comment_column for aligned comments (default: 2).
+        strip_comments: If True, remove all comments from output. (default: False).
+        hide_default_args: If True, hide arguments when they match the default value (default: True).
 
     Returns:
         A string containing the assembly text representation of the program,
@@ -78,31 +82,70 @@ def program_to_text(
         #   JGT loop, R.a, 0
         ```
 
-        Aligned comments:
+        Auto-aligned comments:
         ```python
         program_with_comments = [
             I.CP(5, R.a).with_comment("Initialize"),
             I.ADD(R.a, L[1]).with_comment("Increment"),
         ]
+        text = program_to_text(program_with_comments, align_comments=True)
+        #     CP 5, R.a        ; Initialize
+        #     ADD R.a, 1, R.a  ; Increment
+        ```
+
+        Aligned comments at specific column:
+        ```python
         text = program_to_text(program_with_comments, align_comments=True, comment_column=30)
         #     CP 5, R.a              ; Initialize
         #     ADD R.a, 1, R.a        ; Increment
         ```
 
-        Hide default output parameters:
+        Auto-aligned comments with custom margin:
+        ```python
+        text = program_to_text(program_with_comments, align_comments=True, comment_margin=4)
+        #     CP 5, R.a            ; Initialize
+        #     ADD R.a, 1, R.a      ; Increment
+        ```
+
+        Strip all comments:
+        ```python
+        text = program_to_text(program_with_comments, strip_comments=True)
+        #     CP 5, R.a
+        #     ADD R.a, 1, R.a
+        ```
+
+        Hide default arguments:
         ```python
         program = [
             I.ADD(R.a, R.b),  # Default out=R.a
             I.NOUT(R.a),      # Default b=L[0] (no newline)
         ]
-        text = program_to_text(program, hide_default_out=True)
+        text = program_to_text(program, hide_default_args=True)
         #     ADD R.a, R.b
         #     NOUT R.a
-        # vs without hide_default_out:
+        # vs without hide_default_args (hide_default_args=False):
         #     ADD R.a, R.b, R.a
         #     NOUT R.a, 0
         ```
     """
+    # Auto-calculate comment column if not specified
+    if align_comments and comment_column is None and not strip_comments:
+        # Generate program without comments to measure instruction widths
+        stripped_text = program_to_text(
+            program,
+            indent_size=indent_size,
+            label_inline=label_inline,
+            blank_line_before_label=blank_line_before_label,
+            strip_comments=True,  # Remove comments for measurement
+            hide_default_args=hide_default_args,
+        )
+
+        # Find longest line
+        max_length = max((len(line) for line in stripped_text.splitlines()), default=0)
+
+        # Calculate comment column
+        comment_column = max_length + comment_margin
+
     indent = " " * indent_size
     lines = []
     pending_labels: list[Label] = []
@@ -111,7 +154,8 @@ def program_to_text(
     for i, item in enumerate(program):
         if isinstance(item, Comment):
             # Standalone comments are never indented or aligned
-            lines.append(str(item))
+            if not strip_comments:
+                lines.append(str(item))
             prev_was_label = False
         elif isinstance(item, Label):
             # Add blank line before label if requested (but not before first item or consecutive labels)
@@ -124,7 +168,11 @@ def program_to_text(
             else:
                 # Labels on separate lines
                 line = _format_label(
-                    item, align_comments, comment_column, comment_spacing
+                    item,
+                    align_comments,
+                    comment_column,
+                    comment_margin,
+                    strip_comments,
                 )
                 lines.append(line)
 
@@ -138,31 +186,30 @@ def program_to_text(
                 label_prefix = " ".join(f"{lbl.name}:" for lbl in pending_labels) + " "
                 # Comments from inline labels are handled by the instruction comment
                 # (use the instruction's comment if it exists, otherwise use last label's comment)
-                comment = (
-                    item.comment
-                    if item.comment
-                    else (
-                        pending_labels[-1].comment if pending_labels[-1].comment else ""
-                    )
-                )
+                if strip_comments:
+                    comment = ""
+                else:
+                    comment = item.comment or pending_labels[-1].comment or ""
                 pending_labels = []
             else:
                 label_prefix = indent
-                comment = item.comment
+                comment = "" if strip_comments else item.comment
 
-            instruction_text = item.to_concise_str() if hide_default_out else str(item)
+            instruction_text = item.to_concise_str() if hide_default_args else str(item)
             line = _format_instruction_with_comment(
                 label_prefix + instruction_text,
                 comment,
                 align_comments,
                 comment_column,
-                comment_spacing,
+                comment_margin,
             )
             lines.append(line)
 
     # Handle any remaining labels at end of program
     for lbl in pending_labels:
-        line = _format_label(lbl, align_comments, comment_column, comment_spacing)
+        line = _format_label(
+            lbl, align_comments, comment_column, comment_margin, strip_comments
+        )
         lines.append(line)
 
     result = "\n".join(lines)
@@ -177,14 +224,15 @@ def program_to_text(
 def _format_label(
     label: Label,
     align_comments: bool,
-    comment_column: int,
-    comment_spacing: int,
+    comment_column: int | None,
+    comment_margin: int,
+    strip_comments: bool = False,
 ) -> str:
     """Format a label with optional comment alignment."""
     line = f"{label.name}:"
-    if label.comment:
+    if label.comment and not strip_comments:
         line = _format_instruction_with_comment(
-            line, label.comment, align_comments, comment_column, comment_spacing
+            line, label.comment, align_comments, comment_column, comment_margin
         )
     return line
 
@@ -193,21 +241,21 @@ def _format_instruction_with_comment(
     instruction_text: str,
     comment: str,
     align_comments: bool,
-    comment_column: int,
-    comment_spacing: int,
+    comment_column: int | None,
+    comment_margin: int,
 ) -> str:
     """Format an instruction with its comment, handling alignment if requested."""
     if not comment:
         return instruction_text
 
-    if align_comments:
+    if align_comments and comment_column is not None:
         current_len = len(instruction_text)
         if current_len < comment_column:
             padding = comment_column - current_len
             return f"{instruction_text}{' ' * padding}; {comment}"
         else:
-            # Instruction exceeds column, fall back to spacing
-            return f"{instruction_text}{' ' * comment_spacing}; {comment}"
+            # Instruction exceeds column, fall back to margin
+            return f"{instruction_text}{' ' * comment_margin}; {comment}"
     else:
-        # No alignment, just use spacing
-        return f"{instruction_text}{' ' * comment_spacing}; {comment}"
+        # No alignment, just use margin
+        return f"{instruction_text}{' ' * comment_margin}; {comment}"

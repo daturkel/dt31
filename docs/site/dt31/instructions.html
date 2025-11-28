@@ -899,11 +899,11 @@
 </span><span id="L-150"><a href="#L-150"><span class="linenos"> 150</span></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span>
 </span><span id="L-151"><a href="#L-151"><span class="linenos"> 151</span></a>
 </span><span id="L-152"><a href="#L-152"><span class="linenos"> 152</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">to_concise_str</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-</span><span id="L-153"><a href="#L-153"><span class="linenos"> 153</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Return concise assembly text representation (hides default parameters).</span>
+</span><span id="L-153"><a href="#L-153"><span class="linenos"> 153</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Return concise assembly text representation (hides default arguments).</span>
 </span><span id="L-154"><a href="#L-154"><span class="linenos"> 154</span></a>
-</span><span id="L-155"><a href="#L-155"><span class="linenos"> 155</span></a><span class="sd">        By default, returns the same as `__str__()`. Subclasses with default output</span>
-</span><span id="L-156"><a href="#L-156"><span class="linenos"> 156</span></a><span class="sd">        parameters should override this to provide a more concise representation that</span>
-</span><span id="L-157"><a href="#L-157"><span class="linenos"> 157</span></a><span class="sd">        omits parameters when they match the default value.</span>
+</span><span id="L-155"><a href="#L-155"><span class="linenos"> 155</span></a><span class="sd">        By default, returns the same as `__str__()`. Subclasses with default arguments</span>
+</span><span id="L-156"><a href="#L-156"><span class="linenos"> 156</span></a><span class="sd">        should override this to provide a more concise representation that omits arguments</span>
+</span><span id="L-157"><a href="#L-157"><span class="linenos"> 157</span></a><span class="sd">        when they match the default value.</span>
 </span><span id="L-158"><a href="#L-158"><span class="linenos"> 158</span></a>
 </span><span id="L-159"><a href="#L-159"><span class="linenos"> 159</span></a><span class="sd">        Returns:</span>
 </span><span id="L-160"><a href="#L-160"><span class="linenos"> 160</span></a><span class="sd">            A concise string showing the instruction in assembly text format.</span>
@@ -1011,7 +1011,7 @@
 </span><span id="L-262"><a href="#L-262"><span class="linenos"> 262</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">to_concise_str</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 </span><span id="L-263"><a href="#L-263"><span class="linenos"> 263</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Return concise assembly text representation (hides default output).</span>
 </span><span id="L-264"><a href="#L-264"><span class="linenos"> 264</span></a>
-</span><span id="L-265"><a href="#L-265"><span class="linenos"> 265</span></a><span class="sd">        If the output parameter matches the input operand (the default), it is omitted</span>
+</span><span id="L-265"><a href="#L-265"><span class="linenos"> 265</span></a><span class="sd">        If the output argument matches the input operand (the default), it is omitted</span>
 </span><span id="L-266"><a href="#L-266"><span class="linenos"> 266</span></a><span class="sd">        from the output.</span>
 </span><span id="L-267"><a href="#L-267"><span class="linenos"> 267</span></a>
 </span><span id="L-268"><a href="#L-268"><span class="linenos"> 268</span></a><span class="sd">        Returns:</span>
@@ -1068,7 +1068,7 @@
 </span><span id="L-319"><a href="#L-319"><span class="linenos"> 319</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">to_concise_str</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 </span><span id="L-320"><a href="#L-320"><span class="linenos"> 320</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Return concise assembly text representation (hides default output).</span>
 </span><span id="L-321"><a href="#L-321"><span class="linenos"> 321</span></a>
-</span><span id="L-322"><a href="#L-322"><span class="linenos"> 322</span></a><span class="sd">        If the output parameter matches the first input operand (the default), it is</span>
+</span><span id="L-322"><a href="#L-322"><span class="linenos"> 322</span></a><span class="sd">        If the output argument matches the first input operand (the default), it is</span>
 </span><span id="L-323"><a href="#L-323"><span class="linenos"> 323</span></a><span class="sd">        omitted from the output.</span>
 </span><span id="L-324"><a href="#L-324"><span class="linenos"> 324</span></a>
 </span><span id="L-325"><a href="#L-325"><span class="linenos"> 325</span></a><span class="sd">        Returns:</span>
@@ -2050,9 +2050,9 @@
 </span><span id="L-1301"><a href="#L-1301"><span class="linenos">1301</span></a>        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;NOUT </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">a</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">b</span><span class="si">}</span><span class="s2">&quot;</span>
 </span><span id="L-1302"><a href="#L-1302"><span class="linenos">1302</span></a>
 </span><span id="L-1303"><a href="#L-1303"><span class="linenos">1303</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">to_concise_str</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-</span><span id="L-1304"><a href="#L-1304"><span class="linenos">1304</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Return concise assembly text representation (hides default newline parameter).</span>
+</span><span id="L-1304"><a href="#L-1304"><span class="linenos">1304</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Return concise assembly text representation (hides default newline argument).</span>
 </span><span id="L-1305"><a href="#L-1305"><span class="linenos">1305</span></a>
-</span><span id="L-1306"><a href="#L-1306"><span class="linenos">1306</span></a><span class="sd">        If the newline parameter is L[0] (the default), it is omitted from the output.</span>
+</span><span id="L-1306"><a href="#L-1306"><span class="linenos">1306</span></a><span class="sd">        If the newline argument is L[0] (the default), it is omitted from the output.</span>
 </span><span id="L-1307"><a href="#L-1307"><span class="linenos">1307</span></a>
 </span><span id="L-1308"><a href="#L-1308"><span class="linenos">1308</span></a><span class="sd">        Returns:</span>
 </span><span id="L-1309"><a href="#L-1309"><span class="linenos">1309</span></a><span class="sd">            Concise string like &quot;NOUT R.a&quot; instead of &quot;NOUT R.a, 0&quot;.</span>
@@ -2091,9 +2091,9 @@
 </span><span id="L-1342"><a href="#L-1342"><span class="linenos">1342</span></a>        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;OOUT </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">a</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">b</span><span class="si">}</span><span class="s2">&quot;</span>
 </span><span id="L-1343"><a href="#L-1343"><span class="linenos">1343</span></a>
 </span><span id="L-1344"><a href="#L-1344"><span class="linenos">1344</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">to_concise_str</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-</span><span id="L-1345"><a href="#L-1345"><span class="linenos">1345</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Return concise assembly text representation (hides default newline parameter).</span>
+</span><span id="L-1345"><a href="#L-1345"><span class="linenos">1345</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Return concise assembly text representation (hides default newline argument).</span>
 </span><span id="L-1346"><a href="#L-1346"><span class="linenos">1346</span></a>
-</span><span id="L-1347"><a href="#L-1347"><span class="linenos">1347</span></a><span class="sd">        If the newline parameter is L[0] (the default), it is omitted from the output.</span>
+</span><span id="L-1347"><a href="#L-1347"><span class="linenos">1347</span></a><span class="sd">        If the newline argument is L[0] (the default), it is omitted from the output.</span>
 </span><span id="L-1348"><a href="#L-1348"><span class="linenos">1348</span></a>
 </span><span id="L-1349"><a href="#L-1349"><span class="linenos">1349</span></a><span class="sd">        Returns:</span>
 </span><span id="L-1350"><a href="#L-1350"><span class="linenos">1350</span></a><span class="sd">            Concise string like &quot;OOUT &#39;H&#39;&quot; instead of &quot;OOUT &#39;H&#39;, 0&quot;.</span>
@@ -2236,9 +2236,9 @@
 </span><span id="L-1487"><a href="#L-1487"><span class="linenos">1487</span></a>        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;STROUT </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">a</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">b</span><span class="si">}</span><span class="s2">&quot;</span>
 </span><span id="L-1488"><a href="#L-1488"><span class="linenos">1488</span></a>
 </span><span id="L-1489"><a href="#L-1489"><span class="linenos">1489</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">to_concise_str</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-</span><span id="L-1490"><a href="#L-1490"><span class="linenos">1490</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Return concise assembly text representation (hides default newline parameter).</span>
+</span><span id="L-1490"><a href="#L-1490"><span class="linenos">1490</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Return concise assembly text representation (hides default newline argument).</span>
 </span><span id="L-1491"><a href="#L-1491"><span class="linenos">1491</span></a>
-</span><span id="L-1492"><a href="#L-1492"><span class="linenos">1492</span></a><span class="sd">        If the newline parameter is L[0] (the default), it is omitted from the output.</span>
+</span><span id="L-1492"><a href="#L-1492"><span class="linenos">1492</span></a><span class="sd">        If the newline argument is L[0] (the default), it is omitted from the output.</span>
 </span><span id="L-1493"><a href="#L-1493"><span class="linenos">1493</span></a>
 </span><span id="L-1494"><a href="#L-1494"><span class="linenos">1494</span></a><span class="sd">        Returns:</span>
 </span><span id="L-1495"><a href="#L-1495"><span class="linenos">1495</span></a><span class="sd">            Concise string like &quot;STROUT &#39;H&#39;&quot; instead of &quot;STROUT &#39;H&#39;, 0&quot;.</span>
@@ -2558,11 +2558,11 @@
 </span><span id="Instruction-151"><a href="#Instruction-151"><span class="linenos">151</span></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span>
 </span><span id="Instruction-152"><a href="#Instruction-152"><span class="linenos">152</span></a>
 </span><span id="Instruction-153"><a href="#Instruction-153"><span class="linenos">153</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">to_concise_str</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-</span><span id="Instruction-154"><a href="#Instruction-154"><span class="linenos">154</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Return concise assembly text representation (hides default parameters).</span>
+</span><span id="Instruction-154"><a href="#Instruction-154"><span class="linenos">154</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Return concise assembly text representation (hides default arguments).</span>
 </span><span id="Instruction-155"><a href="#Instruction-155"><span class="linenos">155</span></a>
-</span><span id="Instruction-156"><a href="#Instruction-156"><span class="linenos">156</span></a><span class="sd">        By default, returns the same as `__str__()`. Subclasses with default output</span>
-</span><span id="Instruction-157"><a href="#Instruction-157"><span class="linenos">157</span></a><span class="sd">        parameters should override this to provide a more concise representation that</span>
-</span><span id="Instruction-158"><a href="#Instruction-158"><span class="linenos">158</span></a><span class="sd">        omits parameters when they match the default value.</span>
+</span><span id="Instruction-156"><a href="#Instruction-156"><span class="linenos">156</span></a><span class="sd">        By default, returns the same as `__str__()`. Subclasses with default arguments</span>
+</span><span id="Instruction-157"><a href="#Instruction-157"><span class="linenos">157</span></a><span class="sd">        should override this to provide a more concise representation that omits arguments</span>
+</span><span id="Instruction-158"><a href="#Instruction-158"><span class="linenos">158</span></a><span class="sd">        when they match the default value.</span>
 </span><span id="Instruction-159"><a href="#Instruction-159"><span class="linenos">159</span></a>
 </span><span id="Instruction-160"><a href="#Instruction-160"><span class="linenos">160</span></a><span class="sd">        Returns:</span>
 </span><span id="Instruction-161"><a href="#Instruction-161"><span class="linenos">161</span></a><span class="sd">            A concise string showing the instruction in assembly text format.</span>
@@ -2715,11 +2715,11 @@ instruction name and operands for debugging and display purposes.</li>
     </div>
     <a class="headerlink" href="#Instruction.to_concise_str"></a>
             <div class="pdoc-code codehilite"><pre><span></span><span id="Instruction.to_concise_str-153"><a href="#Instruction.to_concise_str-153"><span class="linenos">153</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">to_concise_str</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-</span><span id="Instruction.to_concise_str-154"><a href="#Instruction.to_concise_str-154"><span class="linenos">154</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Return concise assembly text representation (hides default parameters).</span>
+</span><span id="Instruction.to_concise_str-154"><a href="#Instruction.to_concise_str-154"><span class="linenos">154</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Return concise assembly text representation (hides default arguments).</span>
 </span><span id="Instruction.to_concise_str-155"><a href="#Instruction.to_concise_str-155"><span class="linenos">155</span></a>
-</span><span id="Instruction.to_concise_str-156"><a href="#Instruction.to_concise_str-156"><span class="linenos">156</span></a><span class="sd">        By default, returns the same as `__str__()`. Subclasses with default output</span>
-</span><span id="Instruction.to_concise_str-157"><a href="#Instruction.to_concise_str-157"><span class="linenos">157</span></a><span class="sd">        parameters should override this to provide a more concise representation that</span>
-</span><span id="Instruction.to_concise_str-158"><a href="#Instruction.to_concise_str-158"><span class="linenos">158</span></a><span class="sd">        omits parameters when they match the default value.</span>
+</span><span id="Instruction.to_concise_str-156"><a href="#Instruction.to_concise_str-156"><span class="linenos">156</span></a><span class="sd">        By default, returns the same as `__str__()`. Subclasses with default arguments</span>
+</span><span id="Instruction.to_concise_str-157"><a href="#Instruction.to_concise_str-157"><span class="linenos">157</span></a><span class="sd">        should override this to provide a more concise representation that omits arguments</span>
+</span><span id="Instruction.to_concise_str-158"><a href="#Instruction.to_concise_str-158"><span class="linenos">158</span></a><span class="sd">        when they match the default value.</span>
 </span><span id="Instruction.to_concise_str-159"><a href="#Instruction.to_concise_str-159"><span class="linenos">159</span></a>
 </span><span id="Instruction.to_concise_str-160"><a href="#Instruction.to_concise_str-160"><span class="linenos">160</span></a><span class="sd">        Returns:</span>
 </span><span id="Instruction.to_concise_str-161"><a href="#Instruction.to_concise_str-161"><span class="linenos">161</span></a><span class="sd">            A concise string showing the instruction in assembly text format.</span>
@@ -2728,11 +2728,11 @@ instruction name and operands for debugging and display purposes.</li>
 </span></pre></div>
 
 
-            <div class="docstring"><p>Return concise assembly text representation (hides default parameters).</p>
+            <div class="docstring"><p>Return concise assembly text representation (hides default arguments).</p>
 
-<p>By default, returns the same as <code>__str__()</code>. Subclasses with default output
-parameters should override this to provide a more concise representation that
-omits parameters when they match the default value.</p>
+<p>By default, returns the same as <code>__str__()</code>. Subclasses with default arguments
+should override this to provide a more concise representation that omits arguments
+when they match the default value.</p>
 
 <h6 id="returns">Returns:</h6>
 
@@ -3011,7 +3011,7 @@ output operand.</p>
 </span><span id="UnaryOperation-263"><a href="#UnaryOperation-263"><span class="linenos">263</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">to_concise_str</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 </span><span id="UnaryOperation-264"><a href="#UnaryOperation-264"><span class="linenos">264</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Return concise assembly text representation (hides default output).</span>
 </span><span id="UnaryOperation-265"><a href="#UnaryOperation-265"><span class="linenos">265</span></a>
-</span><span id="UnaryOperation-266"><a href="#UnaryOperation-266"><span class="linenos">266</span></a><span class="sd">        If the output parameter matches the input operand (the default), it is omitted</span>
+</span><span id="UnaryOperation-266"><a href="#UnaryOperation-266"><span class="linenos">266</span></a><span class="sd">        If the output argument matches the input operand (the default), it is omitted</span>
 </span><span id="UnaryOperation-267"><a href="#UnaryOperation-267"><span class="linenos">267</span></a><span class="sd">        from the output.</span>
 </span><span id="UnaryOperation-268"><a href="#UnaryOperation-268"><span class="linenos">268</span></a>
 </span><span id="UnaryOperation-269"><a href="#UnaryOperation-269"><span class="linenos">269</span></a><span class="sd">        Returns:</span>
@@ -3101,7 +3101,7 @@ to a separate operand.</p>
             <div class="pdoc-code codehilite"><pre><span></span><span id="UnaryOperation.to_concise_str-263"><a href="#UnaryOperation.to_concise_str-263"><span class="linenos">263</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">to_concise_str</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 </span><span id="UnaryOperation.to_concise_str-264"><a href="#UnaryOperation.to_concise_str-264"><span class="linenos">264</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Return concise assembly text representation (hides default output).</span>
 </span><span id="UnaryOperation.to_concise_str-265"><a href="#UnaryOperation.to_concise_str-265"><span class="linenos">265</span></a>
-</span><span id="UnaryOperation.to_concise_str-266"><a href="#UnaryOperation.to_concise_str-266"><span class="linenos">266</span></a><span class="sd">        If the output parameter matches the input operand (the default), it is omitted</span>
+</span><span id="UnaryOperation.to_concise_str-266"><a href="#UnaryOperation.to_concise_str-266"><span class="linenos">266</span></a><span class="sd">        If the output argument matches the input operand (the default), it is omitted</span>
 </span><span id="UnaryOperation.to_concise_str-267"><a href="#UnaryOperation.to_concise_str-267"><span class="linenos">267</span></a><span class="sd">        from the output.</span>
 </span><span id="UnaryOperation.to_concise_str-268"><a href="#UnaryOperation.to_concise_str-268"><span class="linenos">268</span></a>
 </span><span id="UnaryOperation.to_concise_str-269"><a href="#UnaryOperation.to_concise_str-269"><span class="linenos">269</span></a><span class="sd">        Returns:</span>
@@ -3115,7 +3115,7 @@ to a separate operand.</p>
 
             <div class="docstring"><p>Return concise assembly text representation (hides default output).</p>
 
-<p>If the output parameter matches the input operand (the default), it is omitted
+<p>If the output argument matches the input operand (the default), it is omitted
 from the output.</p>
 
 <h6 id="returns">Returns:</h6>
@@ -3195,7 +3195,7 @@ from the output.</p>
 </span><span id="BinaryOperation-320"><a href="#BinaryOperation-320"><span class="linenos">320</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">to_concise_str</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 </span><span id="BinaryOperation-321"><a href="#BinaryOperation-321"><span class="linenos">321</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Return concise assembly text representation (hides default output).</span>
 </span><span id="BinaryOperation-322"><a href="#BinaryOperation-322"><span class="linenos">322</span></a>
-</span><span id="BinaryOperation-323"><a href="#BinaryOperation-323"><span class="linenos">323</span></a><span class="sd">        If the output parameter matches the first input operand (the default), it is</span>
+</span><span id="BinaryOperation-323"><a href="#BinaryOperation-323"><span class="linenos">323</span></a><span class="sd">        If the output argument matches the first input operand (the default), it is</span>
 </span><span id="BinaryOperation-324"><a href="#BinaryOperation-324"><span class="linenos">324</span></a><span class="sd">        omitted from the output.</span>
 </span><span id="BinaryOperation-325"><a href="#BinaryOperation-325"><span class="linenos">325</span></a>
 </span><span id="BinaryOperation-326"><a href="#BinaryOperation-326"><span class="linenos">326</span></a><span class="sd">        Returns:</span>
@@ -3300,7 +3300,7 @@ separate operand.</p>
             <div class="pdoc-code codehilite"><pre><span></span><span id="BinaryOperation.to_concise_str-320"><a href="#BinaryOperation.to_concise_str-320"><span class="linenos">320</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">to_concise_str</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 </span><span id="BinaryOperation.to_concise_str-321"><a href="#BinaryOperation.to_concise_str-321"><span class="linenos">321</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Return concise assembly text representation (hides default output).</span>
 </span><span id="BinaryOperation.to_concise_str-322"><a href="#BinaryOperation.to_concise_str-322"><span class="linenos">322</span></a>
-</span><span id="BinaryOperation.to_concise_str-323"><a href="#BinaryOperation.to_concise_str-323"><span class="linenos">323</span></a><span class="sd">        If the output parameter matches the first input operand (the default), it is</span>
+</span><span id="BinaryOperation.to_concise_str-323"><a href="#BinaryOperation.to_concise_str-323"><span class="linenos">323</span></a><span class="sd">        If the output argument matches the first input operand (the default), it is</span>
 </span><span id="BinaryOperation.to_concise_str-324"><a href="#BinaryOperation.to_concise_str-324"><span class="linenos">324</span></a><span class="sd">        omitted from the output.</span>
 </span><span id="BinaryOperation.to_concise_str-325"><a href="#BinaryOperation.to_concise_str-325"><span class="linenos">325</span></a>
 </span><span id="BinaryOperation.to_concise_str-326"><a href="#BinaryOperation.to_concise_str-326"><span class="linenos">326</span></a><span class="sd">        Returns:</span>
@@ -3314,7 +3314,7 @@ separate operand.</p>
 
             <div class="docstring"><p>Return concise assembly text representation (hides default output).</p>
 
-<p>If the output parameter matches the first input operand (the default), it is
+<p>If the output argument matches the first input operand (the default), it is
 omitted from the output.</p>
 
 <h6 id="returns">Returns:</h6>
@@ -7542,9 +7542,9 @@ is popped but not stored.</li>
 </span><span id="NOUT-1302"><a href="#NOUT-1302"><span class="linenos">1302</span></a>        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;NOUT </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">a</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">b</span><span class="si">}</span><span class="s2">&quot;</span>
 </span><span id="NOUT-1303"><a href="#NOUT-1303"><span class="linenos">1303</span></a>
 </span><span id="NOUT-1304"><a href="#NOUT-1304"><span class="linenos">1304</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">to_concise_str</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-</span><span id="NOUT-1305"><a href="#NOUT-1305"><span class="linenos">1305</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Return concise assembly text representation (hides default newline parameter).</span>
+</span><span id="NOUT-1305"><a href="#NOUT-1305"><span class="linenos">1305</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Return concise assembly text representation (hides default newline argument).</span>
 </span><span id="NOUT-1306"><a href="#NOUT-1306"><span class="linenos">1306</span></a>
-</span><span id="NOUT-1307"><a href="#NOUT-1307"><span class="linenos">1307</span></a><span class="sd">        If the newline parameter is L[0] (the default), it is omitted from the output.</span>
+</span><span id="NOUT-1307"><a href="#NOUT-1307"><span class="linenos">1307</span></a><span class="sd">        If the newline argument is L[0] (the default), it is omitted from the output.</span>
 </span><span id="NOUT-1308"><a href="#NOUT-1308"><span class="linenos">1308</span></a>
 </span><span id="NOUT-1309"><a href="#NOUT-1309"><span class="linenos">1309</span></a><span class="sd">        Returns:</span>
 </span><span id="NOUT-1310"><a href="#NOUT-1310"><span class="linenos">1310</span></a><span class="sd">            Concise string like &quot;NOUT R.a&quot; instead of &quot;NOUT R.a, 0&quot;.</span>
@@ -7625,9 +7625,9 @@ is popped but not stored.</li>
     </div>
     <a class="headerlink" href="#NOUT.to_concise_str"></a>
             <div class="pdoc-code codehilite"><pre><span></span><span id="NOUT.to_concise_str-1304"><a href="#NOUT.to_concise_str-1304"><span class="linenos">1304</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">to_concise_str</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-</span><span id="NOUT.to_concise_str-1305"><a href="#NOUT.to_concise_str-1305"><span class="linenos">1305</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Return concise assembly text representation (hides default newline parameter).</span>
+</span><span id="NOUT.to_concise_str-1305"><a href="#NOUT.to_concise_str-1305"><span class="linenos">1305</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Return concise assembly text representation (hides default newline argument).</span>
 </span><span id="NOUT.to_concise_str-1306"><a href="#NOUT.to_concise_str-1306"><span class="linenos">1306</span></a>
-</span><span id="NOUT.to_concise_str-1307"><a href="#NOUT.to_concise_str-1307"><span class="linenos">1307</span></a><span class="sd">        If the newline parameter is L[0] (the default), it is omitted from the output.</span>
+</span><span id="NOUT.to_concise_str-1307"><a href="#NOUT.to_concise_str-1307"><span class="linenos">1307</span></a><span class="sd">        If the newline argument is L[0] (the default), it is omitted from the output.</span>
 </span><span id="NOUT.to_concise_str-1308"><a href="#NOUT.to_concise_str-1308"><span class="linenos">1308</span></a>
 </span><span id="NOUT.to_concise_str-1309"><a href="#NOUT.to_concise_str-1309"><span class="linenos">1309</span></a><span class="sd">        Returns:</span>
 </span><span id="NOUT.to_concise_str-1310"><a href="#NOUT.to_concise_str-1310"><span class="linenos">1310</span></a><span class="sd">            Concise string like &quot;NOUT R.a&quot; instead of &quot;NOUT R.a, 0&quot;.</span>
@@ -7638,9 +7638,9 @@ is popped but not stored.</li>
 </span></pre></div>
 
 
-            <div class="docstring"><p>Return concise assembly text representation (hides default newline parameter).</p>
+            <div class="docstring"><p>Return concise assembly text representation (hides default newline argument).</p>
 
-<p>If the newline parameter is L[0] (the default), it is omitted from the output.</p>
+<p>If the newline argument is L[0] (the default), it is omitted from the output.</p>
 
 <h6 id="returns">Returns:</h6>
 
@@ -7703,9 +7703,9 @@ is popped but not stored.</li>
 </span><span id="OOUT-1343"><a href="#OOUT-1343"><span class="linenos">1343</span></a>        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;OOUT </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">a</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">b</span><span class="si">}</span><span class="s2">&quot;</span>
 </span><span id="OOUT-1344"><a href="#OOUT-1344"><span class="linenos">1344</span></a>
 </span><span id="OOUT-1345"><a href="#OOUT-1345"><span class="linenos">1345</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">to_concise_str</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-</span><span id="OOUT-1346"><a href="#OOUT-1346"><span class="linenos">1346</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Return concise assembly text representation (hides default newline parameter).</span>
+</span><span id="OOUT-1346"><a href="#OOUT-1346"><span class="linenos">1346</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Return concise assembly text representation (hides default newline argument).</span>
 </span><span id="OOUT-1347"><a href="#OOUT-1347"><span class="linenos">1347</span></a>
-</span><span id="OOUT-1348"><a href="#OOUT-1348"><span class="linenos">1348</span></a><span class="sd">        If the newline parameter is L[0] (the default), it is omitted from the output.</span>
+</span><span id="OOUT-1348"><a href="#OOUT-1348"><span class="linenos">1348</span></a><span class="sd">        If the newline argument is L[0] (the default), it is omitted from the output.</span>
 </span><span id="OOUT-1349"><a href="#OOUT-1349"><span class="linenos">1349</span></a>
 </span><span id="OOUT-1350"><a href="#OOUT-1350"><span class="linenos">1350</span></a><span class="sd">        Returns:</span>
 </span><span id="OOUT-1351"><a href="#OOUT-1351"><span class="linenos">1351</span></a><span class="sd">            Concise string like &quot;OOUT &#39;H&#39;&quot; instead of &quot;OOUT &#39;H&#39;, 0&quot;.</span>
@@ -7786,9 +7786,9 @@ is popped but not stored.</li>
     </div>
     <a class="headerlink" href="#OOUT.to_concise_str"></a>
             <div class="pdoc-code codehilite"><pre><span></span><span id="OOUT.to_concise_str-1345"><a href="#OOUT.to_concise_str-1345"><span class="linenos">1345</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">to_concise_str</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-</span><span id="OOUT.to_concise_str-1346"><a href="#OOUT.to_concise_str-1346"><span class="linenos">1346</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Return concise assembly text representation (hides default newline parameter).</span>
+</span><span id="OOUT.to_concise_str-1346"><a href="#OOUT.to_concise_str-1346"><span class="linenos">1346</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Return concise assembly text representation (hides default newline argument).</span>
 </span><span id="OOUT.to_concise_str-1347"><a href="#OOUT.to_concise_str-1347"><span class="linenos">1347</span></a>
-</span><span id="OOUT.to_concise_str-1348"><a href="#OOUT.to_concise_str-1348"><span class="linenos">1348</span></a><span class="sd">        If the newline parameter is L[0] (the default), it is omitted from the output.</span>
+</span><span id="OOUT.to_concise_str-1348"><a href="#OOUT.to_concise_str-1348"><span class="linenos">1348</span></a><span class="sd">        If the newline argument is L[0] (the default), it is omitted from the output.</span>
 </span><span id="OOUT.to_concise_str-1349"><a href="#OOUT.to_concise_str-1349"><span class="linenos">1349</span></a>
 </span><span id="OOUT.to_concise_str-1350"><a href="#OOUT.to_concise_str-1350"><span class="linenos">1350</span></a><span class="sd">        Returns:</span>
 </span><span id="OOUT.to_concise_str-1351"><a href="#OOUT.to_concise_str-1351"><span class="linenos">1351</span></a><span class="sd">            Concise string like &quot;OOUT &#39;H&#39;&quot; instead of &quot;OOUT &#39;H&#39;, 0&quot;.</span>
@@ -7799,9 +7799,9 @@ is popped but not stored.</li>
 </span></pre></div>
 
 
-            <div class="docstring"><p>Return concise assembly text representation (hides default newline parameter).</p>
+            <div class="docstring"><p>Return concise assembly text representation (hides default newline argument).</p>
 
-<p>If the newline parameter is L[0] (the default), it is omitted from the output.</p>
+<p>If the newline argument is L[0] (the default), it is omitted from the output.</p>
 
 <h6 id="returns">Returns:</h6>
 
@@ -8179,9 +8179,9 @@ is popped but not stored.</li>
 </span><span id="STROUT-1488"><a href="#STROUT-1488"><span class="linenos">1488</span></a>        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;STROUT </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">a</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">b</span><span class="si">}</span><span class="s2">&quot;</span>
 </span><span id="STROUT-1489"><a href="#STROUT-1489"><span class="linenos">1489</span></a>
 </span><span id="STROUT-1490"><a href="#STROUT-1490"><span class="linenos">1490</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">to_concise_str</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-</span><span id="STROUT-1491"><a href="#STROUT-1491"><span class="linenos">1491</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Return concise assembly text representation (hides default newline parameter).</span>
+</span><span id="STROUT-1491"><a href="#STROUT-1491"><span class="linenos">1491</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Return concise assembly text representation (hides default newline argument).</span>
 </span><span id="STROUT-1492"><a href="#STROUT-1492"><span class="linenos">1492</span></a>
-</span><span id="STROUT-1493"><a href="#STROUT-1493"><span class="linenos">1493</span></a><span class="sd">        If the newline parameter is L[0] (the default), it is omitted from the output.</span>
+</span><span id="STROUT-1493"><a href="#STROUT-1493"><span class="linenos">1493</span></a><span class="sd">        If the newline argument is L[0] (the default), it is omitted from the output.</span>
 </span><span id="STROUT-1494"><a href="#STROUT-1494"><span class="linenos">1494</span></a>
 </span><span id="STROUT-1495"><a href="#STROUT-1495"><span class="linenos">1495</span></a><span class="sd">        Returns:</span>
 </span><span id="STROUT-1496"><a href="#STROUT-1496"><span class="linenos">1496</span></a><span class="sd">            Concise string like &quot;STROUT &#39;H&#39;&quot; instead of &quot;STROUT &#39;H&#39;, 0&quot;.</span>
@@ -8266,9 +8266,9 @@ is popped but not stored.</li>
     </div>
     <a class="headerlink" href="#STROUT.to_concise_str"></a>
             <div class="pdoc-code codehilite"><pre><span></span><span id="STROUT.to_concise_str-1490"><a href="#STROUT.to_concise_str-1490"><span class="linenos">1490</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">to_concise_str</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-</span><span id="STROUT.to_concise_str-1491"><a href="#STROUT.to_concise_str-1491"><span class="linenos">1491</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Return concise assembly text representation (hides default newline parameter).</span>
+</span><span id="STROUT.to_concise_str-1491"><a href="#STROUT.to_concise_str-1491"><span class="linenos">1491</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Return concise assembly text representation (hides default newline argument).</span>
 </span><span id="STROUT.to_concise_str-1492"><a href="#STROUT.to_concise_str-1492"><span class="linenos">1492</span></a>
-</span><span id="STROUT.to_concise_str-1493"><a href="#STROUT.to_concise_str-1493"><span class="linenos">1493</span></a><span class="sd">        If the newline parameter is L[0] (the default), it is omitted from the output.</span>
+</span><span id="STROUT.to_concise_str-1493"><a href="#STROUT.to_concise_str-1493"><span class="linenos">1493</span></a><span class="sd">        If the newline argument is L[0] (the default), it is omitted from the output.</span>
 </span><span id="STROUT.to_concise_str-1494"><a href="#STROUT.to_concise_str-1494"><span class="linenos">1494</span></a>
 </span><span id="STROUT.to_concise_str-1495"><a href="#STROUT.to_concise_str-1495"><span class="linenos">1495</span></a><span class="sd">        Returns:</span>
 </span><span id="STROUT.to_concise_str-1496"><a href="#STROUT.to_concise_str-1496"><span class="linenos">1496</span></a><span class="sd">            Concise string like &quot;STROUT &#39;H&#39;&quot; instead of &quot;STROUT &#39;H&#39;, 0&quot;.</span>
@@ -8279,9 +8279,9 @@ is popped but not stored.</li>
 </span></pre></div>
 
 
-            <div class="docstring"><p>Return concise assembly text representation (hides default newline parameter).</p>
+            <div class="docstring"><p>Return concise assembly text representation (hides default newline argument).</p>
 
-<p>If the newline parameter is L[0] (the default), it is omitted from the output.</p>
+<p>If the newline argument is L[0] (the default), it is omitted from the output.</p>
 
 <h6 id="returns">Returns:</h6>
 

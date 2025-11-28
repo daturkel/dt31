@@ -150,11 +150,11 @@ class Instruction:
         return self.name
 
     def to_concise_str(self) -> str:
-        """Return concise assembly text representation (hides default parameters).
+        """Return concise assembly text representation (hides default arguments).
 
-        By default, returns the same as `__str__()`. Subclasses with default output
-        parameters should override this to provide a more concise representation that
-        omits parameters when they match the default value.
+        By default, returns the same as `__str__()`. Subclasses with default arguments
+        should override this to provide a more concise representation that omits arguments
+        when they match the default value.
 
         Returns:
             A concise string showing the instruction in assembly text format.
@@ -262,7 +262,7 @@ class UnaryOperation(Instruction):
     def to_concise_str(self) -> str:
         """Return concise assembly text representation (hides default output).
 
-        If the output parameter matches the input operand (the default), it is omitted
+        If the output argument matches the input operand (the default), it is omitted
         from the output.
 
         Returns:
@@ -319,7 +319,7 @@ class BinaryOperation(Instruction):
     def to_concise_str(self) -> str:
         """Return concise assembly text representation (hides default output).
 
-        If the output parameter matches the first input operand (the default), it is
+        If the output argument matches the first input operand (the default), it is
         omitted from the output.
 
         Returns:
@@ -1301,9 +1301,9 @@ class NOUT(Instruction):
         return f"NOUT {self.a}, {self.b}"
 
     def to_concise_str(self) -> str:
-        """Return concise assembly text representation (hides default newline parameter).
+        """Return concise assembly text representation (hides default newline argument).
 
-        If the newline parameter is L[0] (the default), it is omitted from the output.
+        If the newline argument is L[0] (the default), it is omitted from the output.
 
         Returns:
             Concise string like "NOUT R.a" instead of "NOUT R.a, 0".
@@ -1342,9 +1342,9 @@ class OOUT(Instruction):
         return f"OOUT {self.a}, {self.b}"
 
     def to_concise_str(self) -> str:
-        """Return concise assembly text representation (hides default newline parameter).
+        """Return concise assembly text representation (hides default newline argument).
 
-        If the newline parameter is L[0] (the default), it is omitted from the output.
+        If the newline argument is L[0] (the default), it is omitted from the output.
 
         Returns:
             Concise string like "OOUT 'H'" instead of "OOUT 'H', 0".
@@ -1487,9 +1487,9 @@ class STROUT(Instruction):
         return f"STROUT {self.a}, {self.b}"
 
     def to_concise_str(self) -> str:
-        """Return concise assembly text representation (hides default newline parameter).
+        """Return concise assembly text representation (hides default newline argument).
 
-        If the newline parameter is L[0] (the default), it is omitted from the output.
+        If the newline argument is L[0] (the default), it is omitted from the output.
 
         Returns:
             Concise string like "STROUT 'H'" instead of "STROUT 'H', 0".

@@ -1320,14 +1320,14 @@ def test_format_indent_size(temp_dt_file, capsys):
 
 
 def test_format_comment_spacing(temp_dt_file, capsys):
-    """Test --comment-spacing option."""
+    """Test --comment-margin option."""
     assembly = """
 CP 5, R.a ; Initialize
 """
     file_path = temp_dt_file(assembly)
 
     with patch.object(
-        sys, "argv", ["dt31", "format", "--comment-spacing", "3", file_path]
+        sys, "argv", ["dt31", "format", "--comment-margin", "3", file_path]
     ):
         with pytest.raises(SystemExit) as exc_info:
             main()
@@ -1386,11 +1386,15 @@ ADD R.a, 1
 
 
 def test_format_align_comments(temp_dt_file, capsys):
-    """Test --align-comments option."""
+    """Test --align-comments option with explicit column."""
     assembly = "CP 5, R.a ; Test1\nCP 6, R.b ; Test2"
     file_path = temp_dt_file(assembly)
 
-    with patch.object(sys, "argv", ["dt31", "format", "--align-comments", file_path]):
+    with patch.object(
+        sys,
+        "argv",
+        ["dt31", "format", "--align-comments", "--comment-column", "40", file_path],
+    ):
         with pytest.raises(SystemExit) as exc_info:
             main()
 
@@ -1408,9 +1412,9 @@ def test_format_align_comments(temp_dt_file, capsys):
     assert len(set(comment_positions)) == 1, (
         f"Comments not aligned: {comment_positions}"
     )
-    # And that position should be reasonable (around column 40)
-    assert 35 <= comment_positions[0] <= 45, (
-        f"Comment position {comment_positions[0]} not near 40"
+    # And that position should be at column 40
+    assert comment_positions[0] == 40, (
+        f"Comment position {comment_positions[0]} not at 40"
     )
 
 
@@ -1438,15 +1442,13 @@ CP 5, R.a ; Test
     assert formatted.index(";") == 30
 
 
-def test_format_hide_default_out(temp_dt_file, capsys):
-    """Test --hide-default-out option."""
-    assembly = """
-ADD R.a, R.b, R.a
-NOUT R.a, 0
-"""
+def test_format_auto_align_comments(temp_dt_file, capsys):
+    """Test auto-align comments (without explicit --comment-column)."""
+    assembly = "CP 5, R.a ; Short\nADD R.a, R.b, R.c ; Longer"
     file_path = temp_dt_file(assembly)
 
-    with patch.object(sys, "argv", ["dt31", "format", "--hide-default-out", file_path]):
+    # Use --align-comments without --comment-column to trigger auto-calculation
+    with patch.object(sys, "argv", ["dt31", "format", "--align-comments", file_path]):
         with pytest.raises(SystemExit) as exc_info:
             main()
 
@@ -1455,8 +1457,69 @@ NOUT R.a, 0
     from pathlib import Path
 
     formatted = Path(file_path).read_text()
-    assert "    ADD R.a, R.b" in formatted  # Default out hidden (no trailing comma)
-    assert "    NOUT R.a" in formatted  # Default b hidden (last line has no newline)
+    lines = [l for l in formatted.split("\n") if ";" in l]  # noqa: E741
+
+    # Both comments should be aligned at the same position
+    comment_positions = [line.index(";") for line in lines]
+    assert len(set(comment_positions)) == 1, (
+        f"Comments not aligned: {comment_positions}"
+    )
+
+    # The position should be based on longest instruction + default margin (2)
+    # Longest line is "    ADD R.a, R.b, R.c" = 21 chars
+    # So comments should be at 21 + 2 = 23
+    assert comment_positions[0] == 23
+
+
+def test_format_comment_margin(temp_dt_file, capsys):
+    """Test --comment-margin option."""
+    assembly = "CP 5, R.a ; Test1\nCP 6, R.b ; Test2"
+    file_path = temp_dt_file(assembly)
+
+    # Use custom margin of 4 with auto-align
+    with patch.object(
+        sys,
+        "argv",
+        ["dt31", "format", "--align-comments", "--comment-margin", "4", file_path],
+    ):
+        with pytest.raises(SystemExit) as exc_info:
+            main()
+
+    assert exc_info.value.code == 0
+
+    from pathlib import Path
+
+    formatted = Path(file_path).read_text()
+    lines = [l for l in formatted.split("\n") if ";" in l]  # noqa: E741
+
+    # Comments should be aligned with margin of 4
+    # Longest line is "    CP 6, R.b" = 13 chars
+    # So comments should be at 13 + 4 = 17
+    comment_positions = [line.index(";") for line in lines]
+    assert comment_positions[0] == 17
+
+
+def test_format_show_default_args(temp_dt_file, capsys):
+    """Test --show-default-args option."""
+    assembly = """
+ADD R.a, R.b
+NOUT R.a
+"""
+    file_path = temp_dt_file(assembly)
+
+    with patch.object(
+        sys, "argv", ["dt31", "format", "--show-default-args", file_path]
+    ):
+        with pytest.raises(SystemExit) as exc_info:
+            main()
+
+    assert exc_info.value.code == 0
+
+    from pathlib import Path
+
+    formatted = Path(file_path).read_text()
+    assert "    ADD R.a, R.b, R.a" in formatted  # Default out shown
+    assert "    NOUT R.a, 0" in formatted  # Default b shown
 
 
 def test_format_io_error_reading_file(tmp_path, capsys):

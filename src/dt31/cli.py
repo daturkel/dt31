@@ -109,12 +109,13 @@ Format `.dt` assembly files with consistent style, following Black/Ruff conventi
 - **--diff**: Show formatting changes as a unified diff without modifying the file
 - **-i, --custom-instructions**: Path to Python file containing custom instruction definitions
 - **--indent-size**: Number of spaces per indentation level (default: 4)
-- **--comment-spacing**: Number of spaces before inline comment semicolon (default: 1)
 - **--label-inline**: Place labels on same line as next instruction (default: False)
 - **--no-blank-line-before-label**: Don't add blank line before labels (default: False)
-- **--align-comments**: Align inline comments at comment-column (default: False)
-- **--comment-column**: Column position for aligned comments (default: 40)
-- **--hide-default-out**: Hide output parameters when they match defaults (default: False)
+- **--align-comments**: Align inline comments (auto-calculates column if --comment-column not specified)
+- **--comment-column**: Column position for aligned comments (default: auto-calculate)
+- **--comment-margin**: Spaces before inline comments and margin for auto-alignment (default: 2)
+- **--strip-comments**: Remove all comments from output (default: False)
+- **--show-default-args**: Show instruction arguments even when they match defaults (default: False)
 
 **Examples:**
 
@@ -131,11 +132,20 @@ dt31 format --diff program.dt
 # Format with custom style
 dt31 format --indent-size 2 --label-inline program.dt
 
-# Hide default output parameters
-dt31 format --hide-default-out program.dt
+# Show default arguments
+dt31 format --show-default-args program.dt
 
-# Align comments at column 40
+# Auto-align comments (calculates optimal column)
+dt31 format --align-comments program.dt
+
+# Align comments at specific column
 dt31 format --align-comments --comment-column 40 program.dt
+
+# Auto-align with custom margin
+dt31 format --align-comments --comment-margin 4 program.dt
+
+# Strip all comments from output
+dt31 format --strip-comments program.dt
 
 # Format file with custom instructions
 dt31 format --custom-instructions my_instructions.py program.dt
@@ -257,26 +267,29 @@ examples:
     )
 
     run_parser.add_argument(
+        "-r",
         "--registers",
         type=str,
         help="Comma-separated list of register names (e.g., a,b,c,d)",
     )
 
     run_parser.add_argument(
+        "-m",
         "--memory",
         type=int,
         help="Memory size in bytes (default: 256)",
     )
 
     run_parser.add_argument(
+        "-s",
         "--stack-size",
         type=int,
         help="Stack size (default: 256)",
     )
 
     run_parser.add_argument(
-        "--custom-instructions",
         "-i",
+        "--custom-instructions",
         type=str,
         metavar="PATH",
         help="Path to Python file containing custom instruction definitions",
@@ -515,11 +528,11 @@ def _create_format_parser(subparsers) -> None:
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 examples:
-  dt31 format program.dt                  Format file in-place
-  dt31 format --check program.dt          Check if formatting needed
-  dt31 format --diff program.dt           Show formatting changes
-  dt31 format --check --diff program.dt   Check and show diff
-  dt31 format --hide-default-out prog.dt  Hide default output parameters
+  dt31 format program.dt                   Format file in-place
+  dt31 format --check program.dt           Check if formatting needed
+  dt31 format --diff program.dt            Show formatting changes
+  dt31 format --check --diff program.dt    Check and show diff
+  dt31 format --show-default-args prog.dt  Show default arguments
         """,
     )
 
@@ -531,12 +544,14 @@ examples:
 
     # Validation flags
     format_parser.add_argument(
+        "-c",
         "--check",
         action="store_true",
         help="Check if file needs formatting without modifying (exit 1 if changes needed)",
     )
 
     format_parser.add_argument(
+        "-d",
         "--diff",
         action="store_true",
         help="Show diff of changes without applying them (can combine with --check)",
@@ -544,6 +559,7 @@ examples:
 
     # Formatting options (7 total)
     format_parser.add_argument(
+        "-I",
         "--indent-size",
         type=int,
         default=4,
@@ -552,49 +568,65 @@ examples:
     )
 
     format_parser.add_argument(
-        "--comment-spacing",
-        type=int,
-        default=1,
-        metavar="N",
-        help="Number of spaces before inline comment semicolon (default: 1)",
-    )
-
-    format_parser.add_argument(
+        "-l",
         "--label-inline",
         action="store_true",
         help="Place labels on same line as next instruction (default: False)",
     )
 
     format_parser.add_argument(
+        "-b",
         "--no-blank-line-before-label",
         action="store_true",
         help="Don't add blank line before labels (default: add blank line)",
     )
 
     format_parser.add_argument(
+        "-a",
         "--align-comments",
         action="store_true",
         help="Align inline comments at comment-column (default: False)",
     )
 
     format_parser.add_argument(
+        "-C",
         "--comment-column",
         type=int,
-        default=40,
+        default=None,
         metavar="N",
-        help="Column position for aligned comments when --align-comments is used (default: 40)",
+        help="Column position for aligned comments. If not specified and --align-comments "
+        "is used, column is auto-calculated based on longest instruction + --comment-margin.",
     )
 
     format_parser.add_argument(
-        "--hide-default-out",
+        "-m",
+        "--comment-margin",
+        type=int,
+        default=2,
+        metavar="N",
+        help="Spaces before inline comment semicolon. Also used as margin when auto-aligning "
+        "comments (default: 2).",
+    )
+
+    format_parser.add_argument(
+        "-D",
+        "--show-default-args",
+        action="store_false",
+        dest="hide_default_args",
+        help="Show arguments even when they match the default value (default: False)",
+    )
+
+    format_parser.add_argument(
+        "-s",
+        "--strip-comments",
         action="store_true",
-        help="Hide output parameters when they match the default value (default: False)",
+        help="Remove all comments from output (standalone and inline). Overrides --align-comments (default: False)",
     )
 
     # Custom instructions support (needed for parsing)
     format_parser.add_argument(
-        "--custom-instructions",
         "-i",
+        "--custom-instructions",
         type=str,
         metavar="PATH",
         help="Path to Python file containing custom instruction definitions",
@@ -711,12 +743,13 @@ def format_command(args: argparse.Namespace) -> None:
     # Prepare formatting options
     formatting_options = {
         "indent_size": args.indent_size,
-        "comment_spacing": args.comment_spacing,
         "label_inline": args.label_inline,
         "blank_line_before_label": not args.no_blank_line_before_label,  # Inverted!
         "align_comments": args.align_comments,
         "comment_column": args.comment_column,
-        "hide_default_out": args.hide_default_out,
+        "comment_margin": args.comment_margin,
+        "strip_comments": args.strip_comments,
+        "hide_default_args": args.hide_default_args,
     }
 
     # Format the file
