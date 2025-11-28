@@ -680,20 +680,14 @@ uv run invoke test
 
 DT31 is open-source and contributors are welcome on [Github](https://github.com/daturkel/dt31).
 
-## Roadmap
+## Planned work
 
-- [x] Character literals?
-- [x] Parse and execute `.dt` files
-- [x] Breakpoint instruction
-- [x] Clearer handing of input during debug mode
-- [x] Python to text output
-- [x] Preserve comments in parser
-- [ ] User-definable macros (in both python and assembly syntax)
-- [ ] File I/O
-- [ ] Data handling
-- [ ] Input error-handling
-- [x] Formatter
-- [ ] Interpreter resume from dump
+- [ ] [Data section](https://github.com/daturkel/dt31/issues/26)
+- [ ] [User-definable macros](https://github.com/daturkel/dt31/issues/11)
+- [ ] [Globbing support for CLI](https://github.com/daturkel/dt31/issues/16)
+- [ ] Interpreter resume from dump (maybe)
+- [ ] Input error-handling (maybe)
+- [ ] [File I/O](https://github.com/daturkel/dt31/issues/25) (maybe)
 
 ## License
 
