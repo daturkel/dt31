@@ -1499,15 +1499,17 @@ def test_format_comment_margin(temp_dt_file, capsys):
     assert comment_positions[0] == 17
 
 
-def test_format_hide_default_out(temp_dt_file, capsys):
-    """Test --hide-default-out option."""
+def test_format_show_default_args(temp_dt_file, capsys):
+    """Test --show-default-args option."""
     assembly = """
-ADD R.a, R.b, R.a
-NOUT R.a, 0
+ADD R.a, R.b
+NOUT R.a
 """
     file_path = temp_dt_file(assembly)
 
-    with patch.object(sys, "argv", ["dt31", "format", "--hide-default-out", file_path]):
+    with patch.object(
+        sys, "argv", ["dt31", "format", "--show-default-args", file_path]
+    ):
         with pytest.raises(SystemExit) as exc_info:
             main()
 
@@ -1516,8 +1518,8 @@ NOUT R.a, 0
     from pathlib import Path
 
     formatted = Path(file_path).read_text()
-    assert "    ADD R.a, R.b" in formatted  # Default out hidden (no trailing comma)
-    assert "    NOUT R.a" in formatted  # Default b hidden (last line has no newline)
+    assert "    ADD R.a, R.b, R.a" in formatted  # Default out shown
+    assert "    NOUT R.a, 0" in formatted  # Default b shown
 
 
 def test_format_io_error_reading_file(tmp_path, capsys):

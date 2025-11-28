@@ -82,7 +82,7 @@ with configurable formatting options.</p>
 </span><span id="L-20"><a href="#L-20"><span class="linenos"> 20</span></a>    <span class="n">comment_column</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 </span><span id="L-21"><a href="#L-21"><span class="linenos"> 21</span></a>    <span class="n">comment_margin</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
 </span><span id="L-22"><a href="#L-22"><span class="linenos"> 22</span></a>    <span class="n">strip_comments</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-</span><span id="L-23"><a href="#L-23"><span class="linenos"> 23</span></a>    <span class="n">hide_default_out</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+</span><span id="L-23"><a href="#L-23"><span class="linenos"> 23</span></a>    <span class="n">hide_default_args</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
 </span><span id="L-24"><a href="#L-24"><span class="linenos"> 24</span></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 </span><span id="L-25"><a href="#L-25"><span class="linenos"> 25</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert a program to assembly text format with configurable formatting.</span>
 </span><span id="L-26"><a href="#L-26"><span class="linenos"> 26</span></a>
@@ -100,7 +100,7 @@ with configurable formatting options.</p>
 </span><span id="L-38"><a href="#L-38"><span class="linenos"> 38</span></a><span class="sd">        comment_margin: Spaces before inline comment semicolon. Also used when auto-calculating</span>
 </span><span id="L-39"><a href="#L-39"><span class="linenos"> 39</span></a><span class="sd">            comment_column for aligned comments (default: 2).</span>
 </span><span id="L-40"><a href="#L-40"><span class="linenos"> 40</span></a><span class="sd">        strip_comments: If True, remove all comments from output. (default: False).</span>
-</span><span id="L-41"><a href="#L-41"><span class="linenos"> 41</span></a><span class="sd">        hide_default_out: If True, hide output parameters when they match the default value (default: False).</span>
+</span><span id="L-41"><a href="#L-41"><span class="linenos"> 41</span></a><span class="sd">        hide_default_args: If True, hide arguments when they match the default value (default: True).</span>
 </span><span id="L-42"><a href="#L-42"><span class="linenos"> 42</span></a>
 </span><span id="L-43"><a href="#L-43"><span class="linenos"> 43</span></a><span class="sd">    Returns:</span>
 </span><span id="L-44"><a href="#L-44"><span class="linenos"> 44</span></a><span class="sd">        A string containing the assembly text representation of the program,</span>
@@ -176,16 +176,16 @@ with configurable formatting options.</p>
 </span><span id="L-114"><a href="#L-114"><span class="linenos">114</span></a><span class="sd">        #     ADD R.a, 1, R.a</span>
 </span><span id="L-115"><a href="#L-115"><span class="linenos">115</span></a><span class="sd">        ```</span>
 </span><span id="L-116"><a href="#L-116"><span class="linenos">116</span></a>
-</span><span id="L-117"><a href="#L-117"><span class="linenos">117</span></a><span class="sd">        Hide default output parameters:</span>
+</span><span id="L-117"><a href="#L-117"><span class="linenos">117</span></a><span class="sd">        Hide default arguments:</span>
 </span><span id="L-118"><a href="#L-118"><span class="linenos">118</span></a><span class="sd">        ```python</span>
 </span><span id="L-119"><a href="#L-119"><span class="linenos">119</span></a><span class="sd">        program = [</span>
 </span><span id="L-120"><a href="#L-120"><span class="linenos">120</span></a><span class="sd">            I.ADD(R.a, R.b),  # Default out=R.a</span>
 </span><span id="L-121"><a href="#L-121"><span class="linenos">121</span></a><span class="sd">            I.NOUT(R.a),      # Default b=L[0] (no newline)</span>
 </span><span id="L-122"><a href="#L-122"><span class="linenos">122</span></a><span class="sd">        ]</span>
-</span><span id="L-123"><a href="#L-123"><span class="linenos">123</span></a><span class="sd">        text = program_to_text(program, hide_default_out=True)</span>
+</span><span id="L-123"><a href="#L-123"><span class="linenos">123</span></a><span class="sd">        text = program_to_text(program, hide_default_args=True)</span>
 </span><span id="L-124"><a href="#L-124"><span class="linenos">124</span></a><span class="sd">        #     ADD R.a, R.b</span>
 </span><span id="L-125"><a href="#L-125"><span class="linenos">125</span></a><span class="sd">        #     NOUT R.a</span>
-</span><span id="L-126"><a href="#L-126"><span class="linenos">126</span></a><span class="sd">        # vs without hide_default_out:</span>
+</span><span id="L-126"><a href="#L-126"><span class="linenos">126</span></a><span class="sd">        # vs without hide_default_args (hide_default_args=False):</span>
 </span><span id="L-127"><a href="#L-127"><span class="linenos">127</span></a><span class="sd">        #     ADD R.a, R.b, R.a</span>
 </span><span id="L-128"><a href="#L-128"><span class="linenos">128</span></a><span class="sd">        #     NOUT R.a, 0</span>
 </span><span id="L-129"><a href="#L-129"><span class="linenos">129</span></a><span class="sd">        ```</span>
@@ -199,7 +199,7 @@ with configurable formatting options.</p>
 </span><span id="L-137"><a href="#L-137"><span class="linenos">137</span></a>            <span class="n">label_inline</span><span class="o">=</span><span class="n">label_inline</span><span class="p">,</span>
 </span><span id="L-138"><a href="#L-138"><span class="linenos">138</span></a>            <span class="n">blank_line_before_label</span><span class="o">=</span><span class="n">blank_line_before_label</span><span class="p">,</span>
 </span><span id="L-139"><a href="#L-139"><span class="linenos">139</span></a>            <span class="n">strip_comments</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>  <span class="c1"># Remove comments for measurement</span>
-</span><span id="L-140"><a href="#L-140"><span class="linenos">140</span></a>            <span class="n">hide_default_out</span><span class="o">=</span><span class="n">hide_default_out</span><span class="p">,</span>
+</span><span id="L-140"><a href="#L-140"><span class="linenos">140</span></a>            <span class="n">hide_default_args</span><span class="o">=</span><span class="n">hide_default_args</span><span class="p">,</span>
 </span><span id="L-141"><a href="#L-141"><span class="linenos">141</span></a>        <span class="p">)</span>
 </span><span id="L-142"><a href="#L-142"><span class="linenos">142</span></a>
 </span><span id="L-143"><a href="#L-143"><span class="linenos">143</span></a>        <span class="c1"># Find longest line</span>
@@ -257,7 +257,7 @@ with configurable formatting options.</p>
 </span><span id="L-195"><a href="#L-195"><span class="linenos">195</span></a>                <span class="n">label_prefix</span> <span class="o">=</span> <span class="n">indent</span>
 </span><span id="L-196"><a href="#L-196"><span class="linenos">196</span></a>                <span class="n">comment</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span> <span class="k">if</span> <span class="n">strip_comments</span> <span class="k">else</span> <span class="n">item</span><span class="o">.</span><span class="n">comment</span>
 </span><span id="L-197"><a href="#L-197"><span class="linenos">197</span></a>
-</span><span id="L-198"><a href="#L-198"><span class="linenos">198</span></a>            <span class="n">instruction_text</span> <span class="o">=</span> <span class="n">item</span><span class="o">.</span><span class="n">to_concise_str</span><span class="p">()</span> <span class="k">if</span> <span class="n">hide_default_out</span> <span class="k">else</span> <span class="nb">str</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
+</span><span id="L-198"><a href="#L-198"><span class="linenos">198</span></a>            <span class="n">instruction_text</span> <span class="o">=</span> <span class="n">item</span><span class="o">.</span><span class="n">to_concise_str</span><span class="p">()</span> <span class="k">if</span> <span class="n">hide_default_args</span> <span class="k">else</span> <span class="nb">str</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
 </span><span id="L-199"><a href="#L-199"><span class="linenos">199</span></a>            <span class="n">line</span> <span class="o">=</span> <span class="n">_format_instruction_with_comment</span><span class="p">(</span>
 </span><span id="L-200"><a href="#L-200"><span class="linenos">200</span></a>                <span class="n">label_prefix</span> <span class="o">+</span> <span class="n">instruction_text</span><span class="p">,</span>
 </span><span id="L-201"><a href="#L-201"><span class="linenos">201</span></a>                <span class="n">comment</span><span class="p">,</span>
@@ -330,7 +330,7 @@ with configurable formatting options.</p>
 <div class="attr function">
             
         <span class="def">def</span>
-        <span class="name">program_to_text</span><span class="signature pdoc-code multiline">(<span class="param">	<span class="n">program</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n"><a href="instructions.html#Instruction">dt31.instructions.Instruction</a></span> <span class="o">|</span> <span class="n"><a href="operands.html#Label">dt31.operands.Label</a></span> <span class="o">|</span> <span class="n"><a href="parser.html#Comment">dt31.parser.Comment</a></span><span class="p">]</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="n"><a href="instructions.html#Instruction">dt31.instructions.Instruction</a></span><span class="p">]</span>,</span><span class="param">	<span class="o">*</span>,</span><span class="param">	<span class="n">indent_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4</span>,</span><span class="param">	<span class="n">label_inline</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>,</span><span class="param">	<span class="n">blank_line_before_label</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>,</span><span class="param">	<span class="n">align_comments</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>,</span><span class="param">	<span class="n">comment_column</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>,</span><span class="param">	<span class="n">comment_margin</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span>,</span><span class="param">	<span class="n">strip_comments</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>,</span><span class="param">	<span class="n">hide_default_out</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span></span><span class="return-annotation">) -> <span class="nb">str</span>:</span></span>
+        <span class="name">program_to_text</span><span class="signature pdoc-code multiline">(<span class="param">	<span class="n">program</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n"><a href="instructions.html#Instruction">dt31.instructions.Instruction</a></span> <span class="o">|</span> <span class="n"><a href="operands.html#Label">dt31.operands.Label</a></span> <span class="o">|</span> <span class="n"><a href="parser.html#Comment">dt31.parser.Comment</a></span><span class="p">]</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="n"><a href="instructions.html#Instruction">dt31.instructions.Instruction</a></span><span class="p">]</span>,</span><span class="param">	<span class="o">*</span>,</span><span class="param">	<span class="n">indent_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4</span>,</span><span class="param">	<span class="n">label_inline</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>,</span><span class="param">	<span class="n">blank_line_before_label</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>,</span><span class="param">	<span class="n">align_comments</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>,</span><span class="param">	<span class="n">comment_column</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>,</span><span class="param">	<span class="n">comment_margin</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span>,</span><span class="param">	<span class="n">strip_comments</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>,</span><span class="param">	<span class="n">hide_default_args</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span></span><span class="return-annotation">) -> <span class="nb">str</span>:</span></span>
 
                 <label class="view-source-button" for="program_to_text-view-source"><span>View Source</span></label>
 
@@ -346,7 +346,7 @@ with configurable formatting options.</p>
 </span><span id="program_to_text-21"><a href="#program_to_text-21"><span class="linenos"> 21</span></a>    <span class="n">comment_column</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 </span><span id="program_to_text-22"><a href="#program_to_text-22"><span class="linenos"> 22</span></a>    <span class="n">comment_margin</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
 </span><span id="program_to_text-23"><a href="#program_to_text-23"><span class="linenos"> 23</span></a>    <span class="n">strip_comments</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-</span><span id="program_to_text-24"><a href="#program_to_text-24"><span class="linenos"> 24</span></a>    <span class="n">hide_default_out</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+</span><span id="program_to_text-24"><a href="#program_to_text-24"><span class="linenos"> 24</span></a>    <span class="n">hide_default_args</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
 </span><span id="program_to_text-25"><a href="#program_to_text-25"><span class="linenos"> 25</span></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 </span><span id="program_to_text-26"><a href="#program_to_text-26"><span class="linenos"> 26</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert a program to assembly text format with configurable formatting.</span>
 </span><span id="program_to_text-27"><a href="#program_to_text-27"><span class="linenos"> 27</span></a>
@@ -364,7 +364,7 @@ with configurable formatting options.</p>
 </span><span id="program_to_text-39"><a href="#program_to_text-39"><span class="linenos"> 39</span></a><span class="sd">        comment_margin: Spaces before inline comment semicolon. Also used when auto-calculating</span>
 </span><span id="program_to_text-40"><a href="#program_to_text-40"><span class="linenos"> 40</span></a><span class="sd">            comment_column for aligned comments (default: 2).</span>
 </span><span id="program_to_text-41"><a href="#program_to_text-41"><span class="linenos"> 41</span></a><span class="sd">        strip_comments: If True, remove all comments from output. (default: False).</span>
-</span><span id="program_to_text-42"><a href="#program_to_text-42"><span class="linenos"> 42</span></a><span class="sd">        hide_default_out: If True, hide output parameters when they match the default value (default: False).</span>
+</span><span id="program_to_text-42"><a href="#program_to_text-42"><span class="linenos"> 42</span></a><span class="sd">        hide_default_args: If True, hide arguments when they match the default value (default: True).</span>
 </span><span id="program_to_text-43"><a href="#program_to_text-43"><span class="linenos"> 43</span></a>
 </span><span id="program_to_text-44"><a href="#program_to_text-44"><span class="linenos"> 44</span></a><span class="sd">    Returns:</span>
 </span><span id="program_to_text-45"><a href="#program_to_text-45"><span class="linenos"> 45</span></a><span class="sd">        A string containing the assembly text representation of the program,</span>
@@ -440,16 +440,16 @@ with configurable formatting options.</p>
 </span><span id="program_to_text-115"><a href="#program_to_text-115"><span class="linenos">115</span></a><span class="sd">        #     ADD R.a, 1, R.a</span>
 </span><span id="program_to_text-116"><a href="#program_to_text-116"><span class="linenos">116</span></a><span class="sd">        ```</span>
 </span><span id="program_to_text-117"><a href="#program_to_text-117"><span class="linenos">117</span></a>
-</span><span id="program_to_text-118"><a href="#program_to_text-118"><span class="linenos">118</span></a><span class="sd">        Hide default output parameters:</span>
+</span><span id="program_to_text-118"><a href="#program_to_text-118"><span class="linenos">118</span></a><span class="sd">        Hide default arguments:</span>
 </span><span id="program_to_text-119"><a href="#program_to_text-119"><span class="linenos">119</span></a><span class="sd">        ```python</span>
 </span><span id="program_to_text-120"><a href="#program_to_text-120"><span class="linenos">120</span></a><span class="sd">        program = [</span>
 </span><span id="program_to_text-121"><a href="#program_to_text-121"><span class="linenos">121</span></a><span class="sd">            I.ADD(R.a, R.b),  # Default out=R.a</span>
 </span><span id="program_to_text-122"><a href="#program_to_text-122"><span class="linenos">122</span></a><span class="sd">            I.NOUT(R.a),      # Default b=L[0] (no newline)</span>
 </span><span id="program_to_text-123"><a href="#program_to_text-123"><span class="linenos">123</span></a><span class="sd">        ]</span>
-</span><span id="program_to_text-124"><a href="#program_to_text-124"><span class="linenos">124</span></a><span class="sd">        text = program_to_text(program, hide_default_out=True)</span>
+</span><span id="program_to_text-124"><a href="#program_to_text-124"><span class="linenos">124</span></a><span class="sd">        text = program_to_text(program, hide_default_args=True)</span>
 </span><span id="program_to_text-125"><a href="#program_to_text-125"><span class="linenos">125</span></a><span class="sd">        #     ADD R.a, R.b</span>
 </span><span id="program_to_text-126"><a href="#program_to_text-126"><span class="linenos">126</span></a><span class="sd">        #     NOUT R.a</span>
-</span><span id="program_to_text-127"><a href="#program_to_text-127"><span class="linenos">127</span></a><span class="sd">        # vs without hide_default_out:</span>
+</span><span id="program_to_text-127"><a href="#program_to_text-127"><span class="linenos">127</span></a><span class="sd">        # vs without hide_default_args (hide_default_args=False):</span>
 </span><span id="program_to_text-128"><a href="#program_to_text-128"><span class="linenos">128</span></a><span class="sd">        #     ADD R.a, R.b, R.a</span>
 </span><span id="program_to_text-129"><a href="#program_to_text-129"><span class="linenos">129</span></a><span class="sd">        #     NOUT R.a, 0</span>
 </span><span id="program_to_text-130"><a href="#program_to_text-130"><span class="linenos">130</span></a><span class="sd">        ```</span>
@@ -463,7 +463,7 @@ with configurable formatting options.</p>
 </span><span id="program_to_text-138"><a href="#program_to_text-138"><span class="linenos">138</span></a>            <span class="n">label_inline</span><span class="o">=</span><span class="n">label_inline</span><span class="p">,</span>
 </span><span id="program_to_text-139"><a href="#program_to_text-139"><span class="linenos">139</span></a>            <span class="n">blank_line_before_label</span><span class="o">=</span><span class="n">blank_line_before_label</span><span class="p">,</span>
 </span><span id="program_to_text-140"><a href="#program_to_text-140"><span class="linenos">140</span></a>            <span class="n">strip_comments</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>  <span class="c1"># Remove comments for measurement</span>
-</span><span id="program_to_text-141"><a href="#program_to_text-141"><span class="linenos">141</span></a>            <span class="n">hide_default_out</span><span class="o">=</span><span class="n">hide_default_out</span><span class="p">,</span>
+</span><span id="program_to_text-141"><a href="#program_to_text-141"><span class="linenos">141</span></a>            <span class="n">hide_default_args</span><span class="o">=</span><span class="n">hide_default_args</span><span class="p">,</span>
 </span><span id="program_to_text-142"><a href="#program_to_text-142"><span class="linenos">142</span></a>        <span class="p">)</span>
 </span><span id="program_to_text-143"><a href="#program_to_text-143"><span class="linenos">143</span></a>
 </span><span id="program_to_text-144"><a href="#program_to_text-144"><span class="linenos">144</span></a>        <span class="c1"># Find longest line</span>
@@ -521,7 +521,7 @@ with configurable formatting options.</p>
 </span><span id="program_to_text-196"><a href="#program_to_text-196"><span class="linenos">196</span></a>                <span class="n">label_prefix</span> <span class="o">=</span> <span class="n">indent</span>
 </span><span id="program_to_text-197"><a href="#program_to_text-197"><span class="linenos">197</span></a>                <span class="n">comment</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span> <span class="k">if</span> <span class="n">strip_comments</span> <span class="k">else</span> <span class="n">item</span><span class="o">.</span><span class="n">comment</span>
 </span><span id="program_to_text-198"><a href="#program_to_text-198"><span class="linenos">198</span></a>
-</span><span id="program_to_text-199"><a href="#program_to_text-199"><span class="linenos">199</span></a>            <span class="n">instruction_text</span> <span class="o">=</span> <span class="n">item</span><span class="o">.</span><span class="n">to_concise_str</span><span class="p">()</span> <span class="k">if</span> <span class="n">hide_default_out</span> <span class="k">else</span> <span class="nb">str</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
+</span><span id="program_to_text-199"><a href="#program_to_text-199"><span class="linenos">199</span></a>            <span class="n">instruction_text</span> <span class="o">=</span> <span class="n">item</span><span class="o">.</span><span class="n">to_concise_str</span><span class="p">()</span> <span class="k">if</span> <span class="n">hide_default_args</span> <span class="k">else</span> <span class="nb">str</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
 </span><span id="program_to_text-200"><a href="#program_to_text-200"><span class="linenos">200</span></a>            <span class="n">line</span> <span class="o">=</span> <span class="n">_format_instruction_with_comment</span><span class="p">(</span>
 </span><span id="program_to_text-201"><a href="#program_to_text-201"><span class="linenos">201</span></a>                <span class="n">label_prefix</span> <span class="o">+</span> <span class="n">instruction_text</span><span class="p">,</span>
 </span><span id="program_to_text-202"><a href="#program_to_text-202"><span class="linenos">202</span></a>                <span class="n">comment</span><span class="p">,</span>
@@ -566,7 +566,7 @@ automatically calculated based on longest instruction + comment_margin (default:
 <li><strong>comment_margin:</strong>  Spaces before inline comment semicolon. Also used when auto-calculating
 comment_column for aligned comments (default: 2).</li>
 <li><strong>strip_comments:</strong>  If True, remove all comments from output. (default: False).</li>
-<li><strong>hide_default_out:</strong>  If True, hide output parameters when they match the default value (default: False).</li>
+<li><strong>hide_default_args:</strong>  If True, hide arguments when they match the default value (default: True).</li>
 </ul>
 
 <h6 id="returns">Returns:</h6>
@@ -660,17 +660,17 @@ comment_column for aligned comments (default: 2).</li>
 </code></pre>
   </div>
   
-  <p>Hide default output parameters:</p>
+  <p>Hide default arguments:</p>
   
   <div class="pdoc-code codehilite">
 <pre><span></span><code><span class="n">program</span> <span class="o">=</span> <span class="p">[</span>
     <span class="n">I</span><span class="o">.</span><span class="n">ADD</span><span class="p">(</span><span class="n">R</span><span class="o">.</span><span class="n">a</span><span class="p">,</span> <span class="n">R</span><span class="o">.</span><span class="n">b</span><span class="p">),</span>  <span class="c1"># Default out=R.a</span>
     <span class="n">I</span><span class="o">.</span><span class="n">NOUT</span><span class="p">(</span><span class="n">R</span><span class="o">.</span><span class="n">a</span><span class="p">),</span>      <span class="c1"># Default b=L[0] (no newline)</span>
 <span class="p">]</span>
-<span class="n">text</span> <span class="o">=</span> <span class="n">program_to_text</span><span class="p">(</span><span class="n">program</span><span class="p">,</span> <span class="n">hide_default_out</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">text</span> <span class="o">=</span> <span class="n">program_to_text</span><span class="p">(</span><span class="n">program</span><span class="p">,</span> <span class="n">hide_default_args</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="c1">#     ADD R.a, R.b</span>
 <span class="c1">#     NOUT R.a</span>
-<span class="c1"># vs without hide_default_out:</span>
+<span class="c1"># vs without hide_default_args (hide_default_args=False):</span>
 <span class="c1">#     ADD R.a, R.b, R.a</span>
 <span class="c1">#     NOUT R.a, 0</span>
 </code></pre>

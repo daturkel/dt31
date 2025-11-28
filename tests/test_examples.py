@@ -307,7 +307,7 @@ def test_binomial_dist_dt(capsys):
     # Program uses: R.n, R.c, R.cc, R.s, R.r, R.avg
     cpu = DT31(registers=["n", "c", "cc", "s", "r", "avg"])
 
-    # Mock input for n parameter
+    # Mock input for n argument
     with patch("builtins.input", side_effect=["10"]):
         cpu.run(program, debug=False)
 

@@ -115,7 +115,7 @@ Format `.dt` assembly files with consistent style, following Black/Ruff conventi
 - **--comment-column**: Column position for aligned comments (default: auto-calculate)
 - **--comment-margin**: Spaces before inline comments and margin for auto-alignment (default: 2)
 - **--strip-comments**: Remove all comments from output (default: False)
-- **--hide-default-out**: Hide output parameters when they match defaults (default: False)
+- **--show-default-args**: Show instruction arguments even when they match defaults (default: False)
 
 **Examples:**
 
@@ -132,8 +132,8 @@ dt31 format --diff program.dt
 # Format with custom style
 dt31 format --indent-size 2 --label-inline program.dt
 
-# Hide default output parameters
-dt31 format --hide-default-out program.dt
+# Show default arguments
+dt31 format --show-default-args program.dt
 
 # Auto-align comments (calculates optimal column)
 dt31 format --align-comments program.dt
@@ -525,11 +525,11 @@ def _create_format_parser(subparsers) -> None:
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 examples:
-  dt31 format program.dt                  Format file in-place
-  dt31 format --check program.dt          Check if formatting needed
-  dt31 format --diff program.dt           Show formatting changes
-  dt31 format --check --diff program.dt   Check and show diff
-  dt31 format --hide-default-out prog.dt  Hide default output parameters
+  dt31 format program.dt                   Format file in-place
+  dt31 format --check program.dt           Check if formatting needed
+  dt31 format --diff program.dt            Show formatting changes
+  dt31 format --check --diff program.dt    Check and show diff
+  dt31 format --show-default-args prog.dt  Show default arguments
         """,
     )
 
@@ -598,9 +598,10 @@ examples:
     )
 
     format_parser.add_argument(
-        "--hide-default-out",
-        action="store_true",
-        help="Hide output parameters when they match the default value (default: False)",
+        "--show-default-args",
+        action="store_false",
+        dest="hide_default_args",
+        help="Show arguments even when they match the default value (default: False)",
     )
 
     format_parser.add_argument(
@@ -735,7 +736,7 @@ def format_command(args: argparse.Namespace) -> None:
         "comment_column": args.comment_column,
         "comment_margin": args.comment_margin,
         "strip_comments": args.strip_comments,
-        "hide_default_out": args.hide_default_out,
+        "hide_default_args": args.hide_default_args,
     }
 
     # Format the file

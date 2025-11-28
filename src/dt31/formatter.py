@@ -20,7 +20,7 @@ def program_to_text(
     comment_column: int | None = None,
     comment_margin: int = 2,
     strip_comments: bool = False,
-    hide_default_out: bool = False,
+    hide_default_args: bool = True,
 ) -> str:
     """Convert a program to assembly text format with configurable formatting.
 
@@ -38,7 +38,7 @@ def program_to_text(
         comment_margin: Spaces before inline comment semicolon. Also used when auto-calculating
             comment_column for aligned comments (default: 2).
         strip_comments: If True, remove all comments from output. (default: False).
-        hide_default_out: If True, hide output parameters when they match the default value (default: False).
+        hide_default_args: If True, hide arguments when they match the default value (default: True).
 
     Returns:
         A string containing the assembly text representation of the program,
@@ -114,16 +114,16 @@ def program_to_text(
         #     ADD R.a, 1, R.a
         ```
 
-        Hide default output parameters:
+        Hide default arguments:
         ```python
         program = [
             I.ADD(R.a, R.b),  # Default out=R.a
             I.NOUT(R.a),      # Default b=L[0] (no newline)
         ]
-        text = program_to_text(program, hide_default_out=True)
+        text = program_to_text(program, hide_default_args=True)
         #     ADD R.a, R.b
         #     NOUT R.a
-        # vs without hide_default_out:
+        # vs without hide_default_args (hide_default_args=False):
         #     ADD R.a, R.b, R.a
         #     NOUT R.a, 0
         ```
@@ -137,7 +137,7 @@ def program_to_text(
             label_inline=label_inline,
             blank_line_before_label=blank_line_before_label,
             strip_comments=True,  # Remove comments for measurement
-            hide_default_out=hide_default_out,
+            hide_default_args=hide_default_args,
         )
 
         # Find longest line
@@ -195,7 +195,7 @@ def program_to_text(
                 label_prefix = indent
                 comment = "" if strip_comments else item.comment
 
-            instruction_text = item.to_concise_str() if hide_default_out else str(item)
+            instruction_text = item.to_concise_str() if hide_default_args else str(item)
             line = _format_instruction_with_comment(
                 label_prefix + instruction_text,
                 comment,
