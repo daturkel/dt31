@@ -1750,9 +1750,6 @@ def test_check_multiple_files_with_errors(tmp_path, capsys):
     (tmp_path / "file2.dt").write_text("INVALID_INSTRUCTION R.x")
     (tmp_path / "file3.dt").write_text("CP 30, R.c")
 
-    # Change to temp directory to avoid full paths in output
-    import os
-
     old_cwd = os.getcwd()
     os.chdir(tmp_path)
     try:
