@@ -725,7 +725,7 @@ def _format_single_file(
         file_path: Path to the file to format
         custom_instructions: Optional custom instructions dict
         check_mode: If True, don't modify file, just check if changes needed
-        show_diff: If True, show unified diff of changes
+        show_diff: If True, don't modify file, just show unified diff of changes
         formatting_options: Dict of formatting options to pass to program_to_text()
 
     Returns:
@@ -863,11 +863,6 @@ def format_command(args: argparse.Namespace) -> None:
             if files_needing_formatting and not args.check:
                 print(
                     f"\n✓ Formatted {len(files_needing_formatting)} of {len(file_paths)} file(s)",
-                    file=sys.stderr,
-                )
-            elif not args.check:
-                print(
-                    f"\n✓ All {len(file_paths)} file(s) are already formatted",
                     file=sys.stderr,
                 )
             else:
