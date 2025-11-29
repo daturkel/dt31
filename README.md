@@ -683,7 +683,6 @@ DT31 is open-source and contributors are welcome on [Github](https://github.com/
 ## Planned work
 
 - [ ] [Data section](https://github.com/daturkel/dt31/issues/26)
-- [ ] [User-definable macros](https://github.com/daturkel/dt31/issues/11)
 - [ ] [Globbing support for CLI](https://github.com/daturkel/dt31/issues/16)
 - [ ] Interpreter resume from dump (maybe)
 - [ ] Input error-handling (maybe)
