@@ -90,6 +90,6 @@ def bump(c, level, dry_run=False):
 
     # Git tag
     c.run(f"git tag {version}", pty=True)
-    c.run("git push --tags", pty=True)
+    c.run("git push origin {version}", pty=True)
 
     print(f"Successfully released version {version}")
