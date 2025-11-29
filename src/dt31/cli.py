@@ -14,15 +14,17 @@ pip install dt31
 
 ## Commands
 
-The dt31 CLI provides two main commands:
+The dt31 CLI provides three main commands:
 
 - **run**: Execute `.dt` assembly files
+- **check**: Validate syntax of `.dt` assembly files
 - **format**: Format `.dt` assembly files with consistent style
 
 ## Basic Usage
 
 ```bash
 dt31 run program.dt       # Execute program
+dt31 check program.dt     # Validate syntax
 dt31 format program.dt    # Format file in-place
 ```
 
@@ -34,7 +36,6 @@ Execute `.dt` assembly files with configurable CPU settings.
 
 - **file** (required): Path to the `.dt` assembly file to execute
 - **-d, --debug**: Enable step-by-step debug output during execution
-- **-p, --parse-only**: Validate syntax without executing the program
 - **-i, --custom-instructions**: Path to Python file containing custom instruction definitions
 - **--registers**: Comma-separated list of register names (auto-detected by default)
 - **--memory**: Memory size in bytes (default: 256)
@@ -47,9 +48,6 @@ Execute `.dt` assembly files with configurable CPU settings.
 ```bash
 # Execute a program
 dt31 run countdown.dt
-
-# Validate syntax only
-dt31 run --parse-only program.dt
 
 # Run with debug output
 dt31 run --debug program.dt
@@ -75,6 +73,30 @@ dt31 run --dump success program.dt  # Auto-generates program_final_TIMESTAMP.jso
 dt31 run --dump all program.dt  # Auto-generates timestamped files
 ```
 
+## Check Command
+
+Validate the syntax of `.dt` assembly files without executing them.
+
+**Options:**
+
+- **file** (required): Path to the `.dt` assembly file to validate
+- **-i, --custom-instructions**: Path to Python file containing custom instruction definitions
+
+**Examples:**
+
+```bash
+# Validate syntax of a program
+dt31 check program.dt
+
+# Validate with custom instructions
+dt31 check --custom-instructions custom.py program.dt
+```
+
+**Exit Codes (Check Command):**
+
+- **0**: File is valid
+- **1**: Error (file not found, parse error, or custom instruction error)
+
 ## Format Command
 
 Format `.dt` assembly files with consistent style, following Black/Ruff conventions
@@ -87,12 +109,13 @@ Format `.dt` assembly files with consistent style, following Black/Ruff conventi
 - **--diff**: Show formatting changes as a unified diff without modifying the file
 - **-i, --custom-instructions**: Path to Python file containing custom instruction definitions
 - **--indent-size**: Number of spaces per indentation level (default: 4)
-- **--comment-spacing**: Number of spaces before inline comment semicolon (default: 1)
 - **--label-inline**: Place labels on same line as next instruction (default: False)
 - **--no-blank-line-before-label**: Don't add blank line before labels (default: False)
-- **--align-comments**: Align inline comments at comment-column (default: False)
-- **--comment-column**: Column position for aligned comments (default: 40)
-- **--hide-default-out**: Hide output parameters when they match defaults (default: False)
+- **--align-comments**: Align inline comments (auto-calculates column if --comment-column not specified)
+- **--comment-column**: Column position for aligned comments (default: auto-calculate)
+- **--comment-margin**: Spaces before inline comments and margin for auto-alignment (default: 2)
+- **--strip-comments**: Remove all comments from output (default: False)
+- **--show-default-args**: Show instruction arguments even when they match defaults (default: False)
 
 **Examples:**
 
@@ -109,11 +132,20 @@ dt31 format --diff program.dt
 # Format with custom style
 dt31 format --indent-size 2 --label-inline program.dt
 
-# Hide default output parameters
-dt31 format --hide-default-out program.dt
+# Show default arguments
+dt31 format --show-default-args program.dt
 
-# Align comments at column 40
+# Auto-align comments (calculates optimal column)
+dt31 format --align-comments program.dt
+
+# Align comments at specific column
 dt31 format --align-comments --comment-column 40 program.dt
+
+# Auto-align with custom margin
+dt31 format --align-comments --comment-margin 4 program.dt
+
+# Strip all comments from output
+dt31 format --strip-comments program.dt
 
 # Format file with custom instructions
 dt31 format --custom-instructions my_instructions.py program.dt
@@ -188,6 +220,7 @@ Example error dump structure:
 
 import argparse
 import difflib
+import glob
 import importlib.util
 import json
 import sys
@@ -200,6 +233,36 @@ from dt31.assembler import extract_registers_from_program
 from dt31.formatter import program_to_text
 from dt31.instructions import Instruction
 from dt31.parser import ParserError, parse_program
+
+
+def expand_file_patterns(patterns: list[str]) -> list[str]:
+    """Expand glob patterns to actual file paths.
+
+    Args:
+        patterns: List of file paths and/or glob patterns
+
+    Returns:
+        List of resolved file paths (sorted)
+
+    Example:
+        >>> expand_file_patterns(["program.dt", "*.dt"])
+        ['program.dt', 'hello.dt', 'countdown.dt']
+    """
+    expanded_files = []
+    for pattern in patterns:
+        # Check if pattern contains glob characters
+        if any(char in pattern for char in ["*", "?", "[", "]"]):
+            # Use glob to expand the pattern
+            matches = glob.glob(pattern, recursive=True)
+            if matches:
+                expanded_files.extend(matches)
+            # If no matches, keep the original pattern (will error later)
+        else:
+            # Not a glob pattern, add as-is
+            expanded_files.append(pattern)
+
+    # Remove duplicates and sort
+    return sorted(set(expanded_files))
 
 
 def _create_run_parser(subparsers) -> None:
@@ -216,7 +279,6 @@ def _create_run_parser(subparsers) -> None:
 examples:
   dt31 run program.dt                     Parse and execute program
   dt31 run --debug program.dt             Execute with debug output
-  dt31 run --parse-only program.dt        Validate syntax only
   dt31 run --memory 512 program.dt        Use 512 slots of memory
   dt31 run --registers a,b,c,d program.dt  Use custom registers
         """,
@@ -236,33 +298,29 @@ examples:
     )
 
     run_parser.add_argument(
-        "-p",
-        "--parse-only",
-        action="store_true",
-        help="Parse the file but don't execute (validate syntax only)",
-    )
-
-    run_parser.add_argument(
+        "-r",
         "--registers",
         type=str,
         help="Comma-separated list of register names (e.g., a,b,c,d)",
     )
 
     run_parser.add_argument(
+        "-m",
         "--memory",
         type=int,
         help="Memory size in bytes (default: 256)",
     )
 
     run_parser.add_argument(
+        "-s",
         "--stack-size",
         type=int,
         help="Stack size (default: 256)",
     )
 
     run_parser.add_argument(
-        "--custom-instructions",
         "-i",
+        "--custom-instructions",
         type=str,
         metavar="PATH",
         help="Path to Python file containing custom instruction definitions",
@@ -281,6 +339,43 @@ examples:
         type=str,
         metavar="FILE",
         help="File path for CPU state dump (auto-generates if not specified)",
+    )
+
+
+def _create_check_parser(subparsers) -> None:
+    """Create the 'check' subcommand parser.
+
+    Args:
+        subparsers: The subparsers object from add_subparsers()
+    """
+    check_parser = subparsers.add_parser(
+        "check",
+        help="Validate syntax of a dt31 assembly file",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+examples:
+  dt31 check program.dt                               Validate syntax
+  dt31 check --custom-instructions custom.py prog.dt  Validate with custom instructions
+  dt31 check program1.dt program2.dt                  Validate multiple files
+  dt31 check "*.dt"                                   Validate all .dt files (glob pattern)
+  dt31 check "**/*.dt"                                Validate all .dt files recursively
+        """,
+    )
+
+    check_parser.add_argument(
+        "files",
+        type=str,
+        nargs="+",
+        metavar="FILE",
+        help="Path(s) to .dt assembly file(s) to validate (supports glob patterns)",
+    )
+
+    check_parser.add_argument(
+        "--custom-instructions",
+        "-i",
+        type=str,
+        metavar="PATH",
+        help="Path to Python file containing custom instruction definitions",
     )
 
 
@@ -338,11 +433,6 @@ def run_command(args: argparse.Namespace) -> None:
 
     # Extract registers used in the program
     registers_used = extract_registers_from_program(program)
-
-    # If parse-only mode, we're done
-    if args.parse_only:
-        print(f"✓ {args.file} parsed successfully", file=sys.stderr)
-        sys.exit(0)
 
     # Create CPU with custom configuration
     cpu_kwargs = {}
@@ -415,6 +505,88 @@ def run_command(args: argparse.Namespace) -> None:
     sys.exit(0)
 
 
+def check_command(args: argparse.Namespace) -> None:
+    """Execute the 'check' subcommand - validate syntax of a dt31 program.
+
+    Args:
+        args: Parsed command-line arguments from argparse
+
+    This function implements the syntax validation workflow:
+    1. Load custom instructions (if provided)
+    2. Expand glob patterns to file paths
+    3. Read and parse each assembly file
+    4. Report success or error for each file
+
+    Exit codes:
+        0: All files are valid
+        1: Error occurred (file not found, parse error, etc.)
+    """
+    # Load custom instructions if provided
+    custom_instructions = None
+    if args.custom_instructions:
+        try:
+            custom_instructions = load_custom_instructions(args.custom_instructions)
+        except (FileNotFoundError, ImportError, ValueError, TypeError) as e:
+            print(f"Error loading custom instructions: {e}", file=sys.stderr)
+            sys.exit(1)
+
+    # Expand glob patterns
+    file_paths = expand_file_patterns(args.files)
+
+    if not file_paths:
+        print("Error: No files matched the provided patterns", file=sys.stderr)
+        sys.exit(1)
+
+    # Track results
+    failed_files = []
+
+    # Process each file
+    for file_path_str in file_paths:
+        file_path = Path(file_path_str)
+        # Use relative path for display if possible, otherwise use the original path
+        try:
+            display_path = file_path.relative_to(Path.cwd())
+        except ValueError:
+            # File is not relative to cwd, use original path
+            display_path = file_path
+
+        # Read the input file
+        try:
+            assembly_text = file_path.read_text()
+        except FileNotFoundError:
+            print(f"Error: File not found: {display_path}", file=sys.stderr)
+            failed_files.append(file_path_str)
+            continue
+        except IOError as e:
+            print(f"Error reading file {display_path}: {e}", file=sys.stderr)
+            failed_files.append(file_path_str)
+            continue
+
+        # Parse the assembly program with custom instructions
+        try:
+            parse_program(assembly_text, custom_instructions=custom_instructions)
+        except ParserError as e:
+            print(f"Parse error in {display_path}: {e}", file=sys.stderr)
+            failed_files.append(file_path_str)
+            continue
+
+        # Success for this file
+        print(f"✓ {display_path} is valid", file=sys.stderr)
+
+    # Exit with appropriate code
+    if failed_files:
+        if len(file_paths) > 1:
+            print(
+                f"\n✗ {len(failed_files)} of {len(file_paths)} file(s) failed validation",
+                file=sys.stderr,
+            )
+        sys.exit(1)
+    else:
+        if len(file_paths) > 1:
+            print(f"\n✓ All {len(file_paths)} file(s) are valid", file=sys.stderr)
+        sys.exit(0)
+
+
 def _create_format_parser(subparsers) -> None:
     """Create the 'format' subcommand parser.
 
@@ -427,28 +599,35 @@ def _create_format_parser(subparsers) -> None:
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 examples:
-  dt31 format program.dt                  Format file in-place
-  dt31 format --check program.dt          Check if formatting needed
-  dt31 format --diff program.dt           Show formatting changes
-  dt31 format --check --diff program.dt   Check and show diff
-  dt31 format --hide-default-out prog.dt  Hide default output parameters
+  dt31 format program.dt                   Format file in-place
+  dt31 format --check program.dt           Check if formatting needed
+  dt31 format --diff program.dt            Show formatting changes
+  dt31 format --check --diff program.dt    Check and show diff
+  dt31 format --show-default-args prog.dt  Show default arguments
+  dt31 format program1.dt program2.dt      Format multiple files
+  dt31 format "*.dt"                       Format all .dt files (glob pattern)
+  dt31 format "**/*.dt"                    Format all .dt files recursively
         """,
     )
 
     format_parser.add_argument(
-        "file",
+        "files",
         type=str,
-        help="Path to .dt assembly file to format",
+        nargs="+",
+        metavar="FILE",
+        help="Path(s) to .dt assembly file(s) to format (supports glob patterns)",
     )
 
     # Validation flags
     format_parser.add_argument(
+        "-c",
         "--check",
         action="store_true",
         help="Check if file needs formatting without modifying (exit 1 if changes needed)",
     )
 
     format_parser.add_argument(
+        "-d",
         "--diff",
         action="store_true",
         help="Show diff of changes without applying them (can combine with --check)",
@@ -456,6 +635,7 @@ examples:
 
     # Formatting options (7 total)
     format_parser.add_argument(
+        "-I",
         "--indent-size",
         type=int,
         default=4,
@@ -464,49 +644,65 @@ examples:
     )
 
     format_parser.add_argument(
-        "--comment-spacing",
-        type=int,
-        default=1,
-        metavar="N",
-        help="Number of spaces before inline comment semicolon (default: 1)",
-    )
-
-    format_parser.add_argument(
+        "-l",
         "--label-inline",
         action="store_true",
         help="Place labels on same line as next instruction (default: False)",
     )
 
     format_parser.add_argument(
+        "-b",
         "--no-blank-line-before-label",
         action="store_true",
         help="Don't add blank line before labels (default: add blank line)",
     )
 
     format_parser.add_argument(
+        "-a",
         "--align-comments",
         action="store_true",
         help="Align inline comments at comment-column (default: False)",
     )
 
     format_parser.add_argument(
+        "-C",
         "--comment-column",
         type=int,
-        default=40,
+        default=None,
         metavar="N",
-        help="Column position for aligned comments when --align-comments is used (default: 40)",
+        help="Column position for aligned comments. If not specified and --align-comments "
+        "is used, column is auto-calculated based on longest instruction + --comment-margin.",
     )
 
     format_parser.add_argument(
-        "--hide-default-out",
+        "-m",
+        "--comment-margin",
+        type=int,
+        default=2,
+        metavar="N",
+        help="Spaces before inline comment semicolon. Also used as margin when auto-aligning "
+        "comments (default: 2).",
+    )
+
+    format_parser.add_argument(
+        "-D",
+        "--show-default-args",
+        action="store_false",
+        dest="hide_default_args",
+        help="Show arguments even when they match the default value (default: False)",
+    )
+
+    format_parser.add_argument(
+        "-s",
+        "--strip-comments",
         action="store_true",
-        help="Hide output parameters when they match the default value (default: False)",
+        help="Remove all comments from output (standalone and inline). Overrides --align-comments (default: False)",
     )
 
     # Custom instructions support (needed for parsing)
     format_parser.add_argument(
-        "--custom-instructions",
         "-i",
+        "--custom-instructions",
         type=str,
         metavar="PATH",
         help="Path to Python file containing custom instruction definitions",
@@ -529,7 +725,7 @@ def _format_single_file(
         file_path: Path to the file to format
         custom_instructions: Optional custom instructions dict
         check_mode: If True, don't modify file, just check if changes needed
-        show_diff: If True, show unified diff of changes
+        show_diff: If True, don't modify file, just show unified diff of changes
         formatting_options: Dict of formatting options to pass to program_to_text()
 
     Returns:
@@ -602,13 +798,13 @@ def _format_single_file(
 
 
 def format_command(args: argparse.Namespace) -> None:
-    """Execute the 'format' subcommand - format a dt31 assembly file.
+    """Execute the 'format' subcommand - format dt31 assembly files.
 
     Args:
         args: Parsed command-line arguments from argparse
 
     Exit codes:
-        0: Success (file formatted or already formatted, or --check passed)
+        0: Success (all files formatted or already formatted, or --check passed)
         1: Error (file not found, parse error, --check failed, or IO error)
     """
     # Load custom instructions if provided
@@ -623,27 +819,57 @@ def format_command(args: argparse.Namespace) -> None:
     # Prepare formatting options
     formatting_options = {
         "indent_size": args.indent_size,
-        "comment_spacing": args.comment_spacing,
         "label_inline": args.label_inline,
         "blank_line_before_label": not args.no_blank_line_before_label,  # Inverted!
         "align_comments": args.align_comments,
         "comment_column": args.comment_column,
-        "hide_default_out": args.hide_default_out,
+        "comment_margin": args.comment_margin,
+        "strip_comments": args.strip_comments,
+        "hide_default_args": args.hide_default_args,
     }
 
-    # Format the file
-    needs_formatting = _format_single_file(
-        args.file,
-        custom_instructions,
-        args.check,
-        args.diff,
-        formatting_options,
-    )
+    # Expand glob patterns
+    file_paths = expand_file_patterns(args.files)
+
+    if not file_paths:
+        print("Error: No files matched the provided patterns", file=sys.stderr)
+        sys.exit(1)
+
+    # Track results
+    files_needing_formatting = []
+
+    # Format each file
+    for file_path in file_paths:
+        needs_formatting = _format_single_file(
+            file_path,
+            custom_instructions,
+            args.check,
+            args.diff,
+            formatting_options,
+        )
+        if needs_formatting:
+            files_needing_formatting.append(file_path)
 
     # Exit with appropriate code
-    if args.check and needs_formatting:
+    if args.check and files_needing_formatting:
+        if len(file_paths) > 1:
+            print(
+                f"\n✗ {len(files_needing_formatting)} of {len(file_paths)} file(s) would be reformatted",
+                file=sys.stderr,
+            )
         sys.exit(1)
     else:
+        if len(file_paths) > 1 and not args.diff:
+            if files_needing_formatting and not args.check:
+                print(
+                    f"\n✓ Formatted {len(files_needing_formatting)} of {len(file_paths)} file(s)",
+                    file=sys.stderr,
+                )
+            else:
+                print(
+                    f"\n✓ All {len(file_paths)} file(s) are already formatted",
+                    file=sys.stderr,
+                )
         sys.exit(0)
 
 
@@ -675,6 +901,9 @@ def main() -> None:
     # Create 'run' subcommand
     _create_run_parser(subparsers)
 
+    # Create 'check' subcommand
+    _create_check_parser(subparsers)
+
     # Create 'format' subcommand
     _create_format_parser(subparsers)
 
@@ -683,6 +912,8 @@ def main() -> None:
     # Dispatch to appropriate command handler
     if args.command == "run":
         run_command(args)
+    elif args.command == "check":
+        check_command(args)
     elif args.command == "format":
         format_command(args)
     else:

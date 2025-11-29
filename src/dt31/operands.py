@@ -384,7 +384,7 @@ class Label:
 
     Valid Instructions for Labels
     ------------------------------
-    Labels can ONLY be used as the `dest` parameter in these instructions:
+    Labels can ONLY be used as the `dest` argument in these instructions:
     - Absolute jumps: JMP, JEQ, JNE, JGT, JGE, JIF
     - Relative jumps: RJMP, RJEQ, RJNE, RJGT, RJGE, RJIF
     - Function calls: CALL, RCALL
@@ -425,8 +425,8 @@ class Label:
         I.JMP(Label("end")),
 
         Label("greet"),
-        I.OOUT(LC['H']),
-        I.OOUT(LC['i']),
+        I.COUT(LC['H']),
+        I.COUT(LC['i']),
         I.RET(),
 
         Label("end"),

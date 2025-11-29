@@ -3,7 +3,7 @@
 [![PyPI - Version](https://img.shields.io/pypi/v/dt31?color=yellow)](https://pypi.org/project/dt31/)
  [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](https://opensource.org/licenses/MIT) [![pdoc](https://img.shields.io/badge/docs-pdoc.dev-green)](https://pdoc.dev/docs/pdoc.html) [![Ruff](https://img.shields.io/badge/style-ruff-green.svg)](https://github.com/astral-sh/ruff) ![Coverage Badge](coverage-badge.svg)
 
-A toy computer emulator and assembly language written in Python. Build programs with 60+ built-in instructions for interacting with registers, memory, and the stack. Write your programs in the native assembly syntax or directly with the Python API.
+A toy computer and assembly language written in Python. Build programs with 60+ built-in instructions for interacting with registers, memory, and the stack. Write your programs in the native assembly syntax or directly with the Python API.
 
 <table>
 <tr>
@@ -79,9 +79,9 @@ Create a file `hello.dt`
 
 ```nasm
 ; Output "Hi!"
-OOUT 'H', 0
-OOUT 'i', 0
-OOUT '!', 0
+COUT 'H', 0
+COUT 'i', 0
+COUT '!', 0
 ```
 
 and run it with the `dt31` interpreter
@@ -129,10 +129,10 @@ JMP end
 
 greet:
     ; Reusable greeting function
-    OOUT 'H', 0
-    OOUT 'i', 0
-    OOUT '!', 0
-    OOUT ' ', 0
+    COUT 'H', 0
+    COUT 'i', 0
+    COUT '!', 0
+    COUT ' ', 0
     RET
 
 end:
@@ -165,7 +165,7 @@ The instruction set includes:
 - **Control Flow**: `JMP`, `RJMP`, `JEQ`, `JNE`, `JGT`, `JGE`, `JIF`
 - **Functions**: `CALL`, `RCALL`, `RET`
 - **Stack**: `PUSH`, `POP`, `SEMP`
-- **I/O**: `NOUT`, `OOUT`, `NIN`, `OIN`
+- **I/O**: `NOUT`, `COUT`, `NIN`, `CIN`
 - **Data Movement**: `CP`
 
 Users can easily define their own custom instructions by subclassing `dt31.instructions.Instruction`.
@@ -191,13 +191,15 @@ Execute `.dt` assembly files directly:
 
 ```shell
 dt31 run program.dt       # Execute program
+dt31 check program.dt     # Validate syntax
 dt31 format program.dt    # Format file in-place
 ```
 
 ### CLI Options
 
+#### Run Command
+
 - `--debug` or `-d`: Enable step-by-step debug output
-- `--parse-only` or `-p`: Validate syntax without executing
 - `--registers a,b,c,d`: Specify custom registers (auto-detected by default)
 - `--memory 512`: Set memory size in bytes (default: 256)
 - `--stack-size 512`: Set stack size (default: 256)
@@ -205,11 +207,18 @@ dt31 format program.dt    # Format file in-place
 - `--dump {none,error,success,all}`: When to dump CPU state (default: none)
 - `--dump-file FILE`: File path for CPU state dump (auto-generates timestamped filename if not specified)
 
+#### Check Command
+
+- `--custom-instructions PATH` or `-i PATH`: Load custom instruction definitions from a Python file
+
 **Examples:**
 
 ```shell
-# Parse and validate only (no execution)
-dt31 run --parse-only program.dt
+# Validate syntax only (no execution)
+dt31 check program.dt
+
+# Validate with custom instructions
+dt31 check --custom-instructions my_instructions.py program.dt
 
 # Run with debug output
 dt31 run --debug program.dt
@@ -256,8 +265,8 @@ All formatting options from `program_to_text()` are available as CLI flags:
 # Indentation (default: 4 spaces)
 dt31 format --indent-size 2 program.dt
 
-# Comment spacing (default: 1 space before semicolon)
-dt31 format --comment-spacing 2 program.dt
+# Comment margin (default: 2 spaces before semicolon)
+dt31 format --comment-margin 3 program.dt
 
 # Inline labels (default: labels on separate lines)
 dt31 format --label-inline program.dt
@@ -265,11 +274,20 @@ dt31 format --label-inline program.dt
 # No blank lines before labels (default: blank line before labels)
 dt31 format --no-blank-line-before-label program.dt
 
-# Align inline comments at specific column (default: no alignment)
+# Auto-align inline comments (calculates column based on longest instruction)
+dt31 format --align-comments program.dt
+
+# Align inline comments at specific column
 dt31 format --align-comments --comment-column 40 program.dt
 
-# Hide default output parameters (default: show all parameters)
-dt31 format --hide-default-out program.dt
+# Auto-align with custom margin (default: 2 spaces after longest instruction)
+dt31 format --align-comments --comment-margin 4 program.dt
+
+# Strip all comments from output
+dt31 format --strip-comments program.dt
+
+# Show default arguments (default: hidden)
+dt31 format --show-default-args program.dt
 ```
 
 **Custom Instructions:**
@@ -290,7 +308,7 @@ dt31 format --check program.dt
 dt31 format --diff program.dt
 
 # Format with custom style
-dt31 format --indent-size 2 --label-inline --hide-default-out program.dt
+dt31 format --indent-size 2 --label-inline program.dt
 
 # Check formatting and show diff if needed
 dt31 format --check --diff program.dt
@@ -316,12 +334,23 @@ loop:
     JGT loop, R.a, 0
 ```
 
-After `dt31 format --label-inline --hide-default-out program.dt`:
+After `dt31 format --label-inline program.dt` (default hides args):
 ```nasm
     CP 5, R.a
-loop: NOUT R.a
+loop: NOUT R.a, 1
     SUB R.a, 1
     JGT loop, R.a, 0
+```
+
+After `dt31 format --align-comments program.dt` (with comments):
+```nasm
+; Input with unaligned comments
+CP 5, R.a ; Initialize counter
+ADD R.a, R.b, R.c ; Add values
+
+; Output with auto-aligned comments
+    CP 5, R.a          ; Initialize counter
+    ADD R.a, R.b, R.c  ; Add values
 ```
 
 ### Custom Instructions
@@ -410,7 +439,7 @@ The assembly text syntax differs from Python syntax:
 | Operand Type | Assembly Syntax | Python Syntax | Example |
 |--------------|---------------|-------------|---------|
 | **Numeric Literal** | `42`, `-5` | `L[42]`, `L[-5]` | `CP 42, R.a` |
-| **Character Literal** | `'A'` | `LC["A"]` | `OOUT 'H', 0` |
+| **Character Literal** | `'A'` | `LC["A"]` | `COUT 'H', 0` |
 | **Register** | `R.a` | `R.a` | `ADD R.a, R.b` |
 | **Memory (direct)** | `[100]` or `M[100]` | `M[100]` | `CP 42, [100]` |
 | **Memory (indirect)** | `[R.a]` or `M[R.a]` | `M[R.a]` | `CP [R.a], R.b` |
@@ -499,7 +528,7 @@ from dt31.assembler import program_to_text
 program = [
     I.CP(5, R.a),
     loop := Label("loop"),
-    I.OOUT(LC["*"]),
+    I.COUT(LC["*"]),
     I.SUB(R.a, L[1]),
     I.JGT(loop, R.a, L[0]),
 ]
@@ -510,7 +539,7 @@ print(text)
 #     CP 5, R.a
 #
 # loop:
-#     OOUT '*', 0
+#     COUT '*', 0
 #     SUB R.a, 1, R.a
 #     JGT loop, R.a, 0
 ```
@@ -525,27 +554,42 @@ text = program_to_text(program, indent_size=2)
 
 # Inline labels (default: False, labels on separate lines)
 text = program_to_text(program, label_inline=True)
-# loop: OOUT '*', 0
+# loop: COUT '*', 0
 
 # No blank lines before labels (default: True)
 text = program_to_text(program, blank_line_before_label=False)
 
-# Align inline comments (default: False)
+# Auto-align inline comments (default: False, comment_column: None)
 commented_program = [
     I.CP(5, R.a).with_comment("Initialize"),
     I.ADD(R.a, L[1]).with_comment("Increment"),
 ]
+text = program_to_text(commented_program, align_comments=True)
+#     CP 5, R.a        ; Initialize
+#     ADD R.a, 1, R.a  ; Increment
+
+# Align comments at specific column
 text = program_to_text(commented_program, align_comments=True, comment_column=30)
 #     CP 5, R.a                 ; Initialize
 #     ADD R.a, 1, R.a           ; Increment
 
-# Hide default output parameters (default: False)
-text = program_to_text(program, hide_default_out=True)
+# Auto-align with custom margin (default: 2)
+text = program_to_text(commented_program, align_comments=True, comment_margin=4)
+#     CP 5, R.a            ; Initialize
+#     ADD R.a, 1, R.a      ; Increment
+
+# Strip all comments
+text = program_to_text(commented_program, strip_comments=True)
+#     CP 5, R.a
+#     ADD R.a, 1, R.a
+
+# Show default arguments (default is to hide them)
+text = program_to_text(program, hide_default_args=False)
 #     CP 5, R.a
 #
 # loop:
-#     OOUT '*'
-#     SUB R.a, 1
+#     COUT '*', 0
+#     SUB R.a, 1, R.a
 #     JGT loop, R.a, 0
 ```
 
@@ -561,8 +605,8 @@ program = [
     I.JMP(end := Label("end")),
 
     print_hi,
-    I.OOUT(LC['H']),
-    I.OOUT(LC['i']),
+    I.COUT(LC['H']),
+    I.COUT(LC['i']),
     I.RET(),
 
     end,
@@ -636,20 +680,13 @@ uv run invoke test
 
 DT31 is open-source and contributors are welcome on [Github](https://github.com/daturkel/dt31).
 
-## Roadmap
+## Planned work
 
-- [x] Character literals?
-- [x] Parse and execute `.dt` files
-- [x] Breakpoint instruction
-- [x] Clearer handing of input during debug mode
-- [x] Python to text output
-- [x] Preserve comments in parser
-- [ ] User-definable macros (in both python and assembly syntax)
-- [ ] File I/O
-- [ ] Data handling
-- [ ] Input error-handling
-- [x] Formatter
-- [ ] Interpreter resume from dump
+- [ ] [Data section](https://github.com/daturkel/dt31/issues/26)
+- [ ] [Globbing support for CLI](https://github.com/daturkel/dt31/issues/16)
+- [ ] Interpreter resume from dump (maybe)
+- [ ] Input error-handling (maybe)
+- [ ] [File I/O](https://github.com/daturkel/dt31/issues/25) (maybe)
 
 ## License
 

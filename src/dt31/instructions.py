@@ -69,26 +69,6 @@ class Instruction:
             val = self.a.resolve(cpu)
             return val * val
     ```
-
-    Custom instruction with multiple operands (swap two registers):
-    ```python
-    class SWAP(Instruction):
-        \"\"\"Swap the values of two registers.\"\"\"
-        def __init__(self, a: Reference, b: Reference):
-            super().__init__("SWAP")
-            self.a = a
-            self.b = b
-
-        def _calc(self, cpu: DT31) -> int:
-            val_a = self.a.resolve(cpu)
-            val_b = self.b.resolve(cpu)
-            self.a.assign(cpu, val_b)
-            self.b.assign(cpu, val_a)
-            return 0
-
-        def __str__(self) -> str:
-            return f"{self.name}({self.a}, {self.b})"
-    ```
     """
 
     def __init__(self, name: str):
@@ -170,11 +150,11 @@ class Instruction:
         return self.name
 
     def to_concise_str(self) -> str:
-        """Return concise assembly text representation (hides default parameters).
+        """Return concise assembly text representation (hides default arguments).
 
-        By default, returns the same as `__str__()`. Subclasses with default output
-        parameters should override this to provide a more concise representation that
-        omits parameters when they match the default value.
+        By default, returns the same as `__str__()`. Subclasses with default arguments
+        should override this to provide a more concise representation that omits arguments
+        when they match the default value.
 
         Returns:
             A concise string showing the instruction in assembly text format.
@@ -282,7 +262,7 @@ class UnaryOperation(Instruction):
     def to_concise_str(self) -> str:
         """Return concise assembly text representation (hides default output).
 
-        If the output parameter matches the input operand (the default), it is omitted
+        If the output argument matches the input operand (the default), it is omitted
         from the output.
 
         Returns:
@@ -339,7 +319,7 @@ class BinaryOperation(Instruction):
     def to_concise_str(self) -> str:
         """Return concise assembly text representation (hides default output).
 
-        If the output parameter matches the first input operand (the default), it is
+        If the output argument matches the first input operand (the default), it is
         omitted from the output.
 
         Returns:
@@ -1321,9 +1301,9 @@ class NOUT(Instruction):
         return f"NOUT {self.a}, {self.b}"
 
     def to_concise_str(self) -> str:
-        """Return concise assembly text representation (hides default newline parameter).
+        """Return concise assembly text representation (hides default newline argument).
 
-        If the newline parameter is L[0] (the default), it is omitted from the output.
+        If the newline argument is L[0] (the default), it is omitted from the output.
 
         Returns:
             Concise string like "NOUT R.a" instead of "NOUT R.a, 0".
@@ -1333,7 +1313,7 @@ class NOUT(Instruction):
         return str(self)
 
 
-class OOUT(Instruction):
+class COUT(Instruction):
     """Output operand as a character (using chr())."""
 
     def __init__(self, a: Operand, b: Operand | int = L[0]):
@@ -1342,7 +1322,7 @@ class OOUT(Instruction):
             a: Operand value to output as a character.
             b: If nonzero, append newline after output. Defaults to L[0] (no newline).
         """
-        super().__init__("OOUT")
+        super().__init__("COUT")
         self.a = as_op(a)
         self.b = as_op(b)
 
@@ -1355,22 +1335,22 @@ class OOUT(Instruction):
 
     def __repr__(self) -> str:
         """Return Python API representation."""
-        return f"OOUT(a={self.a!r}, b={self.b!r})"
+        return f"COUT(a={self.a!r}, b={self.b!r})"
 
     def __str__(self) -> str:
         """Return assembly text representation."""
-        return f"OOUT {self.a}, {self.b}"
+        return f"COUT {self.a}, {self.b}"
 
     def to_concise_str(self) -> str:
-        """Return concise assembly text representation (hides default newline parameter).
+        """Return concise assembly text representation (hides default newline argument).
 
-        If the newline parameter is L[0] (the default), it is omitted from the output.
+        If the newline argument is L[0] (the default), it is omitted from the output.
 
         Returns:
-            Concise string like "OOUT 'H'" instead of "OOUT 'H', 0".
+            Concise string like "COUT 'H'" instead of "COUT 'H', 0".
         """
         if self.b == L[0]:
-            return f"OOUT {self.a}"
+            return f"COUT {self.a}"
         return str(self)
 
 
@@ -1400,7 +1380,7 @@ class NIN(Instruction):
         return f"NIN {self.out}"
 
 
-class OIN(Instruction):
+class CIN(Instruction):
     """Read character input from user and store as ordinal value."""
 
     def __init__(self, out: Reference):
@@ -1408,7 +1388,7 @@ class OIN(Instruction):
         Args:
             out: Output reference to store the ordinal value of the input character.
         """
-        super().__init__("OIN")
+        super().__init__("CIN")
         self.out = as_op(out)
 
     def _calc(self, cpu: DT31) -> int:
@@ -1419,11 +1399,11 @@ class OIN(Instruction):
 
     def __repr__(self) -> str:
         """Return Python API representation."""
-        return f"OIN(out={self.out!r})"
+        return f"CIN(out={self.out!r})"
 
     def __str__(self) -> str:
         """Return assembly text representation."""
-        return f"OIN {self.out}"
+        return f"CIN {self.out}"
 
 
 class STRIN(Instruction):
@@ -1443,8 +1423,16 @@ class STRIN(Instruction):
 
     def _calc(self, cpu: DT31) -> int:
         val = input(INPUT_PROMPT)
+        base = self.out.resolve_address(cpu)
+        tmp = base
+
+        # empty string just writes 0 to out
+        if not val:
+            cpu.set_memory(tmp, 0)
+            return 0
+
         for i, char in enumerate(val):
-            tmp = self.out.resolve_address(cpu) + i
+            tmp = base + i
             cpu.set_memory(tmp, ord(char))
         cpu.set_memory(tmp + 1, 0)
         return 0
@@ -1499,9 +1487,9 @@ class STROUT(Instruction):
         return f"STROUT {self.a}, {self.b}"
 
     def to_concise_str(self) -> str:
-        """Return concise assembly text representation (hides default newline parameter).
+        """Return concise assembly text representation (hides default newline argument).
 
-        If the newline parameter is L[0] (the default), it is omitted from the output.
+        If the newline argument is L[0] (the default), it is omitted from the output.
 
         Returns:
             Concise string like "STROUT 'H'" instead of "STROUT 'H', 0".
@@ -1509,6 +1497,52 @@ class STROUT(Instruction):
         if self.b == L[0]:
             return f"STROUT {self.a}"
         return str(self)
+
+
+class NEXT(Instruction):
+    """Find the next zero-valued memory location starting from a given index.
+
+    Searches memory from the starting index forward. If wrap_memory is enabled and no zero
+    is found before the end of memory, wraps around and searches from index 0. Stores the
+    index of the first zero found, or -1 if no zero exists.
+    """
+
+    def __init__(self, a: Operand | int, out: Reference):
+        """
+        Args:
+            a: Index to start checking from (inclusive).
+            out: Output reference to store the index of the next zero, or -1 if none found.
+        """
+        super().__init__("NEXT")
+        self.a = as_op(a)
+        self.out = out
+
+    def _calc(self, cpu: DT31) -> int:
+        a = self.a.resolve(cpu)
+        idx = a
+        while idx < cpu.memory_size:
+            if cpu.get_memory(idx) == 0:
+                cpu[self.out] = idx
+                return idx
+            idx += 1
+        if cpu.wrap_memory:
+            idx = 0
+            while idx < a:
+                if cpu.get_memory(idx) == 0:
+                    cpu[self.out] = idx
+                    return idx
+                idx += 1
+
+        cpu[self.out] = -1
+        return -1
+
+    def __repr__(self) -> str:
+        """Return Python API representation."""
+        return f"NEXT(a={self.a!r}, out={self.out!r})"
+
+    def __str__(self) -> str:
+        """Return assembly text representation."""
+        return f"NEXT {self.a}, {self.out}"
 
 
 # --------------------------------------- other -------------------------------------- #
@@ -1605,11 +1639,11 @@ class RINT(BinaryOperation):
         """
         Args:
             a: Lowest integer value allowed
-            b: Second operand of the addition.
+            b: Highest integer value allowed.
             out: Optional output reference for result. If not provided, result stored in
                 first operand.
         """
-        super().__init__("ADD", a, b, out)
+        super().__init__("RINT", a, b, out)
 
     def _calc(self, cpu: DT31) -> int:
         a = self.a.resolve(cpu)

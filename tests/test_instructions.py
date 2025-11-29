@@ -3,6 +3,7 @@ from copy import copy
 
 import pytest
 
+from dt31 import DT31
 from dt31 import instructions as I
 from dt31.operands import LC, L, M, MemoryReference, R
 
@@ -131,7 +132,7 @@ def test_binary_operation_writes_to_default_memory(cpu):
 
 
 def test_add(cpu):
-    # Test with explicit out parameter
+    # Test with explicit out argument
     assert repr(I.ADD(1, 3, M[10])) == "ADD(a=1, b=3, out=M[10])"
     assert str(I.ADD(1, 3, M[10])) == "ADD 1, 3, [10]"
     assert I.ADD(1, 3, M[10])(cpu) == 4
@@ -456,22 +457,22 @@ def test_nout_newline(cpu, capsys):
     assert captured.out == "2\n"
 
 
-def test_oout_no_newline(cpu, capsys):
-    assert repr(I.OOUT(L[1])) == "OOUT(a=1, b=0)"
-    assert str(I.OOUT(L[1])) == "OOUT 1, 0"
-    assert str(I.OOUT(LC["a"])) == "OOUT 'a', 0"
-    assert I.OOUT(LC["a"]).to_concise_str() == "OOUT 'a'"
-    assert I.OOUT(L[65])(cpu) == 0
+def test_cout_no_newline(cpu, capsys):
+    assert repr(I.COUT(L[1])) == "COUT(a=1, b=0)"
+    assert str(I.COUT(L[1])) == "COUT 1, 0"
+    assert str(I.COUT(LC["a"])) == "COUT 'a', 0"
+    assert I.COUT(LC["a"]).to_concise_str() == "COUT 'a'"
+    assert I.COUT(L[65])(cpu) == 0
     captured = capsys.readouterr()
     assert captured.out == "A"
 
 
-def test_oout_newline(cpu, capsys):
-    assert repr(I.OOUT(L[2], L[1])) == "OOUT(a=2, b=1)"
-    assert str(I.OOUT(L[2], L[1])) == "OOUT 2, 1"
-    assert str(I.OOUT(LC["a"], 1)) == "OOUT 'a', 1"
-    assert I.OOUT(LC["a"], 1).to_concise_str() == "OOUT 'a', 1"
-    assert I.OOUT(L[65], L[1])(cpu) == 0
+def test_cout_newline(cpu, capsys):
+    assert repr(I.COUT(L[2], L[1])) == "COUT(a=2, b=1)"
+    assert str(I.COUT(L[2], L[1])) == "COUT 2, 1"
+    assert str(I.COUT(LC["a"], 1)) == "COUT 'a', 1"
+    assert I.COUT(LC["a"], 1).to_concise_str() == "COUT 'a', 1"
+    assert I.COUT(L[65], L[1])(cpu) == 0
     captured = capsys.readouterr()
     assert captured.out == "A\n"
 
@@ -484,11 +485,11 @@ def test_nin(cpu, monkeypatch):
     assert cpu.get_register("a") == 31
 
 
-def test_oin(cpu, monkeypatch):
-    assert repr(I.OIN(M[10])) == "OIN(out=M[10])"
-    assert str(I.OIN(M[10])) == "OIN [10]"
+def test_cin(cpu, monkeypatch):
+    assert repr(I.CIN(M[10])) == "CIN(out=M[10])"
+    assert str(I.CIN(M[10])) == "CIN [10]"
     monkeypatch.setattr("builtins.input", lambda prompt: "A")
-    assert I.OIN(R.a)(cpu) == 65
+    assert I.CIN(R.a)(cpu) == 65
     assert cpu.get_register("a") == 65
 
 
@@ -682,7 +683,7 @@ def test_brk_displays_state_and_waits(cpu, capsys, monkeypatch):
     cpu.set_register("a", 42)
     cpu.set_memory(10, 100)
 
-    # Mock input to simulate pressing Enter (accept optional prompt parameter)
+    # Mock input to simulate pressing Enter (accept optional prompt argument)
     monkeypatch.setattr("builtins.input", lambda prompt="": "")
 
     # Execute BRK instruction
@@ -703,7 +704,7 @@ def test_brk_displays_state_and_waits(cpu, capsys, monkeypatch):
 
 def test_brk_in_program(cpu, capsys, monkeypatch):
     """Test BRK in a complete program."""
-    # Mock input to simulate pressing Enter (accept optional prompt parameter)
+    # Mock input to simulate pressing Enter (accept optional prompt argument)
     monkeypatch.setattr("builtins.input", lambda prompt="": "")
 
     program = [
@@ -865,6 +866,14 @@ def test_strin(cpu, monkeypatch):
     assert str(e.value).endswith("got 1")
 
 
+def test_strin_empty_string(cpu, monkeypatch):
+    """Test that STRIN handles empty string input correctly."""
+    monkeypatch.setattr("builtins.input", lambda prompt: "")
+    cpu.set_memory(10, 999)
+    assert I.STRIN(M[10])(cpu) == 0
+    assert cpu.get_memory(10) == 0
+
+
 def test_strout_no_newline(cpu, capsys):
     with pytest.raises(ValueError) as e:
         I.STROUT(1)  # type: ignore
@@ -888,3 +897,67 @@ def test_strout_newline(cpu, capsys):
     assert I.STROUT(M[55], L[1])(cpu) == 0
     captured = capsys.readouterr()
     assert captured.out == "hello!\n"
+
+
+def test_next_finds_zero_at_start(cpu):
+    cpu.set_memory(5, 0)
+    I.NEXT(5, R.a)(cpu)
+    assert cpu.get_register("a") == 5
+
+
+def test_next_finds_zero_after_start(cpu):
+    cpu.set_memory(5, 100)
+    cpu.set_memory(6, 100)
+    cpu.set_memory(7, 0)
+    I.NEXT(5, R.a)(cpu)
+    assert cpu.get_register("a") == 7
+
+
+def test_next_returns_negative_one_when_no_zero(cpu):
+    # Fill memory with non-zero values
+    for i in range(cpu.memory_size):
+        cpu.set_memory(i, 100)
+    I.NEXT(0, R.a)(cpu)
+    assert cpu.get_register("a") == -1
+
+
+def test_next_wraps_around_when_enabled():
+    # Enable wrap_memory
+    cpu_wrap = DT31(wrap_memory=True)
+
+    # Fill memory with non-zero except at index 2
+    for i in range(cpu_wrap.memory_size):
+        cpu_wrap.set_memory(i, 100)
+    cpu_wrap.set_memory(2, 0)
+
+    # Start searching from index 10, should wrap around and find 2
+    I.NEXT(10, R.a)(cpu_wrap)
+    assert cpu_wrap.get_register("a") == 2
+
+
+def test_next_no_wrap_returns_negative_one(cpu):
+    # Put zero at index 5, but start searching from index 10
+    cpu.set_memory(5, 0)
+    for i in range(10, cpu.memory_size):
+        cpu.set_memory(i, 100)
+
+    I.NEXT(10, R.a)(cpu)
+    assert cpu.get_register("a") == -1
+
+
+def test_next_with_memory_operand(cpu):
+    cpu.set_memory(0, 15)  # Start index stored in memory
+    cpu.set_memory(20, 0)  # Zero at index 20
+    for i in range(15, 20):
+        cpu.set_memory(i, 100)
+
+    I.NEXT(M[0], R.a)(cpu)
+    assert cpu.get_register("a") == 20
+
+
+def test_next_representations():
+    """Test string representations of NEXT instruction."""
+    assert repr(I.NEXT(5, R.a)) == "NEXT(a=5, out=R.a)"
+    assert str(I.NEXT(5, R.a)) == "NEXT 5, R.a"
+    assert repr(I.NEXT(M[10], M[20])) == "NEXT(a=M[10], out=M[20])"
+    assert str(I.NEXT(M[10], M[20])) == "NEXT [10], [20]"

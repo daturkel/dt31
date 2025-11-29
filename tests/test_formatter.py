@@ -12,7 +12,7 @@ def test_program_to_text_simple():
         I.NOUT(R.a, L[1]),
     ]
     text = program_to_text(program)
-    expected = "    CP 5, R.a\n    ADD R.a, 1, R.a\n    NOUT R.a, 1\n"
+    expected = "    CP 5, R.a\n    ADD R.a, 1\n    NOUT R.a, 1\n"
     assert text == expected
 
 
@@ -30,20 +30,20 @@ def test_program_to_text_with_labels():
     assert lines[0] == "    CP 5, R.a"
     assert lines[1] == "loop:"
     assert lines[2] == "    NOUT R.a, 1"
-    assert lines[3] == "    SUB R.a, 1, R.a"
+    assert lines[3] == "    SUB R.a, 1"
     assert lines[4] == "    JGT loop, R.a, 0"
 
 
 def test_program_to_text_character_literals():
     """Test that character literals render correctly."""
     program = [
-        I.OOUT(LC["H"]),
-        I.OOUT(LC["i"], L[1]),
+        I.COUT(LC["H"]),
+        I.COUT(LC["i"], L[1]),
     ]
     text = program_to_text(program)
     lines = text.split("\n")
-    assert lines[0] == "    OOUT 'H', 0"
-    assert lines[1] == "    OOUT 'i', 1"
+    assert lines[0] == "    COUT 'H'"
+    assert lines[1] == "    COUT 'i', 1"
 
 
 def test_program_to_text_memory_references():
@@ -83,8 +83,8 @@ def test_program_to_text_complex():
         I.CALL(func := Label("print_hi")),
         I.JMP(end := Label("end")),
         func,
-        I.OOUT(LC["H"]),
-        I.OOUT(LC["i"], L[1]),
+        I.COUT(LC["H"]),
+        I.COUT(LC["i"], L[1]),
         I.RET(),
         end,
     ]
@@ -93,8 +93,8 @@ def test_program_to_text_complex():
     assert lines[0] == "    CALL print_hi"
     assert lines[1] == "    JMP end"
     assert lines[2] == "print_hi:"
-    assert lines[3] == "    OOUT 'H', 0"
-    assert lines[4] == "    OOUT 'i', 1"
+    assert lines[3] == "    COUT 'H'"
+    assert lines[4] == "    COUT 'i', 1"
     assert lines[5] == "    RET"
     assert lines[6] == "end:"
 
@@ -107,40 +107,40 @@ def test_program_to_text_custom_indent_size():
     ]
     # 2-space indent
     text = program_to_text(program, indent_size=2)
-    assert text == "  CP 5, R.a\n  ADD R.a, 1, R.a\n"
+    assert text == "  CP 5, R.a\n  ADD R.a, 1\n"
 
     # 8-space indent
     text = program_to_text(program, indent_size=8)
-    assert text == "        CP 5, R.a\n        ADD R.a, 1, R.a\n"
+    assert text == "        CP 5, R.a\n        ADD R.a, 1\n"
 
 
 def test_program_to_text_comment_spacing():
-    """Test custom spacing before inline comments."""
+    """Test custom margin before inline comments."""
     program = [
         I.CP(5, R.a).with_comment("Initialize"),
         I.ADD(R.a, L[1]).with_comment("Increment"),
     ]
 
-    # No spacing (default is 1)
-    text = program_to_text(program, comment_spacing=0)
+    # No margin
+    text = program_to_text(program, comment_margin=0)
     lines = text.split("\n")
     assert len(lines) == 3  # 2 lines + empty string from trailing newline
     assert lines[0] == "    CP 5, R.a; Initialize"
-    assert lines[1] == "    ADD R.a, 1, R.a; Increment"
+    assert lines[1] == "    ADD R.a, 1; Increment"
 
-    # Default spacing (1)
-    text = program_to_text(program, comment_spacing=1)
+    # Single space margin
+    text = program_to_text(program, comment_margin=1)
     lines = text.split("\n")
     assert len(lines) == 3  # 2 lines + empty string from trailing newline
     assert lines[0] == "    CP 5, R.a ; Initialize"
-    assert lines[1] == "    ADD R.a, 1, R.a ; Increment"
+    assert lines[1] == "    ADD R.a, 1 ; Increment"
 
-    # Extra spacing (2)
-    text = program_to_text(program, comment_spacing=2)
+    # Default margin (2)
+    text = program_to_text(program, comment_margin=2)
     lines = text.split("\n")
     assert len(lines) == 3  # 2 lines + empty string from trailing newline
     assert lines[0] == "    CP 5, R.a  ; Initialize"
-    assert lines[1] == "    ADD R.a, 1, R.a  ; Increment"
+    assert lines[1] == "    ADD R.a, 1  ; Increment"
 
 
 def test_program_to_text_label_inline():
@@ -160,7 +160,7 @@ def test_program_to_text_label_inline():
     assert lines[0] == "    CP 5, R.a"
     assert lines[1] == "loop:"
     assert lines[2] == "    NOUT R.a, 1"
-    assert lines[3] == "    SUB R.a, 1, R.a"
+    assert lines[3] == "    SUB R.a, 1"
     assert lines[4] == "    JGT loop, R.a, 0"
 
     # Inline: labels on same line as next instruction
@@ -169,7 +169,7 @@ def test_program_to_text_label_inline():
     assert len(lines) == 5  # 4 lines + empty string from trailing newline
     assert lines[0] == "    CP 5, R.a"
     assert lines[1] == "loop: NOUT R.a, 1"
-    assert lines[2] == "    SUB R.a, 1, R.a"
+    assert lines[2] == "    SUB R.a, 1"
     assert lines[3] == "    JGT loop, R.a, 0"
 
 
@@ -255,7 +255,7 @@ def test_program_to_text_blank_line_before_label_inline():
     assert lines[0] == "    CP 5, R.a"
     assert lines[1] == ""  # blank line before loop
     assert lines[2] == "loop: NOUT R.a, 1"
-    assert lines[3] == "    SUB R.a, 1, R.a"
+    assert lines[3] == "    SUB R.a, 1"
 
 
 def test_program_to_text_blank_line_before_first_label():
@@ -304,12 +304,12 @@ def test_program_to_text_align_comments():
         I.NOUT(R.a, L[1]).with_comment("Print"),
     ]
 
-    # Default: no alignment
+    # Default: no alignment (default margin is 2)
     text = program_to_text(program, align_comments=False, blank_line_before_label=False)
     lines = text.split("\n")
-    assert lines[0] == "    CP 5, R.a ; Initialize"
-    assert lines[1] == "    ADD R.a, 1, R.a ; Increment"
-    assert lines[2] == "    NOUT R.a, 1 ; Print"
+    assert lines[0] == "    CP 5, R.a  ; Initialize"
+    assert lines[1] == "    ADD R.a, 1  ; Increment"
+    assert lines[2] == "    NOUT R.a, 1  ; Print"
 
     # Align at column 30
     text = program_to_text(
@@ -317,7 +317,7 @@ def test_program_to_text_align_comments():
     )
     lines = text.split("\n")
     assert lines[0] == "    CP 5, R.a                 ; Initialize"
-    assert lines[1] == "    ADD R.a, 1, R.a           ; Increment"
+    assert lines[1] == "    ADD R.a, 1                ; Increment"
     assert lines[2] == "    NOUT R.a, 1               ; Print"
     # Verify all comments start at column 30 (skip empty trailing line)
     for line in lines:
@@ -342,22 +342,22 @@ def test_program_to_text_align_comments_exceeds_column():
     assert lines[0] == "    CP 5, R.a       ; Short"
     assert lines[0].index(";") == 20
 
-    # Second line exceeds column, should fall back to comment_spacing
-    assert lines[1] == "    ADD R.a, R.b, [R.a] ; Very long instruction"
+    # Second line exceeds column, should fall back to comment_margin
+    assert lines[1] == "    ADD R.a, R.b, [R.a]  ; Very long instruction"
 
 
 def test_program_to_text_align_comments_custom_spacing_fallback():
-    """Test that comment_spacing is used when instruction exceeds column."""
+    """Test that comment_margin is used when instruction exceeds column."""
     program = [
         I.ADD(R.a, R.b, M[R.a]).with_comment("Long instruction"),
     ]
 
-    # Column 10 will be exceeded, fallback to comment_spacing=3
+    # Column 10 will be exceeded, fallback to comment_margin=3
     text = program_to_text(
         program,
         align_comments=True,
         comment_column=10,
-        comment_spacing=3,
+        comment_margin=3,
         blank_line_before_label=False,
     )
     lines = text.split("\n")
@@ -425,7 +425,7 @@ def test_program_to_text_combination_all_options():
     text = program_to_text(
         program,
         indent_size=2,
-        comment_spacing=2,
+        comment_margin=2,
         label_inline=True,
         blank_line_before_label=True,
         align_comments=True,
@@ -436,7 +436,7 @@ def test_program_to_text_combination_all_options():
     assert lines[0] == "  CP 10, R.x             ; Initialize"
     assert lines[1] == ""  # blank line before label
     assert lines[2] == "loop: NOUT R.x, 1        ; Print"
-    assert lines[3] == "  SUB R.x, 1, R.x"
+    assert lines[3] == "  SUB R.x, 1"
     assert lines[4] == "  JGT loop, R.x, 0"
 
     # Verify alignment
@@ -445,158 +445,158 @@ def test_program_to_text_combination_all_options():
 
 
 # ============================================================================
-# Hide Default Output Parameters
+# Hide Default Arguments
 # ============================================================================
 
 
-def test_program_to_text_hide_default_out_binary_operations():
-    """Test hide_default_out with BinaryOperation instructions."""
+def test_program_to_text_hide_default_args_binary_operations():
+    """Test hide_default_args with BinaryOperation instructions."""
     program = [
         I.ADD(R.a, R.b),  # Default out=R.a
         I.SUB(R.a, L[1]),  # Default out=R.a
         I.MUL(R.b, L[2]),  # Default out=R.b
     ]
 
-    # Without hide_default_out (default)
+    # With hide_default_args (default)
     text = program_to_text(program, blank_line_before_label=False)
-    lines = text.split("\n")
-    assert lines[0] == "    ADD R.a, R.b, R.a"
-    assert lines[1] == "    SUB R.a, 1, R.a"
-    assert lines[2] == "    MUL R.b, 2, R.b"
-
-    # With hide_default_out
-    text = program_to_text(
-        program, hide_default_out=True, blank_line_before_label=False
-    )
     lines = text.split("\n")
     assert lines[0] == "    ADD R.a, R.b"
     assert lines[1] == "    SUB R.a, 1"
     assert lines[2] == "    MUL R.b, 2"
 
+    # Without hide_default_args
+    text = program_to_text(
+        program, hide_default_args=False, blank_line_before_label=False
+    )
+    lines = text.split("\n")
+    assert lines[0] == "    ADD R.a, R.b, R.a"
+    assert lines[1] == "    SUB R.a, 1, R.a"
+    assert lines[2] == "    MUL R.b, 2, R.b"
 
-def test_program_to_text_hide_default_out_non_default_output():
-    """Test that non-default output parameters are still shown."""
+
+def test_program_to_text_hide_default_args_non_default_output():
+    """Test that non-default arguments are still shown."""
     program = [
         I.ADD(R.a, R.b, R.c),  # Non-default out=R.c
         I.SUB(R.a, L[1], R.b),  # Non-default out=R.b
     ]
 
     text = program_to_text(
-        program, hide_default_out=True, blank_line_before_label=False
+        program, hide_default_args=True, blank_line_before_label=False
     )
     lines = text.split("\n")
     assert lines[0] == "    ADD R.a, R.b, R.c"
     assert lines[1] == "    SUB R.a, 1, R.b"
 
 
-def test_program_to_text_hide_default_out_unary_operations():
-    """Test hide_default_out with UnaryOperation instructions."""
+def test_program_to_text_hide_default_args_unary_operations():
+    """Test hide_default_args with UnaryOperation instructions."""
     program = [
         I.NOT(R.a),  # Default out=R.a
         I.BNOT(R.b),  # Default out=R.b
         I.NOT(R.a, R.c),  # Non-default out=R.c
     ]
 
-    # Without hide_default_out
+    # With hide_default_args (default)
     text = program_to_text(program, blank_line_before_label=False)
-    lines = text.split("\n")
-    assert lines[0] == "    NOT R.a, R.a"
-    assert lines[1] == "    BNOT R.b, R.b"
-    assert lines[2] == "    NOT R.a, R.c"
-
-    # With hide_default_out
-    text = program_to_text(
-        program, hide_default_out=True, blank_line_before_label=False
-    )
     lines = text.split("\n")
     assert lines[0] == "    NOT R.a"
     assert lines[1] == "    BNOT R.b"
     assert lines[2] == "    NOT R.a, R.c"  # Non-default still shown
 
+    # Without hide_default_args
+    text = program_to_text(
+        program, hide_default_args=False, blank_line_before_label=False
+    )
+    lines = text.split("\n")
+    assert lines[0] == "    NOT R.a, R.a"
+    assert lines[1] == "    BNOT R.b, R.b"
+    assert lines[2] == "    NOT R.a, R.c"
 
-def test_program_to_text_hide_default_out_nout():
-    """Test hide_default_out with NOUT instruction."""
+
+def test_program_to_text_hide_default_args_nout():
+    """Test hide_default_args with NOUT instruction."""
     program = [
         I.NOUT(R.a),  # Default b=L[0] (no newline)
         I.NOUT(R.a, L[1]),  # Non-default b=L[1] (with newline)
     ]
 
-    # Without hide_default_out
+    # With hide_default_args (default)
     text = program_to_text(program, blank_line_before_label=False)
-    lines = text.split("\n")
-    assert lines[0] == "    NOUT R.a, 0"
-    assert lines[1] == "    NOUT R.a, 1"
-
-    # With hide_default_out
-    text = program_to_text(
-        program, hide_default_out=True, blank_line_before_label=False
-    )
     lines = text.split("\n")
     assert lines[0] == "    NOUT R.a"
     assert lines[1] == "    NOUT R.a, 1"
 
-
-def test_program_to_text_hide_default_out_oout():
-    """Test hide_default_out with OOUT instruction."""
-    program = [
-        I.OOUT(LC["H"]),  # Default b=L[0] (no newline)
-        I.OOUT(LC["i"], L[1]),  # Non-default b=L[1] (with newline)
-    ]
-
-    # Without hide_default_out
-    text = program_to_text(program, blank_line_before_label=False)
-    lines = text.split("\n")
-    assert lines[0] == "    OOUT 'H', 0"
-    assert lines[1] == "    OOUT 'i', 1"
-
-    # With hide_default_out
+    # Without hide_default_args
     text = program_to_text(
-        program, hide_default_out=True, blank_line_before_label=False
+        program, hide_default_args=False, blank_line_before_label=False
     )
     lines = text.split("\n")
-    assert lines[0] == "    OOUT 'H'"
-    assert lines[1] == "    OOUT 'i', 1"
+    assert lines[0] == "    NOUT R.a, 0"
+    assert lines[1] == "    NOUT R.a, 1"
 
 
-def test_program_to_text_hide_default_out_exit():
-    """Test hide_default_out with EXIT instruction."""
+def test_program_to_text_hide_default_args_cout():
+    """Test hide_default_args with COUT instruction."""
+    program = [
+        I.COUT(LC["H"]),  # Default b=L[0] (no newline)
+        I.COUT(LC["i"], L[1]),  # Non-default b=L[1] (with newline)
+    ]
+
+    # With hide_default_args (default)
+    text = program_to_text(program, blank_line_before_label=False)
+    lines = text.split("\n")
+    assert lines[0] == "    COUT 'H'"
+    assert lines[1] == "    COUT 'i', 1"
+
+    # Without hide_default_args
+    text = program_to_text(
+        program, hide_default_args=False, blank_line_before_label=False
+    )
+    lines = text.split("\n")
+    assert lines[0] == "    COUT 'H', 0"
+    assert lines[1] == "    COUT 'i', 1"
+
+
+def test_program_to_text_hide_default_args_exit():
+    """Test hide_default_args with EXIT instruction."""
     program = [
         I.EXIT(),  # Default status_code=L[0]
         I.EXIT(L[1]),  # Non-default status_code
     ]
 
-    # Without hide_default_out
+    # With hide_default_args (default)
     text = program_to_text(program, blank_line_before_label=False)
-    lines = text.split("\n")
-    assert lines[0] == "    EXIT 0"
-    assert lines[1] == "    EXIT 1"
-
-    # With hide_default_out
-    text = program_to_text(
-        program, hide_default_out=True, blank_line_before_label=False
-    )
     lines = text.split("\n")
     assert lines[0] == "    EXIT"
     assert lines[1] == "    EXIT 1"
 
+    # Without hide_default_args
+    text = program_to_text(
+        program, hide_default_args=False, blank_line_before_label=False
+    )
+    lines = text.split("\n")
+    assert lines[0] == "    EXIT 0"
+    assert lines[1] == "    EXIT 1"
 
-def test_program_to_text_hide_default_out_with_comments():
-    """Test hide_default_out combined with comments."""
+
+def test_program_to_text_hide_default_args_with_comments():
+    """Test hide_default_args combined with comments."""
     program = [
         I.ADD(R.a, R.b).with_comment("Sum"),
         I.NOUT(R.a).with_comment("Print"),
     ]
 
     text = program_to_text(
-        program, hide_default_out=True, blank_line_before_label=False
+        program, hide_default_args=True, blank_line_before_label=False
     )
     lines = text.split("\n")
-    assert lines[0] == "    ADD R.a, R.b ; Sum"
-    assert lines[1] == "    NOUT R.a ; Print"
+    assert lines[0] == "    ADD R.a, R.b  ; Sum"
+    assert lines[1] == "    NOUT R.a  ; Print"
 
 
-def test_program_to_text_hide_default_out_with_aligned_comments():
-    """Test hide_default_out combined with aligned comments."""
+def test_program_to_text_hide_default_args_with_aligned_comments():
+    """Test hide_default_args combined with aligned comments."""
     program = [
         I.ADD(R.a, R.b).with_comment("Sum"),
         I.NOUT(R.a).with_comment("Print result"),
@@ -604,7 +604,7 @@ def test_program_to_text_hide_default_out_with_aligned_comments():
 
     text = program_to_text(
         program,
-        hide_default_out=True,
+        hide_default_args=True,
         align_comments=True,
         comment_column=30,
         blank_line_before_label=False,
@@ -615,31 +615,31 @@ def test_program_to_text_hide_default_out_with_aligned_comments():
     assert lines[1] == "    NOUT R.a                  ; Print result"
 
 
-def test_program_to_text_hide_default_out_all_instruction_types():
-    """Test hide_default_out with a variety of instruction types."""
+def test_program_to_text_hide_default_args_all_instruction_types():
+    """Test hide_default_args with a variety of instruction types."""
     program = [
         I.CP(5, R.a),
         I.ADD(R.a, L[1]),  # BinaryOperation with default out
         I.NOT(R.a),  # UnaryOperation with default out
         I.NOUT(R.a),  # NOUT with default newline
-        I.OOUT(LC["!"]),  # OOUT with default newline
+        I.COUT(LC["!"]),  # COUT with default newline
         I.EXIT(),  # EXIT with default status
     ]
 
     text = program_to_text(
-        program, hide_default_out=True, blank_line_before_label=False
+        program, hide_default_args=True, blank_line_before_label=False
     )
     lines = text.split("\n")
     assert lines[0] == "    CP 5, R.a"
     assert lines[1] == "    ADD R.a, 1"
     assert lines[2] == "    NOT R.a"
     assert lines[3] == "    NOUT R.a"
-    assert lines[4] == "    OOUT '!'"
+    assert lines[4] == "    COUT '!'"
     assert lines[5] == "    EXIT"
 
 
-def test_program_to_text_hide_default_out_mixed_defaults_non_defaults():
-    """Test program with mix of default and non-default parameters."""
+def test_program_to_text_hide_default_args_mixed_defaults_non_defaults():
+    """Test program with mix of default and non-default arguments."""
     program = [
         I.ADD(R.a, R.b),  # Default out
         I.ADD(R.a, R.b, R.c),  # Non-default out
@@ -648,10 +648,194 @@ def test_program_to_text_hide_default_out_mixed_defaults_non_defaults():
     ]
 
     text = program_to_text(
-        program, hide_default_out=True, blank_line_before_label=False
+        program, hide_default_args=True, blank_line_before_label=False
     )
     lines = text.split("\n")
     assert lines[0] == "    ADD R.a, R.b"
     assert lines[1] == "    ADD R.a, R.b, R.c"
     assert lines[2] == "    SUB R.x, 1"
     assert lines[3] == "    SUB R.x, 1, R.y"
+
+
+def test_strip_comments_basic():
+    """Test that strip_comments removes all comment types."""
+    program = [
+        Comment("Standalone comment"),
+        I.CP(5, R.a).with_comment("Inline comment"),
+        Label("loop").with_comment("Label comment"),
+        I.ADD(R.a, L[1]).with_comment("Another inline"),
+    ]
+
+    text = program_to_text(program, strip_comments=True, blank_line_before_label=False)
+    expected = "    CP 5, R.a\nloop:\n    ADD R.a, 1\n"
+    assert text == expected
+
+
+def test_strip_comments_overrides_align():
+    """Test that strip_comments takes precedence over align_comments."""
+    program = [
+        I.CP(5, R.a).with_comment("Comment 1"),
+        I.ADD(R.a, L[1]).with_comment("Comment 2"),
+    ]
+
+    # Both flags set, strip should win
+    text = program_to_text(
+        program, strip_comments=True, align_comments=True, comment_column=40
+    )
+    expected = "    CP 5, R.a\n    ADD R.a, 1\n"
+    assert text == expected
+
+
+def test_strip_comments_preserves_structure():
+    """Test that stripping comments preserves blank lines and formatting."""
+    program = [
+        I.CP(5, R.a).with_comment("Init"),
+        Label("loop"),
+        I.ADD(R.a, L[1]),
+        I.JGT(Label("loop"), R.a, L[0]),
+    ]
+
+    text = program_to_text(program, strip_comments=True)
+    expected = "    CP 5, R.a\n\nloop:\n    ADD R.a, 1\n    JGT loop, R.a, 0\n"
+    assert text == expected
+
+
+def test_strip_comments_edge_cases():
+    """Test strip_comments with edge cases."""
+    # Only comments
+    program = [Comment("Only comment")]
+    text = program_to_text(program, strip_comments=True)
+    assert text == ""
+
+    # No comments to strip
+    program = [I.CP(5, R.a), I.ADD(R.a, L[1])]
+    text_normal = program_to_text(program, strip_comments=False)
+    text_stripped = program_to_text(program, strip_comments=True)
+    assert text_normal == text_stripped
+    expected = "    CP 5, R.a\n    ADD R.a, 1\n"
+    assert text_stripped == expected
+
+
+def test_strip_comments_inline_labels():
+    """Test strip_comments with inline labels that have comments."""
+    program = [
+        I.CP(5, R.a),
+        Label("loop").with_comment("Loop start"),
+        I.ADD(R.a, L[1]).with_comment("Increment"),
+    ]
+
+    text = program_to_text(
+        program, strip_comments=True, label_inline=True, blank_line_before_label=False
+    )
+    expected = "    CP 5, R.a\nloop: ADD R.a, 1\n"
+    assert text == expected
+
+
+def test_auto_align_comments():
+    """Test automatic comment column calculation."""
+    program = [
+        I.CP(5, R.a).with_comment("Short"),
+        I.ADD(R.a, R.b, R.c).with_comment("Longer instruction"),
+        I.SUB(R.a, L[1]).with_comment("Medium"),
+    ]
+
+    text = program_to_text(program, align_comments=True)
+
+    # Longest line is "    ADD R.a, R.b, R.c" = 21 chars
+    # With default margin=2, comments should start at column 23
+    expected = "    CP 5, R.a          ; Short\n    ADD R.a, R.b, R.c  ; Longer instruction\n    SUB R.a, 1         ; Medium\n"
+    assert text == expected
+
+
+def test_auto_align_custom_margin():
+    """Test custom comment margin."""
+    program = [
+        I.CP(5, R.a).with_comment("Comment"),
+        I.ADD(R.a, R.b).with_comment("Another"),
+    ]
+
+    text = program_to_text(program, align_comments=True, comment_margin=4)
+
+    # Longest line is "    ADD R.a, R.b" = 16 chars (default hides R.a output)
+    # With margin=4, comments should start at column 20
+    expected = "    CP 5, R.a       ; Comment\n    ADD R.a, R.b    ; Another\n"
+    assert text == expected
+
+
+def test_fixed_column_overrides_auto():
+    """Test that explicit comment_column disables auto-calculation."""
+    program = [
+        I.CP(5, R.a).with_comment("Short"),
+        I.ADD(R.a, R.b, R.c).with_comment("Long"),
+    ]
+
+    # Use fixed column 30
+    text = program_to_text(program, align_comments=True, comment_column=30)
+
+    expected = (
+        "    CP 5, R.a                 ; Short\n    ADD R.a, R.b, R.c         ; Long\n"
+    )
+    assert text == expected
+
+
+def test_auto_align_with_hide_default_args():
+    """Test that auto-calculation respects hide_default_args."""
+    program = [
+        I.ADD(R.a, R.b).with_comment("Test"),
+    ]
+
+    # With hide_default_args, instruction is shorter
+    text_hidden = program_to_text(program, align_comments=True, hide_default_args=True)
+    text_shown = program_to_text(program, align_comments=True, hide_default_args=False)
+
+    # Extract semicolon positions
+    pos_hidden = text_hidden.index(";")
+    pos_shown = text_shown.index(";")
+
+    # Comment should be closer when output is hidden
+    assert pos_hidden < pos_shown
+
+    # Verify exact output
+    # "    ADD R.a, R.b" = 16 chars, +2 margin = 18
+    expected_hidden = "    ADD R.a, R.b  ; Test\n"
+    assert text_hidden == expected_hidden
+
+    # "    ADD R.a, R.b, R.a" = 21 chars, +2 margin = 23
+    expected_shown = "    ADD R.a, R.b, R.a  ; Test\n"
+    assert text_shown == expected_shown
+
+
+def test_auto_align_edge_cases():
+    """Test auto-align with edge cases."""
+    # Empty program
+    text = program_to_text([], align_comments=True)
+    assert text == ""
+
+    # Only comments (no instructions to measure)
+    program = [Comment("Only comment")]
+    text = program_to_text(program, align_comments=True)
+    # Should not crash, comment_column will be 0 + margin = 2
+    assert text == "; Only comment\n"
+
+    # No comments to align
+    program = [I.CP(5, R.a), I.ADD(R.a, L[1])]
+    text = program_to_text(program, align_comments=True)
+    expected = "    CP 5, R.a\n    ADD R.a, 1\n"
+    assert text == expected
+
+
+def test_margin_ignored_with_column():
+    """Test that comment_margin is ignored when comment_column is specified."""
+    program = [I.CP(5, R.a).with_comment("Test")]
+
+    # Both should produce identical output
+    text1 = program_to_text(
+        program, align_comments=True, comment_column=40, comment_margin=2
+    )
+    text2 = program_to_text(
+        program, align_comments=True, comment_column=40, comment_margin=10
+    )
+
+    assert text1 == text2
+    expected = "    CP 5, R.a                           ; Test\n"
+    assert text1 == expected

@@ -32,7 +32,7 @@
   <li><a href="#python-api">Python API</a></li>
   <li><a href="#documentation">Documentation</a></li>
   <li><a href="#development">Development</a></li>
-  <li><a href="#roadmap">Roadmap</a></li>
+  <li><a href="#planned-work">Planned work</a></li>
   <li><a href="#license">License</a></li>
 </ul>
 
@@ -65,7 +65,7 @@ dt31    </h1>
 
                         <div class="docstring"><p><a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/license-MIT-green.svg" alt="License: MIT" /></a> <a href="https://pdoc.dev/docs/pdoc.html"><img src="https://img.shields.io/badge/docs-pdoc.dev-green" alt="pdoc" /></a> <a href="https://github.com/astral-sh/ruff"><img src="https://img.shields.io/badge/style-ruff-green.svg" alt="Ruff" /></a> <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMjIiIGhlaWdodD0iMjAiIHJvbGU9ImltZyIgYXJpYS1sYWJlbD0iY292ZXJhZ2U6IDEwMC4wMCUiPjx0aXRsZT5jb3ZlcmFnZTogMTAwLjAwJTwvdGl0bGU+PGxpbmVhckdyYWRpZW50IGlkPSJzIiB4Mj0iMCIgeTI9IjEwMCUiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iI2JiYiIgc3RvcC1vcGFjaXR5PSIuMSIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1vcGFjaXR5PSIuMSIvPjwvbGluZWFyR3JhZGllbnQ+PGNsaXBQYXRoIGlkPSJyIj48cmVjdCB3aWR0aD0iMTIyIiBoZWlnaHQ9IjIwIiByeD0iMyIgZmlsbD0iI2ZmZiIvPjwvY2xpcFBhdGg+PGcgY2xpcC1wYXRoPSJ1cmwoI3IpIj48cmVjdCB3aWR0aD0iNjEiIGhlaWdodD0iMjAiIGZpbGw9IiM1NTUiLz48cmVjdCB4PSI2MSIgd2lkdGg9IjYxIiBoZWlnaHQ9IjIwIiBmaWxsPSIjNGMxIi8+PHJlY3Qgd2lkdGg9IjEyMiIgaGVpZ2h0PSIyMCIgZmlsbD0idXJsKCNzKSIvPjwvZz48ZyBmaWxsPSIjZmZmIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LWZhbWlseT0iVmVyZGFuYSxHZW5ldmEsRGVqYVZ1IFNhbnMsc2Fucy1zZXJpZiIgdGV4dC1yZW5kZXJpbmc9Imdlb21ldHJpY1ByZWNpc2lvbiIgZm9udC1zaXplPSIxMTAiPjx0ZXh0IGFyaWEtaGlkZGVuPSJ0cnVlIiB4PSIzMTUiIHk9IjE1MCIgZmlsbD0iIzAxMDEwMSIgZmlsbC1vcGFjaXR5PSIuMyIgdHJhbnNmb3JtPSJzY2FsZSguMSkiIHRleHRMZW5ndGg9IjUxMCI+Y292ZXJhZ2U8L3RleHQ+PHRleHQgeD0iMzE1IiB5PSIxNDAiIHRyYW5zZm9ybT0ic2NhbGUoLjEpIiBmaWxsPSIjZmZmIiB0ZXh0TGVuZ3RoPSI1MTAiPmNvdmVyYWdlPC90ZXh0Pjx0ZXh0IGFyaWEtaGlkZGVuPSJ0cnVlIiB4PSI5MDUiIHk9IjE1MCIgZmlsbD0iIzAxMDEwMSIgZmlsbC1vcGFjaXR5PSIuMyIgdHJhbnNmb3JtPSJzY2FsZSguMSkiIHRleHRMZW5ndGg9IjUxMCI+MTAwLjAwJTwvdGV4dD48dGV4dCB4PSI5MDUiIHk9IjE0MCIgdHJhbnNmb3JtPSJzY2FsZSguMSkiIGZpbGw9IiNmZmYiIHRleHRMZW5ndGg9IjUxMCI+MTAwLjAwJTwvdGV4dD48L2c+PC9zdmc+" alt="Coverage Badge" /></p>
 
-<p>A toy computer emulator and assembly language written in Python. Build programs with 60+ built-in instructions for interacting with registers, memory, and the stack. Write your programs in the native assembly syntax or directly with the Python API.</p>
+<p>A toy computer and assembly language written in Python. Build programs with 60+ built-in instructions for interacting with registers, memory, and the stack. Write your programs in the native assembly syntax or directly with the Python API.</p>
 
 <table>
 <tr>
@@ -146,9 +146,9 @@ dt31    </h1>
 
 <div class="pdoc-code codehilite">
 <pre><span></span><code><span class="c1">; Output &quot;Hi!&quot;</span>
-<span class="nf">OOUT</span><span class="w"> </span><span class="s">&#39;H&#39;</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span>
-<span class="nf">OOUT</span><span class="w"> </span><span class="s">&#39;i&#39;</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span>
-<span class="nf">OOUT</span><span class="w"> </span><span class="s">&#39;!&#39;</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span>
+<span class="nf">COUT</span><span class="w"> </span><span class="s">&#39;H&#39;</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span>
+<span class="nf">COUT</span><span class="w"> </span><span class="s">&#39;i&#39;</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span>
+<span class="nf">COUT</span><span class="w"> </span><span class="s">&#39;!&#39;</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span>
 </code></pre>
 </div>
 
@@ -200,10 +200,10 @@ dt31    </h1>
 
 <span class="nl">greet:</span>
 <span class="w">    </span><span class="c1">; Reusable greeting function</span>
-<span class="w">    </span><span class="nf">OOUT</span><span class="w"> </span><span class="s">&#39;H&#39;</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span>
-<span class="w">    </span><span class="nf">OOUT</span><span class="w"> </span><span class="s">&#39;i&#39;</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span>
-<span class="w">    </span><span class="nf">OOUT</span><span class="w"> </span><span class="s">&#39;!&#39;</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span>
-<span class="w">    </span><span class="nf">OOUT</span><span class="w"> </span><span class="s">&#39; &#39;</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span>
+<span class="w">    </span><span class="nf">COUT</span><span class="w"> </span><span class="s">&#39;H&#39;</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span>
+<span class="w">    </span><span class="nf">COUT</span><span class="w"> </span><span class="s">&#39;i&#39;</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span>
+<span class="w">    </span><span class="nf">COUT</span><span class="w"> </span><span class="s">&#39;!&#39;</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span>
+<span class="w">    </span><span class="nf">COUT</span><span class="w"> </span><span class="s">&#39; &#39;</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span>
 <span class="w">    </span><span class="nf">RET</span>
 
 <span class="nl">end:</span>
@@ -240,7 +240,7 @@ dt31    </h1>
 <li><strong>Control Flow</strong>: <code>JMP</code>, <code>RJMP</code>, <code>JEQ</code>, <code>JNE</code>, <code>JGT</code>, <code>JGE</code>, <code>JIF</code></li>
 <li><strong>Functions</strong>: <code>CALL</code>, <code>RCALL</code>, <code>RET</code></li>
 <li><strong>Stack</strong>: <code>PUSH</code>, <code>POP</code>, <code>SEMP</code></li>
-<li><strong>I/O</strong>: <code>NOUT</code>, <code>OOUT</code>, <code>NIN</code>, <code>OIN</code></li>
+<li><strong>I/O</strong>: <code>NOUT</code>, <code>COUT</code>, <code>NIN</code>, <code>CIN</code></li>
 <li><strong>Data Movement</strong>: <code>CP</code></li>
 </ul>
 
@@ -269,15 +269,17 @@ dt31    </h1>
 
 <div class="pdoc-code codehilite">
 <pre><span></span><code>dt31<span class="w"> </span>run<span class="w"> </span>program.dt<span class="w">       </span><span class="c1"># Execute program</span>
+dt31<span class="w"> </span>check<span class="w"> </span>program.dt<span class="w">     </span><span class="c1"># Validate syntax</span>
 dt31<span class="w"> </span>format<span class="w"> </span>program.dt<span class="w">    </span><span class="c1"># Format file in-place</span>
 </code></pre>
 </div>
 
 <h3 id="cli-options">CLI Options</h3>
 
+<h4 id="run-command">Run Command</h4>
+
 <ul>
 <li><code>--debug</code> or <code>-d</code>: Enable step-by-step debug output</li>
-<li><code>--parse-only</code> or <code>-p</code>: Validate syntax without executing</li>
 <li><code>--registers a,b,c,d</code>: Specify custom registers (auto-detected by default)</li>
 <li><code>--memory 512</code>: Set memory size in bytes (default: 256)</li>
 <li><code>--stack-size 512</code>: Set stack size (default: 256)</li>
@@ -286,11 +288,20 @@ dt31<span class="w"> </span>format<span class="w"> </span>program.dt<span class=
 <li><code>--dump-file FILE</code>: File path for CPU state dump (auto-generates timestamped filename if not specified)</li>
 </ul>
 
+<h4 id="check-command">Check Command</h4>
+
+<ul>
+<li><code>--custom-instructions PATH</code> or <code>-i PATH</code>: Load custom instruction definitions from a Python file</li>
+</ul>
+
 <p><strong>Examples:</strong></p>
 
 <div class="pdoc-code codehilite">
-<pre><span></span><code><span class="c1"># Parse and validate only (no execution)</span>
-dt31<span class="w"> </span>run<span class="w"> </span>--parse-only<span class="w"> </span>program.dt
+<pre><span></span><code><span class="c1"># Validate syntax only (no execution)</span>
+dt31<span class="w"> </span>check<span class="w"> </span>program.dt
+
+<span class="c1"># Validate with custom instructions</span>
+dt31<span class="w"> </span>check<span class="w"> </span>--custom-instructions<span class="w"> </span>my_instructions.py<span class="w"> </span>program.dt
 
 <span class="c1"># Run with debug output</span>
 dt31<span class="w"> </span>run<span class="w"> </span>--debug<span class="w"> </span>program.dt
@@ -353,8 +364,8 @@ dt31<span class="w"> </span>format<span class="w"> </span>--diff<span class="w">
 <pre><span></span><code><span class="c1"># Indentation (default: 4 spaces)</span>
 dt31<span class="w"> </span>format<span class="w"> </span>--indent-size<span class="w"> </span><span class="m">2</span><span class="w"> </span>program.dt
 
-<span class="c1"># Comment spacing (default: 1 space before semicolon)</span>
-dt31<span class="w"> </span>format<span class="w"> </span>--comment-spacing<span class="w"> </span><span class="m">2</span><span class="w"> </span>program.dt
+<span class="c1"># Comment margin (default: 2 spaces before semicolon)</span>
+dt31<span class="w"> </span>format<span class="w"> </span>--comment-margin<span class="w"> </span><span class="m">3</span><span class="w"> </span>program.dt
 
 <span class="c1"># Inline labels (default: labels on separate lines)</span>
 dt31<span class="w"> </span>format<span class="w"> </span>--label-inline<span class="w"> </span>program.dt
@@ -362,11 +373,20 @@ dt31<span class="w"> </span>format<span class="w"> </span>--label-inline<span cl
 <span class="c1"># No blank lines before labels (default: blank line before labels)</span>
 dt31<span class="w"> </span>format<span class="w"> </span>--no-blank-line-before-label<span class="w"> </span>program.dt
 
-<span class="c1"># Align inline comments at specific column (default: no alignment)</span>
+<span class="c1"># Auto-align inline comments (calculates column based on longest instruction)</span>
+dt31<span class="w"> </span>format<span class="w"> </span>--align-comments<span class="w"> </span>program.dt
+
+<span class="c1"># Align inline comments at specific column</span>
 dt31<span class="w"> </span>format<span class="w"> </span>--align-comments<span class="w"> </span>--comment-column<span class="w"> </span><span class="m">40</span><span class="w"> </span>program.dt
 
-<span class="c1"># Hide default output parameters (default: show all parameters)</span>
-dt31<span class="w"> </span>format<span class="w"> </span>--hide-default-out<span class="w"> </span>program.dt
+<span class="c1"># Auto-align with custom margin (default: 2 spaces after longest instruction)</span>
+dt31<span class="w"> </span>format<span class="w"> </span>--align-comments<span class="w"> </span>--comment-margin<span class="w"> </span><span class="m">4</span><span class="w"> </span>program.dt
+
+<span class="c1"># Strip all comments from output</span>
+dt31<span class="w"> </span>format<span class="w"> </span>--strip-comments<span class="w"> </span>program.dt
+
+<span class="c1"># Show default arguments (default: hidden)</span>
+dt31<span class="w"> </span>format<span class="w"> </span>--show-default-args<span class="w"> </span>program.dt
 </code></pre>
 </div>
 
@@ -389,7 +409,7 @@ dt31<span class="w"> </span>format<span class="w"> </span>--check<span class="w"
 dt31<span class="w"> </span>format<span class="w"> </span>--diff<span class="w"> </span>program.dt
 
 <span class="c1"># Format with custom style</span>
-dt31<span class="w"> </span>format<span class="w"> </span>--indent-size<span class="w"> </span><span class="m">2</span><span class="w"> </span>--label-inline<span class="w"> </span>--hide-default-out<span class="w"> </span>program.dt
+dt31<span class="w"> </span>format<span class="w"> </span>--indent-size<span class="w"> </span><span class="m">2</span><span class="w"> </span>--label-inline<span class="w"> </span>program.dt
 
 <span class="c1"># Check formatting and show diff if needed</span>
 dt31<span class="w"> </span>format<span class="w"> </span>--check<span class="w"> </span>--diff<span class="w"> </span>program.dt
@@ -420,13 +440,26 @@ dt31<span class="w"> </span>format<span class="w"> </span>--check<span class="w"
 </code></pre>
 </div>
 
-<p>After <code>dt31 format --label-inline --hide-default-out program.dt</code>:</p>
+<p>After <code>dt31 format --label-inline program.dt</code> (default hides args):</p>
 
 <div class="pdoc-code codehilite">
 <pre><span></span><code><span class="w">    </span><span class="nf">CP</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span><span class="w"> </span><span class="nv">R.a</span>
-<span class="nl">loop:</span><span class="w"> </span><span class="nf">NOUT</span><span class="w"> </span><span class="nv">R.a</span>
+<span class="nl">loop:</span><span class="w"> </span><span class="nf">NOUT</span><span class="w"> </span><span class="nv">R.a</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span>
 <span class="w">    </span><span class="nf">SUB</span><span class="w"> </span><span class="nv">R.a</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span>
 <span class="w">    </span><span class="nf">JGT</span><span class="w"> </span><span class="nv">loop</span><span class="p">,</span><span class="w"> </span><span class="nv">R.a</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span>
+</code></pre>
+</div>
+
+<p>After <code>dt31 format --align-comments program.dt</code> (with comments):</p>
+
+<div class="pdoc-code codehilite">
+<pre><span></span><code><span class="c1">; Input with unaligned comments</span>
+<span class="nf">CP</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span><span class="w"> </span><span class="nv">R.a</span><span class="w"> </span><span class="c1">; Initialize counter</span>
+<span class="nf">ADD</span><span class="w"> </span><span class="nv">R.a</span><span class="p">,</span><span class="w"> </span><span class="nv">R.b</span><span class="p">,</span><span class="w"> </span><span class="nv">R.c</span><span class="w"> </span><span class="c1">; Add values</span>
+
+<span class="c1">; Output with auto-aligned comments</span>
+<span class="w">    </span><span class="nf">CP</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span><span class="w"> </span><span class="nv">R.a</span><span class="w">          </span><span class="c1">; Initialize counter</span>
+<span class="w">    </span><span class="nf">ADD</span><span class="w"> </span><span class="nv">R.a</span><span class="p">,</span><span class="w"> </span><span class="nv">R.b</span><span class="p">,</span><span class="w"> </span><span class="nv">R.c</span><span class="w">  </span><span class="c1">; Add values</span>
 </code></pre>
 </div>
 
@@ -542,7 +575,7 @@ dt31<span class="w"> </span>format<span class="w"> </span>--check<span class="w"
   <td><strong>Character Literal</strong></td>
   <td><code>'A'</code></td>
   <td><code>LC["A"]</code></td>
-  <td><code>OOUT 'H', 0</code></td>
+  <td><code>COUT 'H', 0</code></td>
 </tr>
 <tr>
   <td><strong>Register</strong></td>
@@ -659,7 +692,7 @@ dt31<span class="w"> </span>format<span class="w"> </span>--check<span class="w"
 <span class="n">program</span> <span class="o">=</span> <span class="p">[</span>
     <span class="n">I</span><span class="o">.</span><span class="n">CP</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="n">R</span><span class="o">.</span><span class="n">a</span><span class="p">),</span>
     <span class="n">loop</span> <span class="o">:=</span> <span class="n">Label</span><span class="p">(</span><span class="s2">&quot;loop&quot;</span><span class="p">),</span>
-    <span class="n">I</span><span class="o">.</span><span class="n">OOUT</span><span class="p">(</span><span class="n">LC</span><span class="p">[</span><span class="s2">&quot;*&quot;</span><span class="p">]),</span>
+    <span class="n">I</span><span class="o">.</span><span class="n">COUT</span><span class="p">(</span><span class="n">LC</span><span class="p">[</span><span class="s2">&quot;*&quot;</span><span class="p">]),</span>
     <span class="n">I</span><span class="o">.</span><span class="n">SUB</span><span class="p">(</span><span class="n">R</span><span class="o">.</span><span class="n">a</span><span class="p">,</span> <span class="n">L</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span>
     <span class="n">I</span><span class="o">.</span><span class="n">JGT</span><span class="p">(</span><span class="n">loop</span><span class="p">,</span> <span class="n">R</span><span class="o">.</span><span class="n">a</span><span class="p">,</span> <span class="n">L</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span>
 <span class="p">]</span>
@@ -670,7 +703,7 @@ dt31<span class="w"> </span>format<span class="w"> </span>--check<span class="w"
 <span class="c1">#     CP 5, R.a</span>
 <span class="c1">#</span>
 <span class="c1"># loop:</span>
-<span class="c1">#     OOUT &#39;*&#39;, 0</span>
+<span class="c1">#     COUT &#39;*&#39;, 0</span>
 <span class="c1">#     SUB R.a, 1, R.a</span>
 <span class="c1">#     JGT loop, R.a, 0</span>
 </code></pre>
@@ -686,27 +719,42 @@ dt31<span class="w"> </span>format<span class="w"> </span>--check<span class="w"
 
 <span class="c1"># Inline labels (default: False, labels on separate lines)</span>
 <span class="n">text</span> <span class="o">=</span> <span class="n">program_to_text</span><span class="p">(</span><span class="n">program</span><span class="p">,</span> <span class="n">label_inline</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="c1"># loop: OOUT &#39;*&#39;, 0</span>
+<span class="c1"># loop: COUT &#39;*&#39;, 0</span>
 
 <span class="c1"># No blank lines before labels (default: True)</span>
 <span class="n">text</span> <span class="o">=</span> <span class="n">program_to_text</span><span class="p">(</span><span class="n">program</span><span class="p">,</span> <span class="n">blank_line_before_label</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
-<span class="c1"># Align inline comments (default: False)</span>
+<span class="c1"># Auto-align inline comments (default: False, comment_column: None)</span>
 <span class="n">commented_program</span> <span class="o">=</span> <span class="p">[</span>
     <span class="n">I</span><span class="o">.</span><span class="n">CP</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="n">R</span><span class="o">.</span><span class="n">a</span><span class="p">)</span><span class="o">.</span><span class="n">with_comment</span><span class="p">(</span><span class="s2">&quot;Initialize&quot;</span><span class="p">),</span>
     <span class="n">I</span><span class="o">.</span><span class="n">ADD</span><span class="p">(</span><span class="n">R</span><span class="o">.</span><span class="n">a</span><span class="p">,</span> <span class="n">L</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">with_comment</span><span class="p">(</span><span class="s2">&quot;Increment&quot;</span><span class="p">),</span>
 <span class="p">]</span>
+<span class="n">text</span> <span class="o">=</span> <span class="n">program_to_text</span><span class="p">(</span><span class="n">commented_program</span><span class="p">,</span> <span class="n">align_comments</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="c1">#     CP 5, R.a        ; Initialize</span>
+<span class="c1">#     ADD R.a, 1, R.a  ; Increment</span>
+
+<span class="c1"># Align comments at specific column</span>
 <span class="n">text</span> <span class="o">=</span> <span class="n">program_to_text</span><span class="p">(</span><span class="n">commented_program</span><span class="p">,</span> <span class="n">align_comments</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">comment_column</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span>
 <span class="c1">#     CP 5, R.a                 ; Initialize</span>
 <span class="c1">#     ADD R.a, 1, R.a           ; Increment</span>
 
-<span class="c1"># Hide default output parameters (default: False)</span>
-<span class="n">text</span> <span class="o">=</span> <span class="n">program_to_text</span><span class="p">(</span><span class="n">program</span><span class="p">,</span> <span class="n">hide_default_out</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="c1"># Auto-align with custom margin (default: 2)</span>
+<span class="n">text</span> <span class="o">=</span> <span class="n">program_to_text</span><span class="p">(</span><span class="n">commented_program</span><span class="p">,</span> <span class="n">align_comments</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">comment_margin</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+<span class="c1">#     CP 5, R.a            ; Initialize</span>
+<span class="c1">#     ADD R.a, 1, R.a      ; Increment</span>
+
+<span class="c1"># Strip all comments</span>
+<span class="n">text</span> <span class="o">=</span> <span class="n">program_to_text</span><span class="p">(</span><span class="n">commented_program</span><span class="p">,</span> <span class="n">strip_comments</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="c1">#     CP 5, R.a</span>
+<span class="c1">#     ADD R.a, 1, R.a</span>
+
+<span class="c1"># Show default arguments (default is to hide them)</span>
+<span class="n">text</span> <span class="o">=</span> <span class="n">program_to_text</span><span class="p">(</span><span class="n">program</span><span class="p">,</span> <span class="n">hide_default_args</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 <span class="c1">#     CP 5, R.a</span>
 <span class="c1">#</span>
 <span class="c1"># loop:</span>
-<span class="c1">#     OOUT &#39;*&#39;</span>
-<span class="c1">#     SUB R.a, 1</span>
+<span class="c1">#     COUT &#39;*&#39;, 0</span>
+<span class="c1">#     SUB R.a, 1, R.a</span>
 <span class="c1">#     JGT loop, R.a, 0</span>
 </code></pre>
 </div>
@@ -723,8 +771,8 @@ dt31<span class="w"> </span>format<span class="w"> </span>--check<span class="w"
     <span class="n">I</span><span class="o">.</span><span class="n">JMP</span><span class="p">(</span><span class="n">end</span> <span class="o">:=</span> <span class="n">Label</span><span class="p">(</span><span class="s2">&quot;end&quot;</span><span class="p">)),</span>
 
     <span class="n">print_hi</span><span class="p">,</span>
-    <span class="n">I</span><span class="o">.</span><span class="n">OOUT</span><span class="p">(</span><span class="n">LC</span><span class="p">[</span><span class="s1">&#39;H&#39;</span><span class="p">]),</span>
-    <span class="n">I</span><span class="o">.</span><span class="n">OOUT</span><span class="p">(</span><span class="n">LC</span><span class="p">[</span><span class="s1">&#39;i&#39;</span><span class="p">]),</span>
+    <span class="n">I</span><span class="o">.</span><span class="n">COUT</span><span class="p">(</span><span class="n">LC</span><span class="p">[</span><span class="s1">&#39;H&#39;</span><span class="p">]),</span>
+    <span class="n">I</span><span class="o">.</span><span class="n">COUT</span><span class="p">(</span><span class="n">LC</span><span class="p">[</span><span class="s1">&#39;i&#39;</span><span class="p">]),</span>
     <span class="n">I</span><span class="o">.</span><span class="n">RET</span><span class="p">(),</span>
 
     <span class="n">end</span><span class="p">,</span>
@@ -805,21 +853,14 @@ uv<span class="w"> </span>run<span class="w"> </span>invoke<span class="w"> </sp
 
 <p>DT31 is open-source and contributors are welcome on <a href="https://github.com/daturkel/dt31">Github</a>.</p>
 
-<h2 id="roadmap">Roadmap</h2>
+<h2 id="planned-work">Planned work</h2>
 
 <ul>
-<li><input type="checkbox" class="task-list-item-checkbox" checked disabled> Character literals?</li>
-<li><input type="checkbox" class="task-list-item-checkbox" checked disabled> Parse and execute <code>.dt</code> files</li>
-<li><input type="checkbox" class="task-list-item-checkbox" checked disabled> Breakpoint instruction</li>
-<li><input type="checkbox" class="task-list-item-checkbox" checked disabled> Clearer handing of input during debug mode</li>
-<li><input type="checkbox" class="task-list-item-checkbox" checked disabled> Python to text output</li>
-<li><input type="checkbox" class="task-list-item-checkbox" checked disabled> Preserve comments in parser</li>
-<li><input type="checkbox" class="task-list-item-checkbox" disabled> User-definable macros (in both python and assembly syntax)</li>
-<li><input type="checkbox" class="task-list-item-checkbox" disabled> File I/O</li>
-<li><input type="checkbox" class="task-list-item-checkbox" disabled> Data handling</li>
-<li><input type="checkbox" class="task-list-item-checkbox" disabled> Input error-handling</li>
-<li><input type="checkbox" class="task-list-item-checkbox" checked disabled> Formatter</li>
-<li><input type="checkbox" class="task-list-item-checkbox" disabled> Interpreter resume from dump</li>
+<li><input type="checkbox" class="task-list-item-checkbox" disabled> <a href="https://github.com/daturkel/dt31/issues/26">Data section</a></li>
+<li><input type="checkbox" class="task-list-item-checkbox" disabled> <a href="https://github.com/daturkel/dt31/issues/16">Globbing support for CLI</a></li>
+<li><input type="checkbox" class="task-list-item-checkbox" disabled> Interpreter resume from dump (maybe)</li>
+<li><input type="checkbox" class="task-list-item-checkbox" disabled> Input error-handling (maybe)</li>
+<li><input type="checkbox" class="task-list-item-checkbox" disabled> <a href="https://github.com/daturkel/dt31/issues/25">File I/O</a> (maybe)</li>
 </ul>
 
 <h2 id="license">License</h2>

@@ -1,5 +1,6 @@
 """Tests for the CLI."""
 
+import os
 import sys
 from unittest.mock import MagicMock, patch
 
@@ -56,20 +57,21 @@ def test_cli_user_provided_registers_validated(temp_dt_file, capsys):
     assert "y" in captured.err
 
 
-def test_cli_parse_only(temp_dt_file, capsys):
+def test_check_valid_file(temp_dt_file, capsys):
+    """Test check command with valid file."""
     assembly = """
     CP 10, R.x
     NOUT R.x, 1
     """
     file_path = temp_dt_file(assembly)
 
-    with patch.object(sys, "argv", ["dt31", "run", "--parse-only", file_path]):
+    with patch.object(sys, "argv", ["dt31", "check", file_path]):
         with pytest.raises(SystemExit) as exc_info:
             main()
 
     assert exc_info.value.code == 0
     captured = capsys.readouterr()
-    assert "parsed successfully" in captured.err
+    assert "is valid" in captured.err
 
 
 def test_cli_file_not_found(capsys):
@@ -521,8 +523,8 @@ NOUT R.a, 1
     assert "15" in captured.out
 
 
-def test_custom_instructions_with_parse_only(tmp_path, capsys) -> None:
-    """Test that custom instructions work with --parse-only flag."""
+def test_check_with_custom_instructions(tmp_path, capsys) -> None:
+    """Test that custom instructions work with check command."""
     custom_file = tmp_path / "custom.py"
     custom_file.write_text(
         """
@@ -555,8 +557,7 @@ NOUT R.a, 1
         "argv",
         [
             "dt31",
-            "run",
-            "--parse-only",
+            "check",
             "--custom-instructions",
             str(custom_file),
             str(program_file),
@@ -567,11 +568,76 @@ NOUT R.a, 1
 
     assert exc_info.value.code == 0
     captured = capsys.readouterr()
-    assert "parsed successfully" in captured.err
+    assert "is valid" in captured.err
+
+
+def test_check_parse_error(temp_dt_file, capsys) -> None:
+    """Test check command with parse error."""
+    assembly = "INVALID_INSTRUCTION R.x"
+    file_path = temp_dt_file(assembly)
+
+    with patch.object(sys, "argv", ["dt31", "check", file_path]):
+        with pytest.raises(SystemExit) as exc_info:
+            main()
+
+    assert exc_info.value.code == 1
+    captured = capsys.readouterr()
+    assert "Parse error" in captured.err
+
+
+def test_check_file_not_found(capsys) -> None:
+    """Test check command with nonexistent file."""
+    with patch.object(sys, "argv", ["dt31", "check", "nonexistent.dt"]):
+        with pytest.raises(SystemExit) as exc_info:
+            main()
+
+    assert exc_info.value.code == 1
+    captured = capsys.readouterr()
+    assert "File not found" in captured.err
+
+
+def test_check_custom_instructions_error(tmp_path, capsys) -> None:
+    """Test check command with invalid custom instructions file."""
+    program_file = tmp_path / "program.dt"
+    program_file.write_text("CP 5, R.a")
+
+    with patch.object(
+        sys,
+        "argv",
+        ["dt31", "check", "--custom-instructions", "nonexistent.py", str(program_file)],
+    ):
+        with pytest.raises(SystemExit) as exc_info:
+            main()
+
+    assert exc_info.value.code == 1
+    captured = capsys.readouterr()
+    assert "Error loading custom instructions" in captured.err
+
+
+def test_check_io_error_reading_file(tmp_path, capsys) -> None:
+    """Test IOError when reading file with check command (permission denied, etc.)."""
+    # Create a real file path that exists
+    file_path = tmp_path / "test.dt"
+    file_path.write_text("CP 1, R.a")
+
+    # Mock Path.read_text to raise IOError
+    with patch("dt31.cli.Path") as mock_path:
+        mock_path_instance = MagicMock()
+        mock_path_instance.read_text.side_effect = IOError("Permission denied")
+        mock_path.return_value = mock_path_instance
+
+        with patch.object(sys, "argv", ["dt31", "check", str(file_path)]):
+            with pytest.raises(SystemExit) as exc_info:
+                main()
+
+    assert exc_info.value.code == 1
+    captured = capsys.readouterr()
+    assert "Error reading file" in captured.err
+    assert "Permission denied" in captured.err
 
 
 def test_custom_instructions_debug_output(tmp_path, capsys) -> None:
-    """Test debug output when loading custom instructions."""
+    """Test debug output when loading custom instructions with run command."""
     # Create custom instruction file with multiple instructions
     custom_file = tmp_path / "custom.py"
     custom_file.write_text(
@@ -600,22 +666,26 @@ INSTRUCTIONS = {"DOUBLE": DOUBLE, "TRIPLE": TRIPLE}
     program_file = tmp_path / "program.dt"
     program_file.write_text("CP 5, R.a")
 
-    # Use --parse-only with --debug to avoid interactive execution
-    with patch.object(
-        sys,
-        "argv",
-        [
-            "dt31",
-            "run",
-            "--debug",
-            "--parse-only",
-            "--custom-instructions",
-            str(custom_file),
-            str(program_file),
-        ],
-    ):
-        with pytest.raises(SystemExit) as exc_info:
-            main()
+    # Mock DT31.run to avoid interactive debug mode
+    with patch("dt31.cli.DT31") as mock_dt31_class:
+        mock_cpu = MagicMock()
+        mock_cpu.run.return_value = None
+        mock_dt31_class.return_value = mock_cpu
+
+        with patch.object(
+            sys,
+            "argv",
+            [
+                "dt31",
+                "run",
+                "--debug",
+                "--custom-instructions",
+                str(custom_file),
+                str(program_file),
+            ],
+        ):
+            with pytest.raises(SystemExit) as exc_info:
+                main()
 
     assert exc_info.value.code == 0
     captured = capsys.readouterr()
@@ -1251,14 +1321,14 @@ def test_format_indent_size(temp_dt_file, capsys):
 
 
 def test_format_comment_spacing(temp_dt_file, capsys):
-    """Test --comment-spacing option."""
+    """Test --comment-margin option."""
     assembly = """
 CP 5, R.a ; Initialize
 """
     file_path = temp_dt_file(assembly)
 
     with patch.object(
-        sys, "argv", ["dt31", "format", "--comment-spacing", "3", file_path]
+        sys, "argv", ["dt31", "format", "--comment-margin", "3", file_path]
     ):
         with pytest.raises(SystemExit) as exc_info:
             main()
@@ -1317,11 +1387,15 @@ ADD R.a, 1
 
 
 def test_format_align_comments(temp_dt_file, capsys):
-    """Test --align-comments option."""
+    """Test --align-comments option with explicit column."""
     assembly = "CP 5, R.a ; Test1\nCP 6, R.b ; Test2"
     file_path = temp_dt_file(assembly)
 
-    with patch.object(sys, "argv", ["dt31", "format", "--align-comments", file_path]):
+    with patch.object(
+        sys,
+        "argv",
+        ["dt31", "format", "--align-comments", "--comment-column", "40", file_path],
+    ):
         with pytest.raises(SystemExit) as exc_info:
             main()
 
@@ -1339,9 +1413,9 @@ def test_format_align_comments(temp_dt_file, capsys):
     assert len(set(comment_positions)) == 1, (
         f"Comments not aligned: {comment_positions}"
     )
-    # And that position should be reasonable (around column 40)
-    assert 35 <= comment_positions[0] <= 45, (
-        f"Comment position {comment_positions[0]} not near 40"
+    # And that position should be at column 40
+    assert comment_positions[0] == 40, (
+        f"Comment position {comment_positions[0]} not at 40"
     )
 
 
@@ -1369,15 +1443,13 @@ CP 5, R.a ; Test
     assert formatted.index(";") == 30
 
 
-def test_format_hide_default_out(temp_dt_file, capsys):
-    """Test --hide-default-out option."""
-    assembly = """
-ADD R.a, R.b, R.a
-NOUT R.a, 0
-"""
+def test_format_auto_align_comments(temp_dt_file, capsys):
+    """Test auto-align comments (without explicit --comment-column)."""
+    assembly = "CP 5, R.a ; Short\nADD R.a, R.b, R.c ; Longer"
     file_path = temp_dt_file(assembly)
 
-    with patch.object(sys, "argv", ["dt31", "format", "--hide-default-out", file_path]):
+    # Use --align-comments without --comment-column to trigger auto-calculation
+    with patch.object(sys, "argv", ["dt31", "format", "--align-comments", file_path]):
         with pytest.raises(SystemExit) as exc_info:
             main()
 
@@ -1386,8 +1458,69 @@ NOUT R.a, 0
     from pathlib import Path
 
     formatted = Path(file_path).read_text()
-    assert "    ADD R.a, R.b" in formatted  # Default out hidden (no trailing comma)
-    assert "    NOUT R.a" in formatted  # Default b hidden (last line has no newline)
+    lines = [l for l in formatted.split("\n") if ";" in l]  # noqa: E741
+
+    # Both comments should be aligned at the same position
+    comment_positions = [line.index(";") for line in lines]
+    assert len(set(comment_positions)) == 1, (
+        f"Comments not aligned: {comment_positions}"
+    )
+
+    # The position should be based on longest instruction + default margin (2)
+    # Longest line is "    ADD R.a, R.b, R.c" = 21 chars
+    # So comments should be at 21 + 2 = 23
+    assert comment_positions[0] == 23
+
+
+def test_format_comment_margin(temp_dt_file, capsys):
+    """Test --comment-margin option."""
+    assembly = "CP 5, R.a ; Test1\nCP 6, R.b ; Test2"
+    file_path = temp_dt_file(assembly)
+
+    # Use custom margin of 4 with auto-align
+    with patch.object(
+        sys,
+        "argv",
+        ["dt31", "format", "--align-comments", "--comment-margin", "4", file_path],
+    ):
+        with pytest.raises(SystemExit) as exc_info:
+            main()
+
+    assert exc_info.value.code == 0
+
+    from pathlib import Path
+
+    formatted = Path(file_path).read_text()
+    lines = [l for l in formatted.split("\n") if ";" in l]  # noqa: E741
+
+    # Comments should be aligned with margin of 4
+    # Longest line is "    CP 6, R.b" = 13 chars
+    # So comments should be at 13 + 4 = 17
+    comment_positions = [line.index(";") for line in lines]
+    assert comment_positions[0] == 17
+
+
+def test_format_show_default_args(temp_dt_file, capsys):
+    """Test --show-default-args option."""
+    assembly = """
+ADD R.a, R.b
+NOUT R.a
+"""
+    file_path = temp_dt_file(assembly)
+
+    with patch.object(
+        sys, "argv", ["dt31", "format", "--show-default-args", file_path]
+    ):
+        with pytest.raises(SystemExit) as exc_info:
+            main()
+
+    assert exc_info.value.code == 0
+
+    from pathlib import Path
+
+    formatted = Path(file_path).read_text()
+    assert "    ADD R.a, R.b, R.a" in formatted  # Default out shown
+    assert "    NOUT R.a, 0" in formatted  # Default b shown
 
 
 def test_format_io_error_reading_file(tmp_path, capsys):
@@ -1590,3 +1723,207 @@ def test_cli_unknown_command(capsys):
     assert exc_info.value.code == 1
     # The help message should be printed (captured in stderr by argparse)
     # but we can't easily verify it since parser.print_help() goes directly to stdout
+
+
+# ===== Globbing Tests =====
+
+
+def test_check_multiple_files(temp_dt_file, capsys):
+    """Test check command with multiple files."""
+    file1 = temp_dt_file("CP 10, R.a", "file1.dt")
+    file2 = temp_dt_file("CP 20, R.b", "file2.dt")
+
+    with patch.object(sys, "argv", ["dt31", "check", file1, file2]):
+        with pytest.raises(SystemExit) as exc_info:
+            main()
+
+    assert exc_info.value.code == 0
+    captured = capsys.readouterr()
+    assert "file1.dt is valid" in captured.err
+    assert "file2.dt is valid" in captured.err
+    assert "All 2 file(s) are valid" in captured.err
+
+
+def test_check_multiple_files_with_errors(tmp_path, capsys):
+    """Test check command with multiple files where some have errors."""
+    (tmp_path / "file1.dt").write_text("CP 10, R.a")
+    (tmp_path / "file2.dt").write_text("INVALID_INSTRUCTION R.x")
+    (tmp_path / "file3.dt").write_text("CP 30, R.c")
+
+    old_cwd = os.getcwd()
+    os.chdir(tmp_path)
+    try:
+        with patch.object(
+            sys, "argv", ["dt31", "check", "file1.dt", "file2.dt", "file3.dt"]
+        ):
+            with pytest.raises(SystemExit) as exc_info:
+                main()
+    finally:
+        os.chdir(old_cwd)
+
+    assert exc_info.value.code == 1
+    captured = capsys.readouterr()
+    assert "file1.dt is valid" in captured.err
+    assert "Parse error in file2.dt" in captured.err
+    assert "file3.dt is valid" in captured.err
+    assert "1 of 3 file(s) failed validation" in captured.err
+
+
+def test_check_glob_pattern(tmp_path, capsys):
+    """Test check command with glob pattern."""
+    # Create multiple .dt files
+    (tmp_path / "prog1.dt").write_text("CP 1, R.a")
+    (tmp_path / "prog2.dt").write_text("CP 2, R.b")
+    (tmp_path / "prog3.dt").write_text("CP 3, R.c")
+
+    old_cwd = os.getcwd()
+    os.chdir(tmp_path)
+    try:
+        with patch.object(sys, "argv", ["dt31", "check", "*.dt"]):
+            with pytest.raises(SystemExit) as exc_info:
+                main()
+    finally:
+        os.chdir(old_cwd)
+
+    assert exc_info.value.code == 0
+    captured = capsys.readouterr()
+    assert "prog1.dt is valid" in captured.err
+    assert "prog2.dt is valid" in captured.err
+    assert "prog3.dt is valid" in captured.err
+    assert "All 3 file(s) are valid" in captured.err
+
+
+def test_format_multiple_files(temp_dt_file, capsys):
+    """Test format command with multiple files."""
+    file1 = temp_dt_file("CP 10,R.a", "file1.dt")
+    file2 = temp_dt_file("CP 20,R.b", "file2.dt")
+
+    with patch.object(sys, "argv", ["dt31", "format", file1, file2]):
+        with pytest.raises(SystemExit) as exc_info:
+            main()
+
+    assert exc_info.value.code == 0
+    captured = capsys.readouterr()
+    assert "Formatted file1.dt" in captured.err or "file1.dt" in captured.err
+    assert "Formatted file2.dt" in captured.err or "file2.dt" in captured.err
+    assert "Formatted 2 of 2 file(s)" in captured.err
+
+
+def test_format_multiple_files_check_mode(temp_dt_file, capsys):
+    """Test format --check with multiple files."""
+    file1 = temp_dt_file("CP 10,R.a", "file1.dt")  # Needs formatting
+    file2 = temp_dt_file("    CP 20, R.b\n", "file2.dt")  # Already formatted
+
+    with patch.object(sys, "argv", ["dt31", "format", "--check", file1, file2]):
+        with pytest.raises(SystemExit) as exc_info:
+            main()
+
+    assert exc_info.value.code == 1  # Should fail since file1 needs formatting
+    captured = capsys.readouterr()
+    assert "file1.dt would be reformatted" in captured.err
+    assert "file2.dt is already formatted" in captured.err
+    assert "1 of 2 file(s) would be reformatted" in captured.err
+
+
+def test_format_glob_pattern(tmp_path, capsys):
+    """Test format command with glob pattern."""
+    # Create multiple .dt files
+    (tmp_path / "prog1.dt").write_text("CP 1,R.a")
+    (tmp_path / "prog2.dt").write_text("CP 2,R.b")
+
+    old_cwd = os.getcwd()
+    os.chdir(tmp_path)
+    try:
+        with patch.object(sys, "argv", ["dt31", "format", "*.dt"]):
+            with pytest.raises(SystemExit) as exc_info:
+                main()
+    finally:
+        os.chdir(old_cwd)
+
+    assert exc_info.value.code == 0
+    captured = capsys.readouterr()
+    assert "Formatted 2 of 2 file(s)" in captured.err
+
+
+def test_check_no_files_match_pattern(tmp_path, capsys):
+    """Test check command when glob pattern matches no files."""
+
+    old_cwd = os.getcwd()
+    os.chdir(tmp_path)
+    try:
+        with patch.object(sys, "argv", ["dt31", "check", "*.dt"]):
+            with pytest.raises(SystemExit) as exc_info:
+                main()
+    finally:
+        os.chdir(old_cwd)
+
+    assert exc_info.value.code == 1
+    captured = capsys.readouterr()
+    assert "No files matched the provided patterns" in captured.err
+
+
+def test_format_no_files_match_pattern(tmp_path, capsys):
+    old_cwd = os.getcwd()
+    os.chdir(tmp_path)
+    try:
+        with patch.object(sys, "argv", ["dt31", "format", "*.dt"]):
+            with pytest.raises(SystemExit) as exc_info:
+                main()
+    finally:
+        os.chdir(old_cwd)
+
+    assert exc_info.value.code == 1
+    captured = capsys.readouterr()
+    assert "No files matched the provided patterns" in captured.err
+
+
+def test_check_recursive_glob(tmp_path, capsys):
+    """Test check command with recursive glob pattern."""
+    # Create nested directories with .dt files
+    (tmp_path / "subdir1").mkdir()
+    (tmp_path / "subdir2").mkdir()
+    (tmp_path / "prog1.dt").write_text("CP 1, R.a")
+    (tmp_path / "subdir1" / "prog2.dt").write_text("CP 2, R.b")
+    (tmp_path / "subdir2" / "prog3.dt").write_text("CP 3, R.c")
+
+    # Change to temp directory for glob to work
+
+    old_cwd = os.getcwd()
+    os.chdir(tmp_path)
+    try:
+        with patch.object(sys, "argv", ["dt31", "check", "**/*.dt"]):
+            with pytest.raises(SystemExit) as exc_info:
+                main()
+    finally:
+        os.chdir(old_cwd)
+
+    assert exc_info.value.code == 0
+    captured = capsys.readouterr()
+    # Should find all 3 files
+    assert "All 3 file(s) are valid" in captured.err
+
+
+def test_format_multiple_files_already_formatted(temp_dt_file, capsys):
+    file1 = temp_dt_file("    CP 10, R.a\n", "file1.dt")  # Already formatted
+    file2 = temp_dt_file("    CP 20, R.b\n", "file2.dt")  # Already formatted
+
+    with patch.object(sys, "argv", ["dt31", "format", file1, file2]):
+        with pytest.raises(SystemExit) as exc_info:
+            main()
+
+    assert exc_info.value.code == 0
+    captured = capsys.readouterr()
+    assert "All 2 file(s) are already formatted" in captured.err
+
+
+def test_format_multiple_files_check_mode_all_formatted(temp_dt_file, capsys):
+    file1 = temp_dt_file("    CP 10, R.a\n", "file1.dt")  # Already formatted
+    file2 = temp_dt_file("    CP 20, R.b\n", "file2.dt")  # Already formatted
+
+    with patch.object(sys, "argv", ["dt31", "format", "--check", file1, file2]):
+        with pytest.raises(SystemExit) as exc_info:
+            main()
+
+    assert exc_info.value.code == 0
+    captured = capsys.readouterr()
+    assert "All 2 file(s) are already formatted" in captured.err
