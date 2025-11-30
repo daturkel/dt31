@@ -393,6 +393,52 @@ def test_rjge(cpu):
     assert cpu.get_register("ip") == 33
 
 
+def test_jlt(cpu):
+    assert cpu.get_register("ip") == 0
+    I.JLT(M[1], 2, 3)(cpu)
+    assert cpu.get_register("ip") == 10
+    I.JLT(M[2], 2, 2)(cpu)
+    assert cpu.get_register("ip") == 11
+    I.JLT(M[1], 3, 2)(cpu)
+    assert cpu.get_register("ip") == 12
+
+
+def test_rjlt(cpu):
+    assert cpu.get_register("ip") == 0
+    I.NOOP()(cpu)
+    I.NOOP()(cpu)
+    assert cpu.get_register("ip") == 2
+    I.RJLT(M[1], 2, 3)(cpu)
+    assert cpu.get_register("ip") == 12
+    I.RJLT(M[2], 2, 2)(cpu)
+    assert cpu.get_register("ip") == 13
+    I.RJLT(M[1], 3, 2)(cpu)
+    assert cpu.get_register("ip") == 14
+
+
+def test_jle(cpu):
+    assert cpu.get_register("ip") == 0
+    I.JLE(M[1], 2, 3)(cpu)
+    assert cpu.get_register("ip") == 10
+    I.JLE(M[2], 2, 2)(cpu)
+    assert cpu.get_register("ip") == 20
+    I.JLE(R.a, 3, 2)(cpu)
+    assert cpu.get_register("ip") == 21
+
+
+def test_rjle(cpu):
+    assert cpu.get_register("ip") == 0
+    I.NOOP()(cpu)
+    I.NOOP()(cpu)
+    assert cpu.get_register("ip") == 2
+    I.RJLE(M[1], 2, 3)(cpu)
+    assert cpu.get_register("ip") == 12
+    I.RJLE(M[2], 2, 2)(cpu)
+    assert cpu.get_register("ip") == 32
+    I.RJLE(R.a, 3, 2)(cpu)
+    assert cpu.get_register("ip") == 33
+
+
 def test_push_pop(cpu):
     assert repr(I.PUSH(2)) == "PUSH(a=2)"
     assert str(I.PUSH(2)) == "PUSH 2"
