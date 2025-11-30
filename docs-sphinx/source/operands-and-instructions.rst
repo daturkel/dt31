@@ -50,12 +50,12 @@ As an illustrative example, consider the following program:
    loop_start:
       COUT [0]
       ADD [0], 1
-      JGE loop_start, 'f', [0]
+      JLT loop_start, [0], 'f'
    ; print newline
       COUT '\n'
 
-The line ``loop_start:`` defines a label right before the ``COUT [0]`` instruction. When we reach the ``JGE loop_start, 'f', [0]``
-instruction, it checks to see if 'f' (Unicode codepoint 102) is greater than or equal to the character at ``[0]``; if it is, we
+The line ``loop_start:`` defines a label right before the ``COUT [0]`` instruction. When we reach the ``JLT loop_start, [0], 'f'``
+instruction, it checks to see if the character at ``'[0]`` is less than 'f' (Unicode codepoint 102); if it is, we
 repeat the loop by jumping back to ``loop_start``, otherwise we just continue to the next instruction.
 
 Labels get resolved during assembly to their corresponding `instruction pointer <https://en.wikipedia.org/wiki/Program_counter>`__,
@@ -238,6 +238,9 @@ These instructions perform comparisons: less than, greater than, less than or eq
 greater than or equal to, equal, and not equal. Like the arithmetic operators, they
 support an optional third argument to specify where to store the result.
 
+.. note::
+   Comparison operators work with both numbers and characters. Characters are compared by their Unicode codepoint values (e.g., ``'A'`` = 65, ``'a'`` = 97, so ``LT 'A', 'a'`` returns 1).
+
 **Syntax:** ``INST ref, op``, ``INST op, op, ref`` for any of ``LT``, ``GT``, ``LE``, ``GE``, ``EQ``, and ``NE``
 
 **Examples:**
@@ -305,6 +308,9 @@ Jump unconditionally to a destination in the program.
 This instruction sets the instruction pointer to the specified destination, which can be
 a label, a literal instruction number, or a value stored in a register or memory.
 
+.. note::
+   All jump instructions have corresponding **relative** versions (prefixed with ``R``): ``RJMP``, ``RJEQ``, ``RJNE``, ``RJGT``, ``RJGE``, ``RJLT``, ``RJLE``, ``RJIF``, and ``RCALL``. Relative jumps interpret their destination as an offset from the current instruction pointer rather than an absolute position. Labels work correctly with both absolute and relative jumps.
+
 **Syntax:** ``JMP dest``
 
 **Examples:**
@@ -314,9 +320,10 @@ a label, a literal instruction number, or a value stored in a register or memory
    JMP start  ; Jump to the label 'start'
    JMP 10     ; Jump to instruction 10
    JMP R.a    ; Jump to the instruction number in R.a
+   RJMP -2    ; Jump back 2 instructions
 
-JEQ, JNE, JGT, JGE (conditional jumps)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+JEQ, JNE, JGT, JGE, JLT, JLE (conditional jumps)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Jump to a destination if a comparison is true.
 
@@ -326,8 +333,10 @@ These instructions compare two values and jump if the condition is met:
 - ``JNE``: Jump if not equal (a ≠ b)
 - ``JGT``: Jump if greater than (a > b)
 - ``JGE``: Jump if greater than or equal to (a >= b)
+- ``JLT``: Jump if less than (a < b)
+- ``JLE``: Jump if less than or equal to (a <= b)
 
-**Syntax:** ``INST dest, op, op`` for any of ``JEQ``, ``JNE``, ``JGT``, and ``JGE``
+**Syntax:** ``INST dest, op, op`` for any of ``JEQ``, ``JNE``, ``JGT``, ``JGE``, ``JLT``, and ``JLE``
 
 **Examples:**
 
@@ -345,6 +354,16 @@ These instructions compare two values and jump if the condition is met:
 
    ; Jump if not equal
    JNE continue, R.x, 0  ; Jump to 'continue' if R.x != 0
+
+   ; Count up from 1 to 10
+   CP 1, R.a
+   count_up:
+       NOUT R.a, 1
+       ADD R.a, 1
+       JLE count_up, R.a, 10  ; Jump to count_up if R.a <= 10
+
+   ; Jump if below threshold
+   JLT error, R.value, 0  ; Jump to 'error' if R.value < 0
 
 JIF (conditional jump on truthy)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -469,3 +488,10 @@ to know if there are values remaining on the stack.
 
    SEMP R.a           ; R.a = 1 if stack is empty, 0 otherwise
    JIF done, R.a      ; Jump to 'done' if stack is empty
+
+Next steps
+----------
+
+This covers most of the instructions you'll need for writing dt31 programs, but the rest are
+documented in the :doc:`reference/instruction-set`. Next up we'll take a look at the command
+line interface.

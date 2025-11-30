@@ -22,6 +22,8 @@ Highlights
 
    getting-started
    operands-and-instructions
+   cli-guide
+   debugging-programs
    *
 
 .. toctree::
