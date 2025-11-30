@@ -100,7 +100,7 @@ CP (copy)
 
 Copy a value from source to destination.
 
-**Syntax:** ``CP <op>, <ref>``
+**Syntax:** ``CP op, ref``
 
 **Examples:**
 
@@ -118,7 +118,7 @@ accepts a single character (including escape sequences like ``\n``) which is sto
 
 Problematic inputs will result in a runtime error crashing the program.
 
-**Syntax:** ``OIN <ref>``, ``CIN <ref>``
+**Syntax:** ``OIN ref``, ``CIN ref``
 
 **Examples:**
 
@@ -137,7 +137,7 @@ be printed as well.
 Stored data is agnostic to whether it represents a character or a number, so
 data entered as a number can be printed as a character and vice-versa, see below.
 
-**Syntax:** ``NOUT <op>[, <op>=0]``, ``COUT <op>[, <op>=0]``
+**Syntax:** ``NOUT op[, op=0]``, ``COUT op[, op=0]``
 
 .. code-block:: nasm
 
@@ -153,7 +153,7 @@ STRIN
 Prompt the user for string input which will be stored in contiguous slots
 of memory, followed by a ``0``.
 
-**Syntax:** ``STRIN <mem>``
+**Syntax:** ``STRIN mem``
 
 **Examples:**
 
@@ -169,7 +169,7 @@ Print a string value to the terminal. The string value starts at the provided
 memory address and continues until a ``0`` is encountered. If the second argument is provided
 and is nonzero, a newline will be printed as well.
 
-**Syntax:** ``STROUT <mem>[, <op>=0]``
+**Syntax:** ``STROUT mem[, op=0]``
 
 **Examples:**
 
@@ -177,3 +177,61 @@ and is nonzero, a newline will be printed as well.
 
    STROUT [0], 1    ; print the string starting at [0] with a newline
    STROUT [R.a], 1  ; print the string starting at [R.a]
+
+Math
+----
+
+ADD, SUB, MUL, DIV (arithmetic)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Perform arithmetic between two arguments, overwriting the first argument or optionally writing
+to a third argument.
+
+These instructions allow you to add, subtract, multiply, or divide. Division rounds
+down, so ``DIV 5, 2, R.a`` would set ``R.a`` to 2.
+
+Common binary operators all share the same behavior over their arguments: the first
+two arguments are the operands while a third optional argument (which must be a reference)
+can be used to specify output. If the third argument is not provided, the output defaults
+to the first argument, and if the first argument is not a reference, the operation will fail.
+
+**Syntax:** ``INST ref, op``, ``INST op, op, ref`` for any of ``ADD``, ``SUB``, ``MUL``, and ``DIV``
+
+**Examples:**
+
+.. code-block:: nasm
+
+   ADD 5, 2, R.a      ; R.a = 5 + 2
+   ADD [0], 1         ; [0] = [0] + 1
+   ADD 1, 2           ; ERROR, can't write output to first argument (literal 1)
+   SUB R.a, R.b, R.c  ; R.c = R.a - R.b
+   MUL [0], [0]       ; [0] = [0] * [0]
+   DIV [5], 2         ; [5] = [5] / 2 (rounded down)
+
+MOD (modulo)
+~~~~~~~~~~~~
+
+Calculate the the remainder after division (aka the modulus).
+
+This operation shares the binary operator behavior with the arithmetic operators: the
+optional third argument can be used to specify an output destination.
+
+**Syntax:** ``MOD op, op, ref``, ``MOD ref, op``
+
+**Examples:**
+
+.. code-block:: nasm
+
+   MOD 5, 2, R.a  ; R[a] = 5 % 2 = 1
+   MOD [0], 3     ; [0] = [0] % 3
+   MOD 1, 2       ; ERROR, can't write output to first argument (literal 1)
+
+Comparisons
+
+Boolean logic
+
+Jumps
+
+Call, ret
+
+Push, pop, semp
