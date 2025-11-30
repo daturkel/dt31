@@ -227,11 +227,245 @@ optional third argument can be used to specify an output destination.
    MOD 1, 2       ; ERROR, can't write output to first argument (literal 1)
 
 Comparisons
+-----------
+
+LT, GT, LE, GE, EQ, NE (comparison operators)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Compare two values and store the result (1 for true, 0 for false).
+
+These instructions perform comparisons: less than, greater than, less than or equal to,
+greater than or equal to, equal, and not equal. Like the arithmetic operators, they
+support an optional third argument to specify where to store the result.
+
+**Syntax:** ``INST ref, op``, ``INST op, op, ref`` for any of ``LT``, ``GT``, ``LE``, ``GE``, ``EQ``, and ``NE``
+
+**Examples:**
+
+.. code-block:: nasm
+
+   LT 5, 10, R.a     ; R.a = 1 (5 < 10)
+   GT R.a, R.b, R.c  ; R.c = 1 if R.a > R.b, else 0
+   LE [0], 100       ; [0] = 1 if [0] <= 100, else 0
+   GE R.a, 0         ; R.a = 1 if R.a >= 0, else 0
+   EQ R.a, R.b       ; R.a = 1 if R.a == R.b, else 0
+   NE 5, 5, R.x      ; R.x = 0 (5 == 5)
 
 Boolean logic
+-------------
 
-Jumps
+AND, OR, XOR (logical operators)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Call, ret
+Perform logical operations on two values, treating nonzero values as true.
 
-Push, pop, semp
+These instructions implement boolean logic: ``AND`` returns 1 if both operands are nonzero,
+``OR`` returns 1 if either operand is nonzero, and ``XOR`` returns 1 if exactly one operand
+is nonzero. Like other binary operators, they support an optional third argument for output.
+
+**Syntax:** ``INST ref, op``, ``INST op, op, ref`` for any of ``AND``, ``OR``, and ``XOR``
+
+**Examples:**
+
+.. code-block:: nasm
+
+   AND R.a, R.b   ; R.a = 1 if both are truthy, else 0
+   AND 0, 1, R.c  ; R.c = 0 (first is falsy)
+   OR R.x, R.y    ; R.x = 1 if either is truthy, else 0
+   OR 0, 5, R.d   ; R.d = 1 (second is truthy)
+   XOR R.a, 1     ; R.a = 1 if exactly one is truthy, else 0
+   XOR 1, 1, R.e  ; R.e = 0 (both are truthy)
+
+NOT (logical negation)
+~~~~~~~~~~~~~~~~~~~~~~
+
+Negate a value, returning 1 if the value is zero (falsy), 0 otherwise.
+
+This instruction implements logical NOT, treating zero as false and any nonzero value
+as true. Like other unary operators, it supports an optional second argument for output.
+
+**Syntax:** ``NOT ref``, ``NOT op, ref``
+
+**Examples:**
+
+.. code-block:: nasm
+
+   NOT 0, R.a  ; R.a = 1 (0 is falsy)
+   NOT 5, R.b  ; R.b = 0 (5 is truthy)
+   NOT R.a     ; R.a = NOT R.a (negates in place)
+
+Control flow
+------------
+
+JMP (unconditional jump)
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+Jump unconditionally to a destination in the program.
+
+This instruction sets the instruction pointer to the specified destination, which can be
+a label, a literal instruction number, or a value stored in a register or memory.
+
+**Syntax:** ``JMP dest``
+
+**Examples:**
+
+.. code-block:: nasm
+
+   JMP start  ; Jump to the label 'start'
+   JMP 10     ; Jump to instruction 10
+   JMP R.a    ; Jump to the instruction number in R.a
+
+JEQ, JNE, JGT, JGE (conditional jumps)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Jump to a destination if a comparison is true.
+
+These instructions compare two values and jump if the condition is met:
+
+- ``JEQ``: Jump if equal (a = b)
+- ``JNE``: Jump if not equal (a ≠ b)
+- ``JGT``: Jump if greater than (a > b)
+- ``JGE``: Jump if greater than or equal to (a >= b)
+
+**Syntax:** ``INST dest, op, op`` for any of ``JEQ``, ``JNE``, ``JGT``, and ``JGE``
+
+**Examples:**
+
+.. code-block:: nasm
+
+   ; Count down from 5 to 1
+   CP 5, R.a
+   loop:
+       NOUT R.a, 1
+       SUB R.a, 1
+       JGT loop, R.a, 0  ; Jump to loop if R.a > 0
+
+   ; Jump if values are equal
+   JEQ done, R.a, R.b    ; Jump to 'done' if R.a == R.b
+
+   ; Jump if not equal
+   JNE continue, R.x, 0  ; Jump to 'continue' if R.x != 0
+
+JIF (conditional jump on truthy)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Jump to a destination if a value is nonzero (truthy).
+
+This instruction provides a simple way to jump based on a single condition, treating
+any nonzero value as true.
+
+**Syntax:** ``JIF dest, op``
+
+**Examples:**
+
+.. code-block:: nasm
+
+   JIF continue, R.a  ; Jump to 'continue' if R.a is nonzero
+   JIF loop, [0]      ; Jump to 'loop' if [0] is nonzero
+
+Functions
+---------
+
+.. _call-call-function:
+
+CALL (call function)
+~~~~~~~~~~~~~~~~~~~~
+
+Call a function by jumping to it and pushing the return address onto the stack.
+
+This instruction saves the address of the next instruction on the stack, then jumps
+to the specified destination. Use :ref:`RET <ret-return-from-function>` to return from the function.
+
+**Syntax:** ``CALL dest``
+
+**Examples:**
+
+.. code-block:: nasm
+
+   CALL greet         ; Call the function at label 'greet'
+   CALL R.a           ; Call the function at the address in R.a
+
+   ; Example function
+   greet:
+       COUT 'H', 0
+       COUT 'i', 0
+       COUT '!', 1
+       RET
+
+.. _ret-return-from-function:
+
+RET (return from function)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Return from a function by popping the return address from the stack and jumping to it.
+
+This instruction pops a value from the stack and sets the instruction pointer to it,
+returning control to the instruction after the corresponding :ref:`CALL <call-call-function>`.
+
+**Syntax:** ``RET``
+
+**Examples:**
+
+.. code-block:: nasm
+
+   ; Simple function that prints "OK"
+   print_ok:
+       COUT 'O', 0
+       COUT 'K', 1
+       RET            ; Return to caller
+
+Stack operations
+----------------
+
+PUSH (push to stack)
+~~~~~~~~~~~~~~~~~~~~
+
+Push a value onto the stack.
+
+This instruction takes a value and pushes it onto the top of the stack. The stack
+can be used for temporary storage or to pass values between functions.
+
+**Syntax:** ``PUSH op``
+
+**Examples:**
+
+.. code-block:: nasm
+
+   PUSH 42            ; Push literal 42 onto stack
+   PUSH R.a           ; Push value of R.a onto stack
+   PUSH [0]           ; Push value at [0] onto stack
+
+POP (pop from stack)
+~~~~~~~~~~~~~~~~~~~~
+
+Pop a value from the stack, optionally storing it.
+
+This instruction removes the top value from the stack. If an argument is provided,
+the popped value is stored there; otherwise it's discarded.
+
+**Syntax:** ``POP``, ``POP ref``
+
+**Examples:**
+
+.. code-block:: nasm
+
+   POP R.a            ; Pop top value into R.a
+   POP [0]            ; Pop top value into [0]
+   POP                ; Pop and discard top value
+
+SEMP (stack empty check)
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Check if the stack is empty and store the result (1 if empty, 0 if not).
+
+This instruction is useful for implementing stack-based algorithms where you need
+to know if there are values remaining on the stack.
+
+**Syntax:** ``SEMP ref``
+
+**Examples:**
+
+.. code-block:: nasm
+
+   SEMP R.a           ; R.a = 1 if stack is empty, 0 otherwise
+   JIF done, R.a      ; Jump to 'done' if stack is empty
