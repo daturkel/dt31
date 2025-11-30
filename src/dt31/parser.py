@@ -213,12 +213,21 @@ def parse_operand(token: str) -> Operand | Label:
         # Character literal: 'H'
         case str() if token.startswith("'") and token.endswith("'"):
             char = token[1:-1]
-            if len(char) != 1:
+            # Decode escape sequences (e.g., '\n' -> newline)
+            try:
+                # Use 'unicode_escape' to handle common escape sequences
+                decoded_char = char.encode().decode("unicode_escape")
+            except Exception as e:
                 raise ParserError(
-                    f"Invalid character literal '{token}'. "
+                    f"Invalid escape sequence in character literal {token}: {e}"
+                )
+
+            if len(decoded_char) != 1:
+                raise ParserError(
+                    f"Invalid character literal {token}. "
                     f"Character literals must contain exactly one character."
                 )
-            return LC[char]
+            return LC[decoded_char]
 
         # Memory reference: [100] or M[100] or [a] or M[R.a]
         case str() if m := MEMORY_PATTERN.match(token):

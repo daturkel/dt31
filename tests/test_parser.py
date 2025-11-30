@@ -204,6 +204,24 @@ def test_parse_operand_character_literals():
     assert result == LC["0"]
 
 
+def test_parse_operand_character_literal_escape_sequences():
+    """Test that escape sequences in character literals are handled correctly."""
+    result = parse_operand("'\\n'")
+    assert result == LC["\n"]
+
+    result = parse_operand("'\\t'")
+    assert result == LC["\t"]
+
+    result = parse_operand("'\\r'")
+    assert result == LC["\r"]
+
+    result = parse_operand("'\\\\'")
+    assert result == LC["\\"]
+
+    result = parse_operand("'\\''")
+    assert result == LC["'"]
+
+
 def test_parse_operand_character_literal_errors():
     """Test that invalid character literals raise errors."""
     with pytest.raises(ParserError, match="Invalid character literal"):
@@ -214,6 +232,11 @@ def test_parse_operand_character_literal_errors():
 
     with pytest.raises(ParserError, match="must contain exactly one character"):
         parse_operand("'ab'")
+
+    # Invalid escape sequence (this would be valid in Python 3.12+ but should fail in decoding)
+    # Using a unicode escape that's incomplete
+    with pytest.raises(ParserError, match="Invalid escape sequence"):
+        parse_operand("'\\x'")  # Incomplete hex escape
 
 
 def test_parse_operand_registers_prefixed():
@@ -508,6 +531,28 @@ def test_parse_program_character_literals():
         I.COUT(LC["H"], 0),
         I.COUT(LC["i"], 0),
         I.COUT(LC["!"], 0),
+    ]
+    assert program == expected
+
+
+def test_parse_program_character_literals_with_escape_sequences():
+    """Test parsing character literals with escape sequences in programs."""
+    text = """
+    COUT 'H', 0
+    COUT 'i', 0
+    COUT '\\n', 0
+    COUT 'B', 0
+    COUT 'y', 0
+    COUT 'e', 0
+    """
+    program = parse_program(text)
+    expected = [
+        I.COUT(LC["H"], 0),
+        I.COUT(LC["i"], 0),
+        I.COUT(LC["\n"], 0),
+        I.COUT(LC["B"], 0),
+        I.COUT(LC["y"], 0),
+        I.COUT(LC["e"], 0),
     ]
     assert program == expected
 
