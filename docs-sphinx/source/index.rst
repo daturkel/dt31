@@ -21,7 +21,7 @@ Highlights
    :glob:
 
    getting-started
-   common-instructions
+   operands-and-instructions
    *
 
 .. toctree::

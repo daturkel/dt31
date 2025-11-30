@@ -1,6 +1,8 @@
 Getting Started
 ===============
 
+This guide will show you how to write your first dt31 programs.
+
 Installation
 ------------
 
@@ -162,5 +164,5 @@ In both scenarios, we end up at the ``end:`` label, which prints ``!`` with a ne
 Next steps
 ----------
 
-Now that you've seen the basics of writing dt31 programs, we'll take a tour of some common instructions you'll need. Click
-the "Next" button below to continue.
+Now that you've seen the basics of writing dt31 programs, we'll take a tour of dt31's operand types
+and some common instructions you'll need. Click the "Next" button below to continue.
