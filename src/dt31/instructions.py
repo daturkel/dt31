@@ -901,6 +901,31 @@ class IfGEJumpMixin(BinaryJump):
         return self.a.resolve(cpu) >= self.b.resolve(cpu)
 
 
+class IfLTJumpMixin(BinaryJump):
+    """Binary jump condition that triggers when first operand is less than second operand.
+
+    This mixin class defines behavior for jumps that should occur when the first specified
+    operand is less than the second operand. It implements the jump_condition method to
+    compare the resolved values of the operands. It expects an a and b operand.
+    """
+
+    def _jump_condition(self, cpu: DT31) -> bool:
+        return self.a.resolve(cpu) < self.b.resolve(cpu)
+
+
+class IfLEJumpMixin(BinaryJump):
+    """Binary jump condition that triggers when first operand is less than or equal to
+    the second operand.
+
+    This mixin class defines behavior for jumps that should occur when the first specified
+    operand is less than or equal to the second operand. It implements the jump_condition
+    method to compare the resolved values of the operands. It expects an a and b operand.
+    """
+
+    def _jump_condition(self, cpu: DT31) -> bool:
+        return self.a.resolve(cpu) <= self.b.resolve(cpu)
+
+
 class IfJumpMixin(UnaryJump):
     """Unary jump condition that triggers when operand is nonzero (truthy).
 
@@ -1077,6 +1102,58 @@ class RJIF(RelativeJumpMixin, IfJumpMixin):
             a: Operand to check for truthiness.
         """
         super().__init__("RJIF", delta, a)
+
+
+class JLT(ExactJumpMixin, IfLTJumpMixin):
+    """Jump to exact destination if first operand is less than second operand."""
+
+    def __init__(self, dest: Destination, a: Operand | int, b: Operand | int):
+        """
+        Args:
+            dest: The destination to jump to (Label, Operand, or int).
+            a: First operand to compare.
+            b: Second operand to compare.
+        """
+        super().__init__("JLT", dest, a, b)
+
+
+class RJLT(RelativeJumpMixin, IfLTJumpMixin):
+    """Jump to relative destination if first operand is less than second operand."""
+
+    def __init__(self, delta: Destination, a: Operand | int, b: Operand | int):
+        """
+        Args:
+            delta: The destination to jump to (Label, Operand, or int).
+            a: First operand to compare.
+            b: Second operand to compare.
+        """
+        super().__init__("RJLT", delta, a, b)
+
+
+class JLE(ExactJumpMixin, IfLEJumpMixin):
+    """Jump to exact destination if first operand is less than or equal to second operand."""
+
+    def __init__(self, dest: Destination, a: Operand | int, b: Operand | int):
+        """
+        Args:
+            dest: The destination to jump to (Label, Operand, or int).
+            a: First operand to compare.
+            b: Second operand to compare.
+        """
+        super().__init__("JLE", dest, a, b)
+
+
+class RJLE(RelativeJumpMixin, IfLEJumpMixin):
+    """Jump to relative destination if first operand is less than or equal to second operand."""
+
+    def __init__(self, delta: Destination, a: Operand | int, b: Operand | int):
+        """
+        Args:
+            delta: The destination to jump to (Label, Operand, or int).
+            a: First operand to compare.
+            b: Second operand to compare.
+        """
+        super().__init__("RJLE", delta, a, b)
 
 
 # ---------------------------------- function calls ---------------------------------- #
