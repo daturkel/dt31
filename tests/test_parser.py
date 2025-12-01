@@ -12,6 +12,7 @@ from dt31.parser import (
     TOKEN_PATTERN,
     Comment,
     ParserError,
+    _find_label_colon,
     parse_operand,
     parse_program,
 )
@@ -171,6 +172,43 @@ def test_register_pattern_no_match():
     assert REGISTER_PREFIX_PATTERN.match("100") is None
     assert REGISTER_PREFIX_PATTERN.match("M[100]") is None
     assert REGISTER_PREFIX_PATTERN.match("'A'") is None
+
+
+# ------------------------------- _find_label_colon ------------------------------ #
+
+
+def test_find_label_colon_simple():
+    """Test finding colon in simple cases."""
+    assert _find_label_colon("loop:") == 4
+    assert _find_label_colon("loop: CP 5, R.a") == 4
+    assert _find_label_colon("start: end: CP 1, R.a") == 5
+
+
+def test_find_label_colon_no_colon():
+    """Test when no colon exists."""
+    assert _find_label_colon("CP 5, R.a") == -1
+    assert _find_label_colon("ADD R.a, R.b") == -1
+
+
+def test_find_label_colon_in_quotes():
+    """Test that colons inside quotes are ignored."""
+    assert _find_label_colon("COUT ':'") == -1
+    assert _find_label_colon("COUT ':', 0") == -1
+    assert _find_label_colon("loop: COUT ':'") == 4
+
+
+def test_find_label_colon_escaped_quote():
+    """Test that escaped quotes are handled correctly."""
+    # String '\'' contains an escaped quote, colon after should be found
+    assert _find_label_colon(r"COUT '\''") == -1
+    assert _find_label_colon(r"loop: COUT '\''") == 4
+
+
+def test_find_label_colon_multiple_quotes():
+    """Test with multiple quoted strings."""
+    assert _find_label_colon("COUT 'a', 'b'") == -1
+    assert _find_label_colon("loop: COUT 'a', 'b'") == 4
+    assert _find_label_colon("COUT ':', ':'") == -1
 
 
 # --------------------------------- parse_operand -------------------------------- #
@@ -532,6 +570,38 @@ def test_parse_program_character_literals():
         I.COUT(LC["i"], 0),
         I.COUT(LC["!"], 0),
     ]
+    assert program == expected
+
+
+def test_parse_program_colon_character_literal():
+    """Test parsing ':' character literal (issue #33)."""
+    text = "COUT ':'"
+    program = parse_program(text)
+    expected = [I.COUT(LC[":"])]
+    assert program == expected
+
+
+def test_parse_program_colon_character_literal_with_label():
+    """Test parsing ':' character literal on same line as label."""
+    text = "loop: COUT ':'"
+    program = parse_program(text)
+    expected = [Label("loop"), I.COUT(LC[":"])]
+    assert program == expected
+
+
+def test_parse_program_colon_character_literal_with_operand():
+    """Test parsing ':' character literal with additional operand."""
+    text = "COUT ':', 0"
+    program = parse_program(text)
+    expected = [I.COUT(LC[":"], 0)]
+    assert program == expected
+
+
+def test_parse_program_escaped_quote_character_literal():
+    """Test that escaped quotes in character literals are handled correctly."""
+    text = r"COUT '\''"
+    program = parse_program(text)
+    expected = [I.COUT(LC["'"])]
     assert program == expected
 
 
