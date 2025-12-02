@@ -605,6 +605,14 @@ def test_parse_program_escaped_quote_character_literal():
     assert program == expected
 
 
+def test_parse_program_escaped_newline_character_literal():
+    """Test that escaped newlines in character literals are handled correctly."""
+    text = r"COUT '\n'"
+    program = parse_program(text)
+    expected = [I.COUT(LC["\n"])]
+    assert program == expected
+
+
 def test_parse_program_character_literals_with_escape_sequences():
     """Test parsing character literals with escape sequences in programs."""
     text = """
