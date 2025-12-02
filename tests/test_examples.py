@@ -327,9 +327,17 @@ def test_binomial_dist_dt(capsys):
     assert 0 <= result <= 10, f"Average should be between 0 and 10, got {result}"
 
 
+def test_tictactoe_dt():
+    dt_path = examples_dir / "tictactoe.dt"
+    with open(dt_path) as f:
+        assembly = f.read()
+    parse_program(assembly)
+
+
 TESTED_ASSEMBLY_PROGRAMS = list(DT_FILE_EXPECTED_IO.keys()) + [
     "binomial_dist.dt",
     "crash.dt",
+    "tictactoe.dt",
 ]
 
 
