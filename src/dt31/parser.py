@@ -59,6 +59,30 @@ class Comment:
         return self.comment == other.comment
 
 
+def _find_label_colon(line: str) -> int:
+    """Find the first ':' that's not inside a quoted string.
+
+    Args:
+        line: The line to search.
+
+    Returns:
+        The position of the first label colon, or -1 if none found.
+    """
+    in_quote = False
+    i = 0
+    while i < len(line):
+        char = line[i]
+        if char == "'":
+            in_quote = not in_quote
+        elif char == "\\" and in_quote and i + 1 < len(line):
+            # Skip the next character if we're in a quote and this is a backslash
+            i += 1
+        elif char == ":" and not in_quote:
+            return i
+        i += 1
+    return -1
+
+
 def parse_program(
     text: str,
     custom_instructions: dict[str, type[Instruction]] | None = None,
@@ -119,11 +143,17 @@ def parse_program(
             continue
 
         # Handle label definitions (can be multiple labels on same line)
+        # Need to respect quoted strings when looking for ':' label delimiters
         labels_found = []
         while ":" in line:
-            label_part, line = line.split(":", 1)
+            # Find the first ':' that's not inside a quoted string
+            colon_pos = _find_label_colon(line)
+            if colon_pos == -1:
+                break  # No label colon found (all colons are in quotes)
+
+            label_part = line[:colon_pos]
+            line = line[colon_pos + 1 :].strip()
             label_name = label_part.strip()
-            line = line.strip()
 
             # Validate label name
             if label_name and not label_name.replace("_", "").isalnum():
@@ -257,6 +287,19 @@ def parse_operand(token: str) -> Operand | Label:
 
 
 # Precompiled regex patterns for parsing
-TOKEN_PATTERN = re.compile(r"'[^']+'|[^\s,]+")
+TOKEN_PATTERN = re.compile(
+    r"""
+    '           # Opening quote for character literal
+    (?:         # Non-capturing group for character content
+        \\.     # Escaped character (backslash + any char, e.g., \', \n)
+        |       # OR
+        [^']    # Any non-quote character
+    )
+    '           # Closing quote
+    |           # OR (for non-character-literal tokens)
+    [^\s,]+     # Any sequence of non-whitespace, non-comma characters
+    """,
+    re.VERBOSE,
+)
 MEMORY_PATTERN = re.compile(r"M?\[(.+)\]")
 REGISTER_PREFIX_PATTERN = re.compile(r"R\.(\w+)")
