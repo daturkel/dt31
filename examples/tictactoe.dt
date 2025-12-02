@@ -1,9 +1,8 @@
 ; R.a = player's character
-; R.b = CPU's character
-; R.c = counter, used in various places
-; R.d = scratch
+; R.b = scratch 1
+; R.c = scratch 2
 
-; "Xs or Os?"
+; "Xs AND Os?"
 xs_or_os:
     COUT 'X'
     COUT 's'
@@ -15,81 +14,77 @@ xs_or_os:
     COUT 's'
     COUT '?', 1
 
-; get X or O; loop if invalid
+; get X AND O; loop if invalid
 xo_in:
     CIN R.a
-    JEQ set_cpu, R.a, 'X'
+    JEQ game, R.a, 'X'
     JEQ to_upper, R.a, 'x'
-    JEQ set_cpu, R.a, 'O'
+    JEQ game, R.a, 'O'
     JEQ to_upper, R.a, 'o'
     JMP xs_or_os
 
 ; x->X, o->O
 to_upper:
-    SUB R.a, 32 ; make x/o uppercase
-; set CPU to be opposite of player
-set_cpu:
-    CP 'O', R.b
-    JNE game, R.a, R.b
-    CP 'X', R.b
+    SUB R.a, 32  ; make x/o uppercase
 
+; primary game loop
 game:
-    CP 1, [0]
-    CP -1, [1]
-    CP 1, [2]
-    CP -1, [3]
-    CP 1, [4]
-    CP -1, [5]
-    CP 1, [6]
-    CP -1, [7]
-    CP 1, [8]
-    RJEQ 2, R.a, 'O'
+    RJEQ 3, R.a, 'O' ; skip to CPU turn if player is O
     CALL player_turn
+    CALL check_win
     CALL cpu_turn
-    RJEQ 2, R.a, 'X'
-;    JEQ game, R.a, 'X'
+    CALL check_win
+    JEQ game, R.a, 'X' ; restart loop if player is X
     CALL player_turn
-    EXIT
+    CALL check_win
     JMP game
 
+; print the game board
 board:
-    CP 0, R.c
+    CP 0, R.b
     CALL p_row
     CALL p_line
-    ADD R.c, 1
+    ADD R.b, 1
     CALL p_row
     CALL p_line
-    ADD R.c, 1
+    ADD R.b, 1
     CALL p_row
     RET
 
-
+; print the character corresponding to the value in [R.b]
+; 0 -> ' '
+; -1 -> 'O'
+; 1 -> 'X'
 print_char:
-    JEQ p_empty, [R.c], 0
-    JEQ p_x, [R.c], 1
-    JEQ p_o, [R.c], -1
+    JEQ p_empty, [R.b], 0
+    JEQ p_x, [R.b], 1
+    JEQ p_o, [R.b], -1
+
 p_empty:
     COUT ' '
     RET
+
 p_x:
     COUT 'X'
     RET
+
 p_o:
     COUT 'O'
     RET
 
-
+; print an entire row of the board
 p_row:
     CALL print_char
     COUT '|'
-    ADD R.c, 1
+    ADD R.b, 1
     CALL print_char
     COUT '|'
-    ADD R.c, 1
+    ADD R.b, 1
     CALL print_char
     COUT '\n'
     RET
 
+; print a horizontal divider
 p_line:
     COUT '-'
     COUT '-'
@@ -98,7 +93,10 @@ p_line:
     COUT '-', 1
     RET
 
+; start the player's turn
+; print the board and prompt for input
 player_turn:
+    CALL board
     COUT 'Y'
     COUT 'o'
     COUT 'u'
@@ -108,14 +106,124 @@ player_turn:
     COUT 'u'
     COUT 'r'
     COUT 'n', 1
-    CALL board
+    JMP player_input
+
+; print "invalid" then resume at player_input
+player_invalid:
+    COUT 'I'
+    COUT 'n'
+    COUT 'v'
+    COUT 'a'
+    COUT 'l'
+    COUT 'i'
+    COUT 'd', 1
+
+; 1. get numeric input to R.b
+; 2. if input invalid (not 1-9 or already taken), go to player_invalid
+; 3. copy correct value into [R.b]
+player_input:
+    NIN R.b
+    SUB R.b, 1
+    JLT player_invalid, R.b, 0
+    JGT player_invalid, R.b, 9
+    JIF player_invalid, [R.b]
+    CP 1, [R.b]
+    RJEQ 2, R.a, 'X'
+    CP -1, [R.b]
     RET
 
+; get a random number; if it's playable, play it, else retry
 cpu_turn:
-    COUT 'c', 1
-cpu_loop:
-    RINT 0, 9, R.d
-    JNE cpu_loop, [R.d], 0
-    CP
+    RINT 0, 8, R.b
+    JNE cpu_turn, [R.b], 0
+    CP 1, [R.b]
+    RJEQ 2, R.a, 'O'
+    CP -1, [R.b]
+    RET
+
+; for each possible winning line, sum the three values to R.b and run print_winner
+; then check for a tie by seeing if all positions are nonzero
+check_win:
+; top row
+    CP [0], R.b
+    ADD R.b, [1]
+    ADD R.b, [2]
+    CALL print_winner
+; top left to bottom right
+    CP [0], R.b
+    ADD R.b, [4]
+    ADD R.b, [8]
+    CALL print_winner
+; left column
+    CP [0], R.b
+    ADD R.b, [3]
+    ADD R.b, [6]
+    CALL print_winner
+; center row
+    CP [3], R.b
+    ADD R.b, [4]
+    ADD R.b, [5]
+    CALL print_winner
+; center column
+    CP [1], R.b
+    ADD R.b, [4]
+    ADD R.b, [7]
+    CALL print_winner
+; bottom row
+    CP [6], R.b
+    ADD R.b, [7]
+    ADD R.b, [8]
+    CALL print_winner
+; right column
+    CP [2], R.b
+    ADD R.b, [5]
+    ADD R.b, [8]
+    CALL print_winner
+; top right to bottom left
+    CP [2], R.b
+    ADD R.b, [4]
+    ADD R.b, [6]
+    CALL print_winner
+; tie
+    CP 1, R.b
+    AND R.b, [0]
+    AND R.b, [1]
+    AND R.b, [2]
+    AND R.b, [3]
+    AND R.b, [4]
+    AND R.b, [5]
+    AND R.b, [6]
+    AND R.b, [7]
+    AND R.b, [8]
+    RJIF 2, R.b
+    RET
+    COUT 'T'
+    COUT 'i'
+    COUT 'e', 1
+    EXIT
+
+; check if someone won (|R.b| = 3)
+; if someone won, print the correct winner
+print_winner:
+    CALL abs
+    RJEQ 2, R.c, 3
+    RET
+    RJEQ 4, R.b, 3
     CALL board
+    COUT 'O'
+    RJMP 3
+    CALL board
+    COUT 'X'
+    COUT ' '
+    COUT 'w'
+    COUT 'i'
+    COUT 'n'
+    COUT 's', 1
+    EXIT
+
+; set R.c = |R.b|
+abs:
+    CP R.b, R.c
+    RJGT 2, R.b, 0
+    MUL R.c, -1
     RET
