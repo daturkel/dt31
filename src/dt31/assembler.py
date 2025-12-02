@@ -3,11 +3,11 @@ from copy import deepcopy
 from dt31.exceptions import AssemblyError
 from dt31.instructions import Instruction, RelativeJumpMixin
 from dt31.operands import Label, Literal, MemoryReference, Operand, RegisterReference
-from dt31.parser import Comment
+from dt31.parser import BlankLine, Comment
 
 
 def assemble(
-    program: list[Instruction | Label | Comment] | list[Instruction],
+    program: list[Instruction | Label | Comment | BlankLine] | list[Instruction],
 ) -> list[Instruction]:
     """Assemble a program by resolving labels to instruction positions.
 
@@ -79,7 +79,7 @@ def assemble(
                 raise AssemblyError(f"Label {inst.name} used more than once.")
             used_labels.add(inst.name)
             label_to_ip[inst.name] = ip
-        elif isinstance(inst, Comment):
+        elif isinstance(inst, (Comment, BlankLine)):
             continue
         else:
             new_program.append(deepcopy(inst))
@@ -103,7 +103,7 @@ def assemble(
 
 
 def extract_registers_from_program(
-    program: list[Instruction | Label | Comment],
+    program: list[Instruction | Label | Comment | BlankLine],
 ) -> list[str]:
     """
     Extract all register names used in a program.
@@ -140,7 +140,7 @@ def extract_registers_from_program(
             extract_from_operand(operand.address)
 
     for item in program:
-        if isinstance(item, (Label, Comment)):
+        if isinstance(item, (Label, Comment, BlankLine)):
             continue
 
         # Instructions store operands as attributes

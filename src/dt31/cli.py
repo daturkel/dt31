@@ -658,6 +658,13 @@ examples:
     )
 
     format_parser.add_argument(
+        "-p",
+        "--preserve-newlines",
+        action="store_true",
+        help="Preserve blank lines from source (overrides --no-blank-line-before-label)",
+    )
+
+    format_parser.add_argument(
         "-a",
         "--align-comments",
         action="store_true",
@@ -747,8 +754,14 @@ def _format_single_file(
         sys.exit(1)
 
     # Parse the program
+    # Extract preserve_newlines from formatting_options to pass to parser
+    preserve_newlines = formatting_options.get("preserve_newlines", False)
     try:
-        program = parse_program(original_text, custom_instructions=custom_instructions)
+        program = parse_program(
+            original_text,
+            custom_instructions=custom_instructions,
+            preserve_newlines=preserve_newlines,
+        )
     except ParserError as e:
         print(f"Parse error: {e}", file=sys.stderr)
         sys.exit(1)
@@ -821,6 +834,7 @@ def format_command(args: argparse.Namespace) -> None:
         "indent_size": args.indent_size,
         "label_inline": args.label_inline,
         "blank_line_before_label": not args.no_blank_line_before_label,  # Inverted!
+        "preserve_newlines": args.preserve_newlines,
         "align_comments": args.align_comments,
         "comment_column": args.comment_column,
         "comment_margin": args.comment_margin,

@@ -1,7 +1,7 @@
 from dt31 import instructions as I
 from dt31.formatter import program_to_text
 from dt31.operands import LC, L, Label, M, R
-from dt31.parser import Comment
+from dt31.parser import BlankLine, Comment, parse_program
 
 
 def test_program_to_text_simple():
@@ -839,3 +839,173 @@ def test_margin_ignored_with_column():
     assert text1 == text2
     expected = "    CP 5, R.a                           ; Test\n"
     assert text1 == expected
+
+
+# ============================================================================
+# Preserve Newlines
+# ============================================================================
+
+
+def test_preserve_newlines_basic():
+    """Test that preserve_newlines preserves blank lines from source."""
+    text = """CP 5, R.a
+
+ADD R.a, 1
+
+NOUT R.a, 1
+"""
+    program = parse_program(text, preserve_newlines=True)
+
+    # Verify BlankLine objects were created
+    assert isinstance(program[0], I.Instruction)
+    assert isinstance(program[1], BlankLine)
+    assert isinstance(program[2], I.Instruction)
+    assert isinstance(program[3], BlankLine)
+    assert isinstance(program[4], I.Instruction)
+
+    # Format with preserve_newlines
+    formatted = program_to_text(program, preserve_newlines=True)
+    expected = "    CP 5, R.a\n\n    ADD R.a, 1\n\n    NOUT R.a, 1\n"
+    assert formatted == expected
+
+
+def test_preserve_newlines_multiple_blanks():
+    """Test preserving multiple consecutive blank lines."""
+    text = """CP 5, R.a
+
+
+ADD R.a, 1
+"""
+    program = parse_program(text, preserve_newlines=True)
+
+    # Should have 2 blank lines
+    assert isinstance(program[1], BlankLine)
+    assert isinstance(program[2], BlankLine)
+
+    formatted = program_to_text(program, preserve_newlines=True)
+    expected = "    CP 5, R.a\n\n\n    ADD R.a, 1\n"
+    assert formatted == expected
+
+
+def test_preserve_newlines_with_labels():
+    """Test preserve_newlines with labels."""
+    text = """CP 5, R.a
+
+loop:
+    NOUT R.a, 1
+    SUB R.a, 1
+
+    JGT loop, R.a, 0
+"""
+    program = parse_program(text, preserve_newlines=True)
+    formatted = program_to_text(program, preserve_newlines=True)
+    expected = "    CP 5, R.a\n\nloop:\n    NOUT R.a, 1\n    SUB R.a, 1\n\n    JGT loop, R.a, 0\n"
+    assert formatted == expected
+
+
+def test_preserve_newlines_overrides_blank_line_before_label():
+    """Test that preserve_newlines overrides blank_line_before_label."""
+    text = """CP 5, R.a
+loop:
+    NOUT R.a, 1
+"""
+    program = parse_program(text, preserve_newlines=True)
+
+    # With blank_line_before_label=True but preserve_newlines=True,
+    # should NOT add a blank line before label
+    formatted = program_to_text(
+        program, preserve_newlines=True, blank_line_before_label=True
+    )
+    expected = "    CP 5, R.a\nloop:\n    NOUT R.a, 1\n"
+    assert formatted == expected
+
+
+def test_preserve_newlines_false_ignores_blank_lines():
+    """Test that preserve_newlines=False ignores BlankLine objects."""
+    program = [
+        I.CP(5, R.a),
+        BlankLine(),
+        I.ADD(R.a, L[1]),
+    ]
+
+    # With preserve_newlines=False (default), BlankLine should be ignored
+    formatted = program_to_text(program, preserve_newlines=False)
+    expected = "    CP 5, R.a\n    ADD R.a, 1\n"
+    assert formatted == expected
+
+
+def test_preserve_newlines_with_comments():
+    """Test preserve_newlines with standalone comments."""
+    text = """; Initialize
+CP 5, R.a
+
+; Loop
+loop:
+    NOUT R.a, 1
+"""
+    program = parse_program(text, preserve_newlines=True)
+    formatted = program_to_text(program, preserve_newlines=True)
+    expected = "; Initialize\n    CP 5, R.a\n\n; Loop\nloop:\n    NOUT R.a, 1\n"
+    assert formatted == expected
+
+
+def test_preserve_newlines_empty_lines_only():
+    """Test program with only blank lines."""
+    text = """
+
+"""
+    program = parse_program(text, preserve_newlines=True)
+
+    # Should have 2 BlankLine objects
+    assert len(program) == 2
+    assert all(isinstance(item, BlankLine) for item in program)
+
+    formatted = program_to_text(program, preserve_newlines=True)
+    expected = "\n\n"
+    assert formatted == expected
+
+
+def test_preserve_newlines_with_inline_comments():
+    """Test preserve_newlines with inline comments."""
+    text = """CP 5, R.a  ; Init
+
+ADD R.a, 1  ; Increment
+"""
+    program = parse_program(text, preserve_newlines=True)
+    formatted = program_to_text(program, preserve_newlines=True)
+    expected = "    CP 5, R.a  ; Init\n\n    ADD R.a, 1  ; Increment\n"
+    assert formatted == expected
+
+
+def test_preserve_newlines_roundtrip():
+    """Test that preserve_newlines maintains formatting through parse/format cycle."""
+    original = """; Factorial example
+CP 5, R.a
+CALL factorial
+
+JMP end
+
+factorial:
+    JGT recursive_case, R.a, 1
+    CP 1, R.a
+    RET
+
+recursive_case:
+    PUSH R.a
+    SUB R.a, 1
+    CALL factorial
+    POP R.b
+    MUL R.a, R.b
+    RET
+
+end:
+"""
+    program = parse_program(original, preserve_newlines=True)
+    formatted = program_to_text(program, preserve_newlines=True)
+
+    # Reparse and format again
+    program2 = parse_program(formatted, preserve_newlines=True)
+    formatted2 = program_to_text(program2, preserve_newlines=True)
+
+    # Should be identical after second cycle
+    assert formatted == formatted2

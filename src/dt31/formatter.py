@@ -7,15 +7,16 @@ with configurable formatting options.
 
 from dt31.instructions import Instruction
 from dt31.operands import Label
-from dt31.parser import Comment
+from dt31.parser import BlankLine, Comment
 
 
 def program_to_text(
-    program: list[Instruction | Label | Comment] | list[Instruction],
+    program: list[Instruction | Label | Comment | BlankLine] | list[Instruction],
     *,
     indent_size: int = 4,
     label_inline: bool = False,
     blank_line_before_label: bool = True,
+    preserve_newlines: bool = False,
     align_comments: bool = False,
     comment_column: int | None = None,
     comment_margin: int = 2,
@@ -28,10 +29,13 @@ def program_to_text(
     in Python or parsed from text) into human-readable assembly text syntax.
 
     Args:
-        program: List of instructions, labels, and comments in source order.
+        program: List of instructions, labels, comments, and blank lines in source order.
         indent_size: Number of spaces per indentation level (default: 4).
         label_inline: If True, place labels on same line as next instruction (default: False).
-        blank_line_before_label: If True, add blank line before labels (default: True).
+        blank_line_before_label: If True, add blank line before labels. Ignored when
+            preserve_newlines=True (default: True).
+        preserve_newlines: If True, preserve blank lines from source and ignore
+            blank_line_before_label (default: False).
         align_comments: If True, align inline comments at comment_column (default: False).
         comment_column: Column position for aligned comments. If None and align_comments=True,
             automatically calculated based on longest instruction + comment_margin (default: None).
@@ -152,14 +156,20 @@ def program_to_text(
     prev_was_label = False
 
     for i, item in enumerate(program):
-        if isinstance(item, Comment):
+        if isinstance(item, BlankLine):
+            # Preserve blank lines only if preserve_newlines is True
+            if preserve_newlines:
+                lines.append("")
+            prev_was_label = False
+        elif isinstance(item, Comment):
             # Standalone comments are never indented or aligned
             if not strip_comments:
                 lines.append(str(item))
             prev_was_label = False
         elif isinstance(item, Label):
             # Add blank line before label if requested (but not before first item or consecutive labels)
-            if blank_line_before_label and lines and not prev_was_label:
+            # Skip this logic if preserve_newlines is True
+            if not preserve_newlines and blank_line_before_label and lines and not prev_was_label:
                 lines.append("")
 
             if label_inline:

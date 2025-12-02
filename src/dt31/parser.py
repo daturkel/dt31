@@ -59,6 +59,43 @@ class Comment:
         return self.comment == other.comment
 
 
+class BlankLine:
+    """A blank line in a DT31 program.
+
+    Blank lines are preserved when parsing assembly text with the `preserve_newlines`
+    option. They have no effect on program execution and are primarily used for
+    formatting and readability.
+
+    Example:
+        >>> program = [
+        ...     I.CP(5, R.a),
+        ...     BlankLine(),
+        ...     I.ADD(R.a, 1),
+        ... ]
+    """
+
+    def __str__(self) -> str:
+        """Return assembly text representation of the blank line.
+
+        Returns:
+            An empty string.
+        """
+        return ""
+
+    def __repr__(self) -> str:
+        """Return Python API representation of the blank line.
+
+        Returns:
+            A string showing BlankLine construction.
+        """
+        return "BlankLine()"
+
+    def __eq__(self, other):
+        if type(self) is not type(other):
+            return False
+        return True
+
+
 def _find_label_colon(line: str) -> int:
     """Find the first ':' that's not inside a quoted string.
 
@@ -86,7 +123,8 @@ def _find_label_colon(line: str) -> int:
 def parse_program(
     text: str,
     custom_instructions: dict[str, type[Instruction]] | None = None,
-) -> list[Instruction | Label | Comment]:
+    preserve_newlines: bool = False,
+) -> list[Instruction | Label | Comment | BlankLine]:
     """
     Parse DT31 assembly text into a program list.
 
@@ -98,9 +136,10 @@ def parse_program(
         text: Assembly code as a string
         custom_instructions: Optional dict of custom instruction names to `Instruction`
             subclasses
+        preserve_newlines: If True, preserve blank lines as BlankLine objects (default: False)
 
     Returns:
-        List of Instructions, Labels, and Comments ready for cpu.run()
+        List of Instructions, Labels, Comments, and optionally BlankLines ready for cpu.run()
 
     Example:
         >>> from dt31 import DT31
@@ -139,7 +178,10 @@ def parse_program(
             program.append(Comment(comment_text))
             continue
 
+        # Blank line (no code, no comment)
         if not line:
+            if preserve_newlines:
+                program.append(BlankLine())
             continue
 
         # Handle label definitions (can be multiple labels on same line)
