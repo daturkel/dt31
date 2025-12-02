@@ -283,3 +283,30 @@ def test_with_comment_method_label():
     assert commented_label.comment == "Loop start"
     assert commented_label == label
     assert commented_label is not label
+
+
+def test_lc_escape_sequences_str():
+    """Test that character literals with escape sequences render correctly."""
+    # Newline
+    lc_newline = LC["\n"]
+    assert str(lc_newline) == "'\\n'"
+
+    # Tab
+    lc_tab = LC["\t"]
+    assert str(lc_tab) == "'\\t'"
+
+    # Carriage return
+    lc_cr = LC["\r"]
+    assert str(lc_cr) == "'\\r'"
+
+    # Backslash
+    lc_backslash = LC["\\"]
+    assert str(lc_backslash) == "'\\\\'"
+
+    # Single quote
+    lc_quote = LC["'"]
+    assert str(lc_quote) == "'\\''"
+
+    # Regular character (should not be escaped)
+    lc_regular = LC["A"]
+    assert str(lc_regular) == "'A'"
