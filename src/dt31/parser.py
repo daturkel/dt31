@@ -287,6 +287,19 @@ def parse_operand(token: str) -> Operand | Label:
 
 
 # Precompiled regex patterns for parsing
-TOKEN_PATTERN = re.compile(r"'[^']+'|[^\s,]+")
+TOKEN_PATTERN = re.compile(
+    r"""
+    '           # Opening quote for character literal
+    (?:         # Non-capturing group for character content
+        \\.     # Escaped character (backslash + any char, e.g., \', \n)
+        |       # OR
+        [^']    # Any non-quote character
+    )
+    '           # Closing quote
+    |           # OR (for non-character-literal tokens)
+    [^\s,]+     # Any sequence of non-whitespace, non-comma characters
+    """,
+    re.VERBOSE,
+)
 MEMORY_PATTERN = re.compile(r"M?\[(.+)\]")
 REGISTER_PREFIX_PATTERN = re.compile(r"R\.(\w+)")
