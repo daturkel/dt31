@@ -26,7 +26,7 @@ loop:
     ; jump to loop if a > 0
     JGT loop, R.a, 0
 
-; run with: `dt31 countdown.dt`
+; run with: `dt31 run countdown.dt`
 ; output: 5 4 3 2 1
 ```
 </td>
