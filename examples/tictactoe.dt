@@ -1,0 +1,121 @@
+; R.a = player's character
+; R.b = CPU's character
+; R.c = counter, used in various places
+; R.d = scratch
+
+; "Xs or Os?"
+xs_or_os:
+    COUT 'X'
+    COUT 's'
+    COUT ' '
+    COUT 'o'
+    COUT 'r'
+    COUT ' '
+    COUT 'O'
+    COUT 's'
+    COUT '?', 1
+
+; get X or O; loop if invalid
+xo_in:
+    CIN R.a
+    JEQ set_cpu, R.a, 'X'
+    JEQ to_upper, R.a, 'x'
+    JEQ set_cpu, R.a, 'O'
+    JEQ to_upper, R.a, 'o'
+    JMP xs_or_os
+
+; x->X, o->O
+to_upper:
+    SUB R.a, 32 ; make x/o uppercase
+; set CPU to be opposite of player
+set_cpu:
+    CP 'O', R.b
+    JNE game, R.a, R.b
+    CP 'X', R.b
+
+game:
+    CP 1, [0]
+    CP -1, [1]
+    CP 1, [2]
+    CP -1, [3]
+    CP 1, [4]
+    CP -1, [5]
+    CP 1, [6]
+    CP -1, [7]
+    CP 1, [8]
+    RJEQ 2, R.a, 'O'
+    CALL player_turn
+    CALL cpu_turn
+    RJEQ 2, R.a, 'X'
+;    JEQ game, R.a, 'X'
+    CALL player_turn
+    EXIT
+    JMP game
+
+board:
+    CP 0, R.c
+    CALL p_row
+    CALL p_line
+    ADD R.c, 1
+    CALL p_row
+    CALL p_line
+    ADD R.c, 1
+    CALL p_row
+    RET
+
+
+print_char:
+    JEQ p_empty, [R.c], 0
+    JEQ p_x, [R.c], 1
+    JEQ p_o, [R.c], -1
+p_empty:
+    COUT ' '
+    RET
+p_x:
+    COUT 'X'
+    RET
+p_o:
+    COUT 'O'
+    RET
+
+
+p_row:
+    CALL print_char
+    COUT '|'
+    ADD R.c, 1
+    CALL print_char
+    COUT '|'
+    ADD R.c, 1
+    CALL print_char
+    COUT '\n'
+    RET
+
+p_line:
+    COUT '-'
+    COUT '-'
+    COUT '-'
+    COUT '-'
+    COUT '-', 1
+    RET
+
+player_turn:
+    COUT 'Y'
+    COUT 'o'
+    COUT 'u'
+    COUT 'r'
+    COUT ' '
+    COUT 't'
+    COUT 'u'
+    COUT 'r'
+    COUT 'n', 1
+    CALL board
+    RET
+
+cpu_turn:
+    COUT 'c', 1
+cpu_loop:
+    RINT 0, 9, R.d
+    JNE cpu_loop, [R.d], 0
+    CP
+    CALL board
+    RET
