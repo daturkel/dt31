@@ -539,6 +539,43 @@ def test_cin(cpu, monkeypatch):
     assert cpu.get_register("a") == 65
 
 
+def test_cin_escape_sequences(cpu, monkeypatch):
+    """Test that CIN properly decodes Python escape sequences."""
+    # Test newline
+    monkeypatch.setattr("builtins.input", lambda prompt: r"\n")
+    assert I.CIN(R.a)(cpu) == 10  # ord('\n') == 10
+    assert cpu.get_register("a") == 10
+
+    # Test tab
+    monkeypatch.setattr("builtins.input", lambda prompt: r"\t")
+    assert I.CIN(R.a)(cpu) == 9  # ord('\t') == 9
+    assert cpu.get_register("a") == 9
+
+    # Test backslash
+    monkeypatch.setattr("builtins.input", lambda prompt: r"\\")
+    assert I.CIN(R.a)(cpu) == 92  # ord('\\') == 92
+    assert cpu.get_register("a") == 92
+
+    # Test carriage return
+    monkeypatch.setattr("builtins.input", lambda prompt: r"\r")
+    assert I.CIN(R.a)(cpu) == 13  # ord('\r') == 13
+    assert cpu.get_register("a") == 13
+
+    # Test regular character (should still work)
+    monkeypatch.setattr("builtins.input", lambda prompt: "B")
+    assert I.CIN(R.a)(cpu) == 66  # ord('B') == 66
+    assert cpu.get_register("a") == 66
+
+    # Test invalid unicode escape (should fall back to literal and fail with TypeError)
+    # \x with incomplete hex sequence causes UnicodeDecodeError, falls back to r"\x"
+    # which is 2 characters, so ord() raises TypeError
+    monkeypatch.setattr("builtins.input", lambda prompt: r"\x")
+    with pytest.raises(
+        TypeError, match="expected a character, but string of length 2 found"
+    ):
+        I.CIN(R.a)(cpu)
+
+
 def test_semp(cpu):
     assert I.SEMP(M[0])(cpu) == 1
     assert cpu.get_memory(0) == 1
@@ -918,6 +955,44 @@ def test_strin_empty_string(cpu, monkeypatch):
     cpu.set_memory(10, 999)
     assert I.STRIN(M[10])(cpu) == 0
     assert cpu.get_memory(10) == 0
+
+
+def test_strin_escape_sequences(cpu, monkeypatch):
+    """Test that STRIN properly decodes Python escape sequences."""
+    # Test string with newline
+    monkeypatch.setattr("builtins.input", lambda prompt: r"Hello\nWorld")
+    assert I.STRIN(M[10])(cpu) == 0
+    expected = "Hello\nWorld"
+    for i, char in enumerate(expected):
+        assert cpu.get_memory(10 + i) == ord(char)
+    assert cpu.get_memory(10 + len(expected)) == 0
+
+    # Test string with tab
+    monkeypatch.setattr("builtins.input", lambda prompt: r"A\tB")
+    assert I.STRIN(M[20])(cpu) == 0
+    expected = "A\tB"
+    for i, char in enumerate(expected):
+        assert cpu.get_memory(20 + i) == ord(char)
+    assert cpu.get_memory(20 + len(expected)) == 0
+
+    # Test string with multiple escape sequences
+    monkeypatch.setattr(
+        "builtins.input", lambda prompt: r"Line1\nLine2\tTab\\Backslash"
+    )
+    assert I.STRIN(M[30])(cpu) == 0
+    expected = "Line1\nLine2\tTab\\Backslash"
+    for i, char in enumerate(expected):
+        assert cpu.get_memory(30 + i) == ord(char)
+    assert cpu.get_memory(30 + len(expected)) == 0
+
+    # Test invalid unicode escape (should fall back to literal)
+    # \xZZ is invalid, so decode fails and falls back to literal r"\xZZ"
+    monkeypatch.setattr("builtins.input", lambda prompt: r"\xZZ")
+    assert I.STRIN(M[40])(cpu) == 0
+    expected = r"\xZZ"  # Literal string
+    for i, char in enumerate(expected):
+        assert cpu.get_memory(40 + i) == ord(char)
+    assert cpu.get_memory(40 + len(expected)) == 0
 
 
 def test_strout_no_newline(cpu, capsys):

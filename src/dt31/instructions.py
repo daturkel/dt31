@@ -1470,7 +1470,12 @@ class CIN(Instruction):
 
     def _calc(self, cpu: DT31) -> int:
         val = input("> ")
-        val_ord = ord(val)
+        # Decode escape sequences (e.g., '\n' -> newline)
+        try:
+            decoded = val.encode().decode("unicode_escape")
+        except UnicodeDecodeError:
+            decoded = val
+        val_ord = ord(decoded)
         cpu[self.out] = val_ord
         return val_ord
 
@@ -1500,15 +1505,20 @@ class STRIN(Instruction):
 
     def _calc(self, cpu: DT31) -> int:
         val = input(INPUT_PROMPT)
+        # Decode escape sequences (e.g., '\n' -> newline)
+        try:
+            decoded = val.encode().decode("unicode_escape")
+        except UnicodeDecodeError:
+            decoded = val
         base = self.out.resolve_address(cpu)
         tmp = base
 
         # empty string just writes 0 to out
-        if not val:
+        if not decoded:
             cpu.set_memory(tmp, 0)
             return 0
 
-        for i, char in enumerate(val):
+        for i, char in enumerate(decoded):
             tmp = base + i
             cpu.set_memory(tmp, ord(char))
         cpu.set_memory(tmp + 1, 0)
