@@ -67,7 +67,16 @@ class Literal(Operand):
     def __str__(self) -> str:
         """Return assembly text representation."""
         if self.is_char:
-            return f"'{chr(self.value)}'"
+            char_str = chr(self.value)
+            # Special case for single quote: repr("'") -> "'" (uses double quotes)
+            # We need to escape it for our single-quote syntax
+            if char_str == "'":
+                return r"'\''"
+            # For all other characters, repr() handles escaping correctly
+            # repr("A") -> "'A'", repr("\n") -> "'\n'", repr("\\") -> "'\\\\'", etc.
+            escaped = repr(char_str)
+            # Strip the outer quotes that repr() adds and wrap in single quotes
+            return f"'{escaped[1:-1]}'"
         return str(self.value)
 
     def __eq__(self, other) -> bool:
