@@ -1,0 +1,81 @@
+; memory layout = [ bf instructions ..., 0, data ...]
+; R.a = data pointer
+; R.b = instruction pointer
+; R.c = current instruction
+; R.d = bracket tracker
+
+    STRIN [0]                 ; get program
+    NEXT 0, R.a               ; find program end
+    ADD R.a, 1                ; set memory start
+    SUB R.b, 1                ; set instruction pointer to -1
+
+; iterate over possible instructions
+inst:
+    ADD R.b, 1                ; increment instruction pointer
+    CP [R.b], R.c             ; get current instruction
+    RJNE 3, R.c, '>'          ; >?
+    ADD R.a, 1                ; increment data pointer
+    JMP inst
+    RJNE 3, R.c, '<'          ; <?
+    SUB R.a, 1                ; decrement data pointer
+    JMP inst
+    RJNE 3, R.c, '+'          ; +?
+    ADD [R.a], 1              ; increment data
+    JMP inst
+    RJNE 3, R.c, '-'          ; -?
+    SUB [R.a], 1              ; decrement data
+    JMP inst
+    RJNE 3, R.c, '.'          ; .?
+    COUT [R.a]                ; output data
+    JMP inst
+    RJNE 3, R.c, ','          ; ,?
+    CIN [R.a]                 ; input data
+    JMP inst
+    RJNE 3, R.c, '['          ; [?
+    JEQ seek_right, [R.a], 0  ; if data = 0, jump to ]
+    JMP inst
+    RJNE 3, R.c, ']'          ; ]?
+    JNE seek_left, [R.a], 0   ; if data ≠ 0, jump to [
+    JMP inst
+    EXIT
+
+; move instruction pointer right until we find the matching ]
+seek_right:
+    CP 1, R.d                 ; set bracket counter to 1
+right_loop:
+    ADD R.b, 1                ; move right 1 instruction
+    RJEQ 4, [R.b], '['        ; if the character is [, call inc then loop
+    RJEQ 5, [R.b], ']'        ; elif the character is ], call dec
+    JEQ err, [R.b], 0         ; elif invalid brackets, crash
+    JMP right_loop            ; else loop
+    CALL inc                  ; (char was [, incrementing)
+    JMP right_loop
+    CALL dec                  ; (char was ], decrementing)
+    JEQ inst, R.d, 0          ; if bracket counter is 0, continue program from this instruction pointer
+    JMP right_loop            ; else keep seeking
+
+; move instruction pointer left until we find the matching [
+seek_left:
+    CP -1, R.d                ; set bracket counter to -1
+left_loop:
+    SUB R.b, 1                ; move left 1 instruction
+    RJEQ 4, [R.b], ']'        ; if the character is ], call dec then loop
+    RJEQ 5, [R.b], '['        ; elif the character is [, call inc
+    JEQ err, [R.b], 0         ; elif invalid brackets, crash
+    JMP left_loop             ; else loop
+    CALL dec                  ; (char was ], decrementing)
+    JMP left_loop
+    CALL inc                  ; (char was [, incrementing)
+    JEQ inst, R.d, 0          ; if bracket counter is 0, continue program from this instruction pointer
+    JMP left_loop             ; else keep seeking
+
+dec:
+    SUB R.d, 1                ; decrement bracket counter
+    RET
+
+inc:
+    ADD R.d, 1                ; increment bracket counter
+    RET
+
+err:
+    EXIT 1

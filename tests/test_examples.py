@@ -334,7 +334,15 @@ def test_tictactoe_dt():
     parse_program(assembly)
 
 
+def test_bf_dt():
+    dt_path = examples_dir / "bf.dt"
+    with open(dt_path) as f:
+        assembly = f.read()
+    parse_program(assembly)
+
+
 TESTED_ASSEMBLY_PROGRAMS = list(DT_FILE_EXPECTED_IO.keys()) + [
+    "bf.dt",
     "binomial_dist.dt",
     "crash.dt",
     "tictactoe.dt",
