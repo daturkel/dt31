@@ -1,3 +1,4 @@
+; memory layout = [ bf instructions ..., 0, data ...]
 ; R.a = data pointer
 ; R.b = instruction pointer
 ; R.c = current instruction
