@@ -296,6 +296,62 @@ def test_program_to_text_blank_line_consecutive_labels():
     assert lines[4] == "    NOUT R.a, 1"
 
 
+def test_program_to_text_blank_line_before_comment_and_label():
+    """Test that blank line is added before comment when it precedes a label."""
+    program = [
+        I.NOOP(),
+        Comment("foo"),
+        Label("label"),
+        I.CP(5, R.a),
+    ]
+
+    text = program_to_text(program, blank_lines="auto")
+    lines = text.split("\n")
+    assert len(lines) == 6  # 5 lines + empty string from trailing newline
+    assert lines[0] == "    NOOP"
+    assert lines[1] == ""  # blank line before comment (to keep it with label)
+    assert lines[2] == "; foo"
+    assert lines[3] == "label:"
+    assert lines[4] == "    CP 5, R.a"
+
+
+def test_program_to_text_multiple_comments_before_label():
+    """Test that blank line is added before first comment when multiple comments precede a label."""
+    program = [
+        I.NOOP(),
+        Comment("comment 1"),
+        Comment("comment 2"),
+        Label("label"),
+        I.CP(5, R.a),
+    ]
+
+    text = program_to_text(program, blank_lines="auto")
+    lines = text.split("\n")
+    assert len(lines) == 7  # 6 lines + empty string from trailing newline
+    assert lines[0] == "    NOOP"
+    assert lines[1] == ""  # blank line before first comment
+    assert lines[2] == "; comment 1"
+    assert lines[3] == "; comment 2"  # no blank line before second comment
+    assert lines[4] == "label:"
+    assert lines[5] == "    CP 5, R.a"
+
+
+def test_program_to_text_comment_not_before_label():
+    """Test that blank line is NOT added before comment when it doesn't precede a label."""
+    program = [
+        I.NOOP(),
+        Comment("standalone comment"),
+        I.CP(5, R.a),
+    ]
+
+    text = program_to_text(program, blank_lines="auto")
+    lines = text.split("\n")
+    assert len(lines) == 4  # 3 lines + empty string from trailing newline
+    assert lines[0] == "    NOOP"
+    assert lines[1] == "; standalone comment"  # no blank line before comment
+    assert lines[2] == "    CP 5, R.a"
+
+
 def test_program_to_text_align_comments():
     """Test aligning inline comments at a column."""
     program = [

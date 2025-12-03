@@ -154,7 +154,7 @@ def program_to_text(
     pending_labels: list[Label] = []
     prev_was_label = False
 
-    for i, item in enumerate(program):
+    for item in program:
         if isinstance(item, BlankLine):
             # Preserve blank lines only if blank_lines is "preserve"
             if blank_lines == "preserve":
@@ -168,7 +168,12 @@ def program_to_text(
         elif isinstance(item, Label):
             # Add blank line before label if blank_lines is "auto" (but not before first item or consecutive labels)
             if blank_lines == "auto" and lines and not prev_was_label:
-                lines.append("")
+                # Look backwards to find where to insert blank line
+                # If there are comments immediately before this label, insert blank before first comment
+                insert_idx = len(lines)
+                while insert_idx > 0 and lines[insert_idx - 1].startswith(";"):
+                    insert_idx -= 1
+                lines.insert(insert_idx, "")
 
             if label_inline:
                 # Collect labels to put inline with next instruction
