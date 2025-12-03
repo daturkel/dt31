@@ -1361,8 +1361,8 @@ CP 5, R.a
     assert "loop: CP 5, R.a" in formatted  # Label on same line
 
 
-def test_format_no_blank_line_before_label(temp_dt_file, capsys):
-    """Test --no-blank-line-before-label option."""
+def test_format_blank_lines_none(temp_dt_file, capsys):
+    """Test --blank-lines none option."""
     assembly = """
 CP 5, R.a
 loop:
@@ -1371,7 +1371,7 @@ ADD R.a, 1
     file_path = temp_dt_file(assembly)
 
     with patch.object(
-        sys, "argv", ["dt31", "format", "--no-blank-line-before-label", file_path]
+        sys, "argv", ["dt31", "format", "--blank-lines", "none", file_path]
     ):
         with pytest.raises(SystemExit) as exc_info:
             main()
@@ -1421,9 +1421,7 @@ def test_format_align_comments(temp_dt_file, capsys):
 
 def test_format_comment_column(temp_dt_file, capsys):
     """Test --comment-column option."""
-    assembly = """
-CP 5, R.a ; Test
-"""
+    assembly = "CP 5, R.a ; Test\n"  # No leading newline
     file_path = temp_dt_file(assembly)
 
     with patch.object(

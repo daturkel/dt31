@@ -13,7 +13,7 @@ from dt31.operands import (
     RegisterReference,
     validate_register_name,
 )
-from dt31.parser import Comment, parse_program
+from dt31.parser import BlankLine, Comment, parse_program
 
 if TYPE_CHECKING:
     from dt31.instructions import Instruction  # pragma: no cover
@@ -234,7 +234,7 @@ class DT31:
 
     def run(
         self,
-        instructions: list[Instruction | Label | Comment] | None = None,
+        instructions: list[Instruction | Label | Comment | BlankLine] | None = None,
         debug: bool = False,
     ):
         """Load and execute instructions, or continue from current instruction pointer.
@@ -268,7 +268,7 @@ class DT31:
                 break
 
     def validate_program_registers(
-        self, program: list[Instruction | Label | Comment]
+        self, program: list[Instruction | Label | Comment | BlankLine]
     ) -> None:
         """Validate that all registers used in a program exist in this CPU.
 
@@ -306,7 +306,7 @@ class DT31:
                 f"Missing registers: {sorted(missing)}"
             )
 
-    def load(self, instructions: list[Instruction | Label | Comment]):
+    def load(self, instructions: list[Instruction | Label | Comment | BlankLine]):
         """Assemble and load instructions into the DT31 and reset the instruction pointer.
 
         Args:

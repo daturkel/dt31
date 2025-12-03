@@ -5,17 +5,19 @@ instructions, labels, and comments) into human-readable assembly text format
 with configurable formatting options.
 """
 
+from typing import Literal
+
 from dt31.instructions import Instruction
 from dt31.operands import Label
-from dt31.parser import Comment
+from dt31.parser import BlankLine, Comment
 
 
 def program_to_text(
-    program: list[Instruction | Label | Comment] | list[Instruction],
+    program: list[Instruction | Label | Comment | BlankLine] | list[Instruction],
     *,
     indent_size: int = 4,
     label_inline: bool = False,
-    blank_line_before_label: bool = True,
+    blank_lines: Literal["auto", "preserve", "none"] = "preserve",
     align_comments: bool = False,
     comment_column: int | None = None,
     comment_margin: int = 2,
@@ -28,10 +30,11 @@ def program_to_text(
     in Python or parsed from text) into human-readable assembly text syntax.
 
     Args:
-        program: List of instructions, labels, and comments in source order.
+        program: List of instructions, labels, comments, and blank lines in source order.
         indent_size: Number of spaces per indentation level (default: 4).
         label_inline: If True, place labels on same line as next instruction (default: False).
-        blank_line_before_label: If True, add blank line before labels (default: True).
+        blank_lines: Controls blank line handling. "preserve" preserves blank lines from source,
+            "auto" adds blank lines before labels, "none" removes automatic blank lines (default: "preserve").
         align_comments: If True, align inline comments at comment_column (default: False).
         comment_column: Column position for aligned comments. If None and align_comments=True,
             automatically calculated based on longest instruction + comment_margin (default: None).
@@ -68,13 +71,13 @@ def program_to_text(
         #     JGT loop, R.a, 0
         ```
 
-        Custom formatting with 2-space indent and inline labels:
+        Custom formatting with 2-space indent, inline labels, and no blank lines:
         ```python
         text = program_to_text(
             program,
             indent_size=2,
             label_inline=True,
-            blank_line_before_label=False,
+            blank_lines="none",
         )
         #   CP 5, R.a
         # loop: NOUT R.a, 1
@@ -135,7 +138,7 @@ def program_to_text(
             program,
             indent_size=indent_size,
             label_inline=label_inline,
-            blank_line_before_label=blank_line_before_label,
+            blank_lines=blank_lines,
             strip_comments=True,  # Remove comments for measurement
             hide_default_args=hide_default_args,
         )
@@ -151,16 +154,26 @@ def program_to_text(
     pending_labels: list[Label] = []
     prev_was_label = False
 
-    for i, item in enumerate(program):
-        if isinstance(item, Comment):
+    for item in program:
+        if isinstance(item, BlankLine):
+            # Preserve blank lines only if blank_lines is "preserve"
+            if blank_lines == "preserve":
+                lines.append("")
+            prev_was_label = False
+        elif isinstance(item, Comment):
             # Standalone comments are never indented or aligned
             if not strip_comments:
                 lines.append(str(item))
             prev_was_label = False
         elif isinstance(item, Label):
-            # Add blank line before label if requested (but not before first item or consecutive labels)
-            if blank_line_before_label and lines and not prev_was_label:
-                lines.append("")
+            # Add blank line before label if blank_lines is "auto" (but not before first item or consecutive labels)
+            if blank_lines == "auto" and lines and not prev_was_label:
+                # Look backwards to find where to insert blank line
+                # If there are comments immediately before this label, insert blank before first comment
+                insert_idx = len(lines)
+                while insert_idx > 0 and lines[insert_idx - 1].startswith(";"):
+                    insert_idx -= 1
+                lines.insert(insert_idx, "")
 
             if label_inline:
                 # Collect labels to put inline with next instruction
