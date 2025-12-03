@@ -46,5 +46,12 @@ dev = [
     "pytest-cov>=5.0.0",
     "genbadge[coverage]>=1.1.0",
     "pdoc>=14.7.0",
+    "sphinx>=7.0.0",
+    "sphinx-autodoc-typehints>=2.0.0",
+    "myst-parser>=2.0.0",
+    "furo==2025.9.25",
     "prek>=0.2.13",
+    "sphinx-autobuild>=2024.10.3",
+    "sphinx-copybutton>=0.5.2",
+    "sphinx-inline-tabs>=2023.4.21",
 ]
