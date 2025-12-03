@@ -91,9 +91,7 @@ class BlankLine:
         return "BlankLine()"
 
     def __eq__(self, other):
-        if type(self) is not type(other):
-            return False
-        return True
+        return type(self) is type(other)
 
 
 def _find_label_colon(line: str) -> int:
