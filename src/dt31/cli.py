@@ -110,7 +110,7 @@ Format `.dt` assembly files with consistent style, following Black/Ruff conventi
 - **-i, --custom-instructions**: Path to Python file containing custom instruction definitions
 - **--indent-size**: Number of spaces per indentation level (default: 4)
 - **--label-inline**: Place labels on same line as next instruction (default: False)
-- **--no-blank-line-before-label**: Don't add blank line before labels (default: False)
+- **--blank-lines**: Control blank line handling: 'preserve' (default), 'auto', or 'none'
 - **--align-comments**: Align inline comments (auto-calculates column if --comment-column not specified)
 - **--comment-column**: Column position for aligned comments (default: auto-calculate)
 - **--comment-margin**: Spaces before inline comments and margin for auto-alignment (default: 2)
@@ -652,9 +652,11 @@ examples:
 
     format_parser.add_argument(
         "-b",
-        "--no-blank-line-before-label",
-        action="store_true",
-        help="Don't add blank line before labels (default: add blank line)",
+        "--blank-lines",
+        choices=["auto", "preserve", "none"],
+        default="preserve",
+        help="Control blank line handling: 'preserve' keeps source formatting (default), "
+        "'auto' adds blank lines before labels, 'none' removes automatic blank lines",
     )
 
     format_parser.add_argument(
@@ -747,8 +749,15 @@ def _format_single_file(
         sys.exit(1)
 
     # Parse the program
+    # Extract blank_lines from formatting_options to determine if we need to preserve newlines during parsing
+    blank_lines = formatting_options.get("blank_lines", "preserve")
+    preserve_newlines = blank_lines == "preserve"
     try:
-        program = parse_program(original_text, custom_instructions=custom_instructions)
+        program = parse_program(
+            original_text,
+            custom_instructions=custom_instructions,
+            preserve_newlines=preserve_newlines,
+        )
     except ParserError as e:
         print(f"Parse error: {e}", file=sys.stderr)
         sys.exit(1)
@@ -820,7 +829,7 @@ def format_command(args: argparse.Namespace) -> None:
     formatting_options = {
         "indent_size": args.indent_size,
         "label_inline": args.label_inline,
-        "blank_line_before_label": not args.no_blank_line_before_label,  # Inverted!
+        "blank_lines": args.blank_lines,
         "align_comments": args.align_comments,
         "comment_column": args.comment_column,
         "comment_margin": args.comment_margin,

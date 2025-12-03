@@ -271,8 +271,10 @@ dt31 format --comment-margin 3 program.dt
 # Inline labels (default: labels on separate lines)
 dt31 format --label-inline program.dt
 
-# No blank lines before labels (default: blank line before labels)
-dt31 format --no-blank-line-before-label program.dt
+# Control blank lines (default: preserve from source)
+dt31 format --blank-lines auto program.dt    # Add blank lines before labels
+dt31 format --blank-lines none program.dt    # Remove automatic blank lines
+dt31 format --blank-lines preserve program.dt  # Preserve source formatting (default)
 
 # Auto-align inline comments (calculates column based on longest instruction)
 dt31 format --align-comments program.dt
@@ -556,8 +558,10 @@ text = program_to_text(program, indent_size=2)
 text = program_to_text(program, label_inline=True)
 # loop: COUT '*', 0
 
-# No blank lines before labels (default: True)
-text = program_to_text(program, blank_line_before_label=False)
+# Control blank lines (default: "preserve")
+text = program_to_text(program, blank_lines="auto")      # Add blank lines before labels
+text = program_to_text(program, blank_lines="none")      # No automatic blank lines
+text = program_to_text(program, blank_lines="preserve")  # Preserve source formatting
 
 # Auto-align inline comments (default: False, comment_column: None)
 commented_program = [
