@@ -19,6 +19,7 @@ The dt31 CLI provides three main commands:
 - **run**: Execute `.dt` assembly files
 - **check**: Validate syntax of `.dt` assembly files
 - **format**: Format `.dt` assembly files with consistent style
+- --version: Show dt31 version
 
 ## Basic Usage
 
@@ -221,6 +222,7 @@ Example error dump structure:
 import argparse
 import difflib
 import glob
+import importlib.metadata
 import importlib.util
 import json
 import sys
@@ -900,11 +902,14 @@ def main() -> None:
         description="dt31 assembly language tools",
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
+    parser.add_argument(
+        "-v", "--version", action="store_true", help="Show dt31 version"
+    )
 
     subparsers = parser.add_subparsers(
         dest="command",
         help="Available commands",
-        required=True,  # Require a subcommand
+        required=False,
     )
 
     # Create 'run' subcommand
@@ -917,6 +922,10 @@ def main() -> None:
     _create_format_parser(subparsers)
 
     args = parser.parse_args()
+
+    if args.version:
+        print(f"dt31 v{importlib.metadata.version('dt31')}")
+        sys.exit(0)
 
     # Dispatch to appropriate command handler
     if args.command == "run":

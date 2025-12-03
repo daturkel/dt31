@@ -1713,6 +1713,7 @@ def test_cli_unknown_command(capsys):
     with patch("dt31.cli.argparse.ArgumentParser.parse_args") as mock_parse_args:
         # Create a mock args object with an unexpected command
         mock_args = argparse.Namespace(command="unknown")
+        mock_args.version = None
         mock_parse_args.return_value = mock_args
 
         with pytest.raises(SystemExit) as exc_info:
@@ -1925,3 +1926,16 @@ def test_format_multiple_files_check_mode_all_formatted(temp_dt_file, capsys):
     assert exc_info.value.code == 0
     captured = capsys.readouterr()
     assert "All 2 file(s) are already formatted" in captured.err
+
+
+# -------------------------------------- version ------------------------------------- #
+
+
+def test_version(capsys):
+    with patch.object(sys, "argv", ["dt31", "--version"]):
+        with pytest.raises(SystemExit) as exc_info:
+            main()
+
+    assert exc_info.value.code == 0
+    captured = capsys.readouterr()
+    assert "dt31 v" in captured.out
