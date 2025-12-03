@@ -370,8 +370,10 @@ dt31<span class="w"> </span>format<span class="w"> </span>--comment-margin<span 
 <span class="c1"># Inline labels (default: labels on separate lines)</span>
 dt31<span class="w"> </span>format<span class="w"> </span>--label-inline<span class="w"> </span>program.dt
 
-<span class="c1"># No blank lines before labels (default: blank line before labels)</span>
-dt31<span class="w"> </span>format<span class="w"> </span>--no-blank-line-before-label<span class="w"> </span>program.dt
+<span class="c1"># Control blank lines (default: preserve from source)</span>
+dt31<span class="w"> </span>format<span class="w"> </span>--blank-lines<span class="w"> </span>auto<span class="w"> </span>program.dt<span class="w">    </span><span class="c1"># Add blank lines before labels</span>
+dt31<span class="w"> </span>format<span class="w"> </span>--blank-lines<span class="w"> </span>none<span class="w"> </span>program.dt<span class="w">    </span><span class="c1"># Remove automatic blank lines</span>
+dt31<span class="w"> </span>format<span class="w"> </span>--blank-lines<span class="w"> </span>preserve<span class="w"> </span>program.dt<span class="w">  </span><span class="c1"># Preserve source formatting (default)</span>
 
 <span class="c1"># Auto-align inline comments (calculates column based on longest instruction)</span>
 dt31<span class="w"> </span>format<span class="w"> </span>--align-comments<span class="w"> </span>program.dt
@@ -721,8 +723,10 @@ dt31<span class="w"> </span>format<span class="w"> </span>--check<span class="w"
 <span class="n">text</span> <span class="o">=</span> <span class="n">program_to_text</span><span class="p">(</span><span class="n">program</span><span class="p">,</span> <span class="n">label_inline</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="c1"># loop: COUT &#39;*&#39;, 0</span>
 
-<span class="c1"># No blank lines before labels (default: True)</span>
-<span class="n">text</span> <span class="o">=</span> <span class="n">program_to_text</span><span class="p">(</span><span class="n">program</span><span class="p">,</span> <span class="n">blank_line_before_label</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="c1"># Control blank lines (default: &quot;preserve&quot;)</span>
+<span class="n">text</span> <span class="o">=</span> <span class="n">program_to_text</span><span class="p">(</span><span class="n">program</span><span class="p">,</span> <span class="n">blank_lines</span><span class="o">=</span><span class="s2">&quot;auto&quot;</span><span class="p">)</span>      <span class="c1"># Add blank lines before labels</span>
+<span class="n">text</span> <span class="o">=</span> <span class="n">program_to_text</span><span class="p">(</span><span class="n">program</span><span class="p">,</span> <span class="n">blank_lines</span><span class="o">=</span><span class="s2">&quot;none&quot;</span><span class="p">)</span>      <span class="c1"># No automatic blank lines</span>
+<span class="n">text</span> <span class="o">=</span> <span class="n">program_to_text</span><span class="p">(</span><span class="n">program</span><span class="p">,</span> <span class="n">blank_lines</span><span class="o">=</span><span class="s2">&quot;preserve&quot;</span><span class="p">)</span>  <span class="c1"># Preserve source formatting</span>
 
 <span class="c1"># Auto-align inline comments (default: False, comment_column: None)</span>
 <span class="n">commented_program</span> <span class="o">=</span> <span class="p">[</span>

@@ -25,7 +25,7 @@ def test_program_to_text_with_labels():
         I.SUB(R.a, L[1]),
         I.JGT(loop, R.a, L[0]),
     ]
-    text = program_to_text(program, blank_line_before_label=False)
+    text = program_to_text(program, blank_lines="none")
     lines = text.split("\n")
     assert lines[0] == "    CP 5, R.a"
     assert lines[1] == "loop:"
@@ -73,7 +73,7 @@ def test_program_to_text_only_labels():
         Label("start"),
         Label("end"),
     ]
-    text = program_to_text(program, blank_line_before_label=False)
+    text = program_to_text(program, blank_lines="none")
     assert text == "start:\nend:\n"
 
 
@@ -88,7 +88,7 @@ def test_program_to_text_complex():
         I.RET(),
         end,
     ]
-    text = program_to_text(program, blank_line_before_label=False)
+    text = program_to_text(program, blank_lines="none")
     lines = text.split("\n")
     assert lines[0] == "    CALL print_hi"
     assert lines[1] == "    JMP end"
@@ -154,7 +154,7 @@ def test_program_to_text_label_inline():
     ]
 
     # Separate line style without blank lines
-    text = program_to_text(program, label_inline=False, blank_line_before_label=False)
+    text = program_to_text(program, label_inline=False, blank_lines="none")
     lines = text.split("\n")
     assert len(lines) == 6  # 5 lines + empty string from trailing newline
     assert lines[0] == "    CP 5, R.a"
@@ -164,7 +164,7 @@ def test_program_to_text_label_inline():
     assert lines[4] == "    JGT loop, R.a, 0"
 
     # Inline: labels on same line as next instruction
-    text = program_to_text(program, label_inline=True, blank_line_before_label=False)
+    text = program_to_text(program, label_inline=True, blank_lines="none")
     lines = text.split("\n")
     assert len(lines) == 5  # 4 lines + empty string from trailing newline
     assert lines[0] == "    CP 5, R.a"
@@ -181,7 +181,7 @@ def test_program_to_text_label_inline_at_end():
     ]
 
     # Label at end should still appear even when inline style is enabled
-    text = program_to_text(program, label_inline=True, blank_line_before_label=False)
+    text = program_to_text(program, label_inline=True, blank_lines="none")
     lines = text.split("\n")
     assert len(lines) == 3  # 2 lines + empty string from trailing newline
     assert lines[0] == "    CP 5, R.a"
@@ -199,7 +199,7 @@ def test_program_to_text_label_inline_consecutive_labels():
     ]
 
     # All labels should appear inline before the instruction
-    text = program_to_text(program, label_inline=True, blank_line_before_label=False)
+    text = program_to_text(program, label_inline=True, blank_lines="none")
     lines = text.split("\n")
     assert len(lines) == 3  # 2 lines + empty string from trailing newline
     assert lines[0] == "    CP 5, R.a"
@@ -207,7 +207,7 @@ def test_program_to_text_label_inline_consecutive_labels():
 
 
 def test_program_to_text_blank_line_before_label():
-    """Test adding blank line before labels."""
+    """Test blank line modes with labels."""
     program = [
         I.CP(5, R.a),
         Label("loop"),
@@ -216,8 +216,8 @@ def test_program_to_text_blank_line_before_label():
         I.NOOP(),
     ]
 
-    # Default: no blank lines
-    text = program_to_text(program, blank_line_before_label=False)
+    # blank_lines="none": no blank lines
+    text = program_to_text(program, blank_lines="none")
     lines = text.split("\n")
     assert len(lines) == 6  # 5 lines + empty string from trailing newline
     assert lines[0] == "    CP 5, R.a"
@@ -226,8 +226,8 @@ def test_program_to_text_blank_line_before_label():
     assert lines[3] == "end:"
     assert lines[4] == "    NOOP"
 
-    # With blank lines before labels
-    text = program_to_text(program, blank_line_before_label=True)
+    # blank_lines="auto": add blank lines before labels
+    text = program_to_text(program, blank_lines="auto")
     lines = text.split("\n")
     assert len(lines) == 8  # 7 lines + empty string from trailing newline
     assert lines[0] == "    CP 5, R.a"
@@ -240,7 +240,7 @@ def test_program_to_text_blank_line_before_label():
 
 
 def test_program_to_text_blank_line_before_label_inline():
-    """Test that blank_line_before_label works with label_inline=True."""
+    """Test that blank_lines='auto' works with label_inline=True."""
     program = [
         I.CP(5, R.a),
         Label("loop"),
@@ -249,7 +249,7 @@ def test_program_to_text_blank_line_before_label_inline():
     ]
 
     # Inline labels WITH blank line before them
-    text = program_to_text(program, label_inline=True, blank_line_before_label=True)
+    text = program_to_text(program, label_inline=True, blank_lines="auto")
     lines = text.split("\n")
     assert len(lines) == 5  # 4 lines + empty string from trailing newline
     assert lines[0] == "    CP 5, R.a"
@@ -267,7 +267,7 @@ def test_program_to_text_blank_line_before_first_label():
         I.NOUT(R.a, L[1]),
     ]
 
-    text = program_to_text(program, blank_line_before_label=True)
+    text = program_to_text(program, blank_lines="auto")
     lines = text.split("\n")
     assert len(lines) == 6  # 5 lines + empty string from trailing newline
     assert lines[0] == "start:"  # No blank line before first label
@@ -286,7 +286,7 @@ def test_program_to_text_blank_line_consecutive_labels():
         I.NOUT(R.a, L[1]),
     ]
 
-    text = program_to_text(program, blank_line_before_label=True)
+    text = program_to_text(program, blank_lines="auto")
     lines = text.split("\n")
     assert len(lines) == 6  # 5 lines + empty string from trailing newline
     assert lines[0] == "    CP 5, R.a"
@@ -305,7 +305,7 @@ def test_program_to_text_align_comments():
     ]
 
     # Default: no alignment (default margin is 2)
-    text = program_to_text(program, align_comments=False, blank_line_before_label=False)
+    text = program_to_text(program, align_comments=False, blank_lines="none")
     lines = text.split("\n")
     assert lines[0] == "    CP 5, R.a  ; Initialize"
     assert lines[1] == "    ADD R.a, 1  ; Increment"
@@ -313,7 +313,7 @@ def test_program_to_text_align_comments():
 
     # Align at column 30
     text = program_to_text(
-        program, align_comments=True, comment_column=30, blank_line_before_label=False
+        program, align_comments=True, comment_column=30, blank_lines="none"
     )
     lines = text.split("\n")
     assert lines[0] == "    CP 5, R.a                 ; Initialize"
@@ -334,7 +334,7 @@ def test_program_to_text_align_comments_exceeds_column():
 
     # Align at column 20 (second instruction will exceed this)
     text = program_to_text(
-        program, align_comments=True, comment_column=20, blank_line_before_label=False
+        program, align_comments=True, comment_column=20, blank_lines="none"
     )
     lines = text.split("\n")
 
@@ -358,7 +358,7 @@ def test_program_to_text_align_comments_custom_spacing_fallback():
         align_comments=True,
         comment_column=10,
         comment_margin=3,
-        blank_line_before_label=False,
+        blank_lines="none",
     )
     lines = text.split("\n")
 
@@ -375,7 +375,7 @@ def test_program_to_text_align_comments_standalone_not_aligned():
     ]
 
     text = program_to_text(
-        program, align_comments=True, comment_column=30, blank_line_before_label=False
+        program, align_comments=True, comment_column=30, blank_lines="none"
     )
     lines = text.split("\n")
 
@@ -427,7 +427,7 @@ def test_program_to_text_combination_all_options():
         indent_size=2,
         comment_margin=2,
         label_inline=True,
-        blank_line_before_label=True,
+        blank_lines="auto",
         align_comments=True,
         comment_column=25,
     )
@@ -458,16 +458,14 @@ def test_program_to_text_hide_default_args_binary_operations():
     ]
 
     # With hide_default_args (default)
-    text = program_to_text(program, blank_line_before_label=False)
+    text = program_to_text(program, blank_lines="none")
     lines = text.split("\n")
     assert lines[0] == "    ADD R.a, R.b"
     assert lines[1] == "    SUB R.a, 1"
     assert lines[2] == "    MUL R.b, 2"
 
     # Without hide_default_args
-    text = program_to_text(
-        program, hide_default_args=False, blank_line_before_label=False
-    )
+    text = program_to_text(program, hide_default_args=False, blank_lines="none")
     lines = text.split("\n")
     assert lines[0] == "    ADD R.a, R.b, R.a"
     assert lines[1] == "    SUB R.a, 1, R.a"
@@ -481,9 +479,7 @@ def test_program_to_text_hide_default_args_non_default_output():
         I.SUB(R.a, L[1], R.b),  # Non-default out=R.b
     ]
 
-    text = program_to_text(
-        program, hide_default_args=True, blank_line_before_label=False
-    )
+    text = program_to_text(program, hide_default_args=True, blank_lines="none")
     lines = text.split("\n")
     assert lines[0] == "    ADD R.a, R.b, R.c"
     assert lines[1] == "    SUB R.a, 1, R.b"
@@ -498,16 +494,14 @@ def test_program_to_text_hide_default_args_unary_operations():
     ]
 
     # With hide_default_args (default)
-    text = program_to_text(program, blank_line_before_label=False)
+    text = program_to_text(program, blank_lines="none")
     lines = text.split("\n")
     assert lines[0] == "    NOT R.a"
     assert lines[1] == "    BNOT R.b"
     assert lines[2] == "    NOT R.a, R.c"  # Non-default still shown
 
     # Without hide_default_args
-    text = program_to_text(
-        program, hide_default_args=False, blank_line_before_label=False
-    )
+    text = program_to_text(program, hide_default_args=False, blank_lines="none")
     lines = text.split("\n")
     assert lines[0] == "    NOT R.a, R.a"
     assert lines[1] == "    BNOT R.b, R.b"
@@ -522,15 +516,13 @@ def test_program_to_text_hide_default_args_nout():
     ]
 
     # With hide_default_args (default)
-    text = program_to_text(program, blank_line_before_label=False)
+    text = program_to_text(program, blank_lines="none")
     lines = text.split("\n")
     assert lines[0] == "    NOUT R.a"
     assert lines[1] == "    NOUT R.a, 1"
 
     # Without hide_default_args
-    text = program_to_text(
-        program, hide_default_args=False, blank_line_before_label=False
-    )
+    text = program_to_text(program, hide_default_args=False, blank_lines="none")
     lines = text.split("\n")
     assert lines[0] == "    NOUT R.a, 0"
     assert lines[1] == "    NOUT R.a, 1"
@@ -544,15 +536,13 @@ def test_program_to_text_hide_default_args_cout():
     ]
 
     # With hide_default_args (default)
-    text = program_to_text(program, blank_line_before_label=False)
+    text = program_to_text(program, blank_lines="none")
     lines = text.split("\n")
     assert lines[0] == "    COUT 'H'"
     assert lines[1] == "    COUT 'i', 1"
 
     # Without hide_default_args
-    text = program_to_text(
-        program, hide_default_args=False, blank_line_before_label=False
-    )
+    text = program_to_text(program, hide_default_args=False, blank_lines="none")
     lines = text.split("\n")
     assert lines[0] == "    COUT 'H', 0"
     assert lines[1] == "    COUT 'i', 1"
@@ -566,15 +556,13 @@ def test_program_to_text_hide_default_args_exit():
     ]
 
     # With hide_default_args (default)
-    text = program_to_text(program, blank_line_before_label=False)
+    text = program_to_text(program, blank_lines="none")
     lines = text.split("\n")
     assert lines[0] == "    EXIT"
     assert lines[1] == "    EXIT 1"
 
     # Without hide_default_args
-    text = program_to_text(
-        program, hide_default_args=False, blank_line_before_label=False
-    )
+    text = program_to_text(program, hide_default_args=False, blank_lines="none")
     lines = text.split("\n")
     assert lines[0] == "    EXIT 0"
     assert lines[1] == "    EXIT 1"
@@ -587,9 +575,7 @@ def test_program_to_text_hide_default_args_with_comments():
         I.NOUT(R.a).with_comment("Print"),
     ]
 
-    text = program_to_text(
-        program, hide_default_args=True, blank_line_before_label=False
-    )
+    text = program_to_text(program, hide_default_args=True, blank_lines="none")
     lines = text.split("\n")
     assert lines[0] == "    ADD R.a, R.b  ; Sum"
     assert lines[1] == "    NOUT R.a  ; Print"
@@ -607,7 +593,7 @@ def test_program_to_text_hide_default_args_with_aligned_comments():
         hide_default_args=True,
         align_comments=True,
         comment_column=30,
-        blank_line_before_label=False,
+        blank_lines="none",
     )
     lines = text.split("\n")
     # "    ADD R.a, R.b" = 16 chars, pad to 30, then "; Sum"
@@ -626,9 +612,7 @@ def test_program_to_text_hide_default_args_all_instruction_types():
         I.EXIT(),  # EXIT with default status
     ]
 
-    text = program_to_text(
-        program, hide_default_args=True, blank_line_before_label=False
-    )
+    text = program_to_text(program, hide_default_args=True, blank_lines="none")
     lines = text.split("\n")
     assert lines[0] == "    CP 5, R.a"
     assert lines[1] == "    ADD R.a, 1"
@@ -647,9 +631,7 @@ def test_program_to_text_hide_default_args_mixed_defaults_non_defaults():
         I.SUB(R.x, L[1], R.y),  # Non-default out
     ]
 
-    text = program_to_text(
-        program, hide_default_args=True, blank_line_before_label=False
-    )
+    text = program_to_text(program, hide_default_args=True, blank_lines="none")
     lines = text.split("\n")
     assert lines[0] == "    ADD R.a, R.b"
     assert lines[1] == "    ADD R.a, R.b, R.c"
@@ -666,7 +648,7 @@ def test_strip_comments_basic():
         I.ADD(R.a, L[1]).with_comment("Another inline"),
     ]
 
-    text = program_to_text(program, strip_comments=True, blank_line_before_label=False)
+    text = program_to_text(program, strip_comments=True, blank_lines="none")
     expected = "    CP 5, R.a\nloop:\n    ADD R.a, 1\n"
     assert text == expected
 
@@ -687,7 +669,7 @@ def test_strip_comments_overrides_align():
 
 
 def test_strip_comments_preserves_structure():
-    """Test that stripping comments preserves blank lines and formatting."""
+    """Test that stripping comments preserves structure."""
     program = [
         I.CP(5, R.a).with_comment("Init"),
         Label("loop"),
@@ -695,7 +677,8 @@ def test_strip_comments_preserves_structure():
         I.JGT(Label("loop"), R.a, L[0]),
     ]
 
-    text = program_to_text(program, strip_comments=True)
+    # With blank_lines="auto" to add blank line before label
+    text = program_to_text(program, strip_comments=True, blank_lines="auto")
     expected = "    CP 5, R.a\n\nloop:\n    ADD R.a, 1\n    JGT loop, R.a, 0\n"
     assert text == expected
 
@@ -725,7 +708,7 @@ def test_strip_comments_inline_labels():
     ]
 
     text = program_to_text(
-        program, strip_comments=True, label_inline=True, blank_line_before_label=False
+        program, strip_comments=True, label_inline=True, blank_lines="none"
     )
     expected = "    CP 5, R.a\nloop: ADD R.a, 1\n"
     assert text == expected
@@ -864,7 +847,7 @@ NOUT R.a, 1
     assert isinstance(program[4], I.Instruction)
 
     # Format with preserve_newlines
-    formatted = program_to_text(program, preserve_newlines=True)
+    formatted = program_to_text(program, blank_lines="preserve")
     expected = "    CP 5, R.a\n\n    ADD R.a, 1\n\n    NOUT R.a, 1\n"
     assert formatted == expected
 
@@ -882,7 +865,7 @@ ADD R.a, 1
     assert isinstance(program[1], BlankLine)
     assert isinstance(program[2], BlankLine)
 
-    formatted = program_to_text(program, preserve_newlines=True)
+    formatted = program_to_text(program, blank_lines="preserve")
     expected = "    CP 5, R.a\n\n\n    ADD R.a, 1\n"
     assert formatted == expected
 
@@ -898,38 +881,40 @@ loop:
     JGT loop, R.a, 0
 """
     program = parse_program(text, preserve_newlines=True)
-    formatted = program_to_text(program, preserve_newlines=True)
+    formatted = program_to_text(program, blank_lines="preserve")
     expected = "    CP 5, R.a\n\nloop:\n    NOUT R.a, 1\n    SUB R.a, 1\n\n    JGT loop, R.a, 0\n"
     assert formatted == expected
 
 
-def test_preserve_newlines_overrides_blank_line_before_label():
-    """Test that preserve_newlines overrides blank_line_before_label."""
+def test_preserve_newlines_no_automatic_blanks():
+    """Test that blank_lines='preserve' doesn't add automatic blank lines."""
     text = """CP 5, R.a
 loop:
     NOUT R.a, 1
 """
     program = parse_program(text, preserve_newlines=True)
 
-    # With blank_line_before_label=True but preserve_newlines=True,
-    # should NOT add a blank line before label
-    formatted = program_to_text(
-        program, preserve_newlines=True, blank_line_before_label=True
-    )
+    # With blank_lines="preserve", should NOT add blank lines automatically
+    formatted = program_to_text(program, blank_lines="preserve")
     expected = "    CP 5, R.a\nloop:\n    NOUT R.a, 1\n"
     assert formatted == expected
 
 
 def test_preserve_newlines_false_ignores_blank_lines():
-    """Test that preserve_newlines=False ignores BlankLine objects."""
+    """Test that blank_lines modes other than 'preserve' ignore BlankLine objects."""
     program = [
         I.CP(5, R.a),
         BlankLine(),
         I.ADD(R.a, L[1]),
     ]
 
-    # With preserve_newlines=False (default), BlankLine should be ignored
-    formatted = program_to_text(program, preserve_newlines=False)
+    # With blank_lines="none", BlankLine should be ignored
+    formatted = program_to_text(program, blank_lines="none")
+    expected = "    CP 5, R.a\n    ADD R.a, 1\n"
+    assert formatted == expected
+
+    # With blank_lines="auto", BlankLine should also be ignored
+    formatted = program_to_text(program, blank_lines="auto")
     expected = "    CP 5, R.a\n    ADD R.a, 1\n"
     assert formatted == expected
 
@@ -944,7 +929,7 @@ loop:
     NOUT R.a, 1
 """
     program = parse_program(text, preserve_newlines=True)
-    formatted = program_to_text(program, preserve_newlines=True)
+    formatted = program_to_text(program, blank_lines="preserve")
     expected = "; Initialize\n    CP 5, R.a\n\n; Loop\nloop:\n    NOUT R.a, 1\n"
     assert formatted == expected
 
@@ -960,8 +945,10 @@ def test_preserve_newlines_empty_lines_only():
     assert len(program) == 2
     assert all(isinstance(item, BlankLine) for item in program)
 
-    formatted = program_to_text(program, preserve_newlines=True)
-    expected = "\n\n"
+    formatted = program_to_text(program, blank_lines="preserve")
+    # Two BlankLines append two "" to lines list
+    # "\n".join(["", ""]) gives "\n", and we ensure trailing newline
+    expected = "\n"
     assert formatted == expected
 
 
@@ -972,7 +959,7 @@ def test_preserve_newlines_with_inline_comments():
 ADD R.a, 1  ; Increment
 """
     program = parse_program(text, preserve_newlines=True)
-    formatted = program_to_text(program, preserve_newlines=True)
+    formatted = program_to_text(program, blank_lines="preserve")
     expected = "    CP 5, R.a  ; Init\n\n    ADD R.a, 1  ; Increment\n"
     assert formatted == expected
 
@@ -1001,11 +988,11 @@ recursive_case:
 end:
 """
     program = parse_program(original, preserve_newlines=True)
-    formatted = program_to_text(program, preserve_newlines=True)
+    formatted = program_to_text(program, blank_lines="preserve")
 
     # Reparse and format again
     program2 = parse_program(formatted, preserve_newlines=True)
-    formatted2 = program_to_text(program2, preserve_newlines=True)
+    formatted2 = program_to_text(program2, blank_lines="preserve")
 
     # Should be identical after second cycle
     assert formatted == formatted2

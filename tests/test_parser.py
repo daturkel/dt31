@@ -10,6 +10,7 @@ from dt31.parser import (
     MEMORY_PATTERN,
     REGISTER_PREFIX_PATTERN,
     TOKEN_PATTERN,
+    BlankLine,
     Comment,
     ParserError,
     _find_label_colon,
@@ -1089,3 +1090,34 @@ def test_comment_inequality_with_other_types():
     assert comment != "Test"
     assert comment != Label("test")
     assert comment != I.CP(5, R.a)
+
+
+def test_blank_line_str():
+    """Test BlankLine __str__ returns empty string."""
+    blank = BlankLine()
+    assert str(blank) == ""
+
+
+def test_blank_line_repr():
+    """Test BlankLine __repr__ returns constructor."""
+    blank = BlankLine()
+    assert repr(blank) == "BlankLine()"
+
+
+def test_blank_line_equality():
+    """Test BlankLine equality comparison."""
+    b1 = BlankLine()
+    b2 = BlankLine()
+
+    # All BlankLine instances are equal
+    assert b1 == b2
+
+
+def test_blank_line_inequality_with_other_types():
+    """Test BlankLine inequality with non-BlankLine objects."""
+    blank = BlankLine()
+
+    assert blank != ""
+    assert blank != Label("test")
+    assert blank != Comment("test")
+    assert blank != I.CP(5, R.a)
