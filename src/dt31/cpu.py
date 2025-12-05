@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import time
 from collections import deque
 from typing import TYPE_CHECKING
 
@@ -86,6 +87,12 @@ class DT31:
         """If `True`, the CPU is in debug mode (step-by-step execution)."""
         self.step_count: int = 0
         """Cumulative number of steps run by this DT31 instance via `step` or `run`."""
+        self.wall_time_ns: int = 0
+        """Total elapsed wall time in nanoseconds across all `run()` calls."""
+        self.instruction_time_ns: int = 0
+        """Time spent executing instructions in nanoseconds (excludes debug waits)."""
+        self.blocking_time_ns: int = 0
+        """Time spent in waiting for blocking instructions in nanoseconds."""
 
     @property
     def state(self):
@@ -102,6 +109,15 @@ class DT31:
         state |= {f"R.{k}": v for k, v in self.registers.items()}
         state["stack"] = list(self.stack)
         return state
+
+    @property
+    def execution_time_ns(self) -> int:
+        """Time spent executing instructions excluding blocking waits.
+
+        Returns:
+            int: Instruction execution time minus blocking time in nanoseconds.
+        """
+        return self.instruction_time_ns - self.blocking_time_ns
 
     def pop(self) -> int:
         """Pop a value from the stack.
@@ -259,13 +275,18 @@ class DT31:
             )
 
         self.debug_mode = debug
-        while True:
-            try:
-                self.step()
-                if self.debug_mode:
-                    input()
-            except EndOfProgram:
-                break
+        wall_start = time.perf_counter_ns()
+        try:
+            while True:
+                try:
+                    self.step()
+                    if self.debug_mode:
+                        input()
+                except EndOfProgram:
+                    break
+        finally:
+            wall_end = time.perf_counter_ns()
+            self.wall_time_ns += wall_end - wall_start
 
     def validate_program_registers(
         self, program: list[Instruction | Label | Comment | BlankLine]
@@ -339,7 +360,17 @@ class DT31:
         if self.get_register("ip") < 0:
             raise EndOfProgram("Cannot load negative instructions")
         instruction = self.instructions[self.get_register("ip")]
+
+        # Track instruction timing
+        t0 = time.perf_counter_ns()
         output = instruction(self)
+        t1 = time.perf_counter_ns()
+        elapsed = t1 - t0
+
+        self.instruction_time_ns += elapsed
+        if instruction.is_blocking:
+            self.blocking_time_ns += elapsed
+
         self.step_count += 1
         if debug:
             output_str = repr(instruction) + " -> " + str(output)

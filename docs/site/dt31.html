@@ -286,6 +286,7 @@ dt31<span class="w"> </span>format<span class="w"> </span>program.dt<span class=
 <li><code>--custom-instructions PATH</code> or <code>-i PATH</code>: Load custom instruction definitions from a Python file</li>
 <li><code>--dump {none,error,success,all}</code>: When to dump CPU state (default: none)</li>
 <li><code>--dump-file FILE</code>: File path for CPU state dump (auto-generates timestamped filename if not specified)</li>
+<li><code>--verbose</code> or <code>-v</code>: Show runtime statistics (wall time, instruction time, execution time, and step count)</li>
 </ul>
 
 <h4 id="check-command">Check Command</h4>
@@ -317,10 +318,29 @@ dt31<span class="w"> </span>run<span class="w"> </span>--custom-instructions<spa
 
 <span class="c1"># Dump CPU state on error (for debugging crashes)</span>
 dt31<span class="w"> </span>run<span class="w"> </span>--dump<span class="w"> </span>error<span class="w"> </span>program.dt<span class="w">  </span><span class="c1"># Auto-generates program_crash_TIMESTAMP.json</span>
+
+<span class="c1"># Show runtime statistics</span>
+dt31<span class="w"> </span>run<span class="w"> </span>--verbose<span class="w"> </span>program.dt
+<span class="c1"># Output (to stderr):</span>
+<span class="c1"># Wall time: 4.51s</span>
+<span class="c1"># Execution time: 156.23ms</span>
+<span class="c1"># Steps: 14</span>
 </code></pre>
 </div>
 
 <p>See the <a href="https://daturkel.github.io/dt31/dt31/cli.html">CLI documentation</a> for complete details.</p>
+
+<p><strong>Verbose Mode Timing Metrics:</strong></p>
+
+<p>The <code>--verbose</code> flag displays timing metrics to help understand program performance:</p>
+
+<ul>
+<li><strong>Wall time</strong>: Total elapsed time including I/O waits. Automatically formatted with appropriate units (s, ms, or µs)</li>
+<li><strong>Execution time</strong>: Pure computation time, excluding I/O waits from input instructions (NIN, CIN, STRIN, BRK)</li>
+<li><strong>Steps</strong> (always shown): Number of instructions executed</li>
+</ul>
+
+<p>All timing values accumulate across multiple <code>run()</code> calls on the same CPU instance.</p>
 
 <h3 id="code-formatting">Code Formatting</h3>
 

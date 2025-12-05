@@ -1939,3 +1939,143 @@ def test_version(capsys):
     assert exc_info.value.code == 0
     captured = capsys.readouterr()
     assert "dt31 v" in captured.out
+
+
+# -------------------------------------- verbose ------------------------------------- #
+
+
+def test_format_time():
+    """Test format_time function with different scales."""
+    from dt31.cli import format_time
+
+    # Test microseconds (< 1ms)
+    assert format_time(0) == "0.00µs"
+    assert format_time(500) == "0.50µs"
+    assert format_time(123_456) == "123.46µs"
+    assert format_time(999_999) == "1000.00µs"
+
+    # Test milliseconds (>= 1ms, < 1s)
+    assert format_time(1_000_000) == "1.00ms"
+    assert format_time(12_345_678) == "12.35ms"
+    assert format_time(123_456_789) == "123.46ms"
+    assert format_time(999_999_999) == "1000.00ms"
+
+    # Test seconds (>= 1s)
+    assert format_time(1_000_000_000) == "1.00s"
+    assert format_time(1_234_567_890) == "1.23s"
+    assert format_time(45_000_000_000) == "45.00s"
+
+
+def test_verbose_flag_shows_statistics(tmp_path, capsys):
+    """Test that --verbose flag shows timing statistics."""
+    test_file = tmp_path / "test.dt"
+    test_file.write_text("CP 5, R.a\nADD R.a, 1\nNOUT R.a, 1")
+
+    with patch.object(sys, "argv", ["dt31", "run", "--verbose", str(test_file)]):
+        with pytest.raises(SystemExit) as exc_info:
+            main()
+
+    assert exc_info.value.code == 0
+    captured = capsys.readouterr()
+
+    # Wall time and steps are always shown
+    assert "Wall time:" in captured.err
+    assert "Steps:" in captured.err
+
+    # Check format (should have a time unit: s, ms, or µs)
+    import re
+
+    assert re.search(r"Wall time: [\d.]+(?:s|ms|µs)", captured.err)
+    assert "Steps: 3" in captured.err
+
+    # Program output should be in stdout
+    assert "6" in captured.out
+
+
+def test_verbose_short_flag(tmp_path, capsys):
+    """Test that -v short flag works the same as --verbose."""
+    test_file = tmp_path / "test.dt"
+    test_file.write_text("CP 10, R.a")
+
+    with patch.object(sys, "argv", ["dt31", "run", "-v", str(test_file)]):
+        with pytest.raises(SystemExit) as exc_info:
+            main()
+
+    assert exc_info.value.code == 0
+    captured = capsys.readouterr()
+
+    # Wall time and steps are always shown
+    assert "Wall time:" in captured.err
+    assert "Steps: 1" in captured.err
+
+
+def test_verbose_not_shown_without_flag(tmp_path, capsys):
+    """Test that verbose output does NOT appear when flag is omitted."""
+    test_file = tmp_path / "test.dt"
+    test_file.write_text("CP 5, R.a")
+
+    with patch.object(sys, "argv", ["dt31", "run", str(test_file)]):
+        with pytest.raises(SystemExit) as exc_info:
+            main()
+
+    assert exc_info.value.code == 0
+    captured = capsys.readouterr()
+
+    # Should NOT have timing statistics
+    assert "Wall time:" not in captured.err
+    assert "Instruction time:" not in captured.err
+    assert "Execution time:" not in captured.err
+    assert "Steps:" not in captured.err
+
+
+def test_verbose_shows_on_error(tmp_path, capsys):
+    """Test that verbose output shows even when program has runtime errors."""
+    test_file = tmp_path / "test.dt"
+    # Division by zero error
+    test_file.write_text("CP 10, R.a\nCP 0, R.b\nDIV R.a, R.b")
+
+    with patch.object(sys, "argv", ["dt31", "run", "--verbose", str(test_file)]):
+        with pytest.raises(SystemExit) as exc_info:
+            main()
+
+    assert exc_info.value.code == 1
+    captured = capsys.readouterr()
+
+    # Verbose statistics should still be shown (at least wall time and steps)
+    assert "Wall time:" in captured.err
+    assert "Steps: 2" in captured.err  # Two instructions before error
+    assert "Runtime error:" in captured.err
+
+
+def test_verbose_with_exit_instruction(tmp_path, capsys):
+    """Test that verbose output works with EXIT instruction (SystemExit with int code)."""
+    test_file = tmp_path / "test.dt"
+    test_file.write_text("CP 5, R.a\nEXIT 42")
+
+    with patch.object(sys, "argv", ["dt31", "run", "--verbose", str(test_file)]):
+        with pytest.raises(SystemExit) as exc_info:
+            main()
+
+    assert exc_info.value.code == 42
+    captured = capsys.readouterr()
+
+    # Verbose statistics should be shown
+    assert "Wall time:" in captured.err
+    assert "Steps: 1" in captured.err  # EXIT executes during step 1
+
+
+def test_verbose_with_exit_no_code(tmp_path, capsys):
+    """Test that verbose output works with EXIT instruction (default exit code 0)."""
+    test_file = tmp_path / "test.dt"
+    test_file.write_text("CP 5, R.a\nEXIT")
+
+    with patch.object(sys, "argv", ["dt31", "run", "--verbose", str(test_file)]):
+        with pytest.raises(SystemExit) as exc_info:
+            main()
+
+    assert exc_info.value.code == 0
+    captured = capsys.readouterr()
+
+    # Verbose statistics should be shown
+    assert "Wall time:" in captured.err
+    assert "Steps: 1" in captured.err  # EXIT executes during step 1

@@ -43,7 +43,8 @@ class Instruction:
     like `NullaryOperation`, `UnaryOperation`, or `BinaryOperation`) and implement:
 
     - `__init__(self)`: Pass the instruction's args to the `__init__` method of the parent
-      class.
+      class. If the instruction blocks while waiting for user input, set
+      `self.is_blocking = True` so timing metrics exclude the wait time.
     - `_calc(cpu)`: Perform the instruction's operation and return a result value.
       This value is available to the instruction but typically only used for operations
       that need to store results (via `NullaryOperation`,`BinaryOperation` or `UnaryOperation`
@@ -76,9 +77,17 @@ class Instruction:
 
         Args:
             name: The name of the instruction (e.g., "ADD", "JMP", "PUSH").
+
+        Attributes:
+            name: The instruction's name.
+            comment: Optional inline comment text.
+            is_blocking: If True, this instruction blocks on user input.
+                Set this in subclass `__init__` for instructions like NIN, CIN, STRIN, BRK
+                that wait for user input. This allows timing metrics to exclude I/O wait time.
         """
         self.name = name
         self.comment: str = ""
+        self.is_blocking: bool = False
 
     def _calc(self, cpu: DT31) -> int:
         """Perform the instruction's operation and return a result value.
@@ -1440,6 +1449,7 @@ class NIN(Instruction):
             out: Output reference to store the input number.
         """
         super().__init__("NIN")
+        self.is_blocking = True
         self.out = as_op(out)
 
     def _calc(self, cpu: DT31) -> int:
@@ -1466,6 +1476,7 @@ class CIN(Instruction):
             out: Output reference to store the ordinal value of the input character.
         """
         super().__init__("CIN")
+        self.is_blocking = True
         self.out = as_op(out)
 
     def _calc(self, cpu: DT31) -> int:
@@ -1497,6 +1508,7 @@ class STRIN(Instruction):
             a: The beginning memory address to write to.
         """
         super().__init__("STRIN")
+        self.is_blocking = True
         if not isinstance(out, MemoryReference):
             raise ValueError(
                 f"STRIN can only be used with a memory reference, got {out}"
@@ -1640,6 +1652,7 @@ class BRK(Instruction):
 
     def __init__(self):
         super().__init__("BRK")
+        self.is_blocking = True
 
     def _calc(self, cpu: DT31) -> int:
         # Print in debug format: instruction -> result, then state

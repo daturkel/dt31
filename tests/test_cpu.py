@@ -363,3 +363,58 @@ def test_no_comment_in_debug_output(capsys):
     captured = capsys.readouterr()
     lines = captured.out.strip().split("\n")
     assert lines[0] == "CP(a=5, b=R.a) -> 5"
+
+
+def test_timing_accumulates_across_runs():
+    """Test that timing attributes accumulate across multiple run() calls."""
+    cpu = DT31()
+    program = [I.CP(5, R.a), I.ADD(R.a, L[1])]
+
+    # First run
+    cpu.run(program)
+    first_wall = cpu.wall_time_ns
+    first_instruction = cpu.instruction_time_ns
+    assert first_wall > 0
+    assert first_instruction > 0
+    assert cpu.step_count == 2
+
+    # Second run (reset IP and run again)
+    cpu.set_register("ip", 0)
+    cpu.run()  # Run without instructions reuses loaded program
+
+    # Check accumulation - wall time from second run() should be added
+    assert cpu.wall_time_ns > first_wall
+    assert cpu.instruction_time_ns > first_instruction
+    assert cpu.step_count == 4
+
+
+def test_execution_time_property():
+    """Test that execution_time_ns property computes correctly."""
+    cpu = DT31()
+    program = [I.CP(10, R.a), I.ADD(R.a, L[5])]
+    cpu.run(program)
+
+    # Execution time should equal instruction time minus I/O time
+    assert cpu.execution_time_ns == cpu.instruction_time_ns - cpu.blocking_time_ns
+    # For non-I/O instructions, they should be equal
+    assert cpu.execution_time_ns == cpu.instruction_time_ns
+    assert cpu.blocking_time_ns == 0
+
+
+def test_wall_time_includes_instruction_time():
+    """Test that wall time is >= instruction time."""
+    cpu = DT31()
+    program = [I.CP(1, R.a), I.ADD(R.a, L[1]), I.SUB(R.a, L[1])]
+    cpu.run(program)
+
+    assert cpu.wall_time_ns >= cpu.instruction_time_ns
+    assert cpu.instruction_time_ns > 0
+
+
+def test_step_count_matches_instructions():
+    """Test that step_count matches the number of executed instructions."""
+    cpu = DT31()
+    program = [I.CP(1, R.a), I.ADD(R.a, L[2]), I.MUL(R.a, L[3])]
+    cpu.run(program)
+
+    assert cpu.step_count == 3
