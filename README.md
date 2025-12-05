@@ -206,6 +206,7 @@ dt31 format program.dt    # Format file in-place
 - `--custom-instructions PATH` or `-i PATH`: Load custom instruction definitions from a Python file
 - `--dump {none,error,success,all}`: When to dump CPU state (default: none)
 - `--dump-file FILE`: File path for CPU state dump (auto-generates timestamped filename if not specified)
+- `--verbose` or `-v`: Show runtime statistics (wall time, instruction time, execution time, and step count)
 
 #### Check Command
 
@@ -234,9 +235,26 @@ dt31 run --custom-instructions my_instructions.py program.dt
 
 # Dump CPU state on error (for debugging crashes)
 dt31 run --dump error program.dt  # Auto-generates program_crash_TIMESTAMP.json
+
+# Show runtime statistics
+dt31 run --verbose program.dt
+# Output (to stderr):
+# Wall time: 4.51s
+# Execution time: 156.23ms
+# Steps: 14
 ```
 
 See the [CLI documentation](https://daturkel.github.io/dt31/dt31/cli.html) for complete details.
+
+**Verbose Mode Timing Metrics:**
+
+The `--verbose` flag displays timing metrics to help understand program performance:
+
+- **Wall time**: Total elapsed time including I/O waits. Automatically formatted with appropriate units (s, ms, or µs)
+- **Execution time**: Pure computation time, excluding I/O waits from input instructions (NIN, CIN, STRIN, BRK)
+- **Steps** (always shown): Number of instructions executed
+
+All timing values accumulate across multiple `run()` calls on the same CPU instance.
 
 ### Code Formatting
 

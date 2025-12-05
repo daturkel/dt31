@@ -237,6 +237,35 @@ from dt31.instructions import Instruction
 from dt31.parser import ParserError, parse_program
 
 
+def format_time(nanoseconds: int) -> str:
+    """Format time in nanoseconds with appropriate units (µs, ms, or s).
+
+    Args:
+        nanoseconds: Time in nanoseconds
+
+    Returns:
+        Formatted string with appropriate unit (e.g., "1.23s", "123.46ms", "12.35µs")
+
+    Examples:
+        >>> format_time(1_234_567_890)
+        '1.23s'
+        >>> format_time(123_456_789)
+        '123.46ms'
+        >>> format_time(12_345_678)
+        '12.35ms'
+        >>> format_time(1_234_567)
+        '1234.57µs'
+        >>> format_time(123_456)
+        '123.46µs'
+    """
+    if nanoseconds >= 1_000_000_000:  # >= 1 second
+        return f"{nanoseconds / 1_000_000_000:.2f}s"
+    elif nanoseconds >= 1_000_000:  # >= 1 millisecond
+        return f"{nanoseconds / 1_000_000:.2f}ms"
+    else:  # < 1 millisecond
+        return f"{nanoseconds / 1_000:.2f}µs"
+
+
 def expand_file_patterns(patterns: list[str]) -> list[str]:
     """Expand glob patterns to actual file paths.
 
@@ -341,6 +370,13 @@ examples:
         type=str,
         metavar="FILE",
         help="File path for CPU state dump (auto-generates if not specified)",
+    )
+
+    run_parser.add_argument(
+        "-v",
+        "--verbose",
+        action="store_true",
+        help="Show runtime statistics (wall time, execution time, and step count)",
     )
 
 
@@ -467,12 +503,16 @@ def run_command(args: argparse.Namespace) -> None:
         sys.exit(1)
 
     # Execute the program
+    exit_code = 0
     try:
         cpu.run(program, debug=args.debug)
     except (EOFError, KeyboardInterrupt):
         # Handle interrupt gracefully (e.g., Ctrl+C during debug mode input)
         print("\n\nExecution interrupted", file=sys.stderr)
-        sys.exit(130)
+        exit_code = 130
+    except SystemExit as e:
+        # Catch SystemExit to display verbose stats before re-raising
+        exit_code = e.code if isinstance(e.code, int) else 1
     except Exception as e:
         print(f"\nRuntime error: {e}", file=sys.stderr)
         if args.debug:
@@ -492,7 +532,24 @@ def run_command(args: argparse.Namespace) -> None:
             except Exception as dump_error:
                 print(f"Failed to dump CPU state: {dump_error}", file=sys.stderr)
 
-        sys.exit(1)
+        exit_code = 1
+    finally:
+        # Display verbose statistics if requested (always, even on error/exit)
+        if args.verbose:
+            print(file=sys.stderr)
+
+            # Always show wall time
+            print(f"Wall time: {format_time(cpu.wall_time_ns)}", file=sys.stderr)
+
+            print(
+                f"Execution time: {format_time(cpu.execution_time_ns)}", file=sys.stderr
+            )
+
+            print(f"Steps: {cpu.step_count}", file=sys.stderr)
+
+    # Exit early if there was an error or interrupt
+    if exit_code != 0:
+        sys.exit(exit_code)
 
     # Dump CPU state on exit if requested
     if args.dump in ("success", "all"):
