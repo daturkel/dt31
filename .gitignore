@@ -15,3 +15,5 @@ wheels/
 .coverage
 coverage.xml
 plans/
+
+docs-sphinx/_build/
