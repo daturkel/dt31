@@ -10,6 +10,7 @@ from dt31.operands import (
     Operand,
     R,
     RegisterReference,
+    ResolvedLabel,
     as_op,
 )
 
@@ -113,11 +114,11 @@ def test_lc_invalid_input():
 def test_lc_str_repr():
     """Test that character literals render correctly in str and repr."""
     lc = LC["A"]
-    assert repr(lc) == "65"
+    assert repr(lc) == "LC['A']"
     assert str(lc) == "'A'"
 
     lc2 = LC["z"]
-    assert repr(lc2) == "122"
+    assert repr(lc2) == "LC['z']"
     assert str(lc2) == "'z'"
 
 
@@ -130,6 +131,19 @@ def test_literal_str_repr():
     lit2 = L[-5]
     assert repr(lit2) == "-5"
     assert str(lit2) == "-5"
+
+
+def test_resolved_label():
+    """A ResolvedLabel behaves like a Literal but reprs as its original label name."""
+    resolved = ResolvedLabel(5, "loop")
+    assert isinstance(resolved, Literal)
+    assert resolved.value == 5
+    assert resolved.name == "loop"
+    assert resolved.resolve(cpu=None) == 5  # type: ignore
+    assert str(resolved) == "5"  # serializes as a plain number, like Literal
+    assert repr(resolved) == "loop"  # but reprs as the original label name
+    assert resolved == Literal(5)
+    assert resolved == 5
 
 
 def test_is_char_flag():
@@ -310,3 +324,12 @@ def test_lc_escape_sequences_str():
     # Regular character (should not be escaped)
     lc_regular = LC["A"]
     assert str(lc_regular) == "'A'"
+
+
+def test_lc_escape_sequences_repr():
+    """Test that character literal repr() round-trips as valid Python via LC[...]."""
+    assert repr(LC["\n"]) == "LC['\\n']"
+    assert repr(LC["\t"]) == "LC['\\t']"
+    assert repr(LC["\\"]) == "LC['\\\\']"
+    assert repr(LC["'"]) == 'LC["\'"]'
+    assert repr(LC["A"]) == "LC['A']"
