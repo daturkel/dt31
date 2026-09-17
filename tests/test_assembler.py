@@ -474,14 +474,18 @@ def test_resolved_labels_show_in_debug_output():
     assert isinstance(rjmp.dest, Literal)
     assert rjmp.dest.value == -2
     assert repr(rjmp.dest) == "loop"
+    assert repr(rjmp) == "RJMP(dest=loop)"
 
     assert isinstance(call.dest, Literal)
     assert repr(call.dest) == "loop"
+    assert repr(call) == "CALL(dest=loop)"
 
     # Assembly text serialization is unaffected: still a bare number, so it still
     # round-trips through the parser without needing the (now-removed) label
     # definition.
     assert str(jmp) == "JMP 0"
+    assert str(rjmp) == "RJMP -2"
+    assert str(call) == "CALL 0"
 
 
 def test_modifying_result_does_not_affect_original():
