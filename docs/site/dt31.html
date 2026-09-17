@@ -240,7 +240,7 @@ dt31    </h1>
 <li><strong>Control Flow</strong>: <code>JMP</code>, <code>RJMP</code>, <code>JEQ</code>, <code>JNE</code>, <code>JGT</code>, <code>JGE</code>, <code>JIF</code></li>
 <li><strong>Functions</strong>: <code>CALL</code>, <code>RCALL</code>, <code>RET</code></li>
 <li><strong>Stack</strong>: <code>PUSH</code>, <code>POP</code>, <code>SEMP</code></li>
-<li><strong>I/O</strong>: <code>NOUT</code>, <code>COUT</code>, <code>NIN</code>, <code>CIN</code></li>
+<li><strong>I/O</strong>: <code>NOUT</code>, <code>COUT</code>, <code>NIN</code>, <code>CIN</code>, <code>STRIN</code>, <code>STROUT</code>, <code>SNIN</code>, <code>SCIN</code>, <code>SSTRIN</code></li>
 <li><strong>Data Movement</strong>: <code>CP</code></li>
 </ul>
 
@@ -336,7 +336,7 @@ dt31<span class="w"> </span>run<span class="w"> </span>--verbose<span class="w">
 
 <ul>
 <li><strong>Wall time</strong>: Total elapsed time including I/O waits. Automatically formatted with appropriate units (s, ms, or µs)</li>
-<li><strong>Execution time</strong>: Pure computation time, excluding I/O waits from input instructions (NIN, CIN, STRIN, BRK)</li>
+<li><strong>Execution time</strong>: Pure computation time, excluding I/O waits from input instructions (NIN, CIN, STRIN, SNIN, SCIN, SSTRIN, BRK)</li>
 <li><strong>Steps</strong> (always shown): Number of instructions executed</li>
 </ul>
 

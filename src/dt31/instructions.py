@@ -1467,6 +1467,54 @@ class NIN(Instruction):
         return f"NIN {self.out}"
 
 
+class SNIN(Instruction):
+    """Safely read number input, reporting a status instead of raising on end of input
+    or an unparseable line.
+
+    Writes a status to `status`:
+
+    - `1`: success, `out` holds the parsed number.
+    - `0`: end of input was reached; `out` is left unchanged.
+    - `-1`: the line could not be parsed as an integer; `out` is left unchanged. Programs
+      should treat this as a deliberate boundary (e.g. a blank line separating sections)
+      rather than try to recover the line's contents.
+    """
+
+    def __init__(self, out: Reference, status: Reference):
+        """
+        Args:
+            out: Output reference to store the input number on success.
+            status: Output reference to store the read status (1, 0, or -1).
+        """
+        super().__init__("SNIN")
+        self.is_blocking = True
+        self.out = as_op(out)
+        self.status = as_op(status)
+
+    def _calc(self, cpu: DT31) -> int:
+        try:
+            val = input(INPUT_PROMPT)
+        except EOFError:
+            cpu[self.status] = 0
+            return 0
+        try:
+            val_int = int(val)
+        except ValueError:
+            cpu[self.status] = -1
+            return -1
+        cpu[self.out] = val_int
+        cpu[self.status] = 1
+        return val_int
+
+    def __repr__(self) -> str:
+        """Return Python API representation."""
+        return f"SNIN(out={self.out!r}, status={self.status!r})"
+
+    def __str__(self) -> str:
+        """Return assembly text representation."""
+        return f"SNIN {self.out}, {self.status}"
+
+
 class CIN(Instruction):
     """Read character input from user and store as ordinal value."""
 
@@ -1497,6 +1545,60 @@ class CIN(Instruction):
     def __str__(self) -> str:
         """Return assembly text representation."""
         return f"CIN {self.out}"
+
+
+class SCIN(Instruction):
+    """Safely read character input, reporting a status instead of raising on end of
+    input or an unparseable line.
+
+    Writes a status to `status`:
+
+    - `1`: success, `out` holds the ordinal value of the character.
+    - `0`: end of input was reached; `out` is left unchanged.
+    - `-1`: the line was not exactly one character (e.g. blank, or more than one
+      character); `out` is left unchanged. Programs should treat this as a deliberate
+      boundary rather than try to recover the line's contents.
+    """
+
+    def __init__(self, out: Reference, status: Reference):
+        """
+        Args:
+            out: Output reference to store the ordinal value of the input character on
+                success.
+            status: Output reference to store the read status (1, 0, or -1).
+        """
+        super().__init__("SCIN")
+        self.is_blocking = True
+        self.out = as_op(out)
+        self.status = as_op(status)
+
+    def _calc(self, cpu: DT31) -> int:
+        try:
+            val = input(INPUT_PROMPT)
+        except EOFError:
+            cpu[self.status] = 0
+            return 0
+        # Decode escape sequences (e.g., '\n' -> newline)
+        try:
+            decoded = val.encode().decode("unicode_escape")
+        except UnicodeDecodeError:
+            decoded = val
+        try:
+            val_ord = ord(decoded)
+        except TypeError:
+            cpu[self.status] = -1
+            return -1
+        cpu[self.out] = val_ord
+        cpu[self.status] = 1
+        return val_ord
+
+    def __repr__(self) -> str:
+        """Return Python API representation."""
+        return f"SCIN(out={self.out!r}, status={self.status!r})"
+
+    def __str__(self) -> str:
+        """Return assembly text representation."""
+        return f"SCIN {self.out}, {self.status}"
 
 
 class STRIN(Instruction):
@@ -1543,6 +1645,65 @@ class STRIN(Instruction):
     def __str__(self) -> str:
         """Return assembly text representation."""
         return f"STRIN {self.out}"
+
+
+class SSTRIN(Instruction):
+    """Safely read a string into memory, reporting a status instead of raising on end
+    of input.
+
+    Any line, including an empty one, is a valid string, so there is no "unparseable
+    input" case here (unlike `SNIN`/`SCIN`) — `status` is only ever `1` (success) or `0`
+    (end of input, memory left unchanged).
+    """
+
+    def __init__(self, out: MemoryReference, status: Reference):
+        """
+        Args:
+            out: The beginning memory address to write to on success.
+            status: Output reference to store the read status (1 or 0).
+        """
+        super().__init__("SSTRIN")
+        self.is_blocking = True
+        if not isinstance(out, MemoryReference):
+            raise ValueError(
+                f"SSTRIN can only be used with a memory reference, got {out}"
+            )
+        self.out = out
+        self.status = as_op(status)
+
+    def _calc(self, cpu: DT31) -> int:
+        try:
+            val = input(INPUT_PROMPT)
+        except EOFError:
+            cpu[self.status] = 0
+            return 0
+        # Decode escape sequences (e.g., '\n' -> newline)
+        try:
+            decoded = val.encode().decode("unicode_escape")
+        except UnicodeDecodeError:
+            decoded = val
+        base = self.out.resolve_address(cpu)
+        tmp = base
+
+        # empty string just writes 0 to out
+        if not decoded:
+            cpu.set_memory(tmp, 0)
+        else:
+            for i, char in enumerate(decoded):
+                tmp = base + i
+                cpu.set_memory(tmp, ord(char))
+            cpu.set_memory(tmp + 1, 0)
+
+        cpu[self.status] = 1
+        return 1
+
+    def __repr__(self) -> str:
+        """Return Python API representation."""
+        return f"SSTRIN(out={self.out!r}, status={self.status!r})"
+
+    def __str__(self) -> str:
+        """Return assembly text representation."""
+        return f"SSTRIN {self.out}, {self.status}"
 
 
 class STROUT(Instruction):
