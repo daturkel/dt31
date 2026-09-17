@@ -130,6 +130,38 @@ def test_dump_with_program():
     assert state["registers"]["a"] == 10
 
 
+def test_dump_load_roundtrip_with_resolved_label():
+    """Test dump/load of an assembled program containing a resolved label reference.
+
+    Label definitions are stripped during assembly, so the dumped program text must
+    serialize resolved jump destinations as plain numbers (not the original label
+    name) to remain re-parseable after the label definition no longer exists in the
+    instruction stream.
+    """
+    program = "CP 3, R.a\nloop:\nSUB R.a, 1\nJGT loop, R.a, 0"
+    program = parse_program(program)
+
+    cpu = DT31()
+    cpu.load(program)
+    cpu.step()  # CP 3, R.a
+    cpu.step()  # SUB R.a, 1 -> a = 2
+    cpu.step()  # JGT loop, R.a, 0 -> jumps back to loop (ip=1)
+
+    state = cpu.dump()
+    # The dumped text must use a bare instruction index, not "loop", since the
+    # "loop:" label definition no longer exists in the assembled program.
+    assert "JGT 1, R.a, 0" in state["program"]
+    assert "loop" not in state["program"]
+
+    cpu2 = DT31.load_from_dump(state)
+    assert cpu2.get_register("a") == 2
+    assert cpu2.get_register("ip") == 1
+
+    # Resumed execution should behave identically to the original CPU.
+    cpu2.run()
+    assert cpu2.get_register("a") == 0
+
+
 def test_dump_load_without_program():
     """Test dump/load of CPU with no program loaded."""
     cpu = DT31()
