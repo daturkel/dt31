@@ -61,7 +61,13 @@ class Literal(Operand):
         return self.value
 
     def __repr__(self) -> str:
-        """Return Python API representation."""
+        """Return Python API representation.
+
+        Character literals (`is_char=True`) are shown as `LC['x']` so debug output
+        (which uses `repr()`) shows the character rather than its raw ordinal value.
+        """
+        if self.is_char:
+            return f"LC[{chr(self.value)!r}]"
         return str(self.value)
 
     def __str__(self) -> str:
@@ -85,6 +91,30 @@ class Literal(Operand):
         elif isinstance(other, Literal):
             return other.value == self.value
         return False
+
+
+class ResolvedLabel(Literal):
+    """A `Literal` produced by resolving a `Label` reference during assembly.
+
+    Behaves exactly like a plain `Literal` (resolves to the same integer, and
+    serializes to assembly text as a bare number), but retains the original label
+    name so debug output (which uses `repr()`) shows the label instead of a bare
+    instruction index or jump offset.
+    """
+
+    def __init__(self, value: int, name: str):
+        """
+        Args:
+            value: The resolved instruction index (absolute jump/call) or offset
+                (relative jump/call).
+            name: The original label name, kept for `repr()` purposes only.
+        """
+        super().__init__(value)
+        self.name = name
+
+    def __repr__(self) -> str:
+        """Return Python API representation: the original label name."""
+        return self.name
 
 
 class _MetaLiteral(type):

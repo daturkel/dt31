@@ -2,7 +2,13 @@ from copy import deepcopy
 
 from dt31.exceptions import AssemblyError
 from dt31.instructions import Instruction, RelativeJumpMixin
-from dt31.operands import Label, Literal, MemoryReference, Operand, RegisterReference
+from dt31.operands import (
+    Label,
+    MemoryReference,
+    Operand,
+    RegisterReference,
+    ResolvedLabel,
+)
 from dt31.parser import BlankLine, Comment
 
 
@@ -30,8 +36,10 @@ def assemble(
         program: List of instructions and labels in source order.
 
     Returns:
-        A new list of instructions with all labels removed and all label references
-        resolved to numeric instruction positions (Literal operands).
+        A new list of instructions with all label definitions removed and all label
+        references resolved to numeric instruction positions (`ResolvedLabel`
+        operands, which behave exactly like `Literal` but retain the original label
+        name for debug output).
 
     Raises:
         AssemblyError: If a label is defined multiple times or if an undefined label
@@ -95,9 +103,9 @@ def assemble(
 
             if isinstance(inst, RelativeJumpMixin):
                 delta = target_ip - ip
-                inst.dest = Literal(delta)
+                inst.dest = ResolvedLabel(delta, inst.dest.name)
             else:
-                inst.dest = Literal(target_ip)
+                inst.dest = ResolvedLabel(target_ip, inst.dest.name)
 
     return new_program
 

@@ -453,6 +453,37 @@ def test_original_program_unchanged():
     assert isinstance(result[1].dest, Literal)
 
 
+def test_resolved_labels_show_in_debug_output():
+    """Assembled jump/call destinations retain the original label name for debug
+    output, instead of only showing a bare instruction index or offset."""
+    program = [
+        Label("loop"),
+        I.NOOP(),
+        I.JMP(Label("loop")),
+        I.RJMP(Label("loop")),
+        I.CALL(Label("loop")),
+    ]
+    result = assemble(program)
+
+    jmp, rjmp, call = result[1], result[2], result[3]
+    assert isinstance(jmp.dest, Literal)
+    assert jmp.dest.value == 0
+    assert repr(jmp.dest) == "loop"
+    assert repr(jmp) == "JMP(dest=loop)"
+
+    assert isinstance(rjmp.dest, Literal)
+    assert rjmp.dest.value == -2
+    assert repr(rjmp.dest) == "loop"
+
+    assert isinstance(call.dest, Literal)
+    assert repr(call.dest) == "loop"
+
+    # Assembly text serialization is unaffected: still a bare number, so it still
+    # round-trips through the parser without needing the (now-removed) label
+    # definition.
+    assert str(jmp) == "JMP 0"
+
+
 def test_modifying_result_does_not_affect_original():
     """Modifying assembled program should not affect original."""
     program = [
