@@ -15,3 +15,9 @@ wheels/
 .coverage
 coverage.xml
 plans/
+
+# Generated docs site: rebuilt from scratch by .github/workflows/docs.yml on
+# every push to main and deployed directly to GitHub Pages, so the committed
+# copy is redundant and only adds diff noise. Run `uv run invoke docs` to
+# build it locally.
+docs/site/
