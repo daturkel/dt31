@@ -1475,9 +1475,7 @@ class SNIN(Instruction):
 
     - `1`: success, `out` holds the parsed number.
     - `0`: end of input was reached; `out` is left unchanged.
-    - `-1`: the line could not be parsed as an integer; `out` is left unchanged. Programs
-      should treat this as a deliberate boundary (e.g. a blank line separating sections)
-      rather than try to recover the line's contents.
+    - `-1`: the line could not be parsed as an integer; `out` is left unchanged.
     """
 
     def __init__(self, out: Reference, status: Reference):
@@ -1556,8 +1554,7 @@ class SCIN(Instruction):
     - `1`: success, `out` holds the ordinal value of the character.
     - `0`: end of input was reached; `out` is left unchanged.
     - `-1`: the line was not exactly one character (e.g. blank, or more than one
-      character); `out` is left unchanged. Programs should treat this as a deliberate
-      boundary rather than try to recover the line's contents.
+      character); `out` is left unchanged.
     """
 
     def __init__(self, out: Reference, status: Reference):
