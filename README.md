@@ -218,7 +218,6 @@ dt31 to-python program.dt   # Convert to a standalone Python source file
 Convert a `.dt` assembly file to a standalone Python source file using the Python API (`I.ADD(...)`, `Label(...)`, etc.) — the same style as the hand-written examples in [`examples/`](examples/).
 
 - `-o PATH` or `--output PATH`: Write the generated source to a file instead of printing to stdout
-- `--custom-instructions PATH` or `-i PATH`: Load custom instruction definitions from a Python file
 
 ```shell
 dt31 to-python program.dt                # Print generated Python to stdout
@@ -226,6 +225,8 @@ dt31 to-python program.dt -o program.py  # Write generated Python to a file
 ```
 
 Only the `dt31` symbols the program actually uses are imported. The program list is named after the input file (e.g. `factorize.dt` becomes `factorize = [...]`), falling back to `program` if the filename isn't a valid Python identifier.
+
+Custom instructions aren't supported here: the generated file can only reference symbols from `dt31` itself, so a program using one fails at parse time with the same "Unknown instruction" error as any other unrecognized instruction.
 
 **Examples:**
 

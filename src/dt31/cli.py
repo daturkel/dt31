@@ -596,14 +596,6 @@ examples:
         help="File to write the generated Python source to (default: stdout)",
     )
 
-    to_python_parser.add_argument(
-        "-i",
-        "--custom-instructions",
-        type=str,
-        metavar="PATH",
-        help="Path to Python file containing custom instruction definitions",
-    )
-
 
 def _derive_program_name(file_path: Path) -> str:
     """Derive a Python variable name for the program list from a file path.
@@ -631,14 +623,6 @@ def to_python_command(args: argparse.Namespace) -> None:
         0: Success
         1: Error occurred (file not found, parse error, or IO error)
     """
-    custom_instructions = None
-    if args.custom_instructions:
-        try:
-            custom_instructions = load_custom_instructions(args.custom_instructions)
-        except (FileNotFoundError, ImportError, ValueError, TypeError) as e:
-            print(f"Error loading custom instructions: {e}", file=sys.stderr)
-            sys.exit(1)
-
     file_path = Path(args.file)
     try:
         assembly_text = file_path.read_text()
@@ -650,7 +634,7 @@ def to_python_command(args: argparse.Namespace) -> None:
         sys.exit(1)
 
     try:
-        program = parse_program(assembly_text, custom_instructions=custom_instructions)
+        program = parse_program(assembly_text)
     except ParserError as e:
         print(f"Parse error: {e}", file=sys.stderr)
         sys.exit(1)

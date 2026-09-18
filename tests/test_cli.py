@@ -2153,8 +2153,29 @@ def test_to_python_parse_error(temp_dt_file, capsys):
     assert "Parse error" in captured.err
 
 
-def test_to_python_custom_instructions_error(tmp_path, capsys):
-    """Test to-python command with invalid custom instructions file."""
+def test_to_python_unknown_instruction_rejected_without_custom_instructions_flag(
+    tmp_path, capsys
+):
+    """to-python doesn't accept --custom-instructions: a program using a custom
+    instruction fails the same way any other unrecognized instruction would --
+    at parse time, with no separate flag or file load in between.
+    """
+    program_file = tmp_path / "program.dt"
+    program_file.write_text("CP 5, R.a\nTRIPLE R.a")
+
+    with patch.object(sys, "argv", ["dt31", "to-python", str(program_file)]):
+        with pytest.raises(SystemExit) as exc_info:
+            main()
+
+    assert exc_info.value.code == 1
+    captured = capsys.readouterr()
+    assert "Unknown instruction" in captured.err
+
+
+def test_to_python_rejects_custom_instructions_flag(tmp_path, capsys):
+    """--custom-instructions/-i isn't a to-python option -- argparse should
+    reject it rather than silently accepting and ignoring it.
+    """
     program_file = tmp_path / "program.dt"
     program_file.write_text("CP 5, R.a")
 
@@ -2165,16 +2186,16 @@ def test_to_python_custom_instructions_error(tmp_path, capsys):
             "dt31",
             "to-python",
             "--custom-instructions",
-            "nonexistent.py",
+            "whatever.py",
             str(program_file),
         ],
     ):
         with pytest.raises(SystemExit) as exc_info:
             main()
 
-    assert exc_info.value.code == 1
+    assert exc_info.value.code == 2
     captured = capsys.readouterr()
-    assert "Error loading custom instructions" in captured.err
+    assert "unrecognized arguments" in captured.err
 
 
 def test_to_python_io_error_reading_file(tmp_path, capsys):
