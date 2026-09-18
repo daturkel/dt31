@@ -1,3 +1,4 @@
+import inspect
 from collections import deque
 from copy import copy
 
@@ -286,8 +287,34 @@ def test_jmp(cpu):
     assert cpu.get_register("ip") == 10
 
 
+def test_jump_reprs_are_callable_python_api():
+    """A jump's repr is documented as its Python API representation, and
+    `formatter.program_to_python` generates source files from it, so it has to
+    name the keyword the constructor actually takes -- `delta` for relative
+    jumps, `dest` for the rest.
+    """
+    jumps = [
+        cls
+        for cls in vars(I).values()
+        if inspect.isclass(cls) and issubclass(cls, I.Jump) and cls.__name__.isupper()
+    ]
+    # Sanity-check that the filter found the relative jumps, which are the ones
+    # whose keyword differs from the base class's.
+    assert {"RJMP", "RCALL", "RJLT"} <= {cls.__name__ for cls in jumps}
+
+    for cls in jumps:
+        required = [
+            param
+            for param in inspect.signature(cls.__init__).parameters.values()
+            if param.name != "self" and param.default is inspect.Parameter.empty
+        ]
+        instruction = cls(*[L[2]] * len(required))
+        rebuilt = eval(f"I.{instruction!r}", {"I": I, "L": L, "M": M, "R": R})
+        assert repr(rebuilt) == repr(instruction)
+
+
 def test_rjmp(cpu):
-    assert repr(I.RJMP(10)) == "RJMP(dest=10)"
+    assert repr(I.RJMP(10)) == "RJMP(delta=10)"
     assert str(I.RJMP(10)) == "RJMP 10"
     I.NOOP()(cpu)
     I.NOOP()(cpu)
@@ -744,7 +771,7 @@ def test_call_ret_sequence(cpu):
 
 
 def test_rcall_relative_call(cpu):
-    assert repr(I.RCALL(10)) == "RCALL(dest=10)"
+    assert repr(I.RCALL(10)) == "RCALL(delta=10)"
     assert str(I.RCALL(10)) == "RCALL 10"
     assert cpu.get_register("ip") == 0
     assert cpu.stack == deque([])

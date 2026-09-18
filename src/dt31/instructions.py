@@ -758,6 +758,14 @@ class NOT(UnaryOperation):
 class Jump(Instruction):
     """Base class for various types of jump instruction."""
 
+    dest_kwarg: str = "dest"
+    """Name of the `__init__` keyword that carries the destination.
+
+    Relative jumps name it `delta` instead, so `__repr__` (and anything building
+    Python source out of a repr, like `dt31.formatter.program_to_python`) reads
+    the keyword from here rather than assuming `dest`.
+    """
+
     def __init__(self, name: str, dest: Destination):
         """
         Args:
@@ -788,9 +796,7 @@ class Jump(Instruction):
 
     def __repr__(self) -> str:
         """Return Python API representation."""
-        if isinstance(self.dest, Label):
-            return f"{self.name}(dest={self.dest!r})"
-        return f"{self.name}(dest={self.dest!r})"
+        return f"{self.name}({self.dest_kwarg}={self.dest!r})"
 
     def __str__(self) -> str:
         """Return assembly text representation."""
@@ -812,7 +818,7 @@ class UnaryJump(Jump):
 
     def __repr__(self) -> str:
         """Return Python API representation."""
-        return f"{self.name}(dest={self.dest!r}, a={self.a!r})"
+        return f"{self.name}({self.dest_kwarg}={self.dest!r}, a={self.a!r})"
 
     def __str__(self) -> str:
         """Return assembly text representation."""
@@ -838,7 +844,9 @@ class BinaryJump(Jump):
 
     def __repr__(self) -> str:
         """Return Python API representation."""
-        return f"{self.name}(dest={self.dest!r}, a={self.a!r}, b={self.b!r})"
+        return (
+            f"{self.name}({self.dest_kwarg}={self.dest!r}, a={self.a!r}, b={self.b!r})"
+        )
 
     def __str__(self) -> str:
         """Return assembly text representation."""
@@ -862,6 +870,8 @@ class RelativeJumpMixin(Jump):
     This mixin class defines behavior for jumps where the destination is used as an offset
     relative to the current instruction pointer position, rather than an exact position.
     """
+
+    dest_kwarg: str = "delta"
 
     def _jump_destination(self, cpu: DT31) -> int:
         return cpu.get_register("ip") + self.dest.resolve(cpu)
@@ -975,10 +985,6 @@ class JMP(ExactJumpMixin, UnconditionalJumpMixin):
         """
         super().__init__("JMP", dest)
 
-    def __repr__(self) -> str:
-        """Return Python API representation."""
-        return f"JMP(dest={self.dest!r})"
-
     def __str__(self) -> str:
         """Return assembly text representation."""
         return f"JMP {self.dest}"
@@ -993,10 +999,6 @@ class RJMP(RelativeJumpMixin, UnconditionalJumpMixin):
             delta: The destination to jump to (Label, Operand, or int).
         """
         super().__init__("RJMP", delta)
-
-    def __repr__(self) -> str:
-        """Return Python API representation."""
-        return f"RJMP(dest={self.dest!r})"
 
     def __str__(self) -> str:
         """Return assembly text representation."""
@@ -1201,10 +1203,6 @@ class CALL(ExactJumpMixin, UnconditionalJumpMixin):
         cpu.push(cpu.get_register("ip") + 1)
         return 0
 
-    def __repr__(self) -> str:
-        """Return Python API representation."""
-        return f"CALL(dest={self.dest!r})"
-
     def __str__(self) -> str:
         """Return assembly text representation."""
         return f"CALL {self.dest}"
@@ -1224,10 +1222,6 @@ class RCALL(RelativeJumpMixin, UnconditionalJumpMixin):
         # Push return address (next instruction) onto stack
         cpu.push(cpu.get_register("ip") + 1)
         return 0
-
-    def __repr__(self) -> str:
-        """Return Python API representation."""
-        return f"RCALL(dest={self.dest!r})"
 
     def __str__(self) -> str:
         """Return assembly text representation."""

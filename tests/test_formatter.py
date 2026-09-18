@@ -1,5 +1,7 @@
+import io
 import subprocess
 import sys
+from contextlib import redirect_stdout
 
 import pytest
 
@@ -1162,6 +1164,10 @@ def test_program_to_python_comments_and_blank_lines():
         "CP 3, R.a\nNOUT R.a, 1",
         ("CP 3, R.a\nloop:\nNOUT R.a, 1\nSUB R.a, 1\nJGT loop, R.a, 0\n"),
         "JGT class, R.a, 0\nclass:\nNOUT R.a, 1",
+        # Relative jumps and calls take their destination as `delta`, not
+        # `dest`, so generating the call from the repr has to use that name.
+        "CP 0, R.a\nADD R.a, 1\nNOUT R.a, 1\nRJLT -2, R.a, 3",
+        "RCALL 2\nJMP 5\nCOUT 'h', 1\nRET",
     ],
 )
 def test_program_to_python_generated_file_executes_correctly(tmp_path, source):
@@ -1173,7 +1179,9 @@ def test_program_to_python_generated_file_executes_correctly(tmp_path, source):
     program = parse_program(source)
     registers = extract_registers_from_program(program)
     cpu = DT31(registers=registers)
-    cpu.run(program, debug=False)
+    expected = io.StringIO()
+    with redirect_stdout(expected):
+        cpu.run(program, debug=False)
 
     py_source = program_to_python(program)
     py_file = tmp_path / "generated.py"
@@ -1185,3 +1193,4 @@ def test_program_to_python_generated_file_executes_correctly(tmp_path, source):
         text=True,
     )
     assert result.returncode == 0, result.stderr
+    assert result.stdout == expected.getvalue()

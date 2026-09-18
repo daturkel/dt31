@@ -339,12 +339,12 @@ def program_to_python(
         #     from dt31 import DT31, I, R
         #
         #     program = [
-        #         I.CP(a=5, out=R.a),
-        #         I.NOUT(a=R.a, b=0),
+        #         I.CP(a=5, b=R.a),
+        #         I.NOUT(a=R.a, b=1),
         #     ]
         #
         #     if __name__ == "__main__":
-        #         cpu = DT31(registers=["a"])
+        #         cpu = DT31(registers=['a'])
         #         cpu.run(program, debug=False)
         ```
     """
@@ -361,9 +361,12 @@ def program_to_python(
         else:
             line = repr(item)
             if isinstance(item, Jump) and isinstance(item.dest, Label):
+                # `Jump.__repr__` renders a label destination as a bare name;
+                # swap in the walrus-or-literal form. Relative jumps take the
+                # destination as `delta`, hence `dest_kwarg` rather than "dest".
                 line = line.replace(
-                    f"dest={item.dest.name}",
-                    f"dest={_label_ref(item.dest, introduced)}",
+                    f"{item.dest_kwarg}={item.dest.name}",
+                    f"{item.dest_kwarg}={_label_ref(item.dest, introduced)}",
                     1,
                 )
             body_lines.append(f"    I.{line},")
