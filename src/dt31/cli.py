@@ -596,6 +596,34 @@ examples:
         help="File to write the generated Python source to (default: stdout)",
     )
 
+    to_python_parser.add_argument(
+        "-d",
+        "--debug",
+        action="store_true",
+        help="Generate a cpu.run(..., debug=True) call",
+    )
+
+    to_python_parser.add_argument(
+        "-r",
+        "--registers",
+        type=str,
+        help="Comma-separated list of register names (e.g., a,b,c,d)",
+    )
+
+    to_python_parser.add_argument(
+        "-m",
+        "--memory",
+        type=int,
+        help="Memory size in bytes (default: 256)",
+    )
+
+    to_python_parser.add_argument(
+        "-s",
+        "--stack-size",
+        type=int,
+        help="Stack size (default: 256)",
+    )
+
 
 def _derive_program_name(file_path: Path) -> str:
     """Derive a Python variable name for the program list from a file path.
@@ -639,8 +667,30 @@ def to_python_command(args: argparse.Namespace) -> None:
         print(f"Parse error: {e}", file=sys.stderr)
         sys.exit(1)
 
+    # Same registers validation as `run_command`: an explicit --registers must
+    # cover every register the program actually uses.
+    registers_used = extract_registers_from_program(program)
+    registers = None
+    if args.registers:
+        registers = args.registers.split(",")
+        missing = set(registers_used) - set(registers)
+        if missing:
+            print(
+                f"Error: Program uses registers {registers_used} but --registers only specified {registers}",
+                file=sys.stderr,
+            )
+            print(f"Missing registers: {sorted(missing)}", file=sys.stderr)
+            sys.exit(1)
+
     program_name = _derive_program_name(file_path)
-    python_source = program_to_python(program, program_name=program_name)
+    python_source = program_to_python(
+        program,
+        program_name=program_name,
+        registers=registers,
+        memory_size=args.memory,
+        stack_size=args.stack_size,
+        debug=args.debug,
+    )
 
     if args.output:
         try:

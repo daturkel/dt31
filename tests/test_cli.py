@@ -2115,6 +2115,67 @@ def test_to_python_writes_output_file(temp_dt_file, tmp_path, capsys):
     assert "I.CP(a=5, b=R.a)," in output_path.read_text()
 
 
+def test_to_python_cpu_config_flags(temp_dt_file, capsys):
+    """-m/-s/-d thread through to the generated DT31(...)/cpu.run(...) calls,
+    same as the equivalent run flags."""
+    file_path = temp_dt_file("CP 5, R.a\n", filename="add.dt")
+
+    with patch.object(
+        sys,
+        "argv",
+        [
+            "dt31",
+            "to-python",
+            file_path,
+            "--memory",
+            "1024",
+            "--stack-size",
+            "64",
+            "--debug",
+        ],
+    ):
+        with pytest.raises(SystemExit) as exc_info:
+            main()
+
+    assert exc_info.value.code == 0
+    captured = capsys.readouterr()
+    assert "memory_size=1024" in captured.out
+    assert "stack_size=64" in captured.out
+    assert "debug=True" in captured.out
+
+
+def test_to_python_registers_flag_overrides_auto_detection(temp_dt_file, capsys):
+    """--registers, like run's, is trusted over the auto-detected list as
+    long as it covers every register the program uses."""
+    file_path = temp_dt_file("CP 5, R.a\n", filename="add.dt")
+
+    with patch.object(
+        sys, "argv", ["dt31", "to-python", file_path, "--registers", "a,b,c"]
+    ):
+        with pytest.raises(SystemExit) as exc_info:
+            main()
+
+    assert exc_info.value.code == 0
+    captured = capsys.readouterr()
+    assert "registers=['a', 'b', 'c']" in captured.out
+
+
+def test_to_python_registers_flag_missing_used_register(temp_dt_file, capsys):
+    """--registers must cover every register the program uses, exactly like
+    run's own validation."""
+    file_path = temp_dt_file("CP 5, R.a\n", filename="add.dt")
+
+    with patch.object(
+        sys, "argv", ["dt31", "to-python", file_path, "--registers", "b,c"]
+    ):
+        with pytest.raises(SystemExit) as exc_info:
+            main()
+
+    assert exc_info.value.code == 1
+    captured = capsys.readouterr()
+    assert "Missing registers" in captured.err
+
+
 def test_to_python_program_name_falls_back_for_invalid_identifier(temp_dt_file, capsys):
     """A filename stem that isn't a valid Python identifier falls back to the
     generic "program" variable name instead of producing invalid Python."""

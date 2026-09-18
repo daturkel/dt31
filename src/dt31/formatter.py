@@ -313,6 +313,11 @@ def _label_ref(label: Label, introduced: set[str]) -> str:
 def program_to_python(
     program: list[Instruction | Label | Comment | BlankLine] | list[Instruction],
     program_name: str = "program",
+    *,
+    registers: list[str] | None = None,
+    memory_size: int | None = None,
+    stack_size: int | None = None,
+    debug: bool = False,
 ) -> str:
     """Convert a program to a standalone Python source file using the Python API.
 
@@ -325,6 +330,17 @@ def program_to_python(
         program: List of instructions, labels, comments, and blank lines in source
             order (e.g. from `parser.parse_program`).
         program_name: Name of the module-level variable holding the program list.
+        registers: Explicit register list for the generated `DT31(...)` call. If
+            `None` (the default), registers are auto-detected from `program` via
+            `assembler.extract_registers_from_program`. Passing a list here is
+            assumed to already cover every register the program uses -- the same
+            validation `cli.run_command` does for `run --registers` -- since this
+            function doesn't repeat that check itself.
+        memory_size: Passed through as `DT31(memory_size=...)` if given; omitted
+            (so `DT31`'s own default applies) otherwise.
+        stack_size: Same, for `stack_size`.
+        debug: Whether the generated `cpu.run(program, debug=...)` call passes
+            `debug=True`.
 
     Returns:
         Complete Python source, ready to write to a `.py` file.
@@ -384,7 +400,20 @@ def program_to_python(
     if "Label(" in body:
         symbols.append("Label")
 
-    registers = extract_registers_from_program(program)
+    registers_to_use = (
+        registers if registers is not None else extract_registers_from_program(program)
+    )
+
+    # Mirrors cli.run_command's own cpu_kwargs construction: only non-default
+    # arguments are passed, so the common case still reads as a plain
+    # `DT31(registers=[...])` (or, for a register-less program, `DT31()`).
+    cpu_kwargs = []
+    if registers_to_use:
+        cpu_kwargs.append(f"registers={registers_to_use!r}")
+    if memory_size is not None:
+        cpu_kwargs.append(f"memory_size={memory_size!r}")
+    if stack_size is not None:
+        cpu_kwargs.append(f"stack_size={stack_size!r}")
 
     lines = [
         f"from dt31 import {', '.join(symbols)}",
@@ -394,8 +423,8 @@ def program_to_python(
         "]",
         "",
         'if __name__ == "__main__":',
-        f"    cpu = DT31(registers={registers!r})",
-        f"    cpu.run({program_name}, debug=False)",
+        f"    cpu = DT31({', '.join(cpu_kwargs)})",
+        f"    cpu.run({program_name}, debug={debug!r})",
         "",
     ]
     return "\n".join(lines)

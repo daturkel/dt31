@@ -218,13 +218,18 @@ dt31 to-python program.dt   # Convert to a standalone Python source file
 Convert a `.dt` assembly file to a standalone Python source file using the Python API (`I.ADD(...)`, `Label(...)`, etc.) — the same style as the hand-written examples in [`examples/`](examples/).
 
 - `-o PATH` or `--output PATH`: Write the generated source to a file instead of printing to stdout
+- `-r a,b,c,d` or `--registers a,b,c,d`: Explicit register list for the generated `DT31(...)` call (auto-detected by default, same validation as `run --registers`)
+- `-m 512` or `--memory 512`: `memory_size` for the generated `DT31(...)` call (default: 256)
+- `-s 512` or `--stack-size 512`: `stack_size` for the generated `DT31(...)` call (default: 256)
+- `-d` or `--debug`: Generate a `cpu.run(..., debug=True)` call
 
 ```shell
-dt31 to-python program.dt                # Print generated Python to stdout
-dt31 to-python program.dt -o program.py  # Write generated Python to a file
+dt31 to-python program.dt                     # Print generated Python to stdout
+dt31 to-python program.dt -o program.py       # Write generated Python to a file
+dt31 to-python program.dt --memory 1024 -d    # Larger memory, debug=True in the generated call
 ```
 
-Only the `dt31` symbols the program actually uses are imported. The program list is named after the input file (e.g. `factorize.dt` becomes `factorize = [...]`), falling back to `program` if the filename isn't a valid Python identifier.
+Only the `dt31` symbols the program actually uses are imported. The program list is named after the input file (e.g. `factorize.dt` becomes `factorize = [...]`), falling back to `program` if the filename isn't a valid Python identifier. The generated `DT31(...)` call only spells out arguments that aren't defaults, so a plain conversion still reads as `DT31(registers=[...])` (or `DT31()` for a register-less program).
 
 Custom instructions aren't supported here: the generated file can only reference symbols from `dt31` itself, so a program using one fails at parse time with the same "Unknown instruction" error as any other unrecognized instruction.
 

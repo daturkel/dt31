@@ -1077,6 +1077,39 @@ def test_program_to_python_simple():
     assert "cpu.run(prog, debug=False)" in out
 
 
+def test_program_to_python_no_registers_omits_the_kwarg():
+    """A program that uses no registers gets a plain `DT31()` -- not
+    `DT31(registers=[])`, which would zero out the default a/b/c registers
+    instead of just not needing any of them."""
+    out = program_to_python([I.COUT(LC["H"])])
+    assert "cpu = DT31()" in out
+
+
+def test_program_to_python_cpu_config_kwargs():
+    """memory_size/stack_size/debug are passed through to the generated
+    `DT31(...)`/`cpu.run(...)` calls only when given -- mirroring
+    `cli.run_command`'s own cpu_kwargs construction, so the common case still
+    reads as a plain call with no default arguments spelled out."""
+    program = [I.CP(5, R.a)]
+
+    out = program_to_python(program, memory_size=1024, stack_size=64, debug=True)
+    assert "cpu = DT31(registers=['a'], memory_size=1024, stack_size=64)" in out
+    assert "cpu.run(program, debug=True)" in out
+
+    out = program_to_python(program)
+    assert "memory_size" not in out
+    assert "stack_size" not in out
+    assert "debug=False" in out
+
+
+def test_program_to_python_explicit_registers_override_auto_detection():
+    """Passing `registers=` skips auto-detection entirely -- the caller (the
+    CLI's `-r/--registers`) is trusted to have already validated it covers
+    every register the program uses."""
+    out = program_to_python([I.CP(5, R.a)], registers=["a", "b", "c"])
+    assert "cpu = DT31(registers=['a', 'b', 'c'])" in out
+
+
 def test_program_to_python_imports_only_what_is_used():
     """M/R/LC/Label are only imported when actually referenced."""
     # No operand types beyond plain literals: only DT31, I needed.
