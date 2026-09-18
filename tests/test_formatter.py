@@ -1,5 +1,10 @@
+import subprocess
+import sys
+
+import pytest
+
 from dt31 import instructions as I
-from dt31.formatter import program_to_text
+from dt31.formatter import program_to_python, program_to_text
 from dt31.operands import LC, L, Label, M, R
 from dt31.parser import BlankLine, Comment, parse_program
 
@@ -1052,3 +1057,131 @@ end:
 
     # Should be identical after second cycle
     assert formatted == formatted2
+
+
+def test_program_to_python_simple():
+    """Basic instructions with no labels: only DT31/I imported, no register ops."""
+    program = [
+        I.CP(5, R.a),
+        I.NOUT(R.a, L[1]),
+    ]
+    out = program_to_python(program, program_name="prog")
+    assert "from dt31 import DT31, I, R" in out
+    assert "Label" not in out
+    assert "prog = [" in out
+    assert "I.CP(a=5, b=R.a)," in out
+    assert "I.NOUT(a=R.a, b=1)," in out
+    assert "cpu = DT31(registers=['a'])" in out
+    assert "cpu.run(prog, debug=False)" in out
+
+
+def test_program_to_python_imports_only_what_is_used():
+    """M/R/LC/Label are only imported when actually referenced."""
+    # No operand types beyond plain literals: only DT31, I needed.
+    out = program_to_python([I.NOOP()])
+    assert out.startswith("from dt31 import DT31, I\n")
+
+    # Memory reference pulls in M.
+    out = program_to_python([I.CP(1, M[0])])
+    assert "M" in out.split("\n")[0].split(", ")
+
+    # Character literal pulls in LC.
+    out = program_to_python([I.COUT(LC["A"])])
+    assert "LC" in out.split("\n")[0].split(", ")
+
+
+def test_program_to_python_label_walrus_on_first_occurrence_reference():
+    """A label referenced before its marker position gets the walrus at the
+    reference; the marker later just uses the bare name (mirrors
+    examples/factorial_with_labels.py's hand-written style)."""
+    program = [
+        I.CP(1, R.a),
+        I.JGT(end := Label("end"), R.a, 0),
+        end,
+        I.NOUT(R.a, L[1]),
+    ]
+    out = program_to_python(program)
+    lines = out.splitlines()
+    dest_line = next(line_ for line_ in lines if "JGT" in line_)
+    marker_line = next(line_ for line_ in lines if line_.strip().startswith("end"))
+
+    assert "(end := Label('end'))" in dest_line
+    assert marker_line.strip() == "end,"
+
+
+def test_program_to_python_label_walrus_on_first_occurrence_marker():
+    """A label whose marker comes before any reference gets the walrus at the
+    marker position; later references use the bare name."""
+    program = [
+        loop := Label("loop"),
+        I.NOUT(R.a, L[1]),
+        I.SUB(R.a, L[1]),
+        I.JGT(loop, R.a, 0),
+    ]
+    out = program_to_python(program)
+    lines = out.splitlines()
+    marker_line = next(line_ for line_ in lines if ":=" in line_)
+    dest_line = next(line_ for line_ in lines if "JGT" in line_)
+
+    assert marker_line.strip() == "(loop := Label('loop')),"
+    assert "dest=loop" in dest_line
+
+
+def test_program_to_python_invalid_identifier_label_name():
+    """A label name that's a Python keyword or starts with a digit can't be a
+    walrus target, so every occurrence gets its own fresh Label(...) literal
+    instead -- no renaming, no shared variable, no collision bookkeeping."""
+    text = "JGT class, R.a, 0\nclass:\nNOUT R.a, 1"
+    program = parse_program(text)
+    out = program_to_python(program)
+
+    assert out.count("Label('class')") == 2
+    assert ":=" not in out
+
+
+def test_program_to_python_comments_and_blank_lines():
+    program = [
+        Comment("a comment"),
+        I.CP(5, R.a),
+        BlankLine(),
+        I.NOUT(R.a, L[1]),
+    ]
+    out = program_to_python(program)
+    assert "    # a comment" in out
+    lines = out.splitlines()
+    # There should be a genuinely blank line between the two instructions,
+    # corresponding to the BlankLine() in the source program.
+    cp_idx = next(i for i, line_ in enumerate(lines) if "I.CP" in line_)
+    nout_idx = next(i for i, line_ in enumerate(lines) if "I.NOUT" in line_)
+    assert any(lines[i] == "" for i in range(cp_idx + 1, nout_idx))
+
+
+@pytest.mark.parametrize(
+    "source",
+    [
+        "CP 3, R.a\nNOUT R.a, 1",
+        ("CP 3, R.a\nloop:\nNOUT R.a, 1\nSUB R.a, 1\nJGT loop, R.a, 0\n"),
+        "JGT class, R.a, 0\nclass:\nNOUT R.a, 1",
+    ],
+)
+def test_program_to_python_generated_file_executes_correctly(tmp_path, source):
+    """The generated .py file isn't just syntactically valid -- running it
+    produces the same output as running the original .dt program directly."""
+    from dt31 import DT31
+    from dt31.assembler import extract_registers_from_program
+
+    program = parse_program(source)
+    registers = extract_registers_from_program(program)
+    cpu = DT31(registers=registers)
+    cpu.run(program, debug=False)
+
+    py_source = program_to_python(program)
+    py_file = tmp_path / "generated.py"
+    py_file.write_text(py_source)
+
+    result = subprocess.run(
+        [sys.executable, str(py_file)],
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode == 0, result.stderr

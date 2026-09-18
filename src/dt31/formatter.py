@@ -1,13 +1,17 @@
-"""Program formatting utilities for converting programs to assembly text.
+"""Program formatting utilities for converting programs to assembly text and to
+Python source.
 
 This module provides functionality for converting dt31 programs (lists of
 instructions, labels, and comments) into human-readable assembly text format
-with configurable formatting options.
+with configurable formatting options, and into standalone Python source files
+using the Python API.
 """
 
+import keyword
 from typing import Literal
 
-from dt31.instructions import Instruction
+from dt31.assembler import extract_registers_from_program
+from dt31.instructions import Instruction, Jump
 from dt31.operands import Label
 from dt31.parser import BlankLine, Comment
 
@@ -272,3 +276,122 @@ def _format_instruction_with_comment(
     else:
         # No alignment, just use margin
         return f"{instruction_text}{' ' * comment_margin}; {comment}"
+
+
+def _label_ref(label: Label, introduced: set[str]) -> str:
+    """Return the Python expression to use for one occurrence of a label.
+
+    Label resolution in `assembler.assemble` is purely name-based (it looks up
+    `label_to_ip[label.name]`), so separate occurrences of a label never need to be
+    the same Python object -- they just need the same `name`. That means an
+    occurrence whose name isn't a valid, non-keyword Python identifier can always be
+    rendered as a fresh `Label(...)` call with no bookkeeping, while a
+    valid-identifier name can use the nicer walrus-on-first-occurrence style (as in
+    `factorial_with_labels.py`) without any risk of renaming collisions, since the
+    Python identifier used is always exactly the dt31 label name.
+
+    Args:
+        label: The label occurrence being rendered (a program-list marker, or a
+            jump/call instruction's `dest`).
+        introduced: Names of labels whose walrus binding has already been emitted;
+            mutated in place as labels are introduced.
+
+    Returns:
+        `"(name := Label('name'))"` on a valid identifier's first occurrence,
+        `"name"` on later occurrences, or `"Label('name')"` (always, no tracking)
+        if the name isn't a usable Python identifier.
+    """
+    name = label.name
+    if not name.isidentifier() or keyword.iskeyword(name):
+        return f"Label({name!r})"
+    if name not in introduced:
+        introduced.add(name)
+        return f"({name} := Label({name!r}))"
+    return name
+
+
+def program_to_python(
+    program: list[Instruction | Label | Comment | BlankLine] | list[Instruction],
+    program_name: str = "program",
+) -> str:
+    """Convert a program to a standalone Python source file using the Python API.
+
+    Produces the same style as the hand-written examples in `examples/*.py`: a
+    module-level `program_name = [...]` list followed by an `if __name__ ==
+    "__main__":` block that runs it. Only the `dt31` symbols the program actually
+    uses are imported.
+
+    Args:
+        program: List of instructions, labels, comments, and blank lines in source
+            order (e.g. from `parser.parse_program`).
+        program_name: Name of the module-level variable holding the program list.
+
+    Returns:
+        Complete Python source, ready to write to a `.py` file.
+
+    Example:
+        ```python
+        from dt31.formatter import program_to_python
+        from dt31.parser import parse_program
+
+        program = parse_program("CP 5, R.a\\nNOUT R.a, 1")
+        print(program_to_python(program))
+        #     from dt31 import DT31, I, R
+        #
+        #     program = [
+        #         I.CP(a=5, out=R.a),
+        #         I.NOUT(a=R.a, b=0),
+        #     ]
+        #
+        #     if __name__ == "__main__":
+        #         cpu = DT31(registers=["a"])
+        #         cpu.run(program, debug=False)
+        ```
+    """
+    introduced: set[str] = set()
+    body_lines = []
+
+    for item in program:
+        if isinstance(item, BlankLine):
+            body_lines.append("")
+        elif isinstance(item, Comment):
+            body_lines.append(f"    # {item.comment}")
+        elif isinstance(item, Label):
+            body_lines.append(f"    {_label_ref(item, introduced)},")
+        else:
+            line = repr(item)
+            if isinstance(item, Jump) and isinstance(item.dest, Label):
+                line = line.replace(
+                    f"dest={item.dest.name}",
+                    f"dest={_label_ref(item.dest, introduced)}",
+                    1,
+                )
+            body_lines.append(f"    I.{line},")
+
+    body = "\n".join(body_lines)
+
+    symbols = ["DT31", "I"]
+    if "M[" in body:
+        symbols.append("M")
+    if "R." in body:
+        symbols.append("R")
+    if "LC[" in body:
+        symbols.append("LC")
+    if "Label(" in body:
+        symbols.append("Label")
+
+    registers = extract_registers_from_program(program)
+
+    lines = [
+        f"from dt31 import {', '.join(symbols)}",
+        "",
+        f"{program_name} = [",
+        body,
+        "]",
+        "",
+        'if __name__ == "__main__":',
+        f"    cpu = DT31(registers={registers!r})",
+        f"    cpu.run({program_name}, debug=False)",
+        "",
+    ]
+    return "\n".join(lines)

@@ -225,6 +225,7 @@ import glob
 import importlib.metadata
 import importlib.util
 import json
+import keyword
 import sys
 import traceback
 from datetime import datetime
@@ -232,7 +233,7 @@ from pathlib import Path
 
 from dt31 import DT31
 from dt31.assembler import extract_registers_from_program
-from dt31.formatter import program_to_text
+from dt31.formatter import program_to_python, program_to_text
 from dt31.instructions import Instruction
 from dt31.parser import ParserError, parse_program
 
@@ -561,6 +562,112 @@ def run_command(args: argparse.Namespace) -> None:
             print(f"Failed to dump CPU state: {dump_error}", file=sys.stderr)
 
     # Success
+    sys.exit(0)
+
+
+def _create_to_python_parser(subparsers) -> None:
+    """Create the 'to-python' subcommand parser.
+
+    Args:
+        subparsers: The subparsers object from add_subparsers()
+    """
+    to_python_parser = subparsers.add_parser(
+        "to-python",
+        help="Convert a dt31 assembly file to a standalone Python source file",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+examples:
+  dt31 to-python program.dt                Print generated Python to stdout
+  dt31 to-python program.dt -o program.py  Write generated Python to a file
+        """,
+    )
+
+    to_python_parser.add_argument(
+        "file",
+        type=str,
+        help="Path to .dt assembly file to convert",
+    )
+
+    to_python_parser.add_argument(
+        "-o",
+        "--output",
+        type=str,
+        metavar="PATH",
+        help="File to write the generated Python source to (default: stdout)",
+    )
+
+    to_python_parser.add_argument(
+        "-i",
+        "--custom-instructions",
+        type=str,
+        metavar="PATH",
+        help="Path to Python file containing custom instruction definitions",
+    )
+
+
+def _derive_program_name(file_path: Path) -> str:
+    """Derive a Python variable name for the program list from a file path.
+
+    Args:
+        file_path: Path to the source .dt file.
+
+    Returns:
+        The file's stem if it's a valid, non-keyword Python identifier, otherwise
+        the generic fallback "program".
+    """
+    stem = file_path.stem
+    if stem.isidentifier() and not keyword.iskeyword(stem):
+        return stem
+    return "program"
+
+
+def to_python_command(args: argparse.Namespace) -> None:
+    """Execute the 'to-python' subcommand - convert a dt31 program to Python source.
+
+    Args:
+        args: Parsed command-line arguments from argparse
+
+    Exit codes:
+        0: Success
+        1: Error occurred (file not found, parse error, or IO error)
+    """
+    custom_instructions = None
+    if args.custom_instructions:
+        try:
+            custom_instructions = load_custom_instructions(args.custom_instructions)
+        except (FileNotFoundError, ImportError, ValueError, TypeError) as e:
+            print(f"Error loading custom instructions: {e}", file=sys.stderr)
+            sys.exit(1)
+
+    file_path = Path(args.file)
+    try:
+        assembly_text = file_path.read_text()
+    except FileNotFoundError:
+        print(f"Error: File not found: {args.file}", file=sys.stderr)
+        sys.exit(1)
+    except IOError as e:
+        print(f"Error reading file {args.file}: {e}", file=sys.stderr)
+        sys.exit(1)
+
+    try:
+        program = parse_program(assembly_text, custom_instructions=custom_instructions)
+    except ParserError as e:
+        print(f"Parse error: {e}", file=sys.stderr)
+        sys.exit(1)
+
+    program_name = _derive_program_name(file_path)
+    python_source = program_to_python(program, program_name=program_name)
+
+    if args.output:
+        try:
+            Path(args.output).write_text(python_source)
+        except IOError as e:
+            print(f"Error writing to {args.output}: {e}", file=sys.stderr)
+            sys.exit(1)
+        print(f"✓ Wrote {args.output}", file=sys.stderr)
+    else:
+        print(python_source, end="")
+
     sys.exit(0)
 
 
@@ -978,6 +1085,9 @@ def main() -> None:
     # Create 'format' subcommand
     _create_format_parser(subparsers)
 
+    # Create 'to-python' subcommand
+    _create_to_python_parser(subparsers)
+
     args = parser.parse_args()
 
     if args.version:
@@ -991,6 +1101,8 @@ def main() -> None:
         check_command(args)
     elif args.command == "format":
         format_command(args)
+    elif args.command == "to-python":
+        to_python_command(args)
     else:
         # Should never reach here due to required subcommand, but handle gracefully
         parser.print_help()
