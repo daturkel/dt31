@@ -165,7 +165,7 @@ The instruction set includes:
 - **Control Flow**: `JMP`, `RJMP`, `JEQ`, `JNE`, `JGT`, `JGE`, `JIF`
 - **Functions**: `CALL`, `RCALL`, `RET`
 - **Stack**: `PUSH`, `POP`, `SEMP`
-- **I/O**: `NOUT`, `COUT`, `NIN`, `CIN`
+- **I/O**: `NOUT`, `COUT`, `NIN`, `CIN`, `STRIN`, `STROUT`, `SNIN`, `SCIN`, `SSTRIN`
 - **Data Movement**: `CP`
 
 Users can easily define their own custom instructions by subclassing `dt31.instructions.Instruction`.
@@ -251,7 +251,7 @@ See the [CLI documentation](https://daturkel.github.io/dt31/dt31/cli.html) for c
 The `--verbose` flag displays timing metrics to help understand program performance:
 
 - **Wall time**: Total elapsed time including I/O waits. Automatically formatted with appropriate units (s, ms, or µs)
-- **Execution time**: Pure computation time, excluding I/O waits from input instructions (NIN, CIN, STRIN, BRK)
+- **Execution time**: Pure computation time, excluding I/O waits from input instructions (NIN, CIN, STRIN, SNIN, SCIN, SSTRIN, BRK)
 - **Steps** (always shown): Number of instructions executed
 
 All timing values accumulate across multiple `run()` calls on the same CPU instance.

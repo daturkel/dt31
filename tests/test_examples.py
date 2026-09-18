@@ -290,6 +290,62 @@ def test_crash_dt():
         cpu.run(program, debug=False)
 
 
+def test_read_until_boundary_dt(capsys, monkeypatch):
+    """Test read_until_boundary.dt: sums a numbers section, then counts a
+    characters section, each ended by a boundary or true end of input.
+
+    Uses a real EOFError-raising input fake (rather than the `side_effect=[...]`
+    list pattern used elsewhere) because that pattern raises StopIteration on
+    exhaustion, which SNIN/SCIN don't catch -- only EOFError, matching what
+    piped stdin actually raises.
+    """
+    dt_path = examples_dir / "read_until_boundary.dt"
+    with open(dt_path) as f:
+        assembly = f.read()
+    program = parse_program(assembly)
+
+    lines = iter(["1", "2", "3", "", "x", "y", "z"])
+
+    def fake_input(prompt=""):
+        try:
+            return next(lines)
+        except StopIteration:
+            raise EOFError()
+
+    monkeypatch.setattr("builtins.input", fake_input)
+
+    cpu = DT31(registers=["a", "b", "c", "s"])
+    cpu.run(program, debug=False)
+
+    captured = capsys.readouterr()
+    assert captured.out == "6\n3\n"
+
+
+def test_read_until_boundary_dt_true_eof(capsys, monkeypatch):
+    """Same program, but with no blank-line separator -- true end of input ends
+    both sections."""
+    dt_path = examples_dir / "read_until_boundary.dt"
+    with open(dt_path) as f:
+        assembly = f.read()
+    program = parse_program(assembly)
+
+    lines = iter(["1", "2", "3"])
+
+    def fake_input(prompt=""):
+        try:
+            return next(lines)
+        except StopIteration:
+            raise EOFError()
+
+    monkeypatch.setattr("builtins.input", fake_input)
+
+    cpu = DT31(registers=["a", "b", "c", "s"])
+    cpu.run(program, debug=False)
+
+    captured = capsys.readouterr()
+    assert captured.out == "6\n0\n"
+
+
 def test_binomial_dist_dt(capsys):
     """Test that binomial_dist.dt runs without error.
 
@@ -345,6 +401,7 @@ TESTED_ASSEMBLY_PROGRAMS = list(DT_FILE_EXPECTED_IO.keys()) + [
     "bf.dt",
     "binomial_dist.dt",
     "crash.dt",
+    "read_until_boundary.dt",
     "tictactoe.dt",
 ]
 
