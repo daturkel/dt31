@@ -535,7 +535,10 @@ def test_snin_success(cpu, monkeypatch):
     assert repr(I.SNIN(M[10], R.b)) == "SNIN(out=M[10], status=R.b)"
     assert str(I.SNIN(M[10], R.b)) == "SNIN [10], R.b"
     monkeypatch.setattr("builtins.input", lambda prompt: "31")
-    assert I.SNIN(R.a, R.b)(cpu) == 31
+    # __call__ returns the status (1), not the value read -- the value is only ever
+    # in `out`, since returning it would be ambiguous with a legitimately-read 0 or
+    # -1 on the failure paths below.
+    assert I.SNIN(R.a, R.b)(cpu) == 1
     assert cpu.get_register("a") == 31
     assert cpu.get_register("b") == 1
 
@@ -610,7 +613,7 @@ def test_scin_success(cpu, monkeypatch):
     assert repr(I.SCIN(M[10], R.b)) == "SCIN(out=M[10], status=R.b)"
     assert str(I.SCIN(M[10], R.b)) == "SCIN [10], R.b"
     monkeypatch.setattr("builtins.input", lambda prompt: "A")
-    assert I.SCIN(R.a, R.b)(cpu) == 65
+    assert I.SCIN(R.a, R.b)(cpu) == 1
     assert cpu.get_register("a") == 65
     assert cpu.get_register("b") == 1
 

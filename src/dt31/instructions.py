@@ -1504,7 +1504,7 @@ class SNIN(Instruction):
             return -1
         cpu[self.out] = val_int
         cpu[self.status] = 1
-        return val_int
+        return 1
 
     def __repr__(self) -> str:
         """Return Python API representation."""
@@ -1590,7 +1590,7 @@ class SCIN(Instruction):
             return -1
         cpu[self.out] = val_ord
         cpu[self.status] = 1
-        return val_ord
+        return 1
 
     def __repr__(self) -> str:
         """Return Python API representation."""
