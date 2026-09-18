@@ -7,6 +7,7 @@ with configurable formatting options, and into standalone Python source files
 using the Python API.
 """
 
+import json
 import keyword
 from typing import Literal
 
@@ -297,16 +298,18 @@ def _label_ref(label: Label, introduced: set[str]) -> str:
             mutated in place as labels are introduced.
 
     Returns:
-        `"(name := Label('name'))"` on a valid identifier's first occurrence,
-        `"name"` on later occurrences, or `"Label('name')"` (always, no tracking)
-        if the name isn't a usable Python identifier.
+        `'(name := Label("name"))'` on a valid identifier's first occurrence,
+        `"name"` on later occurrences, or `'Label("name")'` (always, no tracking)
+        if the name isn't a usable Python identifier. `json.dumps` (rather than
+        `name`'s own `!r`) always double-quotes the string, matching ruff/Black's
+        convention elsewhere in this codebase.
     """
     name = label.name
     if not name.isidentifier() or keyword.iskeyword(name):
-        return f"Label({name!r})"
+        return f"Label({json.dumps(name)})"
     if name not in introduced:
         introduced.add(name)
-        return f"({name} := Label({name!r}))"
+        return f"({name} := Label({json.dumps(name)}))"
     return name
 
 
@@ -360,7 +363,7 @@ def program_to_python(
         #     ]
         #
         #     if __name__ == "__main__":
-        #         cpu = DT31(registers=['a'])
+        #         cpu = DT31(registers=["a"])
         #         cpu.run(program, debug=False)
         ```
     """
@@ -409,7 +412,11 @@ def program_to_python(
     # `DT31(registers=[...])` (or, for a register-less program, `DT31()`).
     cpu_kwargs = []
     if registers_to_use:
-        cpu_kwargs.append(f"registers={registers_to_use!r}")
+        # A list's own `!r` defers to each element's `!r`, which single-quotes
+        # strings; build it manually so register names come out double-quoted
+        # too, matching ruff/Black's convention.
+        register_list = ", ".join(json.dumps(r) for r in registers_to_use)
+        cpu_kwargs.append(f"registers=[{register_list}]")
     if memory_size is not None:
         cpu_kwargs.append(f"memory_size={memory_size!r}")
     if stack_size is not None:

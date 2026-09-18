@@ -2157,7 +2157,7 @@ def test_to_python_registers_flag_overrides_auto_detection(temp_dt_file, capsys)
 
     assert exc_info.value.code == 0
     captured = capsys.readouterr()
-    assert "registers=['a', 'b', 'c']" in captured.out
+    assert 'registers=["a", "b", "c"]' in captured.out
 
 
 def test_to_python_registers_flag_missing_used_register(temp_dt_file, capsys):

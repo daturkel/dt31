@@ -1073,7 +1073,7 @@ def test_program_to_python_simple():
     assert "prog = [" in out
     assert "I.CP(a=5, b=R.a)," in out
     assert "I.NOUT(a=R.a, b=1)," in out
-    assert "cpu = DT31(registers=['a'])" in out
+    assert 'cpu = DT31(registers=["a"])' in out
     assert "cpu.run(prog, debug=False)" in out
 
 
@@ -1093,7 +1093,7 @@ def test_program_to_python_cpu_config_kwargs():
     program = [I.CP(5, R.a)]
 
     out = program_to_python(program, memory_size=1024, stack_size=64, debug=True)
-    assert "cpu = DT31(registers=['a'], memory_size=1024, stack_size=64)" in out
+    assert 'cpu = DT31(registers=["a"], memory_size=1024, stack_size=64)' in out
     assert "cpu.run(program, debug=True)" in out
 
     out = program_to_python(program)
@@ -1107,7 +1107,7 @@ def test_program_to_python_explicit_registers_override_auto_detection():
     CLI's `-r/--registers`) is trusted to have already validated it covers
     every register the program uses."""
     out = program_to_python([I.CP(5, R.a)], registers=["a", "b", "c"])
-    assert "cpu = DT31(registers=['a', 'b', 'c'])" in out
+    assert 'cpu = DT31(registers=["a", "b", "c"])' in out
 
 
 def test_program_to_python_imports_only_what_is_used():
@@ -1140,7 +1140,7 @@ def test_program_to_python_label_walrus_on_first_occurrence_reference():
     dest_line = next(line_ for line_ in lines if "JGT" in line_)
     marker_line = next(line_ for line_ in lines if line_.strip().startswith("end"))
 
-    assert "(end := Label('end'))" in dest_line
+    assert '(end := Label("end"))' in dest_line
     assert marker_line.strip() == "end,"
 
 
@@ -1158,7 +1158,7 @@ def test_program_to_python_label_walrus_on_first_occurrence_marker():
     marker_line = next(line_ for line_ in lines if ":=" in line_)
     dest_line = next(line_ for line_ in lines if "JGT" in line_)
 
-    assert marker_line.strip() == "(loop := Label('loop')),"
+    assert marker_line.strip() == '(loop := Label("loop")),'
     assert "dest=loop" in dest_line
 
 
@@ -1170,7 +1170,7 @@ def test_program_to_python_invalid_identifier_label_name():
     program = parse_program(text)
     out = program_to_python(program)
 
-    assert out.count("Label('class')") == 2
+    assert out.count('Label("class")') == 2
     assert ":=" not in out
 
 
