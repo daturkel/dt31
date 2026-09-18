@@ -20,6 +20,24 @@ if TYPE_CHECKING:
 INPUT_PROMPT = "> "
 
 
+def _decode_escape_sequences(val: str) -> str:
+    """Decode Python escape sequences (e.g. '\\n' -> newline) in raw input text.
+
+    Used by input instructions to let users type escape sequences like `\\n` or
+    `\\t` and have them interpreted, rather than taken literally.
+
+    Args:
+        val: Raw text as read from `input()`.
+
+    Returns:
+        The decoded text, or `val` unchanged if it isn't valid escaped text.
+    """
+    try:
+        return val.encode().decode("unicode_escape")
+    except UnicodeDecodeError:
+        return val
+
+
 class Instruction:
     """Base class for all DT31 instructions.
 
@@ -1527,11 +1545,7 @@ class CIN(Instruction):
 
     def _calc(self, cpu: DT31) -> int:
         val = input("> ")
-        # Decode escape sequences (e.g., '\n' -> newline)
-        try:
-            decoded = val.encode().decode("unicode_escape")
-        except UnicodeDecodeError:
-            decoded = val
+        decoded = _decode_escape_sequences(val)
         val_ord = ord(decoded)
         cpu[self.out] = val_ord
         return val_ord
@@ -1575,11 +1589,7 @@ class SCIN(Instruction):
         except EOFError:
             cpu[self.status] = 0
             return 0
-        # Decode escape sequences (e.g., '\n' -> newline)
-        try:
-            decoded = val.encode().decode("unicode_escape")
-        except UnicodeDecodeError:
-            decoded = val
+        decoded = _decode_escape_sequences(val)
         try:
             val_ord = ord(decoded)
         except TypeError:
@@ -1616,11 +1626,7 @@ class STRIN(Instruction):
 
     def _calc(self, cpu: DT31) -> int:
         val = input(INPUT_PROMPT)
-        # Decode escape sequences (e.g., '\n' -> newline)
-        try:
-            decoded = val.encode().decode("unicode_escape")
-        except UnicodeDecodeError:
-            decoded = val
+        decoded = _decode_escape_sequences(val)
         base = self.out.resolve_address(cpu)
         tmp = base
 
@@ -1674,11 +1680,7 @@ class SSTRIN(Instruction):
         except EOFError:
             cpu[self.status] = 0
             return 0
-        # Decode escape sequences (e.g., '\n' -> newline)
-        try:
-            decoded = val.encode().decode("unicode_escape")
-        except UnicodeDecodeError:
-            decoded = val
+        decoded = _decode_escape_sequences(val)
         base = self.out.resolve_address(cpu)
         tmp = base
 
