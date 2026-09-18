@@ -1,28 +1,28 @@
 ; Read a section of numbers followed by a section of characters, each ended by
 ; whatever comes first: a non-numeric line (like a blank separator) or true
 ; end of input. Outputs the sum of the numbers, then the count of characters.
-;
+
 ; This is exactly the pattern SNIN/SCIN/SSTRIN exist for: NIN/CIN/STRIN crash
 ; the whole program the moment input runs out or a line can't be parsed,
 ; which makes a "read until a boundary" loop like this one impossible. SNIN
 ; and SCIN instead report what happened via an explicit status operand, so
 ; the boundary can be handled like any other branch.
-;
+
 ; Try it:
-;   printf "1\n2\n3\n\nx\ny\nz\n" | dt31 run examples/read_until_boundary.dt
-;   # 6
-;   # 3
+; printf "1\n2\n3\n\nx\ny\nz\n" | dt31 run examples/read_until_boundary.dt
+; # 6
+; # 3
 
 sum_loop:
     SNIN R.a, R.s
-    ; A non-numeric line (the blank separator) or true end of input both end
-    ; the numbers section -- either is fine here.
+; A non-numeric line (the blank separator) or true end of input both end
+; the numbers section -- either is fine here.
     JEQ sum_done, R.s, -1
     JEQ sum_done, R.s, 0
     ADD R.b, R.a
     JMP sum_loop
 sum_done:
-NOUT R.b, 1
+    NOUT R.b, 1
 
 count_loop:
     SCIN R.a, R.s
@@ -30,4 +30,4 @@ count_loop:
     ADD R.c, 1
     JMP count_loop
 count_done:
-NOUT R.c, 1
+    NOUT R.c, 1
