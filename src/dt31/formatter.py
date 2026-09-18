@@ -11,7 +11,7 @@ import keyword
 from typing import Literal
 
 from dt31.assembler import extract_registers_from_program
-from dt31.instructions import Instruction, Jump
+from dt31.instructions import Instruction, Jump, RelativeJumpMixin
 from dt31.operands import Label
 from dt31.parser import BlankLine, Comment
 
@@ -363,10 +363,11 @@ def program_to_python(
             if isinstance(item, Jump) and isinstance(item.dest, Label):
                 # `Jump.__repr__` renders a label destination as a bare name;
                 # swap in the walrus-or-literal form. Relative jumps take the
-                # destination as `delta`, hence `dest_kwarg` rather than "dest".
+                # destination as `delta` rather than `dest`.
+                dest_kwarg = "delta" if isinstance(item, RelativeJumpMixin) else "dest"
                 line = line.replace(
-                    f"{item.dest_kwarg}={item.dest.name}",
-                    f"{item.dest_kwarg}={_label_ref(item.dest, introduced)}",
+                    f"{dest_kwarg}={item.dest.name}",
+                    f"{dest_kwarg}={_label_ref(item.dest, introduced)}",
                     1,
                 )
             body_lines.append(f"    I.{line},")

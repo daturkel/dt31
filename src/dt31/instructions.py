@@ -758,14 +758,6 @@ class NOT(UnaryOperation):
 class Jump(Instruction):
     """Base class for various types of jump instruction."""
 
-    dest_kwarg: str = "dest"
-    """Name of the `__init__` keyword that carries the destination.
-
-    Relative jumps name it `delta` instead, so `__repr__` (and anything building
-    Python source out of a repr, like `dt31.formatter.program_to_python`) reads
-    the keyword from here rather than assuming `dest`.
-    """
-
     def __init__(self, name: str, dest: Destination):
         """
         Args:
@@ -796,7 +788,7 @@ class Jump(Instruction):
 
     def __repr__(self) -> str:
         """Return Python API representation."""
-        return f"{self.name}({self.dest_kwarg}={self.dest!r})"
+        return f"{self.name}(dest={self.dest!r})"
 
     def __str__(self) -> str:
         """Return assembly text representation."""
@@ -818,7 +810,7 @@ class UnaryJump(Jump):
 
     def __repr__(self) -> str:
         """Return Python API representation."""
-        return f"{self.name}({self.dest_kwarg}={self.dest!r}, a={self.a!r})"
+        return f"{self.name}(dest={self.dest!r}, a={self.a!r})"
 
     def __str__(self) -> str:
         """Return assembly text representation."""
@@ -844,9 +836,7 @@ class BinaryJump(Jump):
 
     def __repr__(self) -> str:
         """Return Python API representation."""
-        return (
-            f"{self.name}({self.dest_kwarg}={self.dest!r}, a={self.a!r}, b={self.b!r})"
-        )
+        return f"{self.name}(dest={self.dest!r}, a={self.a!r}, b={self.b!r})"
 
     def __str__(self) -> str:
         """Return assembly text representation."""
@@ -871,10 +861,25 @@ class RelativeJumpMixin(Jump):
     relative to the current instruction pointer position, rather than an exact position.
     """
 
-    dest_kwarg: str = "delta"
-
     def _jump_destination(self, cpu: DT31) -> int:
         return cpu.get_register("ip") + self.dest.resolve(cpu)
+
+    def __repr__(self) -> str:
+        """Return Python API representation.
+
+        Overrides `Jump`/`UnaryJump`/`BinaryJump`'s `__repr__` because the
+        constructor here takes the destination as `delta`, not `dest` -- the
+        base classes' reprs describe a call this class can't actually accept.
+        `a`/`b` aren't this mixin's to know about (they belong to whichever of
+        `UnaryJump`/`BinaryJump` it's combined with, or neither), so they're
+        included only when present.
+        """
+        parts = [f"delta={self.dest!r}"]
+        if hasattr(self, "a"):
+            parts.append(f"a={self.a!r}")
+        if hasattr(self, "b"):
+            parts.append(f"b={self.b!r}")
+        return f"{self.name}({', '.join(parts)})"
 
 
 class UnconditionalJumpMixin(Jump):
