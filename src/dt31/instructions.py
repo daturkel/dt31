@@ -1651,19 +1651,12 @@ class STRIN(Instruction):
 
 
 class SSTRIN(Instruction):
-    """Safely read a string into memory, reporting a status instead of crashing when
-    input runs out.
+    """Like STRIN, but reports end of input via `status` instead of raising.
 
-    STRIN crashes the whole program the moment `input()` hits true end of input,
-    which makes it impossible to loop "read every remaining line as a string"
-    without already knowing how many lines there are. SSTRIN reports that condition
-    via `status` instead of raising, so a read loop can stop cleanly.
-
-    A blank line is a valid string (the empty string) and always reports success --
-    it's whether a line exists at all that matters, not its length. So unlike
-    `SNIN`/`SCIN`, there's no "unparseable input" case here: `status` is only ever
-    `1` (success, `out` holds the string) or `0` (true end of input, `out` left
-    unchanged).
+    `status` is `1` on success (`out` holds the string, which may be empty -- a
+    blank line is a valid read, not a failure) or `0` at true end of input (`out`
+    left unchanged). Unlike SNIN/SCIN, there's no unparseable-input case, since
+    any line is a valid string.
     """
 
     def __init__(self, out: MemoryReference, status: Reference):
