@@ -301,7 +301,7 @@ def _label_ref(label: Label, introduced: set[str]) -> str:
         `"name"` on later occurrences, or `'Label("name")'` (always, no tracking)
         if the name isn't a usable Python identifier. The name is interpolated
         directly rather than through `!r`, so the quotes come out double
-        (matching ruff/Black's convention) instead of `repr()`'s default single
+        (matching ruff's convention) instead of `repr()`'s default single
         quotes. That's safe for any label parsed from `.dt` text, since
         `parser.py` restricts label names to alphanumerics and underscores --
         never a quote or backslash. A `Label(...)` built by hand with a name
@@ -420,7 +420,7 @@ def program_to_python(
     if registers_to_use:
         # A list's own `!r` defers to each element's `!r`, which single-quotes
         # strings; build it manually with plain double quotes instead, matching
-        # ruff/Black's convention. Safe because `operands.validate_register_name`
+        # ruff's convention. Safe because `operands.validate_register_name`
         # (enforced by every path that can reach here -- auto-detection walks an
         # already-valid program, and `cli.to_python_command` validates an
         # explicit `-r/--registers` the same way `run` does) guarantees a

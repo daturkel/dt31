@@ -67,7 +67,7 @@ class Literal(Operand):
         Character literals (`is_char=True`) are shown as `LC["x"]` so debug output
         (which uses `repr()`) shows the character rather than its raw ordinal value.
         `json.dumps` (rather than the character's own `!r`) always double-quotes the
-        result, matching the double-quote convention ruff/Black enforce elsewhere in
+        result, matching the double-quote convention ruff enforces elsewhere in
         this codebase -- and, unlike `!r`, its escaping is unaffected by whether the
         character happens to be a single quote.
         """
