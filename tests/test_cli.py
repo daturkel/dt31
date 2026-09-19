@@ -2092,9 +2092,9 @@ def test_to_python_prints_to_stdout(temp_dt_file, capsys):
     assert exc_info.value.code == 0
     captured = capsys.readouterr()
     assert "from dt31 import DT31, I, R" in captured.out
-    assert "add = [" in captured.out
+    assert "program = [" in captured.out
     assert "I.CP(a=5, b=R.a)," in captured.out
-    assert "cpu.run(add, debug=False)" in captured.out
+    assert "cpu.run(program, debug=False)" in captured.out
 
 
 def test_to_python_writes_output_file(temp_dt_file, tmp_path, capsys):
@@ -2190,20 +2190,6 @@ def test_to_python_registers_flag_rejects_invalid_name(temp_dt_file, capsys):
     assert exc_info.value.code == 1
     captured = capsys.readouterr()
     assert "Error:" in captured.err
-
-
-def test_to_python_program_name_falls_back_for_invalid_identifier(temp_dt_file, capsys):
-    """A filename stem that isn't a valid Python identifier falls back to the
-    generic "program" variable name instead of producing invalid Python."""
-    file_path = temp_dt_file("CP 5, R.a\n", filename="123-add.dt")
-
-    with patch.object(sys, "argv", ["dt31", "to-python", file_path]):
-        with pytest.raises(SystemExit) as exc_info:
-            main()
-
-    assert exc_info.value.code == 0
-    captured = capsys.readouterr()
-    assert "program = [" in captured.out
 
 
 def test_to_python_file_not_found(capsys):

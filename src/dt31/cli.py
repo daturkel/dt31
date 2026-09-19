@@ -225,7 +225,6 @@ import glob
 import importlib.metadata
 import importlib.util
 import json
-import keyword
 import sys
 import traceback
 from datetime import datetime
@@ -628,22 +627,6 @@ examples:
     )
 
 
-def _derive_program_name(file_path: Path) -> str:
-    """Derive a Python variable name for the program list from a file path.
-
-    Args:
-        file_path: Path to the source .dt file.
-
-    Returns:
-        The file's stem if it's a valid, non-keyword Python identifier, otherwise
-        the generic fallback "program".
-    """
-    stem = file_path.stem
-    if stem.isidentifier() and not keyword.iskeyword(stem):
-        return stem
-    return "program"
-
-
 def to_python_command(args: argparse.Namespace) -> None:
     """Execute the 'to-python' subcommand - convert a dt31 program to Python source.
 
@@ -694,10 +677,8 @@ def to_python_command(args: argparse.Namespace) -> None:
             print(f"Missing registers: {sorted(missing)}", file=sys.stderr)
             sys.exit(1)
 
-    program_name = _derive_program_name(file_path)
     python_source = program_to_python(
         program,
-        program_name=program_name,
         registers=registers,
         memory_size=args.memory,
         stack_size=args.stack_size,
