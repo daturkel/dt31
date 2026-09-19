@@ -40,9 +40,8 @@ class DT31:
             Defaults to False.
         track_step_time: If True, `step()` records per-instruction timing
             (`instruction_time_ns`, `blocking_time_ns`) via `time.perf_counter_ns()`.
-            Defaults to False, since that bookkeeping has a real cost on hot loops;
-            set to True when you want the stats. `wall_time_ns` and `step_count` are
-            recorded either way.
+            Defaults to False to avoid the small performance penalty. `wall_time_ns`
+            and `step_count` are recorded either way.
 
     Raises:
         ValueError: If stack_size or memory_size <= 0, if 'ip' is in register names,
@@ -94,7 +93,7 @@ class DT31:
         self.debug_mode: bool = debug
         """If `True`, the CPU is in debug mode (step-by-step execution)."""
         self.track_step_time: bool = track_step_time
-        """If `True`, `step()` records per-instruction timing. See `__init__`."""
+        """If `True`, `step()` records per-instruction timing."""
         self.step_count: int = 0
         """Cumulative number of steps run by this DT31 instance via `step` or `run`."""
         self.wall_time_ns: int = 0
