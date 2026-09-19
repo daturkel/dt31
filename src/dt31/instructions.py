@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import copy
 import random
+import sys
 from typing import TYPE_CHECKING
 
 from dt31.operands import (
@@ -18,6 +19,24 @@ if TYPE_CHECKING:
     from dt31.cpu import DT31  # pragma: no cover
 
 INPUT_PROMPT = "> "
+
+
+def _prompted_input(prompt: str = INPUT_PROMPT) -> str:
+    """Read a line from stdin after writing `prompt` to stderr.
+
+    `input(prompt)` writes its prompt to stdout, which pollutes program output
+    (especially when it's redirected or piped). Writing the prompt to stderr
+    ourselves and calling `input()` with no argument keeps stdout clean.
+
+    Args:
+        prompt: The prompt text to display. Defaults to `INPUT_PROMPT`.
+
+    Returns:
+        str: The line read from stdin (without the trailing newline).
+    """
+    sys.stderr.write(prompt)
+    sys.stderr.flush()
+    return input()
 
 
 def _decode_escape_sequences(val: str) -> str:
@@ -139,7 +158,8 @@ class Instruction:
             cpu: The DT31 CPU instance executing this instruction.
         """
         # default behavior is to increment the instruction register by 1
-        cpu.set_register("ip", cpu.get_register("ip") + 1)
+        # bypass get/set_register validation since ip register always exists
+        cpu.registers["ip"] += 1
 
     def __call__(self, cpu: DT31) -> int:
         """Execute the instruction on the given CPU.
@@ -1471,7 +1491,7 @@ class NIN(Instruction):
         self.out = as_op(out)
 
     def _calc(self, cpu: DT31) -> int:
-        val = input(INPUT_PROMPT)
+        val = _prompted_input()
         val_int = int(val)
         cpu[self.out] = val_int
         return val_int
@@ -1509,7 +1529,7 @@ class SNIN(Instruction):
 
     def _calc(self, cpu: DT31) -> int:
         try:
-            val = input(INPUT_PROMPT)
+            val = _prompted_input()
         except EOFError:
             cpu[self.status] = 0
             return 0
@@ -1544,7 +1564,7 @@ class CIN(Instruction):
         self.out = as_op(out)
 
     def _calc(self, cpu: DT31) -> int:
-        val = input("> ")
+        val = _prompted_input()
         decoded = _decode_escape_sequences(val)
         val_ord = ord(decoded)
         cpu[self.out] = val_ord
@@ -1585,7 +1605,7 @@ class SCIN(Instruction):
 
     def _calc(self, cpu: DT31) -> int:
         try:
-            val = input(INPUT_PROMPT)
+            val = _prompted_input()
         except EOFError:
             cpu[self.status] = 0
             return 0
@@ -1625,7 +1645,7 @@ class STRIN(Instruction):
         self.out = out
 
     def _calc(self, cpu: DT31) -> int:
-        val = input(INPUT_PROMPT)
+        val = _prompted_input()
         decoded = _decode_escape_sequences(val)
         base = self.out.resolve_address(cpu)
         tmp = base
@@ -1676,7 +1696,7 @@ class SSTRIN(Instruction):
 
     def _calc(self, cpu: DT31) -> int:
         try:
-            val = input(INPUT_PROMPT)
+            val = _prompted_input()
         except EOFError:
             cpu[self.status] = 0
             return 0

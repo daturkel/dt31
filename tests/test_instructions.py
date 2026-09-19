@@ -526,7 +526,7 @@ def test_cout_newline(cpu, capsys):
 def test_nin(cpu, monkeypatch):
     assert repr(I.NIN(M[10])) == "NIN(out=M[10])"
     assert str(I.NIN(M[10])) == "NIN [10]"
-    monkeypatch.setattr("builtins.input", lambda prompt: "31")
+    monkeypatch.setattr("builtins.input", lambda: "31")
     assert I.NIN(R.a)(cpu) == 31
     assert cpu.get_register("a") == 31
 
@@ -534,7 +534,7 @@ def test_nin(cpu, monkeypatch):
 def test_snin_success(cpu, monkeypatch):
     assert repr(I.SNIN(M[10], R.b)) == "SNIN(out=M[10], status=R.b)"
     assert str(I.SNIN(M[10], R.b)) == "SNIN [10], R.b"
-    monkeypatch.setattr("builtins.input", lambda prompt: "31")
+    monkeypatch.setattr("builtins.input", lambda: "31")
     # __call__ returns the status (1), not the value read -- the value is only ever
     # in `out`, since returning it would be ambiguous with a legitimately-read 0 or
     # -1 on the failure paths below.
@@ -544,7 +544,7 @@ def test_snin_success(cpu, monkeypatch):
 
 
 def test_snin_eof(cpu, monkeypatch):
-    def raise_eof(prompt):
+    def raise_eof():
         raise EOFError()
 
     monkeypatch.setattr("builtins.input", raise_eof)
@@ -556,7 +556,7 @@ def test_snin_eof(cpu, monkeypatch):
 
 
 def test_snin_invalid(cpu, monkeypatch):
-    monkeypatch.setattr("builtins.input", lambda prompt: "not a number")
+    monkeypatch.setattr("builtins.input", lambda: "not a number")
     cpu.set_register("a", 99)
     assert I.SNIN(R.a, R.b)(cpu) == -1
     # out is left unchanged on parse failure
@@ -567,7 +567,7 @@ def test_snin_invalid(cpu, monkeypatch):
 def test_cin(cpu, monkeypatch):
     assert repr(I.CIN(M[10])) == "CIN(out=M[10])"
     assert str(I.CIN(M[10])) == "CIN [10]"
-    monkeypatch.setattr("builtins.input", lambda prompt: "A")
+    monkeypatch.setattr("builtins.input", lambda: "A")
     assert I.CIN(R.a)(cpu) == 65
     assert cpu.get_register("a") == 65
 
@@ -575,34 +575,34 @@ def test_cin(cpu, monkeypatch):
 def test_cin_escape_sequences(cpu, monkeypatch):
     """Test that CIN properly decodes Python escape sequences."""
     # Test newline
-    monkeypatch.setattr("builtins.input", lambda prompt: r"\n")
+    monkeypatch.setattr("builtins.input", lambda: r"\n")
     assert I.CIN(R.a)(cpu) == 10  # ord('\n') == 10
     assert cpu.get_register("a") == 10
 
     # Test tab
-    monkeypatch.setattr("builtins.input", lambda prompt: r"\t")
+    monkeypatch.setattr("builtins.input", lambda: r"\t")
     assert I.CIN(R.a)(cpu) == 9  # ord('\t') == 9
     assert cpu.get_register("a") == 9
 
     # Test backslash
-    monkeypatch.setattr("builtins.input", lambda prompt: r"\\")
+    monkeypatch.setattr("builtins.input", lambda: r"\\")
     assert I.CIN(R.a)(cpu) == 92  # ord('\\') == 92
     assert cpu.get_register("a") == 92
 
     # Test carriage return
-    monkeypatch.setattr("builtins.input", lambda prompt: r"\r")
+    monkeypatch.setattr("builtins.input", lambda: r"\r")
     assert I.CIN(R.a)(cpu) == 13  # ord('\r') == 13
     assert cpu.get_register("a") == 13
 
     # Test regular character (should still work)
-    monkeypatch.setattr("builtins.input", lambda prompt: "B")
+    monkeypatch.setattr("builtins.input", lambda: "B")
     assert I.CIN(R.a)(cpu) == 66  # ord('B') == 66
     assert cpu.get_register("a") == 66
 
     # Test invalid unicode escape (should fall back to literal and fail with TypeError)
     # \x with incomplete hex sequence causes UnicodeDecodeError, falls back to r"\x"
     # which is 2 characters, so ord() raises TypeError
-    monkeypatch.setattr("builtins.input", lambda prompt: r"\x")
+    monkeypatch.setattr("builtins.input", lambda: r"\x")
     with pytest.raises(
         TypeError, match="expected a character, but string of length 2 found"
     ):
@@ -612,14 +612,14 @@ def test_cin_escape_sequences(cpu, monkeypatch):
 def test_scin_success(cpu, monkeypatch):
     assert repr(I.SCIN(M[10], R.b)) == "SCIN(out=M[10], status=R.b)"
     assert str(I.SCIN(M[10], R.b)) == "SCIN [10], R.b"
-    monkeypatch.setattr("builtins.input", lambda prompt: "A")
+    monkeypatch.setattr("builtins.input", lambda: "A")
     assert I.SCIN(R.a, R.b)(cpu) == 1
     assert cpu.get_register("a") == 65
     assert cpu.get_register("b") == 1
 
 
 def test_scin_eof(cpu, monkeypatch):
-    def raise_eof(prompt):
+    def raise_eof():
         raise EOFError()
 
     monkeypatch.setattr("builtins.input", raise_eof)
@@ -631,13 +631,13 @@ def test_scin_eof(cpu, monkeypatch):
 
 def test_scin_invalid(cpu, monkeypatch):
     # blank line and multi-char line both fail to resolve to a single character
-    monkeypatch.setattr("builtins.input", lambda prompt: "")
+    monkeypatch.setattr("builtins.input", lambda: "")
     cpu.set_register("a", 99)
     assert I.SCIN(R.a, R.b)(cpu) == -1
     assert cpu.get_register("a") == 99
     assert cpu.get_register("b") == -1
 
-    monkeypatch.setattr("builtins.input", lambda prompt: "hello")
+    monkeypatch.setattr("builtins.input", lambda: "hello")
     assert I.SCIN(R.a, R.b)(cpu) == -1
     assert cpu.get_register("a") == 99
     assert cpu.get_register("b") == -1
@@ -645,7 +645,7 @@ def test_scin_invalid(cpu, monkeypatch):
 
 def test_scin_invalid_unicode_escape(cpu, monkeypatch):
     """An undecodable escape sequence falls back to the literal (multi-char) string."""
-    monkeypatch.setattr("builtins.input", lambda prompt: r"\xZZ")
+    monkeypatch.setattr("builtins.input", lambda: r"\xZZ")
     assert I.SCIN(R.a, R.b)(cpu) == -1
     assert cpu.get_register("b") == -1
 
@@ -1012,7 +1012,7 @@ def test_with_comment_method_instruction():
 def test_strin(cpu, monkeypatch):
     assert repr(I.STRIN(M[10])) == "STRIN(out=M[10])"
     assert str(I.STRIN(M[10])) == "STRIN [10]"
-    monkeypatch.setattr("builtins.input", lambda prompt: "Foobar")
+    monkeypatch.setattr("builtins.input", lambda: "Foobar")
     cpu.set_memory(16, 999)
     assert I.STRIN(M[10])(cpu) == 0
     for i, char in enumerate("Foobar"):
@@ -1025,7 +1025,7 @@ def test_strin(cpu, monkeypatch):
 
 def test_strin_empty_string(cpu, monkeypatch):
     """Test that STRIN handles empty string input correctly."""
-    monkeypatch.setattr("builtins.input", lambda prompt: "")
+    monkeypatch.setattr("builtins.input", lambda: "")
     cpu.set_memory(10, 999)
     assert I.STRIN(M[10])(cpu) == 0
     assert cpu.get_memory(10) == 0
@@ -1034,7 +1034,7 @@ def test_strin_empty_string(cpu, monkeypatch):
 def test_strin_escape_sequences(cpu, monkeypatch):
     """Test that STRIN properly decodes Python escape sequences."""
     # Test string with newline
-    monkeypatch.setattr("builtins.input", lambda prompt: r"Hello\nWorld")
+    monkeypatch.setattr("builtins.input", lambda: r"Hello\nWorld")
     assert I.STRIN(M[10])(cpu) == 0
     expected = "Hello\nWorld"
     for i, char in enumerate(expected):
@@ -1042,7 +1042,7 @@ def test_strin_escape_sequences(cpu, monkeypatch):
     assert cpu.get_memory(10 + len(expected)) == 0
 
     # Test string with tab
-    monkeypatch.setattr("builtins.input", lambda prompt: r"A\tB")
+    monkeypatch.setattr("builtins.input", lambda: r"A\tB")
     assert I.STRIN(M[20])(cpu) == 0
     expected = "A\tB"
     for i, char in enumerate(expected):
@@ -1050,9 +1050,7 @@ def test_strin_escape_sequences(cpu, monkeypatch):
     assert cpu.get_memory(20 + len(expected)) == 0
 
     # Test string with multiple escape sequences
-    monkeypatch.setattr(
-        "builtins.input", lambda prompt: r"Line1\nLine2\tTab\\Backslash"
-    )
+    monkeypatch.setattr("builtins.input", lambda: r"Line1\nLine2\tTab\\Backslash")
     assert I.STRIN(M[30])(cpu) == 0
     expected = "Line1\nLine2\tTab\\Backslash"
     for i, char in enumerate(expected):
@@ -1061,7 +1059,7 @@ def test_strin_escape_sequences(cpu, monkeypatch):
 
     # Test invalid unicode escape (should fall back to literal)
     # \xZZ is invalid, so decode fails and falls back to literal r"\xZZ"
-    monkeypatch.setattr("builtins.input", lambda prompt: r"\xZZ")
+    monkeypatch.setattr("builtins.input", lambda: r"\xZZ")
     assert I.STRIN(M[40])(cpu) == 0
     expected = r"\xZZ"  # Literal string
     for i, char in enumerate(expected):
@@ -1072,7 +1070,7 @@ def test_strin_escape_sequences(cpu, monkeypatch):
 def test_sstrin_success(cpu, monkeypatch):
     assert repr(I.SSTRIN(M[10], R.b)) == "SSTRIN(out=M[10], status=R.b)"
     assert str(I.SSTRIN(M[10], R.b)) == "SSTRIN [10], R.b"
-    monkeypatch.setattr("builtins.input", lambda prompt: "Foobar")
+    monkeypatch.setattr("builtins.input", lambda: "Foobar")
     assert I.SSTRIN(M[10], R.b)(cpu) == 1
     for i, char in enumerate("Foobar"):
         assert chr(cpu.get_memory(10 + i)) == char
@@ -1085,7 +1083,7 @@ def test_sstrin_success(cpu, monkeypatch):
 
 def test_sstrin_empty_string(cpu, monkeypatch):
     """Empty lines are valid strings for SSTRIN, not an error status."""
-    monkeypatch.setattr("builtins.input", lambda prompt: "")
+    monkeypatch.setattr("builtins.input", lambda: "")
     cpu.set_memory(10, 999)
     assert I.SSTRIN(M[10], R.b)(cpu) == 1
     assert cpu.get_memory(10) == 0
@@ -1094,7 +1092,7 @@ def test_sstrin_empty_string(cpu, monkeypatch):
 
 def test_sstrin_invalid_unicode_escape(cpu, monkeypatch):
     """An undecodable escape sequence falls back to the literal string."""
-    monkeypatch.setattr("builtins.input", lambda prompt: r"\xZZ")
+    monkeypatch.setattr("builtins.input", lambda: r"\xZZ")
     assert I.SSTRIN(M[10], R.b)(cpu) == 1
     expected = r"\xZZ"
     for i, char in enumerate(expected):
@@ -1104,7 +1102,7 @@ def test_sstrin_invalid_unicode_escape(cpu, monkeypatch):
 
 
 def test_sstrin_eof(cpu, monkeypatch):
-    def raise_eof(prompt):
+    def raise_eof():
         raise EOFError()
 
     monkeypatch.setattr("builtins.input", raise_eof)

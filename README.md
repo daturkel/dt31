@@ -254,6 +254,10 @@ The `--verbose` flag displays timing metrics to help understand program performa
 - **Execution time**: Pure computation time, excluding I/O waits from input instructions (NIN, CIN, STRIN, SNIN, SCIN, SSTRIN, BRK)
 - **Steps** (always shown): Number of instructions executed
 
+Per-instruction timing (which powers execution time) has a small runtime cost, so it's off
+by default; `--verbose` turns it on automatically. To record it from Python without the rest
+of the verbose output, set `track_step_time=True` when constructing a `DT31` directly.
+
 All timing values accumulate across multiple `run()` calls on the same CPU instance.
 
 ### Code Formatting
