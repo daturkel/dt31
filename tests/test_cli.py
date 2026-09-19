@@ -2317,3 +2317,37 @@ def test_to_python_output_write_io_error(temp_dt_file, capsys):
     assert exc_info.value.code == 1
     captured = capsys.readouterr()
     assert "Error writing to" in captured.err
+
+
+def test_track_step_time_off_by_default(temp_dt_file):
+    """Without --verbose, the CPU is constructed with track_step_time=False."""
+    file_path = temp_dt_file("CP 5, R.a")
+
+    with patch("dt31.cli.DT31") as mock_dt31_class:
+        mock_cpu = MagicMock()
+        mock_dt31_class.return_value = mock_cpu
+
+        with patch.object(sys, "argv", ["dt31", "run", file_path]):
+            with pytest.raises(SystemExit):
+                main()
+
+    assert mock_dt31_class.call_args.kwargs["track_step_time"] is False
+
+
+def test_verbose_enables_track_step_time(temp_dt_file):
+    """--verbose constructs the CPU with track_step_time=True."""
+    file_path = temp_dt_file("CP 5, R.a")
+
+    with patch("dt31.cli.DT31") as mock_dt31_class:
+        mock_cpu = MagicMock()
+        # --verbose prints these, so they need to be real numbers, not a MagicMock
+        mock_cpu.wall_time_ns = 1
+        mock_cpu.execution_time_ns = 1
+        mock_cpu.step_count = 1
+        mock_dt31_class.return_value = mock_cpu
+
+        with patch.object(sys, "argv", ["dt31", "run", "--verbose", file_path]):
+            with pytest.raises(SystemExit):
+                main()
+
+    assert mock_dt31_class.call_args.kwargs["track_step_time"] is True

@@ -378,7 +378,7 @@ examples:
         "-v",
         "--verbose",
         action="store_true",
-        help="Show runtime statistics (wall time, execution time, and step count)",
+        help="Show runtime statistics (wall time, execution time, and step count).",
     )
 
 
@@ -480,6 +480,8 @@ def run_command(args: argparse.Namespace) -> None:
         cpu_kwargs["memory_size"] = args.memory
     if args.stack_size is not None:
         cpu_kwargs["stack_size"] = args.stack_size
+    # --verbose needs per-step timing data to report execution time
+    cpu_kwargs["track_step_time"] = args.verbose
 
     if args.registers:
         # User provided explicit registers - validate they include all used registers
