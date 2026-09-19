@@ -38,10 +38,11 @@ class DT31:
             If False, out-of-bounds accesses raise IndexError.
         debug: If True, CPU starts in debug mode (step-by-step execution with state output).
             Defaults to False.
-        track_timing: If True (the default), `step()` records per-instruction timing
+        record_timing: If True, `step()` records per-instruction timing
             (`instruction_time_ns`, `blocking_time_ns`) via `time.perf_counter_ns()`.
-            Set to False to skip that bookkeeping on very hot loops where the timing
-            stats aren't needed; `wall_time_ns` and `step_count` are unaffected.
+            Defaults to False, since that bookkeeping has a real cost on hot loops;
+            set to True when you want the stats. `wall_time_ns` and `step_count` are
+            recorded either way.
 
     Raises:
         ValueError: If stack_size or memory_size <= 0, if 'ip' is in register names,
@@ -55,7 +56,7 @@ class DT31:
         stack_size: int = 256,
         wrap_memory: bool = False,
         debug: bool = False,
-        track_timing: bool = True,
+        record_timing: bool = False,
     ):
         if stack_size <= 0:
             raise ValueError("stack_size must be greater than 0")
@@ -92,7 +93,7 @@ class DT31:
         """Cached `len(self.instructions)`, updated whenever `load()` runs."""
         self.debug_mode: bool = debug
         """If `True`, the CPU is in debug mode (step-by-step execution)."""
-        self.track_timing: bool = track_timing
+        self.record_timing: bool = record_timing
         """If `True`, `step()` records per-instruction timing. See `__init__`."""
         self.step_count: int = 0
         """Cumulative number of steps run by this DT31 instance via `step` or `run`."""
@@ -375,7 +376,7 @@ class DT31:
             raise EndOfProgram("Cannot load negative instructions")
         instruction = self.instructions[ip]
 
-        if self.track_timing:
+        if self.record_timing:
             # Track instruction timing
             t0 = time.perf_counter_ns()
             output = instruction(self)

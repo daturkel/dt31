@@ -2079,3 +2079,52 @@ def test_verbose_with_exit_no_code(tmp_path, capsys):
     # Verbose statistics should be shown
     assert "Wall time:" in captured.err
     assert "Steps: 1" in captured.err  # EXIT executes during step 1
+
+
+def test_timing_off_by_default(temp_dt_file):
+    """Without --timing or --verbose, the CPU is constructed with record_timing=False."""
+    file_path = temp_dt_file("CP 5, R.a")
+
+    with patch("dt31.cli.DT31") as mock_dt31_class:
+        mock_cpu = MagicMock()
+        mock_dt31_class.return_value = mock_cpu
+
+        with patch.object(sys, "argv", ["dt31", "run", file_path]):
+            with pytest.raises(SystemExit):
+                main()
+
+    assert mock_dt31_class.call_args.kwargs["record_timing"] is False
+
+
+def test_timing_flag_enables_record_timing(temp_dt_file):
+    """--timing constructs the CPU with record_timing=True, even without --verbose."""
+    file_path = temp_dt_file("CP 5, R.a")
+
+    with patch("dt31.cli.DT31") as mock_dt31_class:
+        mock_cpu = MagicMock()
+        mock_dt31_class.return_value = mock_cpu
+
+        with patch.object(sys, "argv", ["dt31", "run", "--timing", file_path]):
+            with pytest.raises(SystemExit):
+                main()
+
+    assert mock_dt31_class.call_args.kwargs["record_timing"] is True
+
+
+def test_verbose_implies_timing(temp_dt_file):
+    """--verbose alone also constructs the CPU with record_timing=True."""
+    file_path = temp_dt_file("CP 5, R.a")
+
+    with patch("dt31.cli.DT31") as mock_dt31_class:
+        mock_cpu = MagicMock()
+        # --verbose prints these, so they need to be real numbers, not a MagicMock
+        mock_cpu.wall_time_ns = 1
+        mock_cpu.execution_time_ns = 1
+        mock_cpu.step_count = 1
+        mock_dt31_class.return_value = mock_cpu
+
+        with patch.object(sys, "argv", ["dt31", "run", "--verbose", file_path]):
+            with pytest.raises(SystemExit):
+                main()
+
+    assert mock_dt31_class.call_args.kwargs["record_timing"] is True

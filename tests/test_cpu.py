@@ -229,9 +229,9 @@ def test_step(cpu):
     assert cpu.get_memory(1) == 50
 
 
-def test_track_timing_disabled(cpu):
-    """With track_timing=False, step() still executes correctly but skips timing."""
-    cpu.track_timing = False
+def test_record_timing_default_off(cpu):
+    """record_timing defaults to False: step() executes correctly but skips timing."""
+    assert cpu.record_timing is False
     insts = [I.ADD(M[1], M[2]), I.NOOP(), I.JGT(0, 100, M[1])]
     cpu.load(insts)
     cpu.step()
@@ -244,6 +244,30 @@ def test_track_timing_disabled(cpu):
     assert cpu.step_count == 3
     assert cpu.instruction_time_ns == 0
     assert cpu.blocking_time_ns == 0
+
+
+def test_record_timing_enabled():
+    """With record_timing=True, step() records per-instruction timing."""
+    cpu = DT31(record_timing=True)
+    insts = [I.ADD(M[1], M[2]), I.NOOP(), I.JGT(0, 100, M[1])]
+    cpu.load(insts)
+    cpu.step()
+    cpu.step()
+    cpu.step()
+    assert cpu.step_count == 3
+    assert cpu.instruction_time_ns > 0
+
+
+def test_record_timing_enabled_counts_blocking_time(monkeypatch):
+    """With record_timing=True, time spent in a blocking instruction is also
+    added to blocking_time_ns (a subset of instruction_time_ns)."""
+    monkeypatch.setattr("builtins.input", lambda: "5")
+    cpu = DT31(record_timing=True)
+    cpu.load([I.NIN(R.a)])
+    cpu.step()
+    assert cpu.get_register("a") == 5
+    assert cpu.blocking_time_ns > 0
+    assert cpu.blocking_time_ns <= cpu.instruction_time_ns
 
 
 def test_step_debug(cpu, capsys):
@@ -384,7 +408,7 @@ def test_no_comment_in_debug_output(capsys):
 
 def test_timing_accumulates_across_runs():
     """Test that timing attributes accumulate across multiple run() calls."""
-    cpu = DT31()
+    cpu = DT31(record_timing=True)
     program = [I.CP(5, R.a), I.ADD(R.a, L[1])]
 
     # First run
@@ -407,7 +431,7 @@ def test_timing_accumulates_across_runs():
 
 def test_execution_time_property():
     """Test that execution_time_ns property computes correctly."""
-    cpu = DT31()
+    cpu = DT31(record_timing=True)
     program = [I.CP(10, R.a), I.ADD(R.a, L[5])]
     cpu.run(program)
 
@@ -420,7 +444,7 @@ def test_execution_time_property():
 
 def test_wall_time_includes_instruction_time():
     """Test that wall time is >= instruction time."""
-    cpu = DT31()
+    cpu = DT31(record_timing=True)
     program = [I.CP(1, R.a), I.ADD(R.a, L[1]), I.SUB(R.a, L[1])]
     cpu.run(program)
 
