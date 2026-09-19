@@ -235,6 +235,7 @@ from dt31 import DT31
 from dt31.assembler import extract_registers_from_program
 from dt31.formatter import program_to_python, program_to_text
 from dt31.instructions import Instruction
+from dt31.operands import validate_register_name
 from dt31.parser import ParserError, parse_program
 
 
@@ -667,12 +668,21 @@ def to_python_command(args: argparse.Namespace) -> None:
         print(f"Parse error: {e}", file=sys.stderr)
         sys.exit(1)
 
-    # Same registers validation as `run_command`: an explicit --registers must
-    # cover every register the program actually uses.
+    # Same registers validation as `run_command`. `run` gets this for free by
+    # actually constructing a `DT31(**cpu_kwargs)`; to-python never builds a
+    # CPU, so it validates each name explicitly instead -- this is also what
+    # lets `program_to_python` interpolate register names into the generated
+    # source without escaping them itself.
     registers_used = extract_registers_from_program(program)
     registers = None
     if args.registers:
         registers = args.registers.split(",")
+        try:
+            for register in registers:
+                validate_register_name(register)
+        except ValueError as e:
+            print(f"Error: {e}", file=sys.stderr)
+            sys.exit(1)
         missing = set(registers_used) - set(registers)
         if missing:
             print(

@@ -2176,6 +2176,22 @@ def test_to_python_registers_flag_missing_used_register(temp_dt_file, capsys):
     assert "Missing registers" in captured.err
 
 
+def test_to_python_registers_flag_rejects_invalid_name(temp_dt_file, capsys):
+    """--registers must be valid Python identifiers, exactly like run's own
+    validation, since the generated source interpolates them unescaped."""
+    file_path = temp_dt_file("CP 5, R.a\n", filename="add.dt")
+
+    with patch.object(
+        sys, "argv", ["dt31", "to-python", file_path, "--registers", "1bad"]
+    ):
+        with pytest.raises(SystemExit) as exc_info:
+            main()
+
+    assert exc_info.value.code == 1
+    captured = capsys.readouterr()
+    assert "Error:" in captured.err
+
+
 def test_to_python_program_name_falls_back_for_invalid_identifier(temp_dt_file, capsys):
     """A filename stem that isn't a valid Python identifier falls back to the
     generic "program" variable name instead of producing invalid Python."""

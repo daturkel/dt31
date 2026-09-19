@@ -7,7 +7,6 @@ with configurable formatting options, and into standalone Python source files
 using the Python API.
 """
 
-import json
 import keyword
 from typing import Literal
 
@@ -300,16 +299,23 @@ def _label_ref(label: Label, introduced: set[str]) -> str:
     Returns:
         `'(name := Label("name"))'` on a valid identifier's first occurrence,
         `"name"` on later occurrences, or `'Label("name")'` (always, no tracking)
-        if the name isn't a usable Python identifier. `json.dumps` (rather than
-        `name`'s own `!r`) always double-quotes the string, matching ruff/Black's
-        convention elsewhere in this codebase.
+        if the name isn't a usable Python identifier. The name is interpolated
+        directly rather than through `!r`, so the quotes come out double
+        (matching ruff/Black's convention) instead of `repr()`'s default single
+        quotes. That's safe for any label parsed from `.dt` text, since
+        `parser.py` restricts label names to alphanumerics and underscores --
+        never a quote or backslash. A `Label(...)` built by hand with a name
+        outside that set (the Python API doesn't enforce it) would need real
+        escaping this skips; `program_to_python` is documented as converting
+        parsed programs, so that's the caller's responsibility, not this
+        function's.
     """
     name = label.name
     if not name.isidentifier() or keyword.iskeyword(name):
-        return f"Label({json.dumps(name)})"
+        return f'Label("{name}")'
     if name not in introduced:
         introduced.add(name)
-        return f"({name} := Label({json.dumps(name)}))"
+        return f'({name} := Label("{name}"))'
     return name
 
 
@@ -413,9 +419,13 @@ def program_to_python(
     cpu_kwargs = []
     if registers_to_use:
         # A list's own `!r` defers to each element's `!r`, which single-quotes
-        # strings; build it manually so register names come out double-quoted
-        # too, matching ruff/Black's convention.
-        register_list = ", ".join(json.dumps(r) for r in registers_to_use)
+        # strings; build it manually with plain double quotes instead, matching
+        # ruff/Black's convention. Safe because `operands.validate_register_name`
+        # (enforced by every path that can reach here -- auto-detection walks an
+        # already-valid program, and `cli.to_python_command` validates an
+        # explicit `-r/--registers` the same way `run` does) guarantees a
+        # register name is a plain identifier, never a quote or backslash.
+        register_list = ", ".join(f'"{r}"' for r in registers_to_use)
         cpu_kwargs.append(f"registers=[{register_list}]")
     if memory_size is not None:
         cpu_kwargs.append(f"memory_size={memory_size!r}")
