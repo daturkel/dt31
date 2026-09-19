@@ -38,6 +38,10 @@ class DT31:
             If False, out-of-bounds accesses raise IndexError.
         debug: If True, CPU starts in debug mode (step-by-step execution with state output).
             Defaults to False.
+        track_timing: If True (the default), `step()` records per-instruction timing
+            (`instruction_time_ns`, `blocking_time_ns`) via `time.perf_counter_ns()`.
+            Set to False to skip that bookkeeping on very hot loops where the timing
+            stats aren't needed; `wall_time_ns` and `step_count` are unaffected.
 
     Raises:
         ValueError: If stack_size or memory_size <= 0, if 'ip' is in register names,
@@ -51,6 +55,7 @@ class DT31:
         stack_size: int = 256,
         wrap_memory: bool = False,
         debug: bool = False,
+        track_timing: bool = True,
     ):
         if stack_size <= 0:
             raise ValueError("stack_size must be greater than 0")
@@ -83,8 +88,12 @@ class DT31:
         """If `True`, memory wraps around using a modulo on the index."""
         self.instructions: list[Instruction] = []
         """Instructions currently loaded."""
+        self._program_length: int = 0
+        """Cached `len(self.instructions)`, updated whenever `load()` runs."""
         self.debug_mode: bool = debug
         """If `True`, the CPU is in debug mode (step-by-step execution)."""
+        self.track_timing: bool = track_timing
+        """If `True`, `step()` records per-instruction timing. See `__init__`."""
         self.step_count: int = 0
         """Cumulative number of steps run by this DT31 instance via `step` or `run`."""
         self.wall_time_ns: int = 0
@@ -341,6 +350,7 @@ class DT31:
         self.validate_program_registers(instructions)
         self.set_register("ip", 0)
         self.instructions = assemble(instructions)
+        self._program_length = len(self.instructions)
 
     def step(self, debug: bool | None = None):
         """Execute a single instruction at the current instruction pointer.
@@ -355,21 +365,28 @@ class DT31:
         if debug is None:
             debug = self.debug_mode
 
-        if self.get_register("ip") >= len(self.instructions):
+        # Read "ip" straight from the register dict rather than through
+        # get_register(): it always exists, and this runs on every step, so
+        # the usual name-validation isn't worth paying for here.
+        ip = self.registers["ip"]
+        if ip >= self._program_length:
             raise EndOfProgram("No more instructions")
-        if self.get_register("ip") < 0:
+        if ip < 0:
             raise EndOfProgram("Cannot load negative instructions")
-        instruction = self.instructions[self.get_register("ip")]
+        instruction = self.instructions[ip]
 
-        # Track instruction timing
-        t0 = time.perf_counter_ns()
-        output = instruction(self)
-        t1 = time.perf_counter_ns()
-        elapsed = t1 - t0
+        if self.track_timing:
+            # Track instruction timing
+            t0 = time.perf_counter_ns()
+            output = instruction(self)
+            t1 = time.perf_counter_ns()
+            elapsed = t1 - t0
 
-        self.instruction_time_ns += elapsed
-        if instruction.is_blocking:
-            self.blocking_time_ns += elapsed
+            self.instruction_time_ns += elapsed
+            if instruction.is_blocking:
+                self.blocking_time_ns += elapsed
+        else:
+            output = instruction(self)
 
         self.step_count += 1
         if debug:

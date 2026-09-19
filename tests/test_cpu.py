@@ -229,6 +229,23 @@ def test_step(cpu):
     assert cpu.get_memory(1) == 50
 
 
+def test_track_timing_disabled(cpu):
+    """With track_timing=False, step() still executes correctly but skips timing."""
+    cpu.track_timing = False
+    insts = [I.ADD(M[1], M[2]), I.NOOP(), I.JGT(0, 100, M[1])]
+    cpu.load(insts)
+    cpu.step()
+    cpu.step()
+    cpu.step()
+    # execution is unaffected
+    assert cpu.get_register("ip") == 0
+    assert cpu.get_memory(1) == 30
+    # timing bookkeeping is skipped, but step_count still counts
+    assert cpu.step_count == 3
+    assert cpu.instruction_time_ns == 0
+    assert cpu.blocking_time_ns == 0
+
+
 def test_step_debug(cpu, capsys):
     insts = [I.ADD(M[1], M[2]), I.NOOP(), I.JGT(0, 100, M[1])]
     cpu.load(insts)
