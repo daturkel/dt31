@@ -474,7 +474,7 @@ def test_resolved_labels_show_in_debug_output():
     assert isinstance(rjmp.dest, Literal)
     assert rjmp.dest.value == -2
     assert repr(rjmp.dest) == "loop"
-    assert repr(rjmp) == "RJMP(dest=loop)"
+    assert repr(rjmp) == "RJMP(delta=loop)"
 
     assert isinstance(call.dest, Literal)
     assert repr(call.dest) == "loop"
