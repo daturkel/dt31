@@ -376,16 +376,7 @@ examples:
         "-v",
         "--verbose",
         action="store_true",
-        help="Show runtime statistics (wall time, execution time, and step count). "
-        "Implies --timing.",
-    )
-
-    run_parser.add_argument(
-        "-t",
-        "--timing",
-        action="store_true",
-        help="Record per-instruction timing stats even without --verbose "
-        "(has a small runtime cost; off by default)",
+        help="Show runtime statistics (wall time, execution time, and step count).",
     )
 
 
@@ -487,8 +478,8 @@ def run_command(args: argparse.Namespace) -> None:
         cpu_kwargs["memory_size"] = args.memory
     if args.stack_size is not None:
         cpu_kwargs["stack_size"] = args.stack_size
-    # --verbose needs timing data to report anything meaningful, so it implies --timing
-    cpu_kwargs["record_timing"] = args.timing or args.verbose
+    # --verbose needs per-step timing data to report anything meaningful
+    cpu_kwargs["track_step_time"] = args.verbose
 
     if args.registers:
         # User provided explicit registers - validate they include all used registers

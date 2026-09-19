@@ -206,8 +206,7 @@ dt31 format program.dt    # Format file in-place
 - `--custom-instructions PATH` or `-i PATH`: Load custom instruction definitions from a Python file
 - `--dump {none,error,success,all}`: When to dump CPU state (default: none)
 - `--dump-file FILE`: File path for CPU state dump (auto-generates timestamped filename if not specified)
-- `--verbose` or `-v`: Show runtime statistics (wall time, instruction time, execution time, and step count). Implies `--timing`.
-- `--timing` or `-t`: Record per-instruction timing stats even without `--verbose` (small runtime cost; off by default)
+- `--verbose` or `-v`: Show runtime statistics (wall time, instruction time, execution time, and step count)
 
 #### Check Command
 
@@ -256,9 +255,8 @@ The `--verbose` flag displays timing metrics to help understand program performa
 - **Steps** (always shown): Number of instructions executed
 
 Per-instruction timing (which powers execution time) has a small runtime cost, so it's off
-by default; `--verbose` turns it on automatically. Use `--timing` on its own to record it
-without the rest of the verbose output, or set `record_timing=True` when constructing a
-`DT31` directly from Python.
+by default; `--verbose` turns it on automatically. To record it from Python without the rest
+of the verbose output, set `track_step_time=True` when constructing a `DT31` directly.
 
 All timing values accumulate across multiple `run()` calls on the same CPU instance.
 

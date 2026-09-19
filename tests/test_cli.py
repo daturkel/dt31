@@ -2081,8 +2081,8 @@ def test_verbose_with_exit_no_code(tmp_path, capsys):
     assert "Steps: 1" in captured.err  # EXIT executes during step 1
 
 
-def test_timing_off_by_default(temp_dt_file):
-    """Without --timing or --verbose, the CPU is constructed with record_timing=False."""
+def test_track_step_time_off_by_default(temp_dt_file):
+    """Without --verbose, the CPU is constructed with track_step_time=False."""
     file_path = temp_dt_file("CP 5, R.a")
 
     with patch("dt31.cli.DT31") as mock_dt31_class:
@@ -2093,26 +2093,11 @@ def test_timing_off_by_default(temp_dt_file):
             with pytest.raises(SystemExit):
                 main()
 
-    assert mock_dt31_class.call_args.kwargs["record_timing"] is False
+    assert mock_dt31_class.call_args.kwargs["track_step_time"] is False
 
 
-def test_timing_flag_enables_record_timing(temp_dt_file):
-    """--timing constructs the CPU with record_timing=True, even without --verbose."""
-    file_path = temp_dt_file("CP 5, R.a")
-
-    with patch("dt31.cli.DT31") as mock_dt31_class:
-        mock_cpu = MagicMock()
-        mock_dt31_class.return_value = mock_cpu
-
-        with patch.object(sys, "argv", ["dt31", "run", "--timing", file_path]):
-            with pytest.raises(SystemExit):
-                main()
-
-    assert mock_dt31_class.call_args.kwargs["record_timing"] is True
-
-
-def test_verbose_implies_timing(temp_dt_file):
-    """--verbose alone also constructs the CPU with record_timing=True."""
+def test_verbose_enables_track_step_time(temp_dt_file):
+    """--verbose constructs the CPU with track_step_time=True."""
     file_path = temp_dt_file("CP 5, R.a")
 
     with patch("dt31.cli.DT31") as mock_dt31_class:
@@ -2127,4 +2112,4 @@ def test_verbose_implies_timing(temp_dt_file):
             with pytest.raises(SystemExit):
                 main()
 
-    assert mock_dt31_class.call_args.kwargs["record_timing"] is True
+    assert mock_dt31_class.call_args.kwargs["track_step_time"] is True
