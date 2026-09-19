@@ -157,10 +157,7 @@ class Instruction:
         Args:
             cpu: The DT31 CPU instance executing this instruction.
         """
-        # default behavior is to increment the instruction register by 1
-        # (read/write the register dict directly rather than through
-        # get_register/set_register: "ip" always exists, and this runs on
-        # every non-jump instruction, so skipping the validation matters)
+        # bypasses get_register/set_register validation on this hot path
         cpu.registers["ip"] += 1
 
     def __call__(self, cpu: DT31) -> int:
