@@ -1067,18 +1067,18 @@ def test_program_to_python_simple():
         I.CP(5, R.a),
         I.NOUT(R.a, L[1]),
     ]
-    out = program_to_python(program, program_name="prog")
+    out = program_to_python(program)
     assert out == (
         "from dt31 import DT31, I, R\n"
         "\n"
-        "prog = [\n"
+        "program = [\n"
         "    I.CP(a=5, b=R.a),\n"
         "    I.NOUT(a=R.a, b=1),\n"
         "]\n"
         "\n"
         'if __name__ == "__main__":\n'
         '    cpu = DT31(registers=["a"])\n'
-        "    cpu.run(prog, debug=False)\n"
+        "    cpu.run(program, debug=False)\n"
     )
 
 

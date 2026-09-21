@@ -306,7 +306,6 @@ def _label_ref(label: Label, introduced: set[str]) -> str:
 
 def program_to_python(
     program: list[Instruction | Label | Comment | BlankLine] | list[Instruction],
-    program_name: str = "program",
     *,
     registers: list[str] | None = None,
     memory_size: int | None = None,
@@ -316,14 +315,13 @@ def program_to_python(
     """Convert a program to a standalone Python source file using the Python API.
 
     Produces the same style as the hand-written examples in `examples/*.py`: a
-    module-level `program_name = [...]` list followed by an `if __name__ ==
+    module-level `program = [...]` list followed by an `if __name__ ==
     "__main__":` block that runs it. Only the `dt31` symbols the program actually
     uses are imported.
 
     Args:
         program: List of instructions, labels, comments, and blank lines in source
             order (e.g. from `parser.parse_program`).
-        program_name: Name of the module-level variable holding the program list.
         registers: Explicit register list for the generated `DT31(...)` call. If
             `None` (the default), registers are auto-detected from `program` via
             `assembler.extract_registers_from_program`. Passing a list here is
@@ -420,13 +418,13 @@ def program_to_python(
     lines = [
         f"from dt31 import {', '.join(symbols)}",
         "",
-        f"{program_name} = [",
+        "program = [",
         body,
         "]",
         "",
         'if __name__ == "__main__":',
         f"    cpu = DT31({', '.join(cpu_kwargs)})",
-        f"    cpu.run({program_name}, debug={debug!r})",
+        f"    cpu.run(program, debug={debug!r})",
         "",
     ]
     return "\n".join(lines)
