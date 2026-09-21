@@ -1,14 +1,18 @@
-"""Program formatting utilities for converting programs to assembly text.
+"""Program formatting utilities for converting programs to assembly text and to
+Python source.
 
 This module provides functionality for converting dt31 programs (lists of
 instructions, labels, and comments) into human-readable assembly text format
-with configurable formatting options.
+with configurable formatting options, and into standalone Python source files
+using the Python API.
 """
 
+import keyword
 from typing import Literal
 
-from dt31.instructions import Instruction
-from dt31.operands import Label
+from dt31.assembler import extract_registers_from_program
+from dt31.instructions import Instruction, Jump, RelativeJumpMixin
+from dt31.operands import Label, validate_register_name
 from dt31.parser import BlankLine, Comment
 
 
@@ -272,3 +276,161 @@ def _format_instruction_with_comment(
     else:
         # No alignment, just use margin
         return f"{instruction_text}{' ' * comment_margin}; {comment}"
+
+
+def _label_ref(label: Label, introduced: set[str]) -> str:
+    """Return the Python expression to use for one occurrence of a label.
+
+    If a label name is a valid Python variable name, we'll use that. Otherwise, we
+    can just use a literal `Label("1invalidname")` object.
+
+    Args:
+        label: The label occurrence being rendered (a program-list marker, or a
+            jump/call instruction's `dest`).
+        introduced: Names of labels whose walrus binding has already been emitted;
+            mutated in place as labels are introduced.
+
+    Returns:
+        `'(name := Label("name"))'` on a valid identifier's first occurrence,
+        `"name"` on later occurrences, or `'Label("name")'` (always, no tracking)
+        if the name isn't a usable Python identifier.
+    """
+    name = label.name
+    if not name.isidentifier() or keyword.iskeyword(name):
+        return f'Label("{name}")'
+    if name not in introduced:
+        introduced.add(name)
+        return f'({name} := Label("{name}"))'
+    return name
+
+
+def program_to_python(
+    program: list[Instruction | Label | Comment | BlankLine] | list[Instruction],
+    *,
+    registers: list[str] | None = None,
+    memory_size: int | None = None,
+    stack_size: int | None = None,
+    debug: bool = False,
+) -> str:
+    """Convert a program to a standalone Python source file using the Python API.
+
+    Produces the same style as the hand-written examples in `examples/*.py`: a
+    module-level `program = [...]` list followed by an `if __name__ ==
+    "__main__":` block that runs it. Only the `dt31` symbols the program actually
+    uses are imported.
+
+    Args:
+        program: List of instructions, labels, comments, and blank lines in source
+            order (e.g. from `parser.parse_program`).
+        registers: Explicit register list for the generated `DT31(...)` call. If
+            `None` (the default), registers are auto-detected from `program` via
+            `assembler.extract_registers_from_program`. Each name is validated
+            with `operands.validate_register_name` (raising `ValueError` if
+            invalid), but the list is otherwise trusted as-is -- the caller is
+            assumed to have already checked it covers every register the
+            program uses, the same way `cli.run_command` does for `run
+            --registers`.
+        memory_size: Passed through as `DT31(memory_size=...)` if given; omitted
+            (so `DT31`'s own default applies) otherwise.
+        stack_size: Same, for `stack_size`.
+        debug: Whether the generated `cpu.run(program, debug=...)` call passes
+            `debug=True`.
+
+    Returns:
+        Complete Python source, ready to write to a `.py` file.
+
+    Example:
+        ```python
+        from dt31.formatter import program_to_python
+        from dt31.parser import parse_program
+
+        program = parse_program("CP 5, R.a\\nNOUT R.a, 1")
+        print(program_to_python(program))
+        #     from dt31 import DT31, I, R
+        #
+        #     program = [
+        #         I.CP(a=5, b=R.a),
+        #         I.NOUT(a=R.a, b=1),
+        #     ]
+        #
+        #     if __name__ == "__main__":
+        #         cpu = DT31(registers=["a"])
+        #         cpu.run(program, debug=False)
+        ```
+    """
+    introduced: set[str] = set()
+    body_lines = []
+
+    for item in program:
+        if isinstance(item, BlankLine):
+            body_lines.append("")
+        elif isinstance(item, Comment):
+            body_lines.append(f"    # {item.comment}")
+        elif isinstance(item, Label):
+            body_lines.append(f"    {_label_ref(item, introduced)},")
+        else:
+            line = repr(item)
+            if isinstance(item, Jump) and isinstance(item.dest, Label):
+                # `Jump.__repr__` renders a label destination as a bare name;
+                # swap in the walrus-or-literal form. Relative jumps take the
+                # destination as `delta` rather than `dest`.
+                dest_kwarg = "delta" if isinstance(item, RelativeJumpMixin) else "dest"
+                line = line.replace(
+                    f"{dest_kwarg}={item.dest.name}",
+                    f"{dest_kwarg}={_label_ref(item.dest, introduced)}",
+                    1,
+                )
+            body_lines.append(f"    I.{line},")
+
+    body = "\n".join(body_lines)
+
+    # Ordered to match ruff's import sort: all-caps names first (DT31, LC),
+    # then the rest alphabetically (I, Label, M, R).
+    symbols = ["DT31"]
+    if "LC[" in body:
+        symbols.append("LC")
+    symbols.append("I")
+    if "Label(" in body:
+        symbols.append("Label")
+    if "M[" in body:
+        symbols.append("M")
+    if "R." in body:
+        symbols.append("R")
+
+    if registers is not None:
+        for register in registers:
+            validate_register_name(register)
+        registers_to_use = registers
+    else:
+        registers_to_use = extract_registers_from_program(program)
+
+    # Mirrors cli.run_command's own cpu_kwargs construction: only non-default
+    # arguments are passed, so the common case still reads as a plain
+    # `DT31(registers=[...])` (or, for a register-less program, `DT31()`).
+    cpu_kwargs = []
+    if registers_to_use:
+        # A list's own `!r` defers to each element's `!r`, which single-quotes
+        # strings; build it manually with plain double quotes instead, matching
+        # ruff's convention. Safe because every name in `registers_to_use` has
+        # just been validated as a plain identifier, so it can't contain a
+        # quote or backslash.
+        register_list = ", ".join(f'"{r}"' for r in registers_to_use)
+        cpu_kwargs.append(f"registers=[{register_list}]")
+    if memory_size is not None:
+        cpu_kwargs.append(f"memory_size={memory_size!r}")
+    if stack_size is not None:
+        cpu_kwargs.append(f"stack_size={stack_size!r}")
+
+    lines = [
+        f"from dt31 import {', '.join(symbols)}",
+        "",
+        "program = [",
+        body,
+        "]",
+        "",
+        'if __name__ == "__main__":',
+        f"    cpu = DT31({', '.join(cpu_kwargs)})",
+        f"    cpu.run(program, debug={debug!r})",
+        "",
+    ]
+    return "\n".join(lines)

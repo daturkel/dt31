@@ -1,5 +1,12 @@
+import io
+import subprocess
+import sys
+from contextlib import redirect_stdout
+
+import pytest
+
 from dt31 import instructions as I
-from dt31.formatter import program_to_text
+from dt31.formatter import program_to_python, program_to_text
 from dt31.operands import LC, L, Label, M, R
 from dt31.parser import BlankLine, Comment, parse_program
 
@@ -1052,3 +1059,286 @@ end:
 
     # Should be identical after second cycle
     assert formatted == formatted2
+
+
+def test_program_to_python_simple():
+    """Basic instructions with no labels: only DT31/I imported, no register ops."""
+    program = [
+        I.CP(5, R.a),
+        I.NOUT(R.a, L[1]),
+    ]
+    out = program_to_python(program)
+    assert out == (
+        "from dt31 import DT31, I, R\n"
+        "\n"
+        "program = [\n"
+        "    I.CP(a=5, b=R.a),\n"
+        "    I.NOUT(a=R.a, b=1),\n"
+        "]\n"
+        "\n"
+        'if __name__ == "__main__":\n'
+        '    cpu = DT31(registers=["a"])\n'
+        "    cpu.run(program, debug=False)\n"
+    )
+
+
+def test_program_to_python_no_registers_omits_the_kwarg():
+    """A program that uses no registers gets a plain `DT31()` -- not
+    `DT31(registers=[])`, which would zero out the default a/b/c registers
+    instead of just not needing any of them."""
+    out = program_to_python([I.COUT(LC["H"])])
+    assert out == (
+        "from dt31 import DT31, LC, I\n"
+        "\n"
+        "program = [\n"
+        '    I.COUT(a=LC["H"], b=0),\n'
+        "]\n"
+        "\n"
+        'if __name__ == "__main__":\n'
+        "    cpu = DT31()\n"
+        "    cpu.run(program, debug=False)\n"
+    )
+
+
+def test_program_to_python_cpu_config_kwargs():
+    """memory_size/stack_size/debug are passed through to the generated
+    `DT31(...)`/`cpu.run(...)` calls only when given -- mirroring
+    `cli.run_command`'s own cpu_kwargs construction, so the common case still
+    reads as a plain call with no default arguments spelled out."""
+    program = [I.CP(5, R.a)]
+
+    out = program_to_python(program, memory_size=1024, stack_size=64, debug=True)
+    assert out == (
+        "from dt31 import DT31, I, R\n"
+        "\n"
+        "program = [\n"
+        "    I.CP(a=5, b=R.a),\n"
+        "]\n"
+        "\n"
+        'if __name__ == "__main__":\n'
+        '    cpu = DT31(registers=["a"], memory_size=1024, stack_size=64)\n'
+        "    cpu.run(program, debug=True)\n"
+    )
+
+    out = program_to_python(program)
+    assert out == (
+        "from dt31 import DT31, I, R\n"
+        "\n"
+        "program = [\n"
+        "    I.CP(a=5, b=R.a),\n"
+        "]\n"
+        "\n"
+        'if __name__ == "__main__":\n'
+        '    cpu = DT31(registers=["a"])\n'
+        "    cpu.run(program, debug=False)\n"
+    )
+
+
+def test_program_to_python_explicit_registers_override_auto_detection():
+    """Passing `registers=` skips auto-detection entirely -- the caller (the
+    CLI's `-r/--registers`) is trusted to have already validated it covers
+    every register the program uses."""
+    out = program_to_python([I.CP(5, R.a)], registers=["a", "b", "c"])
+    assert out == (
+        "from dt31 import DT31, I, R\n"
+        "\n"
+        "program = [\n"
+        "    I.CP(a=5, b=R.a),\n"
+        "]\n"
+        "\n"
+        'if __name__ == "__main__":\n'
+        '    cpu = DT31(registers=["a", "b", "c"])\n'
+        "    cpu.run(program, debug=False)\n"
+    )
+
+
+def test_program_to_python_explicit_registers_validated():
+    """Unlike the auto-detected list (each name already validated when its
+    `RegisterReference` was constructed), an explicit `registers=` list is
+    caller-supplied and must be checked itself -- otherwise an invalid name
+    reaching this function directly (bypassing the CLI's own check) could
+    produce broken or unsafe generated source."""
+    with pytest.raises(ValueError, match="Invalid register name"):
+        program_to_python([I.CP(5, R.a)], registers=["1bad"])
+
+
+def test_program_to_python_imports_only_what_is_used():
+    """M/R/LC/Label are only imported when actually referenced."""
+    # No operand types beyond plain literals: only DT31, I needed.
+    out = program_to_python([I.NOOP()])
+    assert out == (
+        "from dt31 import DT31, I\n"
+        "\n"
+        "program = [\n"
+        "    I.NOOP(),\n"
+        "]\n"
+        "\n"
+        'if __name__ == "__main__":\n'
+        "    cpu = DT31()\n"
+        "    cpu.run(program, debug=False)\n"
+    )
+
+    # Memory reference pulls in M.
+    out = program_to_python([I.CP(1, M[0])])
+    assert out == (
+        "from dt31 import DT31, I, M\n"
+        "\n"
+        "program = [\n"
+        "    I.CP(a=1, b=M[0]),\n"
+        "]\n"
+        "\n"
+        'if __name__ == "__main__":\n'
+        "    cpu = DT31()\n"
+        "    cpu.run(program, debug=False)\n"
+    )
+
+    # Character literal pulls in LC.
+    out = program_to_python([I.COUT(LC["A"])])
+    assert out == (
+        "from dt31 import DT31, LC, I\n"
+        "\n"
+        "program = [\n"
+        '    I.COUT(a=LC["A"], b=0),\n'
+        "]\n"
+        "\n"
+        'if __name__ == "__main__":\n'
+        "    cpu = DT31()\n"
+        "    cpu.run(program, debug=False)\n"
+    )
+
+
+def test_program_to_python_label_walrus_on_first_occurrence_reference():
+    """A label referenced before its marker position gets the walrus at the
+    reference; the marker later just uses the bare name (mirrors
+    examples/factorial_with_labels.py's hand-written style)."""
+    program = [
+        I.CP(1, R.a),
+        I.JGT(end := Label("end"), R.a, 0),
+        end,
+        I.NOUT(R.a, L[1]),
+    ]
+    out = program_to_python(program)
+    assert out == (
+        "from dt31 import DT31, I, Label, R\n"
+        "\n"
+        "program = [\n"
+        "    I.CP(a=1, b=R.a),\n"
+        '    I.JGT(dest=(end := Label("end")), a=R.a, b=0),\n'
+        "    end,\n"
+        "    I.NOUT(a=R.a, b=1),\n"
+        "]\n"
+        "\n"
+        'if __name__ == "__main__":\n'
+        '    cpu = DT31(registers=["a"])\n'
+        "    cpu.run(program, debug=False)\n"
+    )
+
+
+def test_program_to_python_label_walrus_on_first_occurrence_marker():
+    """A label whose marker comes before any reference gets the walrus at the
+    marker position; later references use the bare name."""
+    program = [
+        loop := Label("loop"),
+        I.NOUT(R.a, L[1]),
+        I.SUB(R.a, L[1]),
+        I.JGT(loop, R.a, 0),
+    ]
+    out = program_to_python(program)
+    assert out == (
+        "from dt31 import DT31, I, Label, R\n"
+        "\n"
+        "program = [\n"
+        '    (loop := Label("loop")),\n'
+        "    I.NOUT(a=R.a, b=1),\n"
+        "    I.SUB(a=R.a, b=1, out=R.a),\n"
+        "    I.JGT(dest=loop, a=R.a, b=0),\n"
+        "]\n"
+        "\n"
+        'if __name__ == "__main__":\n'
+        '    cpu = DT31(registers=["a"])\n'
+        "    cpu.run(program, debug=False)\n"
+    )
+
+
+def test_program_to_python_invalid_identifier_label_name():
+    """A label name that's a Python keyword or starts with a digit can't be a
+    walrus target, so every occurrence gets its own fresh Label(...) literal
+    instead -- no renaming, no shared variable, no collision bookkeeping."""
+    text = "JGT class, R.a, 0\nclass:\nNOUT R.a, 1"
+    program = parse_program(text)
+    out = program_to_python(program)
+    assert out == (
+        "from dt31 import DT31, I, Label, R\n"
+        "\n"
+        "program = [\n"
+        '    I.JGT(dest=Label("class"), a=R.a, b=0),\n'
+        '    Label("class"),\n'
+        "    I.NOUT(a=R.a, b=1),\n"
+        "]\n"
+        "\n"
+        'if __name__ == "__main__":\n'
+        '    cpu = DT31(registers=["a"])\n'
+        "    cpu.run(program, debug=False)\n"
+    )
+
+
+def test_program_to_python_comments_and_blank_lines():
+    program = [
+        Comment("a comment"),
+        I.CP(5, R.a),
+        BlankLine(),
+        I.NOUT(R.a, L[1]),
+    ]
+    out = program_to_python(program)
+    assert out == (
+        "from dt31 import DT31, I, R\n"
+        "\n"
+        "program = [\n"
+        "    # a comment\n"
+        "    I.CP(a=5, b=R.a),\n"
+        "\n"
+        "    I.NOUT(a=R.a, b=1),\n"
+        "]\n"
+        "\n"
+        'if __name__ == "__main__":\n'
+        '    cpu = DT31(registers=["a"])\n'
+        "    cpu.run(program, debug=False)\n"
+    )
+
+
+@pytest.mark.parametrize(
+    "source",
+    [
+        "CP 3, R.a\nNOUT R.a, 1",
+        ("CP 3, R.a\nloop:\nNOUT R.a, 1\nSUB R.a, 1\nJGT loop, R.a, 0\n"),
+        "JGT class, R.a, 0\nclass:\nNOUT R.a, 1",
+        # Relative jumps and calls take their destination as `delta`, not
+        # `dest`, so generating the call from the repr has to use that name.
+        "CP 0, R.a\nADD R.a, 1\nNOUT R.a, 1\nRJLT -2, R.a, 3",
+        "RCALL 2\nJMP 5\nCOUT 'h', 1\nRET",
+    ],
+)
+def test_program_to_python_generated_file_executes_correctly(tmp_path, source):
+    """The generated .py file isn't just syntactically valid -- running it
+    produces the same output as running the original .dt program directly."""
+    from dt31 import DT31
+    from dt31.assembler import extract_registers_from_program
+
+    program = parse_program(source)
+    registers = extract_registers_from_program(program)
+    cpu = DT31(registers=registers)
+    expected = io.StringIO()
+    with redirect_stdout(expected):
+        cpu.run(program, debug=False)
+
+    py_source = program_to_python(program)
+    py_file = tmp_path / "generated.py"
+    py_file.write_text(py_source)
+
+    result = subprocess.run(
+        [sys.executable, str(py_file)],
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode == 0, result.stderr
+    assert result.stdout == expected.getvalue()

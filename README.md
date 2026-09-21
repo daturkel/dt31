@@ -190,9 +190,10 @@ See the [CPU documentation](https://daturkel.github.io/dt31/dt31/cpu.html) for A
 Execute `.dt` assembly files directly:
 
 ```shell
-dt31 run program.dt       # Execute program
-dt31 check program.dt     # Validate syntax
-dt31 format program.dt    # Format file in-place
+dt31 run program.dt         # Execute program
+dt31 check program.dt       # Validate syntax
+dt31 format program.dt      # Format file in-place
+dt31 to-python program.dt   # Convert to a standalone Python source file
 ```
 
 ### CLI Options
@@ -201,7 +202,7 @@ dt31 format program.dt    # Format file in-place
 
 - `--debug` or `-d`: Enable step-by-step debug output
 - `--registers a,b,c,d`: Specify custom registers (auto-detected by default)
-- `--memory 512`: Set memory size in bytes (default: 256)
+- `--memory 512`: Set memory size (default: 256)
 - `--stack-size 512`: Set stack size (default: 256)
 - `--custom-instructions PATH` or `-i PATH`: Load custom instruction definitions from a Python file
 - `--dump {none,error,success,all}`: When to dump CPU state (default: none)
@@ -211,6 +212,24 @@ dt31 format program.dt    # Format file in-place
 #### Check Command
 
 - `--custom-instructions PATH` or `-i PATH`: Load custom instruction definitions from a Python file
+
+#### To-Python Command
+
+Convert a `.dt` assembly file to a standalone Python source file using the Python API (`I.ADD(...)`, `Label(...)`, etc.) — the same style as the hand-written examples in [`examples/`](examples/).
+
+- `-o PATH` or `--output PATH`: Write the generated source to a file instead of printing to stdout
+- `-r a,b,c,d` or `--registers a,b,c,d`: Explicit register list for the generated `DT31(...)` call (auto-detected by default, same validation as `run --registers`)
+- `-m 512` or `--memory 512`: `memory_size` for the generated `DT31(...)` call (default: 256)
+- `-s 512` or `--stack-size 512`: `stack_size` for the generated `DT31(...)` call (default: 256)
+- `-d` or `--debug`: Generate a `cpu.run(..., debug=True)` call
+
+```shell
+dt31 to-python program.dt                     # Print generated Python to stdout
+dt31 to-python program.dt -o program.py       # Write generated Python to a file
+dt31 to-python program.dt --memory 1024 -d    # Larger memory, debug=True in the generated call
+```
+
+Custom instructions aren't currently supported.
 
 **Examples:**
 
@@ -705,14 +724,6 @@ uv run invoke test
 ```
 
 DT31 is open-source and contributors are welcome on [Github](https://github.com/daturkel/dt31).
-
-## Planned work
-
-- [ ] [Data section](https://github.com/daturkel/dt31/issues/26)
-- [ ] [Globbing support for CLI](https://github.com/daturkel/dt31/issues/16)
-- [ ] Interpreter resume from dump (maybe)
-- [ ] Input error-handling (maybe)
-- [ ] [File I/O](https://github.com/daturkel/dt31/issues/25) (maybe)
 
 ## License
 

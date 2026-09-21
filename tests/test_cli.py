@@ -2081,6 +2081,232 @@ def test_verbose_with_exit_no_code(tmp_path, capsys):
     assert "Steps: 1" in captured.err  # EXIT executes during step 1
 
 
+def test_to_python_prints_to_stdout(temp_dt_file, capsys):
+    """Test to-python command with no -o prints generated source to stdout."""
+    file_path = temp_dt_file("CP 5, R.a\nNOUT R.a, 1\n", filename="add.dt")
+
+    with patch.object(sys, "argv", ["dt31", "to-python", file_path]):
+        with pytest.raises(SystemExit) as exc_info:
+            main()
+
+    assert exc_info.value.code == 0
+    captured = capsys.readouterr()
+    assert captured.out == (
+        "from dt31 import DT31, I, R\n"
+        "\n"
+        "program = [\n"
+        "    I.CP(a=5, b=R.a),\n"
+        "    I.NOUT(a=R.a, b=1),\n"
+        "]\n"
+        "\n"
+        'if __name__ == "__main__":\n'
+        '    cpu = DT31(registers=["a"])\n'
+        "    cpu.run(program, debug=False)\n"
+    )
+
+
+def test_to_python_writes_output_file(temp_dt_file, tmp_path, capsys):
+    """Test to-python command with -o writes to a file instead of stdout."""
+    file_path = temp_dt_file("CP 5, R.a\nNOUT R.a, 1\n", filename="add.dt")
+    output_path = tmp_path / "add.py"
+
+    with patch.object(
+        sys, "argv", ["dt31", "to-python", file_path, "-o", str(output_path)]
+    ):
+        with pytest.raises(SystemExit) as exc_info:
+            main()
+
+    assert exc_info.value.code == 0
+    captured = capsys.readouterr()
+    assert captured.out == ""
+    assert captured.err == f"✓ Wrote {output_path}\n"
+    assert output_path.read_text() == (
+        "from dt31 import DT31, I, R\n"
+        "\n"
+        "program = [\n"
+        "    I.CP(a=5, b=R.a),\n"
+        "    I.NOUT(a=R.a, b=1),\n"
+        "]\n"
+        "\n"
+        'if __name__ == "__main__":\n'
+        '    cpu = DT31(registers=["a"])\n'
+        "    cpu.run(program, debug=False)\n"
+    )
+
+
+def test_to_python_cpu_config_flags(temp_dt_file, capsys):
+    """-m/-s/-d thread through to the generated DT31(...)/cpu.run(...) calls,
+    same as the equivalent run flags."""
+    file_path = temp_dt_file("CP 5, R.a\n", filename="add.dt")
+
+    with patch.object(
+        sys,
+        "argv",
+        [
+            "dt31",
+            "to-python",
+            file_path,
+            "--memory",
+            "1024",
+            "--stack-size",
+            "64",
+            "--debug",
+        ],
+    ):
+        with pytest.raises(SystemExit) as exc_info:
+            main()
+
+    assert exc_info.value.code == 0
+    captured = capsys.readouterr()
+    assert captured.out == (
+        "from dt31 import DT31, I, R\n"
+        "\n"
+        "program = [\n"
+        "    I.CP(a=5, b=R.a),\n"
+        "]\n"
+        "\n"
+        'if __name__ == "__main__":\n'
+        '    cpu = DT31(registers=["a"], memory_size=1024, stack_size=64)\n'
+        "    cpu.run(program, debug=True)\n"
+    )
+
+
+def test_to_python_registers_flag_overrides_auto_detection(temp_dt_file, capsys):
+    """--registers, like run's, is trusted over the auto-detected list as
+    long as it covers every register the program uses."""
+    file_path = temp_dt_file("CP 5, R.a\n", filename="add.dt")
+
+    with patch.object(
+        sys, "argv", ["dt31", "to-python", file_path, "--registers", "a,b,c"]
+    ):
+        with pytest.raises(SystemExit) as exc_info:
+            main()
+
+    assert exc_info.value.code == 0
+    captured = capsys.readouterr()
+    assert captured.out == (
+        "from dt31 import DT31, I, R\n"
+        "\n"
+        "program = [\n"
+        "    I.CP(a=5, b=R.a),\n"
+        "]\n"
+        "\n"
+        'if __name__ == "__main__":\n'
+        '    cpu = DT31(registers=["a", "b", "c"])\n'
+        "    cpu.run(program, debug=False)\n"
+    )
+
+
+def test_to_python_registers_flag_missing_used_register(temp_dt_file, capsys):
+    """--registers must cover every register the program uses, exactly like
+    run's own validation."""
+    file_path = temp_dt_file("CP 5, R.a\n", filename="add.dt")
+
+    with patch.object(
+        sys, "argv", ["dt31", "to-python", file_path, "--registers", "b,c"]
+    ):
+        with pytest.raises(SystemExit) as exc_info:
+            main()
+
+    assert exc_info.value.code == 1
+    captured = capsys.readouterr()
+    assert captured.err == (
+        "Error: Program uses registers ['a'] but --registers only specified "
+        "['b', 'c']\n"
+        "Missing registers: ['a']\n"
+    )
+
+
+def test_to_python_registers_flag_rejects_invalid_name(temp_dt_file, capsys):
+    """--registers must be valid Python identifiers, exactly like run's own
+    validation, since the generated source interpolates them unescaped."""
+    file_path = temp_dt_file("CP 5, R.a\n", filename="add.dt")
+
+    with patch.object(
+        sys, "argv", ["dt31", "to-python", file_path, "--registers", "1bad"]
+    ):
+        with pytest.raises(SystemExit) as exc_info:
+            main()
+
+    assert exc_info.value.code == 1
+    captured = capsys.readouterr()
+    assert captured.err == (
+        "Error: Invalid register name '1bad'. Register names must be valid "
+        "Python identifiers (letters, digits, underscores; cannot start with "
+        "a digit).\n"
+    )
+
+
+def test_to_python_file_not_found(capsys):
+    """Test to-python command with nonexistent file."""
+    with patch.object(sys, "argv", ["dt31", "to-python", "nonexistent.dt"]):
+        with pytest.raises(SystemExit) as exc_info:
+            main()
+
+    assert exc_info.value.code == 1
+    captured = capsys.readouterr()
+    assert captured.err == "Error: File not found: nonexistent.dt\n"
+
+
+def test_to_python_parse_error(temp_dt_file, capsys):
+    """Test to-python command with a file that fails to parse."""
+    file_path = temp_dt_file("NOTANINSTRUCTION 1, 2\n", filename="bad.dt")
+
+    with patch.object(sys, "argv", ["dt31", "to-python", file_path]):
+        with pytest.raises(SystemExit) as exc_info:
+            main()
+
+    assert exc_info.value.code == 1
+    captured = capsys.readouterr()
+    assert (
+        captured.err == "Parse error: Line 1: Unknown instruction 'NOTANINSTRUCTION'\n"
+    )
+
+
+def test_to_python_io_error_reading_file(tmp_path, capsys):
+    """Test IOError when reading file with to-python command."""
+    file_path = tmp_path / "test.dt"
+    file_path.write_text("CP 1, R.a")
+
+    with patch("dt31.cli.Path") as mock_path:
+        mock_path_instance = MagicMock()
+        mock_path_instance.read_text.side_effect = IOError("Permission denied")
+        mock_path.return_value = mock_path_instance
+
+        with patch.object(sys, "argv", ["dt31", "to-python", str(file_path)]):
+            with pytest.raises(SystemExit) as exc_info:
+                main()
+
+    assert exc_info.value.code == 1
+    captured = capsys.readouterr()
+    assert captured.err == f"Error reading file {file_path}: Permission denied\n"
+
+
+def test_to_python_output_write_io_error(temp_dt_file, capsys):
+    """Test IOError when writing the -o output file."""
+    file_path = temp_dt_file("CP 5, R.a\n", filename="add.dt")
+
+    real_path = __import__("pathlib").Path
+
+    def fake_path(arg):
+        p = real_path(arg)
+        if str(arg).endswith("out.py"):
+            p = MagicMock(wraps=p)
+            p.write_text.side_effect = IOError("Permission denied")
+        return p
+
+    with patch("dt31.cli.Path", side_effect=fake_path):
+        with patch.object(
+            sys, "argv", ["dt31", "to-python", file_path, "-o", "out.py"]
+        ):
+            with pytest.raises(SystemExit) as exc_info:
+                main()
+
+    assert exc_info.value.code == 1
+    captured = capsys.readouterr()
+    assert captured.err == "Error writing to out.py: Permission denied\n"
+
+
 def test_track_step_time_off_by_default(temp_dt_file):
     """Without --verbose, the CPU is constructed with track_step_time=False."""
     file_path = temp_dt_file("CP 5, R.a")

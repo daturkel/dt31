@@ -808,8 +808,6 @@ class Jump(Instruction):
 
     def __repr__(self) -> str:
         """Return Python API representation."""
-        if isinstance(self.dest, Label):
-            return f"{self.name}(dest={self.dest!r})"
         return f"{self.name}(dest={self.dest!r})"
 
     def __str__(self) -> str:
@@ -885,6 +883,15 @@ class RelativeJumpMixin(Jump):
 
     def _jump_destination(self, cpu: DT31) -> int:
         return cpu.get_register("ip") + self.dest.resolve(cpu)
+
+    def __repr__(self) -> str:
+        """Return Python API representation."""
+        parts = [f"delta={self.dest!r}"]
+        if hasattr(self, "a"):
+            parts.append(f"a={self.a!r}")
+        if hasattr(self, "b"):
+            parts.append(f"b={self.b!r}")
+        return f"{self.name}({', '.join(parts)})"
 
 
 class UnconditionalJumpMixin(Jump):
@@ -995,10 +1002,6 @@ class JMP(ExactJumpMixin, UnconditionalJumpMixin):
         """
         super().__init__("JMP", dest)
 
-    def __repr__(self) -> str:
-        """Return Python API representation."""
-        return f"JMP(dest={self.dest!r})"
-
     def __str__(self) -> str:
         """Return assembly text representation."""
         return f"JMP {self.dest}"
@@ -1013,10 +1016,6 @@ class RJMP(RelativeJumpMixin, UnconditionalJumpMixin):
             delta: The destination to jump to (Label, Operand, or int).
         """
         super().__init__("RJMP", delta)
-
-    def __repr__(self) -> str:
-        """Return Python API representation."""
-        return f"RJMP(dest={self.dest!r})"
 
     def __str__(self) -> str:
         """Return assembly text representation."""
@@ -1221,10 +1220,6 @@ class CALL(ExactJumpMixin, UnconditionalJumpMixin):
         cpu.push(cpu.get_register("ip") + 1)
         return 0
 
-    def __repr__(self) -> str:
-        """Return Python API representation."""
-        return f"CALL(dest={self.dest!r})"
-
     def __str__(self) -> str:
         """Return assembly text representation."""
         return f"CALL {self.dest}"
@@ -1244,10 +1239,6 @@ class RCALL(RelativeJumpMixin, UnconditionalJumpMixin):
         # Push return address (next instruction) onto stack
         cpu.push(cpu.get_register("ip") + 1)
         return 0
-
-    def __repr__(self) -> str:
-        """Return Python API representation."""
-        return f"RCALL(dest={self.dest!r})"
 
     def __str__(self) -> str:
         """Return assembly text representation."""

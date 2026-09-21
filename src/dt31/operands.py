@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -63,11 +64,12 @@ class Literal(Operand):
     def __repr__(self) -> str:
         """Return Python API representation.
 
-        Character literals (`is_char=True`) are shown as `LC['x']` so debug output
+        Character literals (`is_char=True`) are shown as `LC["x"]` so debug output
         (which uses `repr()`) shows the character rather than its raw ordinal value.
+        We use `json.dumps` here to ensure the character is double-quoted.
         """
         if self.is_char:
-            return f"LC[{chr(self.value)!r}]"
+            return f"LC[{json.dumps(chr(self.value))}]"
         return str(self.value)
 
     def __str__(self) -> str:

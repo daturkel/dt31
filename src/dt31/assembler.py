@@ -111,7 +111,7 @@ def assemble(
 
 
 def extract_registers_from_program(
-    program: list[Instruction | Label | Comment | BlankLine],
+    program: list[Instruction | Label | Comment | BlankLine] | list[Instruction],
 ) -> list[str]:
     """
     Extract all register names used in a program.

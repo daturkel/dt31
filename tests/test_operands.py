@@ -114,11 +114,11 @@ def test_lc_invalid_input():
 def test_lc_str_repr():
     """Test that character literals render correctly in str and repr."""
     lc = LC["A"]
-    assert repr(lc) == "LC['A']"
+    assert repr(lc) == 'LC["A"]'
     assert str(lc) == "'A'"
 
     lc2 = LC["z"]
-    assert repr(lc2) == "LC['z']"
+    assert repr(lc2) == 'LC["z"]'
     assert str(lc2) == "'z'"
 
 
@@ -328,8 +328,8 @@ def test_lc_escape_sequences_str():
 
 def test_lc_escape_sequences_repr():
     """Test that character literal repr() round-trips as valid Python via LC[...]."""
-    assert repr(LC["\n"]) == "LC['\\n']"
-    assert repr(LC["\t"]) == "LC['\\t']"
-    assert repr(LC["\\"]) == "LC['\\\\']"
+    assert repr(LC["\n"]) == 'LC["\\n"]'
+    assert repr(LC["\t"]) == 'LC["\\t"]'
+    assert repr(LC["\\"]) == 'LC["\\\\"]'
     assert repr(LC["'"]) == 'LC["\'"]'
-    assert repr(LC["A"]) == "LC['A']"
+    assert repr(LC["A"]) == 'LC["A"]'
