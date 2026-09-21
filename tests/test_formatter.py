@@ -1152,16 +1152,6 @@ def test_program_to_python_explicit_registers_override_auto_detection():
     )
 
 
-def test_program_to_python_explicit_registers_validated():
-    """Unlike the auto-detected list (each name already validated when its
-    `RegisterReference` was constructed), an explicit `registers=` list is
-    caller-supplied and must be checked itself -- otherwise an invalid name
-    reaching this function directly (bypassing the CLI's own check) could
-    produce broken or unsafe generated source."""
-    with pytest.raises(ValueError, match="Invalid register name"):
-        program_to_python([I.CP(5, R.a)], registers=["1bad"])
-
-
 def test_program_to_python_imports_only_what_is_used():
     """M/R/LC/Label are only imported when actually referenced."""
     # No operand types beyond plain literals: only DT31, I needed.

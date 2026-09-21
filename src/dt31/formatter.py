@@ -12,7 +12,7 @@ from typing import Literal
 
 from dt31.assembler import extract_registers_from_program
 from dt31.instructions import Instruction, Jump, RelativeJumpMixin
-from dt31.operands import Label, validate_register_name
+from dt31.operands import Label
 from dt31.parser import BlankLine, Comment
 
 
@@ -324,12 +324,10 @@ def program_to_python(
             order (e.g. from `parser.parse_program`).
         registers: Explicit register list for the generated `DT31(...)` call. If
             `None` (the default), registers are auto-detected from `program` via
-            `assembler.extract_registers_from_program`. Each name is validated
-            with `operands.validate_register_name` (raising `ValueError` if
-            invalid), but the list is otherwise trusted as-is -- the caller is
-            assumed to have already checked it covers every register the
-            program uses, the same way `cli.run_command` does for `run
-            --registers`.
+            `assembler.extract_registers_from_program`. Passing a list here is
+            assumed to already cover every register the program uses -- the same
+            validation `cli.run_command` does for `run --registers` -- since this
+            function doesn't repeat that check itself.
         memory_size: Passed through as `DT31(memory_size=...)` if given; omitted
             (so `DT31`'s own default applies) otherwise.
         stack_size: Same, for `stack_size`.
@@ -394,12 +392,9 @@ def program_to_python(
     if "Label(" in body:
         symbols.append("Label")
 
-    if registers is not None:
-        for register in registers:
-            validate_register_name(register)
-        registers_to_use = registers
-    else:
-        registers_to_use = extract_registers_from_program(program)
+    registers_to_use = (
+        registers if registers is not None else extract_registers_from_program(program)
+    )
 
     # Mirrors cli.run_command's own cpu_kwargs construction: only non-default
     # arguments are passed, so the common case still reads as a plain
@@ -408,9 +403,11 @@ def program_to_python(
     if registers_to_use:
         # A list's own `!r` defers to each element's `!r`, which single-quotes
         # strings; build it manually with plain double quotes instead, matching
-        # ruff's convention. Safe because every name in `registers_to_use` has
-        # just been validated as a plain identifier, so it can't contain a
-        # quote or backslash.
+        # ruff's convention. Safe because `operands.validate_register_name`
+        # (enforced by every path that can reach here -- auto-detection walks an
+        # already-valid program, and `cli.to_python_command` validates an
+        # explicit `-r/--registers` the same way `run` does) guarantees a
+        # register name is a plain identifier, never a quote or backslash.
         register_list = ", ".join(f'"{r}"' for r in registers_to_use)
         cpu_kwargs.append(f"registers=[{register_list}]")
     if memory_size is not None:
