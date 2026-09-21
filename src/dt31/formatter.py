@@ -281,14 +281,8 @@ def _format_instruction_with_comment(
 def _label_ref(label: Label, introduced: set[str]) -> str:
     """Return the Python expression to use for one occurrence of a label.
 
-    Label resolution in `assembler.assemble` is purely name-based (it looks up
-    `label_to_ip[label.name]`), so separate occurrences of a label never need to be
-    the same Python object -- they just need the same `name`. That means an
-    occurrence whose name isn't a valid, non-keyword Python identifier can always be
-    rendered as a fresh `Label(...)` call with no bookkeeping, while a
-    valid-identifier name can use the nicer walrus-on-first-occurrence style (as in
-    `factorial_with_labels.py`) without any risk of renaming collisions, since the
-    Python identifier used is always exactly the dt31 label name.
+    If a label name is a valid Python variable name, we'll use that. Otherwise, we
+    can just use a literal `Label("1invalidname")` object.
 
     Args:
         label: The label occurrence being rendered (a program-list marker, or a
