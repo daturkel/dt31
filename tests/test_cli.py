@@ -2091,10 +2091,18 @@ def test_to_python_prints_to_stdout(temp_dt_file, capsys):
 
     assert exc_info.value.code == 0
     captured = capsys.readouterr()
-    assert "from dt31 import DT31, I, R" in captured.out
-    assert "program = [" in captured.out
-    assert "I.CP(a=5, b=R.a)," in captured.out
-    assert "cpu.run(program, debug=False)" in captured.out
+    assert captured.out == (
+        "from dt31 import DT31, I, R\n"
+        "\n"
+        "program = [\n"
+        "    I.CP(a=5, b=R.a),\n"
+        "    I.NOUT(a=R.a, b=1),\n"
+        "]\n"
+        "\n"
+        'if __name__ == "__main__":\n'
+        '    cpu = DT31(registers=["a"])\n'
+        "    cpu.run(program, debug=False)\n"
+    )
 
 
 def test_to_python_writes_output_file(temp_dt_file, tmp_path, capsys):
@@ -2111,8 +2119,19 @@ def test_to_python_writes_output_file(temp_dt_file, tmp_path, capsys):
     assert exc_info.value.code == 0
     captured = capsys.readouterr()
     assert captured.out == ""
-    assert f"Wrote {output_path}" in captured.err
-    assert "I.CP(a=5, b=R.a)," in output_path.read_text()
+    assert captured.err == f"✓ Wrote {output_path}\n"
+    assert output_path.read_text() == (
+        "from dt31 import DT31, I, R\n"
+        "\n"
+        "program = [\n"
+        "    I.CP(a=5, b=R.a),\n"
+        "    I.NOUT(a=R.a, b=1),\n"
+        "]\n"
+        "\n"
+        'if __name__ == "__main__":\n'
+        '    cpu = DT31(registers=["a"])\n'
+        "    cpu.run(program, debug=False)\n"
+    )
 
 
 def test_to_python_cpu_config_flags(temp_dt_file, capsys):
@@ -2139,9 +2158,17 @@ def test_to_python_cpu_config_flags(temp_dt_file, capsys):
 
     assert exc_info.value.code == 0
     captured = capsys.readouterr()
-    assert "memory_size=1024" in captured.out
-    assert "stack_size=64" in captured.out
-    assert "debug=True" in captured.out
+    assert captured.out == (
+        "from dt31 import DT31, I, R\n"
+        "\n"
+        "program = [\n"
+        "    I.CP(a=5, b=R.a),\n"
+        "]\n"
+        "\n"
+        'if __name__ == "__main__":\n'
+        '    cpu = DT31(registers=["a"], memory_size=1024, stack_size=64)\n'
+        "    cpu.run(program, debug=True)\n"
+    )
 
 
 def test_to_python_registers_flag_overrides_auto_detection(temp_dt_file, capsys):
@@ -2157,7 +2184,17 @@ def test_to_python_registers_flag_overrides_auto_detection(temp_dt_file, capsys)
 
     assert exc_info.value.code == 0
     captured = capsys.readouterr()
-    assert 'registers=["a", "b", "c"]' in captured.out
+    assert captured.out == (
+        "from dt31 import DT31, I, R\n"
+        "\n"
+        "program = [\n"
+        "    I.CP(a=5, b=R.a),\n"
+        "]\n"
+        "\n"
+        'if __name__ == "__main__":\n'
+        '    cpu = DT31(registers=["a", "b", "c"])\n'
+        "    cpu.run(program, debug=False)\n"
+    )
 
 
 def test_to_python_registers_flag_missing_used_register(temp_dt_file, capsys):
@@ -2173,7 +2210,11 @@ def test_to_python_registers_flag_missing_used_register(temp_dt_file, capsys):
 
     assert exc_info.value.code == 1
     captured = capsys.readouterr()
-    assert "Missing registers" in captured.err
+    assert captured.err == (
+        "Error: Program uses registers ['a'] but --registers only specified "
+        "['b', 'c']\n"
+        "Missing registers: ['a']\n"
+    )
 
 
 def test_to_python_registers_flag_rejects_invalid_name(temp_dt_file, capsys):
@@ -2189,7 +2230,11 @@ def test_to_python_registers_flag_rejects_invalid_name(temp_dt_file, capsys):
 
     assert exc_info.value.code == 1
     captured = capsys.readouterr()
-    assert "Error:" in captured.err
+    assert captured.err == (
+        "Error: Invalid register name '1bad'. Register names must be valid "
+        "Python identifiers (letters, digits, underscores; cannot start with "
+        "a digit).\n"
+    )
 
 
 def test_to_python_file_not_found(capsys):
@@ -2200,7 +2245,7 @@ def test_to_python_file_not_found(capsys):
 
     assert exc_info.value.code == 1
     captured = capsys.readouterr()
-    assert "File not found" in captured.err
+    assert captured.err == "Error: File not found: nonexistent.dt\n"
 
 
 def test_to_python_parse_error(temp_dt_file, capsys):
@@ -2213,7 +2258,9 @@ def test_to_python_parse_error(temp_dt_file, capsys):
 
     assert exc_info.value.code == 1
     captured = capsys.readouterr()
-    assert "Parse error" in captured.err
+    assert (
+        captured.err == "Parse error: Line 1: Unknown instruction 'NOTANINSTRUCTION'\n"
+    )
 
 
 def test_to_python_unknown_instruction_rejected_without_custom_instructions_flag(
@@ -2232,33 +2279,7 @@ def test_to_python_unknown_instruction_rejected_without_custom_instructions_flag
 
     assert exc_info.value.code == 1
     captured = capsys.readouterr()
-    assert "Unknown instruction" in captured.err
-
-
-def test_to_python_rejects_custom_instructions_flag(tmp_path, capsys):
-    """--custom-instructions/-i isn't a to-python option -- argparse should
-    reject it rather than silently accepting and ignoring it.
-    """
-    program_file = tmp_path / "program.dt"
-    program_file.write_text("CP 5, R.a")
-
-    with patch.object(
-        sys,
-        "argv",
-        [
-            "dt31",
-            "to-python",
-            "--custom-instructions",
-            "whatever.py",
-            str(program_file),
-        ],
-    ):
-        with pytest.raises(SystemExit) as exc_info:
-            main()
-
-    assert exc_info.value.code == 2
-    captured = capsys.readouterr()
-    assert "unrecognized arguments" in captured.err
+    assert captured.err == "Parse error: Line 2: Unknown instruction 'TRIPLE'\n"
 
 
 def test_to_python_io_error_reading_file(tmp_path, capsys):
@@ -2277,7 +2298,7 @@ def test_to_python_io_error_reading_file(tmp_path, capsys):
 
     assert exc_info.value.code == 1
     captured = capsys.readouterr()
-    assert "Error reading file" in captured.err
+    assert captured.err == f"Error reading file {file_path}: Permission denied\n"
 
 
 def test_to_python_output_write_io_error(temp_dt_file, capsys):
@@ -2302,7 +2323,7 @@ def test_to_python_output_write_io_error(temp_dt_file, capsys):
 
     assert exc_info.value.code == 1
     captured = capsys.readouterr()
-    assert "Error writing to" in captured.err
+    assert captured.err == "Error writing to out.py: Permission denied\n"
 
 
 def test_track_step_time_off_by_default(temp_dt_file):
