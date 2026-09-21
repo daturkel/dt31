@@ -1068,13 +1068,18 @@ def test_program_to_python_simple():
         I.NOUT(R.a, L[1]),
     ]
     out = program_to_python(program, program_name="prog")
-    assert "from dt31 import DT31, I, R" in out
-    assert "Label" not in out
-    assert "prog = [" in out
-    assert "I.CP(a=5, b=R.a)," in out
-    assert "I.NOUT(a=R.a, b=1)," in out
-    assert 'cpu = DT31(registers=["a"])' in out
-    assert "cpu.run(prog, debug=False)" in out
+    assert out == (
+        "from dt31 import DT31, I, R\n"
+        "\n"
+        "prog = [\n"
+        "    I.CP(a=5, b=R.a),\n"
+        "    I.NOUT(a=R.a, b=1),\n"
+        "]\n"
+        "\n"
+        'if __name__ == "__main__":\n'
+        '    cpu = DT31(registers=["a"])\n'
+        "    cpu.run(prog, debug=False)\n"
+    )
 
 
 def test_program_to_python_no_registers_omits_the_kwarg():
@@ -1082,7 +1087,17 @@ def test_program_to_python_no_registers_omits_the_kwarg():
     `DT31(registers=[])`, which would zero out the default a/b/c registers
     instead of just not needing any of them."""
     out = program_to_python([I.COUT(LC["H"])])
-    assert "cpu = DT31()" in out
+    assert out == (
+        "from dt31 import DT31, I, LC\n"
+        "\n"
+        "program = [\n"
+        '    I.COUT(a=LC["H"], b=0),\n'
+        "]\n"
+        "\n"
+        'if __name__ == "__main__":\n'
+        "    cpu = DT31()\n"
+        "    cpu.run(program, debug=False)\n"
+    )
 
 
 def test_program_to_python_cpu_config_kwargs():
@@ -1093,13 +1108,30 @@ def test_program_to_python_cpu_config_kwargs():
     program = [I.CP(5, R.a)]
 
     out = program_to_python(program, memory_size=1024, stack_size=64, debug=True)
-    assert 'cpu = DT31(registers=["a"], memory_size=1024, stack_size=64)' in out
-    assert "cpu.run(program, debug=True)" in out
+    assert out == (
+        "from dt31 import DT31, I, R\n"
+        "\n"
+        "program = [\n"
+        "    I.CP(a=5, b=R.a),\n"
+        "]\n"
+        "\n"
+        'if __name__ == "__main__":\n'
+        '    cpu = DT31(registers=["a"], memory_size=1024, stack_size=64)\n'
+        "    cpu.run(program, debug=True)\n"
+    )
 
     out = program_to_python(program)
-    assert "memory_size" not in out
-    assert "stack_size" not in out
-    assert "debug=False" in out
+    assert out == (
+        "from dt31 import DT31, I, R\n"
+        "\n"
+        "program = [\n"
+        "    I.CP(a=5, b=R.a),\n"
+        "]\n"
+        "\n"
+        'if __name__ == "__main__":\n'
+        '    cpu = DT31(registers=["a"])\n'
+        "    cpu.run(program, debug=False)\n"
+    )
 
 
 def test_program_to_python_explicit_registers_override_auto_detection():
@@ -1107,22 +1139,62 @@ def test_program_to_python_explicit_registers_override_auto_detection():
     CLI's `-r/--registers`) is trusted to have already validated it covers
     every register the program uses."""
     out = program_to_python([I.CP(5, R.a)], registers=["a", "b", "c"])
-    assert 'cpu = DT31(registers=["a", "b", "c"])' in out
+    assert out == (
+        "from dt31 import DT31, I, R\n"
+        "\n"
+        "program = [\n"
+        "    I.CP(a=5, b=R.a),\n"
+        "]\n"
+        "\n"
+        'if __name__ == "__main__":\n'
+        '    cpu = DT31(registers=["a", "b", "c"])\n'
+        "    cpu.run(program, debug=False)\n"
+    )
 
 
 def test_program_to_python_imports_only_what_is_used():
     """M/R/LC/Label are only imported when actually referenced."""
     # No operand types beyond plain literals: only DT31, I needed.
     out = program_to_python([I.NOOP()])
-    assert out.startswith("from dt31 import DT31, I\n")
+    assert out == (
+        "from dt31 import DT31, I\n"
+        "\n"
+        "program = [\n"
+        "    I.NOOP(),\n"
+        "]\n"
+        "\n"
+        'if __name__ == "__main__":\n'
+        "    cpu = DT31()\n"
+        "    cpu.run(program, debug=False)\n"
+    )
 
     # Memory reference pulls in M.
     out = program_to_python([I.CP(1, M[0])])
-    assert "M" in out.split("\n")[0].split(", ")
+    assert out == (
+        "from dt31 import DT31, I, M\n"
+        "\n"
+        "program = [\n"
+        "    I.CP(a=1, b=M[0]),\n"
+        "]\n"
+        "\n"
+        'if __name__ == "__main__":\n'
+        "    cpu = DT31()\n"
+        "    cpu.run(program, debug=False)\n"
+    )
 
     # Character literal pulls in LC.
     out = program_to_python([I.COUT(LC["A"])])
-    assert "LC" in out.split("\n")[0].split(", ")
+    assert out == (
+        "from dt31 import DT31, I, LC\n"
+        "\n"
+        "program = [\n"
+        '    I.COUT(a=LC["A"], b=0),\n'
+        "]\n"
+        "\n"
+        'if __name__ == "__main__":\n'
+        "    cpu = DT31()\n"
+        "    cpu.run(program, debug=False)\n"
+    )
 
 
 def test_program_to_python_label_walrus_on_first_occurrence_reference():
@@ -1136,12 +1208,20 @@ def test_program_to_python_label_walrus_on_first_occurrence_reference():
         I.NOUT(R.a, L[1]),
     ]
     out = program_to_python(program)
-    lines = out.splitlines()
-    dest_line = next(line_ for line_ in lines if "JGT" in line_)
-    marker_line = next(line_ for line_ in lines if line_.strip().startswith("end"))
-
-    assert '(end := Label("end"))' in dest_line
-    assert marker_line.strip() == "end,"
+    assert out == (
+        "from dt31 import DT31, I, R, Label\n"
+        "\n"
+        "program = [\n"
+        "    I.CP(a=1, b=R.a),\n"
+        '    I.JGT(dest=(end := Label("end")), a=R.a, b=0),\n'
+        "    end,\n"
+        "    I.NOUT(a=R.a, b=1),\n"
+        "]\n"
+        "\n"
+        'if __name__ == "__main__":\n'
+        '    cpu = DT31(registers=["a"])\n'
+        "    cpu.run(program, debug=False)\n"
+    )
 
 
 def test_program_to_python_label_walrus_on_first_occurrence_marker():
@@ -1154,12 +1234,20 @@ def test_program_to_python_label_walrus_on_first_occurrence_marker():
         I.JGT(loop, R.a, 0),
     ]
     out = program_to_python(program)
-    lines = out.splitlines()
-    marker_line = next(line_ for line_ in lines if ":=" in line_)
-    dest_line = next(line_ for line_ in lines if "JGT" in line_)
-
-    assert marker_line.strip() == '(loop := Label("loop")),'
-    assert "dest=loop" in dest_line
+    assert out == (
+        "from dt31 import DT31, I, R, Label\n"
+        "\n"
+        "program = [\n"
+        '    (loop := Label("loop")),\n'
+        "    I.NOUT(a=R.a, b=1),\n"
+        "    I.SUB(a=R.a, b=1, out=R.a),\n"
+        "    I.JGT(dest=loop, a=R.a, b=0),\n"
+        "]\n"
+        "\n"
+        'if __name__ == "__main__":\n'
+        '    cpu = DT31(registers=["a"])\n'
+        "    cpu.run(program, debug=False)\n"
+    )
 
 
 def test_program_to_python_invalid_identifier_label_name():
@@ -1169,9 +1257,19 @@ def test_program_to_python_invalid_identifier_label_name():
     text = "JGT class, R.a, 0\nclass:\nNOUT R.a, 1"
     program = parse_program(text)
     out = program_to_python(program)
-
-    assert out.count('Label("class")') == 2
-    assert ":=" not in out
+    assert out == (
+        "from dt31 import DT31, I, R, Label\n"
+        "\n"
+        "program = [\n"
+        '    I.JGT(dest=Label("class"), a=R.a, b=0),\n'
+        '    Label("class"),\n'
+        "    I.NOUT(a=R.a, b=1),\n"
+        "]\n"
+        "\n"
+        'if __name__ == "__main__":\n'
+        '    cpu = DT31(registers=["a"])\n'
+        "    cpu.run(program, debug=False)\n"
+    )
 
 
 def test_program_to_python_comments_and_blank_lines():
@@ -1182,13 +1280,20 @@ def test_program_to_python_comments_and_blank_lines():
         I.NOUT(R.a, L[1]),
     ]
     out = program_to_python(program)
-    assert "    # a comment" in out
-    lines = out.splitlines()
-    # There should be a genuinely blank line between the two instructions,
-    # corresponding to the BlankLine() in the source program.
-    cp_idx = next(i for i, line_ in enumerate(lines) if "I.CP" in line_)
-    nout_idx = next(i for i, line_ in enumerate(lines) if "I.NOUT" in line_)
-    assert any(lines[i] == "" for i in range(cp_idx + 1, nout_idx))
+    assert out == (
+        "from dt31 import DT31, I, R\n"
+        "\n"
+        "program = [\n"
+        "    # a comment\n"
+        "    I.CP(a=5, b=R.a),\n"
+        "\n"
+        "    I.NOUT(a=R.a, b=1),\n"
+        "]\n"
+        "\n"
+        'if __name__ == "__main__":\n'
+        '    cpu = DT31(registers=["a"])\n'
+        "    cpu.run(program, debug=False)\n"
+    )
 
 
 @pytest.mark.parametrize(

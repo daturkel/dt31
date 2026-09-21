@@ -202,7 +202,7 @@ dt31 to-python program.dt   # Convert to a standalone Python source file
 
 - `--debug` or `-d`: Enable step-by-step debug output
 - `--registers a,b,c,d`: Specify custom registers (auto-detected by default)
-- `--memory 512`: Set memory size in bytes (default: 256)
+- `--memory 512`: Set memory size (default: 256)
 - `--stack-size 512`: Set stack size (default: 256)
 - `--custom-instructions PATH` or `-i PATH`: Load custom instruction definitions from a Python file
 - `--dump {none,error,success,all}`: When to dump CPU state (default: none)

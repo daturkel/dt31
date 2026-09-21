@@ -39,7 +39,7 @@ Execute `.dt` assembly files with configurable CPU settings.
 - **-d, --debug**: Enable step-by-step debug output during execution
 - **-i, --custom-instructions**: Path to Python file containing custom instruction definitions
 - **--registers**: Comma-separated list of register names (auto-detected by default)
-- **--memory**: Memory size in bytes (default: 256)
+- **--memory**: Memory size (default: 256)
 - **--stack-size**: Stack size (default: 256)
 - **--dump**: When to dump CPU state - 'none' (default), 'error', 'success', or 'all'
 - **--dump-file**: File path for dump (auto-generates timestamped filename if not specified)
@@ -340,7 +340,7 @@ examples:
         "-m",
         "--memory",
         type=int,
-        help="Memory size in bytes (default: 256)",
+        help="Memory size (default: 256)",
     )
 
     run_parser.add_argument(
@@ -616,7 +616,7 @@ examples:
         "-m",
         "--memory",
         type=int,
-        help="Memory size in bytes (default: 256)",
+        help="Memory size (default: 256)",
     )
 
     to_python_parser.add_argument(
