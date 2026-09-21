@@ -293,7 +293,7 @@ _RESERVED_NAMES = frozenset(
 )
 
 
-def _label_ref(label: Label, introduced: set[str]) -> str:
+def _label_ref(label: Label, introduced: set[str], comment: str = "") -> str:
     """Return the Python expression to use for one occurrence of a label.
 
     If a label name is a valid Python variable name that doesn't collide with a
@@ -305,6 +305,11 @@ def _label_ref(label: Label, introduced: set[str]) -> str:
             jump/call instruction's `dest`).
         introduced: Names of labels whose walrus binding has already been emitted;
             mutated in place as labels are introduced.
+        comment: A rendered `.with_comment(...)` call to attach, or `""`. On the
+            occurrence that introduces a walrus binding it goes inside the
+            parentheses, so the bound name and the list element are one object.
+            A marker whose name was already bound by an earlier forward jump
+            takes it outside, since the binding can't be amended in place.
 
     Returns:
         `'(name := Label("name"))'` on a usable identifier's first occurrence,
@@ -313,11 +318,11 @@ def _label_ref(label: Label, introduced: set[str]) -> str:
     """
     name = label.name
     if not name.isidentifier() or keyword.iskeyword(name) or name in _RESERVED_NAMES:
-        return f"Label({json.dumps(name, ensure_ascii=False)})"
+        return f"Label({json.dumps(name, ensure_ascii=False)}){comment}"
     if name not in introduced:
         introduced.add(name)
-        return f"({name} := Label({json.dumps(name, ensure_ascii=False)}))"
-    return name
+        return f"({name} := Label({json.dumps(name, ensure_ascii=False)}){comment})"
+    return f"{name}{comment}"
 
 
 def _comment_suffix(item: Instruction | Label) -> str:
@@ -436,10 +441,8 @@ def program_to_python(
         elif isinstance(item, Comment):
             body_lines.append(f"    # {item.comment}")
         elif isinstance(item, Label):
-            # The comment lands on the list element, not the walrus binding; only a
-            # marker's comment is meaningful, so `dest=` references are unaffected.
             body_lines.append(
-                f"    {_label_ref(item, introduced)}{_comment_suffix(item)},"
+                f"    {_label_ref(item, introduced, _comment_suffix(item))},"
             )
         else:
             line = repr(item)

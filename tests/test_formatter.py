@@ -1361,7 +1361,29 @@ def test_program_to_python_preserves_instruction_comments():
 def test_program_to_python_preserves_label_comments():
     program = parse_program("loop:  ; top of loop\nNOUT 1, 1")
     out = program_to_python(program)
-    assert '    (loop := Label("loop")).with_comment("top of loop"),\n' in out
+    assert '    (loop := Label("loop").with_comment("top of loop")),\n' in out
+
+
+def test_program_to_python_label_walrus_binds_the_commented_label():
+    """`with_comment` returns a copy, so the call has to sit inside the walrus --
+    otherwise the bound name is a different, uncommented object to the one in the
+    list."""
+    source = "loop:  ; top of loop\nNOUT 1, 1\nJGT loop, 1, 0"
+    namespace: dict = {}
+    exec(program_to_python(parse_program(source)), namespace)
+
+    label = namespace["program"][0]
+    assert namespace["loop"] is label
+    assert label.comment == "top of loop"
+    assert namespace["program"][2].dest is label
+
+
+def test_program_to_python_forward_jump_marker_comment_stays_outside():
+    """A marker whose name was already bound by an earlier jump can't amend the
+    binding in place, so its comment hangs off the name instead."""
+    out = program_to_python(parse_program("JMP end\nNOUT 1, 1\nend:  ; done"))
+    assert '    I.JMP(dest=(end := Label("end"))),\n' in out
+    assert '    end.with_comment("done"),\n' in out
 
 
 def test_program_to_python_comments_survive_a_round_trip(tmp_path):
