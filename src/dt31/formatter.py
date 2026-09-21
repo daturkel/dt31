@@ -7,12 +7,20 @@ with configurable formatting options, and into standalone Python source files
 using the Python API.
 """
 
+import json
 import keyword
 from typing import Literal
 
 from dt31.assembler import extract_registers_from_program
 from dt31.instructions import Instruction, Jump, RelativeJumpMixin
-from dt31.operands import Label, validate_register_name
+from dt31.operands import Literal as OperandLiteral
+from dt31.operands import (
+    Label,
+    MemoryReference,
+    Operand,
+    RegisterReference,
+    validate_register_name,
+)
 from dt31.parser import BlankLine, Comment
 
 
@@ -278,11 +286,19 @@ def _format_instruction_with_comment(
         return f"{instruction_text}{' ' * comment_margin}; {comment}"
 
 
+# Names the generated module binds itself: every dt31 symbol it may import, plus
+# its two module-level variables. Binding a label to one of these would shadow it.
+_RESERVED_NAMES = frozenset(
+    {"DT31", "I", "L", "LC", "Label", "M", "R", "cpu", "program"}
+)
+
+
 def _label_ref(label: Label, introduced: set[str]) -> str:
     """Return the Python expression to use for one occurrence of a label.
 
-    If a label name is a valid Python variable name, we'll use that. Otherwise, we
-    can just use a literal `Label("1invalidname")` object.
+    If a label name is a valid Python variable name that doesn't collide with a
+    name the generated module already binds, we'll use that. Otherwise, we can
+    just use a literal `Label("1invalidname")` object.
 
     Args:
         label: The label occurrence being rendered (a program-list marker, or a
@@ -291,17 +307,70 @@ def _label_ref(label: Label, introduced: set[str]) -> str:
             mutated in place as labels are introduced.
 
     Returns:
-        `'(name := Label("name"))'` on a valid identifier's first occurrence,
+        `'(name := Label("name"))'` on a usable identifier's first occurrence,
         `"name"` on later occurrences, or `'Label("name")'` (always, no tracking)
-        if the name isn't a usable Python identifier.
+        if the name isn't a usable Python identifier or is in `_RESERVED_NAMES`.
     """
     name = label.name
-    if not name.isidentifier() or keyword.iskeyword(name):
-        return f'Label("{name}")'
+    if not name.isidentifier() or keyword.iskeyword(name) or name in _RESERVED_NAMES:
+        return f"Label({json.dumps(name, ensure_ascii=False)})"
     if name not in introduced:
         introduced.add(name)
-        return f'({name} := Label("{name}"))'
+        return f"({name} := Label({json.dumps(name, ensure_ascii=False)}))"
     return name
+
+
+def _comment_suffix(item: Instruction | Label) -> str:
+    """Return a `.with_comment(...)` call for a commented item, else an empty string.
+
+    Args:
+        item: The instruction or label being rendered.
+
+    Returns:
+        `'.with_comment("text")'` if the item carries a comment, otherwise `""`.
+    """
+    if not item.comment:
+        return ""
+    return f".with_comment({json.dumps(item.comment, ensure_ascii=False)})"
+
+
+def _collect_symbols(
+    program: list[Instruction | Label | Comment | BlankLine] | list[Instruction],
+) -> set[str]:
+    """Collect the dt31 operand symbols a generated program body will reference.
+
+    Walks the program's operands rather than the rendered source, so comment text
+    can't introduce a spurious import.
+
+    Args:
+        program: List of instructions, labels, comments, and blank lines.
+
+    Returns:
+        A set drawn from `{"LC", "Label", "M", "R"}`. `DT31` and `I` are always
+        needed and aren't reported here.
+    """
+    symbols: set[str] = set()
+
+    def visit(operand: object) -> None:
+        if isinstance(operand, MemoryReference):
+            symbols.add("M")
+            visit(operand.address)
+        elif isinstance(operand, RegisterReference):
+            symbols.add("R")
+        elif isinstance(operand, Label):
+            symbols.add("Label")
+        elif isinstance(operand, OperandLiteral) and operand.is_char:
+            symbols.add("LC")
+
+    for item in program:
+        if isinstance(item, Label):
+            symbols.add("Label")
+        elif isinstance(item, Instruction):
+            for value in item.__dict__.values():
+                if isinstance(value, (Operand, Label)):
+                    visit(value)
+
+    return symbols
 
 
 def program_to_python(
@@ -367,7 +436,11 @@ def program_to_python(
         elif isinstance(item, Comment):
             body_lines.append(f"    # {item.comment}")
         elif isinstance(item, Label):
-            body_lines.append(f"    {_label_ref(item, introduced)},")
+            # The comment lands on the list element, not the walrus binding; only a
+            # marker's comment is meaningful, so `dest=` references are unaffected.
+            body_lines.append(
+                f"    {_label_ref(item, introduced)}{_comment_suffix(item)},"
+            )
         else:
             line = repr(item)
             if isinstance(item, Jump) and isinstance(item.dest, Label):
@@ -380,22 +453,19 @@ def program_to_python(
                     f"{dest_kwarg}={_label_ref(item.dest, introduced)}",
                     1,
                 )
-            body_lines.append(f"    I.{line},")
+            body_lines.append(f"    I.{line}{_comment_suffix(item)},")
 
     body = "\n".join(body_lines)
+
+    needed = _collect_symbols(program)
 
     # Ordered to match ruff's import sort: all-caps names first (DT31, LC),
     # then the rest alphabetically (I, Label, M, R).
     symbols = ["DT31"]
-    if "LC[" in body:
+    if "LC" in needed:
         symbols.append("LC")
     symbols.append("I")
-    if "Label(" in body:
-        symbols.append("Label")
-    if "M[" in body:
-        symbols.append("M")
-    if "R." in body:
-        symbols.append("R")
+    symbols.extend(name for name in ("Label", "M", "R") if name in needed)
 
     if registers is not None:
         for register in registers:

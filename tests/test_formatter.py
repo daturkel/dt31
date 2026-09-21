@@ -1316,6 +1316,14 @@ def test_program_to_python_comments_and_blank_lines():
         # `dest`, so generating the call from the repr has to use that name.
         "CP 0, R.a\nADD R.a, 1\nNOUT R.a, 1\nRJLT -2, R.a, 3",
         "RCALL 2\nJMP 5\nCOUT 'h', 1\nRET",
+        # Label names that collide with what the generated module binds must not
+        # be bound with the walrus operator, or they shadow the import.
+        "JMP R\nR:\nCP 5, R.a\nNOUT R.a, 1",
+        "JMP M\nM:\nCP 5, [1]\nNOUT [1], 1",
+        "JMP I\nI:\nNOUT 1, 1",
+        "JMP program\nprogram:\nNOUT 1, 1",
+        # Comments ride along as `.with_comment(...)` calls.
+        "CP 5, R.a  ; init\nloop:  ; top\nNOUT R.a, 1\nSUB R.a, 1\nJGT loop, R.a, 0  ; again",
     ],
 )
 def test_program_to_python_generated_file_executes_correctly(tmp_path, source):
@@ -1342,3 +1350,76 @@ def test_program_to_python_generated_file_executes_correctly(tmp_path, source):
     )
     assert result.returncode == 0, result.stderr
     assert result.stdout == expected.getvalue()
+
+
+def test_program_to_python_preserves_instruction_comments():
+    program = parse_program("CP 5, R.a  ; initialise the counter")
+    out = program_to_python(program)
+    assert '    I.CP(a=5, b=R.a).with_comment("initialise the counter"),\n' in out
+
+
+def test_program_to_python_preserves_label_comments():
+    program = parse_program("loop:  ; top of loop\nNOUT 1, 1")
+    out = program_to_python(program)
+    assert '    (loop := Label("loop")).with_comment("top of loop"),\n' in out
+
+
+def test_program_to_python_comments_survive_a_round_trip(tmp_path):
+    """A comment written in assembly survives .dt -> .py -> program -> .dt."""
+    source = "CP 5, R.a  ; initialise the counter\nNOUT R.a, 1"
+    py_file = tmp_path / "generated.py"
+    py_file.write_text(program_to_python(parse_program(source)))
+
+    namespace: dict = {}
+    exec(compile(py_file.read_text(), str(py_file), "exec"), namespace)
+
+    assert namespace["program"][0].comment == "initialise the counter"
+    assert "; initialise the counter" in program_to_text(namespace["program"])
+
+
+def test_program_to_python_escapes_quotes_in_comments():
+    program = [I.NOOP().with_comment('he said "hi"')]
+    out = program_to_python(program)
+    assert '    I.NOOP().with_comment("he said \\"hi\\""),\n' in out
+
+
+def test_program_to_python_keeps_non_ascii_comments_literal():
+    program = [I.NOOP().with_comment("data \u2260 0")]
+    out = program_to_python(program)
+    assert '.with_comment("data \u2260 0")' in out
+
+
+@pytest.mark.parametrize(
+    "name", ["DT31", "I", "L", "LC", "Label", "M", "R", "cpu", "program"]
+)
+def test_program_to_python_reserved_label_names_are_not_bound(name):
+    """A label named after something the generated module binds is emitted as a
+    literal `Label(...)` at every occurrence rather than via the walrus."""
+    program = [I.JMP(Label(name)), Label(name)]
+    out = program_to_python(program)
+    assert f"{name} :=" not in out
+    assert out.count(f'Label("{name}")') == 2
+
+
+def test_program_to_python_comment_text_does_not_add_imports():
+    """Import selection reads the program's operands, not the rendered source, so
+    a comment that happens to mention M[...] or R.a introduces no import."""
+    program = [
+        Comment("bump M[0] and R.a, see LC['x'] and Label(foo)"),
+        I.NOOP().with_comment("also mentions M[1] and R.b"),
+    ]
+    out = program_to_python(program)
+    assert out.startswith("from dt31 import DT31, I\n")
+
+
+def test_program_to_python_imports_label_for_a_bare_marker():
+    """A label that is never a jump destination still needs the Label import."""
+    out = program_to_python([Label("start"), I.NOOP()])
+    assert out.startswith("from dt31 import DT31, I, Label\n")
+
+
+def test_program_to_python_imports_lc_for_a_nested_char_literal():
+    """Operand walking recurses, so a char literal inside a memory reference is
+    still detected."""
+    out = program_to_python([I.CP(1, M[LC["A"]])])
+    assert out.startswith("from dt31 import DT31, LC, I, M\n")

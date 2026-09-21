@@ -229,7 +229,9 @@ dt31 to-python program.dt -o program.py       # Write generated Python to a file
 dt31 to-python program.dt --memory 1024 -d    # Larger memory, debug=True in the generated call
 ```
 
-Custom instructions aren't currently supported.
+Comments are preserved as `.with_comment(...)` calls, so the generated program
+round-trips back through `program_to_text`. Custom instructions aren't currently
+supported.
 
 **Examples:**
 
