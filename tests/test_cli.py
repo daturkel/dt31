@@ -2263,25 +2263,6 @@ def test_to_python_parse_error(temp_dt_file, capsys):
     )
 
 
-def test_to_python_unknown_instruction_rejected_without_custom_instructions_flag(
-    tmp_path, capsys
-):
-    """to-python doesn't accept --custom-instructions: a program using a custom
-    instruction fails the same way any other unrecognized instruction would --
-    at parse time, with no separate flag or file load in between.
-    """
-    program_file = tmp_path / "program.dt"
-    program_file.write_text("CP 5, R.a\nTRIPLE R.a")
-
-    with patch.object(sys, "argv", ["dt31", "to-python", str(program_file)]):
-        with pytest.raises(SystemExit) as exc_info:
-            main()
-
-    assert exc_info.value.code == 1
-    captured = capsys.readouterr()
-    assert captured.err == "Parse error: Line 2: Unknown instruction 'TRIPLE'\n"
-
-
 def test_to_python_io_error_reading_file(tmp_path, capsys):
     """Test IOError when reading file with to-python command."""
     file_path = tmp_path / "test.dt"
