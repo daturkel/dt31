@@ -1248,7 +1248,7 @@ def test_program_to_python_label_walrus_on_first_occurrence_marker():
         "from dt31 import DT31, I, Label, R\n"
         "\n"
         "program = [\n"
-        '    (loop := Label("loop")),\n'
+        '    loop := Label("loop"),\n'
         "    I.NOUT(a=R.a, b=1),\n"
         "    I.SUB(a=R.a, b=1, out=R.a),\n"
         "    I.JGT(dest=loop, a=R.a, b=0),\n"
@@ -1361,7 +1361,7 @@ def test_program_to_python_preserves_instruction_comments():
 def test_program_to_python_preserves_label_comments():
     program = parse_program("loop:  ; top of loop\nNOUT 1, 1")
     out = program_to_python(program)
-    assert '    (loop := Label("loop").with_comment("top of loop")),\n' in out
+    assert '    loop := Label("loop").with_comment("top of loop"),\n' in out
 
 
 def test_program_to_python_label_walrus_binds_the_commented_label():

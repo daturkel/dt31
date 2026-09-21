@@ -293,7 +293,12 @@ _RESERVED_NAMES = frozenset(
 )
 
 
-def _label_ref(label: Label, introduced: set[str], comment: str = "") -> str:
+def _label_ref(
+    label: Label,
+    introduced: set[str],
+    comment: str = "",
+    parenthesize: bool = False,
+) -> str:
     """Return the Python expression to use for one occurrence of a label.
 
     If a label name is a valid Python variable name that doesn't collide with a
@@ -307,12 +312,15 @@ def _label_ref(label: Label, introduced: set[str], comment: str = "") -> str:
             mutated in place as labels are introduced.
         comment: A rendered `.with_comment(...)` call to attach, or `""`. On the
             occurrence that introduces a walrus binding it goes inside the
-            parentheses, so the bound name and the list element are one object.
-            A marker whose name was already bound by an earlier forward jump
-            takes it outside, since the binding can't be amended in place.
+            binding, so the bound name and the list element are one object. A
+            marker whose name was already bound by an earlier forward jump takes
+            it outside, since the binding can't be amended in place.
+        parenthesize: Wrap a walrus binding in parentheses. Required when the
+            occurrence is a keyword argument's value, which PEP 572 won't accept
+            bare; a list element takes it without.
 
     Returns:
-        `'(name := Label("name"))'` on a usable identifier's first occurrence,
+        `'name := Label("name")'` on a usable identifier's first occurrence,
         `"name"` on later occurrences, or `'Label("name")'` (always, no tracking)
         if the name isn't a usable Python identifier or is in `_RESERVED_NAMES`.
     """
@@ -321,7 +329,8 @@ def _label_ref(label: Label, introduced: set[str], comment: str = "") -> str:
         return f"Label({json.dumps(name, ensure_ascii=False)}){comment}"
     if name not in introduced:
         introduced.add(name)
-        return f"({name} := Label({json.dumps(name, ensure_ascii=False)}){comment})"
+        binding = f"{name} := Label({json.dumps(name, ensure_ascii=False)}){comment}"
+        return f"({binding})" if parenthesize else binding
     return f"{name}{comment}"
 
 
@@ -453,7 +462,7 @@ def program_to_python(
                 dest_kwarg = "delta" if isinstance(item, RelativeJumpMixin) else "dest"
                 line = line.replace(
                     f"{dest_kwarg}={item.dest.name}",
-                    f"{dest_kwarg}={_label_ref(item.dest, introduced)}",
+                    f"{dest_kwarg}={_label_ref(item.dest, introduced, parenthesize=True)}",
                     1,
                 )
             body_lines.append(f"    I.{line}{_comment_suffix(item)},")
