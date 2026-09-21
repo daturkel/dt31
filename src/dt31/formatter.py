@@ -384,15 +384,18 @@ def program_to_python(
 
     body = "\n".join(body_lines)
 
-    symbols = ["DT31", "I"]
+    # Ordered to match ruff's import sort: all-caps names first (DT31, LC),
+    # then the rest alphabetically (I, Label, M, R).
+    symbols = ["DT31"]
+    if "LC[" in body:
+        symbols.append("LC")
+    symbols.append("I")
+    if "Label(" in body:
+        symbols.append("Label")
     if "M[" in body:
         symbols.append("M")
     if "R." in body:
         symbols.append("R")
-    if "LC[" in body:
-        symbols.append("LC")
-    if "Label(" in body:
-        symbols.append("Label")
 
     if registers is not None:
         for register in registers:

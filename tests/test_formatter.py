@@ -1088,7 +1088,7 @@ def test_program_to_python_no_registers_omits_the_kwarg():
     instead of just not needing any of them."""
     out = program_to_python([I.COUT(LC["H"])])
     assert out == (
-        "from dt31 import DT31, I, LC\n"
+        "from dt31 import DT31, LC, I\n"
         "\n"
         "program = [\n"
         '    I.COUT(a=LC["H"], b=0),\n'
@@ -1195,7 +1195,7 @@ def test_program_to_python_imports_only_what_is_used():
     # Character literal pulls in LC.
     out = program_to_python([I.COUT(LC["A"])])
     assert out == (
-        "from dt31 import DT31, I, LC\n"
+        "from dt31 import DT31, LC, I\n"
         "\n"
         "program = [\n"
         '    I.COUT(a=LC["A"], b=0),\n'
@@ -1219,7 +1219,7 @@ def test_program_to_python_label_walrus_on_first_occurrence_reference():
     ]
     out = program_to_python(program)
     assert out == (
-        "from dt31 import DT31, I, R, Label\n"
+        "from dt31 import DT31, I, Label, R\n"
         "\n"
         "program = [\n"
         "    I.CP(a=1, b=R.a),\n"
@@ -1245,7 +1245,7 @@ def test_program_to_python_label_walrus_on_first_occurrence_marker():
     ]
     out = program_to_python(program)
     assert out == (
-        "from dt31 import DT31, I, R, Label\n"
+        "from dt31 import DT31, I, Label, R\n"
         "\n"
         "program = [\n"
         '    (loop := Label("loop")),\n'
@@ -1268,7 +1268,7 @@ def test_program_to_python_invalid_identifier_label_name():
     program = parse_program(text)
     out = program_to_python(program)
     assert out == (
-        "from dt31 import DT31, I, R, Label\n"
+        "from dt31 import DT31, I, Label, R\n"
         "\n"
         "program = [\n"
         '    I.JGT(dest=Label("class"), a=R.a, b=0),\n'
