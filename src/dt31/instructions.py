@@ -885,15 +885,7 @@ class RelativeJumpMixin(Jump):
         return cpu.get_register("ip") + self.dest.resolve(cpu)
 
     def __repr__(self) -> str:
-        """Return Python API representation.
-
-        Overrides `Jump`/`UnaryJump`/`BinaryJump`'s `__repr__` because the
-        constructor here takes the destination as `delta`, not `dest` -- the
-        base classes' reprs describe a call this class can't actually accept.
-        `a`/`b` aren't this mixin's to know about (they belong to whichever of
-        `UnaryJump`/`BinaryJump` it's combined with, or neither), so they're
-        included only when present.
-        """
+        """Return Python API representation."""
         parts = [f"delta={self.dest!r}"]
         if hasattr(self, "a"):
             parts.append(f"a={self.a!r}")
