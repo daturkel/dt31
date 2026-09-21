@@ -229,9 +229,7 @@ dt31 to-python program.dt -o program.py       # Write generated Python to a file
 dt31 to-python program.dt --memory 1024 -d    # Larger memory, debug=True in the generated call
 ```
 
-Only the `dt31` symbols the program actually uses are imported. The program list is always named `program`, matching `program_to_python`'s own default. The generated `DT31(...)` call only spells out arguments that aren't defaults, so a plain conversion still reads as `DT31(registers=[...])` (or `DT31()` for a register-less program).
-
-Custom instructions aren't supported here: the generated file can only reference symbols from `dt31` itself, so a program using one fails at parse time with the same "Unknown instruction" error as any other unrecognized instruction.
+Custom instructions aren't currently supported.
 
 **Examples:**
 
@@ -726,14 +724,6 @@ uv run invoke test
 ```
 
 DT31 is open-source and contributors are welcome on [Github](https://github.com/daturkel/dt31).
-
-## Planned work
-
-- [ ] [Data section](https://github.com/daturkel/dt31/issues/26)
-- [ ] [Globbing support for CLI](https://github.com/daturkel/dt31/issues/16)
-- [ ] Interpreter resume from dump (maybe)
-- [ ] Input error-handling (maybe)
-- [ ] [File I/O](https://github.com/daturkel/dt31/issues/25) (maybe)
 
 ## License
 
