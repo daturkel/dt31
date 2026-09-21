@@ -653,11 +653,6 @@ def to_python_command(args: argparse.Namespace) -> None:
         print(f"Parse error: {e}", file=sys.stderr)
         sys.exit(1)
 
-    # Same registers validation as `run_command`. `run` gets this for free by
-    # actually constructing a `DT31(**cpu_kwargs)`; to-python never builds a
-    # CPU, so it validates each name explicitly instead -- this is also what
-    # lets `program_to_python` interpolate register names into the generated
-    # source without escaping them itself.
     registers_used = extract_registers_from_program(program)
     registers = None
     if args.registers:
