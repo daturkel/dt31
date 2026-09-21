@@ -293,16 +293,7 @@ def _label_ref(label: Label, introduced: set[str]) -> str:
     Returns:
         `'(name := Label("name"))'` on a valid identifier's first occurrence,
         `"name"` on later occurrences, or `'Label("name")'` (always, no tracking)
-        if the name isn't a usable Python identifier. The name is interpolated
-        directly rather than through `!r`, so the quotes come out double
-        (matching ruff's convention) instead of `repr()`'s default single
-        quotes. That's safe for any label parsed from `.dt` text, since
-        `parser.py` restricts label names to alphanumerics and underscores --
-        never a quote or backslash. A `Label(...)` built by hand with a name
-        outside that set (the Python API doesn't enforce it) would need real
-        escaping this skips; `program_to_python` is documented as converting
-        parsed programs, so that's the caller's responsibility, not this
-        function's.
+        if the name isn't a usable Python identifier.
     """
     name = label.name
     if not name.isidentifier() or keyword.iskeyword(name):
