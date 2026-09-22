@@ -48,3 +48,18 @@ dev = [
     "pdoc>=14.7.0",
     "prek>=0.2.13",
 ]
+
+[tool.ruff.lint]
+# Ruff 0.16 dropped most of pycodestyle from the default rule set. E402, E711, E712,
+# E721 and E741 are still worth having, and existing `noqa` comments depend on them.
+extend-select = ["E"]
+# Line length is the formatter's job.
+ignore = ["E501"]
+
+[tool.ruff.lint.per-file-ignores]
+# Top-level command handlers catch everything so the CLI can print a message and exit.
+"src/dt31/cli.py" = ["BLE001"]
+# Runs standalone against a built wheel, reporting each check as pass/fail.
+"tests/smoke_test.py" = ["BLE001"]
+# Exercises the documented custom-instruction loader, which uses `exec`.
+"tests/test_formatter.py" = ["S102"]

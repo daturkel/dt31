@@ -12,11 +12,14 @@ repos:
       - id: check-toml
   - repo: https://github.com/astral-sh/ruff-pre-commit
     # Ruff version.
-    rev: v0.14.4
+    rev: v0.16.8
     hooks:
       - id: ruff-check
         args: [--fix]
       - id: ruff-format
+        # The hook covers Markdown as of v0.16; the README's snippets are
+        # hand-laid-out and the formatter undoes that.
+        exclude: \.md$
   - repo: https://github.com/astral-sh/uv-pre-commit
     # uv version.
     rev: 0.9.8
