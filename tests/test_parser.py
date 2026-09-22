@@ -548,6 +548,16 @@ def test_parse_program_multiple_labels_no_instruction():
     assert program[2].name == "baz"
 
 
+def test_parse_program_empty_label_segment():
+    """An empty segment before a ':' (e.g. a leading colon) is skipped, not a label."""
+    text = ": foo: CP R.a, R.b"
+    program = parse_program(text)
+    assert len(program) == 2
+    assert isinstance(program[0], Label)
+    assert program[0].name == "foo"
+    assert isinstance(program[1], I.CP)
+
+
 def test_parse_program_label_validation_valid():
     """Test that valid label names are accepted."""
     text = """

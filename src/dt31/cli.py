@@ -1074,8 +1074,10 @@ def format_command(args: argparse.Namespace) -> None:
 def main() -> None:
     """Main entry point for the dt31 CLI.
 
-    Supports two subcommands:
+    Supports four subcommands:
     - run: Execute a dt31 assembly program
+    - check: Validate syntax of a dt31 assembly file
+    - to-python: Convert a dt31 assembly file to a standalone Python source file
     - format: Format a dt31 assembly file with consistent style
 
     Exit codes:

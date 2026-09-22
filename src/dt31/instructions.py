@@ -1002,10 +1002,6 @@ class JMP(ExactJumpMixin, UnconditionalJumpMixin):
         """
         super().__init__("JMP", dest)
 
-    def __str__(self) -> str:
-        """Return assembly text representation."""
-        return f"JMP {self.dest}"
-
 
 class RJMP(RelativeJumpMixin, UnconditionalJumpMixin):
     """Relative unconditional jump instruction."""
@@ -1016,10 +1012,6 @@ class RJMP(RelativeJumpMixin, UnconditionalJumpMixin):
             delta: The destination to jump to (Label, Operand, or int).
         """
         super().__init__("RJMP", delta)
-
-    def __str__(self) -> str:
-        """Return assembly text representation."""
-        return f"RJMP {self.dest}"
 
 
 class JEQ(ExactJumpMixin, IfEqualJumpMixin):
@@ -1220,10 +1212,6 @@ class CALL(ExactJumpMixin, UnconditionalJumpMixin):
         cpu.push(cpu.get_register("ip") + 1)
         return 0
 
-    def __str__(self) -> str:
-        """Return assembly text representation."""
-        return f"CALL {self.dest}"
-
 
 class RCALL(RelativeJumpMixin, UnconditionalJumpMixin):
     """Call function at relative destination, pushing return address to stack."""
@@ -1239,10 +1227,6 @@ class RCALL(RelativeJumpMixin, UnconditionalJumpMixin):
         # Push return address (next instruction) onto stack
         cpu.push(cpu.get_register("ip") + 1)
         return 0
-
-    def __str__(self) -> str:
-        """Return assembly text representation."""
-        return f"RCALL {self.dest}"
 
 
 class RET(Instruction):
