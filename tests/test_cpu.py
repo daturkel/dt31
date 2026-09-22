@@ -147,8 +147,9 @@ def test_run_example(cpu):
 def test_run_debug(cpu, capsys, monkeypatch):
     monkeypatch.setattr("builtins.input", lambda: None)
     cpu.run([I.ADD(M[1], M[2]), I.NOOP(), I.JGT(0, 100, M[1])], debug=True)
-    output = capsys.readouterr().out
-    print(output)
+    captured = capsys.readouterr()
+    assert captured.out == ""
+    output = captured.err
     assert output.splitlines() == [
         "ADD(a=M[1], b=M[2], out=M[1]) -> 30",
         "{'M[1]': 30, 'M[2]': 20, 'R.a': 30, 'R.b': 40, 'R.c': 50, 'R.ip': 1, 'stack': []}",
@@ -326,9 +327,10 @@ def test_step_debug(cpu, capsys):
     insts = [I.ADD(M[1], M[2]), I.NOOP(), I.JGT(0, 100, M[1])]
     cpu.load(insts)
     cpu.step(debug=True)
+    captured = capsys.readouterr()
+    assert captured.out == ""
     assert (
-        capsys.readouterr().out
-        == "ADD(a=M[1], b=M[2], out=M[1]) -> 30\n" + str(cpu.state) + "\n"
+        captured.err == "ADD(a=M[1], b=M[2], out=M[1]) -> 30\n" + str(cpu.state) + "\n"
     )
 
 
@@ -439,7 +441,8 @@ def test_comments_in_debug_output(capsys):
     cpu.step(debug=True)
 
     captured = capsys.readouterr()
-    lines = captured.out.strip().split("\n")
+    assert captured.out == ""
+    lines = captured.err.strip().split("\n")
     assert lines[0] == "CP(a=5, b=R.a) -> 5  ; Initialize counter"
 
 
@@ -454,7 +457,8 @@ def test_no_comment_in_debug_output(capsys):
     cpu.step(debug=True)
 
     captured = capsys.readouterr()
-    lines = captured.out.strip().split("\n")
+    assert captured.out == ""
+    lines = captured.err.strip().split("\n")
     assert lines[0] == "CP(a=5, b=R.a) -> 5"
 
 
