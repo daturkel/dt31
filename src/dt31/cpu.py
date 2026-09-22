@@ -286,16 +286,48 @@ class DT31:
         self.debug_mode = debug
         wall_start = time.perf_counter_ns()
         try:
-            while True:
-                try:
-                    self.step()
+            if not debug and not self.track_step_time:
+                # Fast path: mirrors step()'s core loop (bounds check, execute,
+                # count) without its per-step try/except, debug branch, and
+                # timing branch. An instruction (e.g. BRKD) can still flip
+                # debug_mode on mid-run, in which case we hand off to the
+                # slow, step()-based loop below to keep behavior identical.
+                # Keep the two loops in sync.
+                registers = self.registers
+                loaded = self.instructions
+                program_length = self._program_length
+                reached_end = False
+                while not self.debug_mode:
+                    ip = registers["ip"]
+                    if ip >= program_length or ip < 0:
+                        reached_end = True
+                        break
+                    loaded[ip](self)
+                    self.step_count += 1
                     if self.debug_mode:
                         input()
-                except EndOfProgram:
-                    break
+                if not reached_end:
+                    self._run_with_step()
+            else:
+                self._run_with_step()
         finally:
             wall_end = time.perf_counter_ns()
             self.wall_time_ns += wall_end - wall_start
+
+    def _run_with_step(self):
+        """Execute the loaded program via `step()` until `EndOfProgram`.
+
+        This is the slow path used for debug mode, timing-tracked runs, and
+        as a fallback once an instruction (e.g. `BRKD`) switches on
+        `debug_mode` partway through a fast-path `run()`.
+        """
+        while True:
+            try:
+                self.step()
+                if self.debug_mode:
+                    input()
+            except EndOfProgram:
+                break
 
     def validate_program_registers(
         self, program: list[Instruction | Label | Comment | BlankLine]

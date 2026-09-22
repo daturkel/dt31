@@ -183,6 +183,58 @@ def test_run_debug(cpu, capsys, monkeypatch):
     ]
 
 
+def test_run_fast_path_matches_debug_and_timing_paths(capsys, monkeypatch):
+    """run()'s fast path (no debug, no track_step_time) must produce the same
+    final CPU state as run(debug=True) and a track_step_time=True CPU, for
+    the same program, including the loop-exit and jump-heavy control flow."""
+    monkeypatch.setattr("builtins.input", lambda: None)
+
+    def make_program():
+        return [
+            I.CP(5, R.a),
+            I.NOUT(R.a, L[0]),
+            I.SUB(R.a, L[1]),
+            I.JGT(1, R.a, L[0]),
+            I.CALL(6),
+            I.JMP(8),
+            I.CP(99, R.b),
+            I.RET(),
+        ]
+
+    fast_cpu = DT31()
+    fast_cpu.run(make_program())
+
+    debug_cpu = DT31()
+    debug_cpu.run(make_program(), debug=True)
+    capsys.readouterr()  # discard debug output
+
+    timing_cpu = DT31(track_step_time=True)
+    timing_cpu.run(make_program())
+
+    assert fast_cpu.state == debug_cpu.state == timing_cpu.state
+    assert fast_cpu.step_count == debug_cpu.step_count == timing_cpu.step_count
+    assert (
+        fast_cpu.get_register("ip")
+        == debug_cpu.get_register("ip")
+        == timing_cpu.get_register("ip")
+    )
+
+
+def test_run_fast_path_matches_slow_path_on_negative_ip(capsys, monkeypatch):
+    """EndOfProgram via a negative ip halts identically on both paths."""
+    monkeypatch.setattr("builtins.input", lambda: None)
+
+    fast_cpu = DT31()
+    fast_cpu.run([I.JMP(-1)])
+
+    debug_cpu = DT31()
+    debug_cpu.run([I.JMP(-1)], debug=True)
+    capsys.readouterr()
+
+    assert fast_cpu.get_register("ip") == debug_cpu.get_register("ip") == -1
+    assert fast_cpu.step_count == debug_cpu.step_count
+
+
 def test_run_without_load_raises_error(cpu):
     with pytest.raises(RuntimeError, match="No program loaded"):
         cpu.run()
