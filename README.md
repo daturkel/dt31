@@ -3,7 +3,7 @@
 [![PyPI - Version](https://img.shields.io/pypi/v/dt31?color=yellow)](https://pypi.org/project/dt31/)
  [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](https://opensource.org/licenses/MIT) [![pdoc](https://img.shields.io/badge/docs-pdoc.dev-green)](https://pdoc.dev/docs/pdoc.html) [![Ruff](https://img.shields.io/badge/style-ruff-green.svg)](https://github.com/astral-sh/ruff) ![Coverage Badge](coverage-badge.svg)
 
-A toy computer and assembly language written in Python. Build programs with 60+ built-in instructions for interacting with registers, memory, and the stack. Write your programs in the native assembly syntax or directly with the Python API.
+A toy computer and assembly language written in Python. Build programs with 60 built-in instructions for interacting with registers, memory, and the stack. Write your programs in the native assembly syntax or directly with the Python API.
 
 <table>
 <tr>
@@ -57,7 +57,7 @@ cpu.run(program)
 ## Features
 
 - **Simple CPU Architecture**: Configurable registers, fixed-size memory, and stack-based operations
-- **Rich Instruction Set**: 60+ instructions including arithmetic, bitwise operations, logic, control flow, and I/O
+- **Rich Instruction Set**: 60 instructions including arithmetic, bitwise operations, logic, control flow, and I/O
 - **Assembly Support**: Two-pass assembler with label resolution for jumps and function calls
 - **Assembly Parser**: Parse and execute `.dt` assembly files with text-based syntax
 - **Command-Line Interface**: Execute `.dt` files directly with the `dt31` command
@@ -162,11 +162,13 @@ The instruction set includes:
 - **Bitwise**: `BAND`, `BOR`, `BXOR`, `BNOT`, `BSL`, `BSR`
 - **Comparisons**: `LT`, `GT`, `LE`, `GE`, `EQ`, `NE`
 - **Logic**: `AND`, `OR`, `XOR`, `NOT`
-- **Control Flow**: `JMP`, `RJMP`, `JEQ`, `JNE`, `JGT`, `JGE`, `JIF`
+- **Control Flow**: `JMP`, `RJMP`, `JEQ`, `RJEQ`, `JNE`, `RJNE`, `JGT`, `RJGT`, `JGE`, `RJGE`, `JLT`, `RJLT`, `JLE`, `RJLE`, `JIF`, `RJIF`, `NOOP`, `EXIT`
 - **Functions**: `CALL`, `RCALL`, `RET`
 - **Stack**: `PUSH`, `POP`, `SEMP`
 - **I/O**: `NOUT`, `COUT`, `NIN`, `CIN`, `STRIN`, `STROUT`, `SNIN`, `SCIN`, `SSTRIN`
 - **Data Movement**: `CP`
+- **Utility**: `NEXT`, `RND`, `RINT`
+- **Debug**: `BRK`, `BRKD`
 
 Users can easily define their own custom instructions by subclassing `dt31.instructions.Instruction`.
 
