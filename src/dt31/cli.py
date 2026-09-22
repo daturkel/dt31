@@ -229,6 +229,7 @@ import sys
 import traceback
 from datetime import datetime
 from pathlib import Path
+from typing import cast
 
 from dt31 import DT31
 from dt31.assembler import extract_registers_from_program
@@ -459,7 +460,7 @@ def run_command(args: argparse.Namespace) -> None:
     except FileNotFoundError:
         print(f"Error: File not found: {args.file}", file=sys.stderr)
         sys.exit(1)
-    except IOError as e:
+    except OSError as e:
         print(f"Error reading file {args.file}: {e}", file=sys.stderr)
         sys.exit(1)
 
@@ -643,7 +644,7 @@ def to_python_command(args: argparse.Namespace) -> None:
     except FileNotFoundError:
         print(f"Error: File not found: {args.file}", file=sys.stderr)
         sys.exit(1)
-    except IOError as e:
+    except OSError as e:
         print(f"Error reading file {args.file}: {e}", file=sys.stderr)
         sys.exit(1)
 
@@ -683,7 +684,7 @@ def to_python_command(args: argparse.Namespace) -> None:
     if args.output:
         try:
             Path(args.output).write_text(python_source)
-        except IOError as e:
+        except OSError as e:
             print(f"Error writing to {args.output}: {e}", file=sys.stderr)
             sys.exit(1)
         print(f"✓ Wrote {args.output}", file=sys.stderr)
@@ -745,7 +746,7 @@ def check_command(args: argparse.Namespace) -> None:
             print(f"Error: File not found: {display_path}", file=sys.stderr)
             failed_files.append(file_path_str)
             continue
-        except IOError as e:
+        except OSError as e:
             print(f"Error reading file {display_path}: {e}", file=sys.stderr)
             failed_files.append(file_path_str)
             continue
@@ -932,7 +933,7 @@ def _format_single_file(
     except FileNotFoundError:
         print(f"Error: File not found: {file_path}", file=sys.stderr)
         sys.exit(1)
-    except IOError as e:
+    except OSError as e:
         print(f"Error reading file {file_path}: {e}", file=sys.stderr)
         sys.exit(1)
 
@@ -985,7 +986,7 @@ def _format_single_file(
         try:
             path.write_text(formatted_text)
             print(f"✓ Formatted {file_path}", file=sys.stderr)
-        except IOError as e:
+        except OSError as e:
             print(f"Error writing to {file_path}: {e}", file=sys.stderr)
             sys.exit(1)
     else:
@@ -1155,7 +1156,7 @@ def generate_dump_path(program_file: str, user_path: str | None, suffix: str) ->
 
     # Auto-generate filename from program name
     program_name = Path(program_file).stem
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")  # noqa: DTZ005 (local time)
     return f"{program_name}_{suffix}_{timestamp}.json"
 
 
@@ -1194,8 +1195,7 @@ def dump_cpu_state(cpu: DT31, file_path: str, error: Exception | None = None) ->
                     "repr": repr(instruction),
                     "str": str(instruction),
                 }
-        except Exception:
-            # If we can't get the instruction, don't fail the dump
+        except Exception:  # noqa: S110 (a failed dump is worse than a partial one)
             pass
 
         dump_data["error"] = error_info
@@ -1267,7 +1267,7 @@ def load_custom_instructions(file_path: str) -> dict[str, type[Instruction]]:
             f"Found attributes: {', '.join(dir(module))}"
         )
 
-    instructions = getattr(module, "INSTRUCTIONS")
+    instructions = module.INSTRUCTIONS
     if not isinstance(instructions, dict):
         raise TypeError(
             f"INSTRUCTIONS must be a dict, got {type(instructions).__name__}"
@@ -1281,7 +1281,8 @@ def load_custom_instructions(file_path: str) -> dict[str, type[Instruction]]:
                 f"Instruction '{name}' must be a subclass of Instruction, got {cls}"
             )
 
-    return instructions
+    # The loop above checks every value; keys come from a module namespace.
+    return cast("dict[str, type[Instruction]]", instructions)
 
 
 if __name__ == "__main__":

@@ -35,7 +35,7 @@ def test_no_ip_register():
 
 def test_set_registers():
     cpu = DT31(registers=["a", "d", "xy"])
-    assert set(cpu.registers.keys()) == set(["a", "d", "xy", "ip"])
+    assert set(cpu.registers.keys()) == {"a", "d", "xy", "ip"}
 
 
 def test_cpu_validates_register_names():
@@ -96,10 +96,10 @@ def test_get_set(cpu):
 
 
 def test_get_set_invalid_type(cpu):
-    with pytest.raises(ValueError) as e:
+    with pytest.raises(TypeError) as e:
         cpu[L[1]]
     assert "can't get item with type" in str(e.value)
-    with pytest.raises(ValueError) as e:
+    with pytest.raises(TypeError) as e:
         cpu[L[1]] = 2
     assert "can't get item with type" in str(e.value)
 

@@ -1347,6 +1347,7 @@ def test_program_to_python_generated_file_executes_correctly(tmp_path, source):
         [sys.executable, str(py_file)],
         capture_output=True,
         text=True,
+        check=False,
     )
     assert result.returncode == 0, result.stderr
     assert result.stdout == expected.getvalue()
