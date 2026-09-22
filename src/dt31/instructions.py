@@ -26,7 +26,9 @@ def _prompted_input(prompt: str = INPUT_PROMPT) -> str:
 
     `input(prompt)` writes its prompt to stdout, which pollutes program output
     (especially when it's redirected or piped). Writing the prompt to stderr
-    ourselves and calling `input()` with no argument keeps stdout clean.
+    ourselves and calling `input()` with no argument keeps stdout clean. The
+    prompt is only written when stdin is an interactive terminal, so piping a
+    file into a program with many reads doesn't spam stderr with prompts.
 
     Args:
         prompt: The prompt text to display. Defaults to `INPUT_PROMPT`.
@@ -34,8 +36,9 @@ def _prompted_input(prompt: str = INPUT_PROMPT) -> str:
     Returns:
         str: The line read from stdin (without the trailing newline).
     """
-    sys.stderr.write(prompt)
-    sys.stderr.flush()
+    if sys.stdin.isatty():
+        sys.stderr.write(prompt)
+        sys.stderr.flush()
     return input()
 
 

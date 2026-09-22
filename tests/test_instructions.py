@@ -558,6 +558,20 @@ def test_nin(cpu, monkeypatch):
     assert cpu.get_register("a") == 31
 
 
+def test_prompted_input_tty(cpu, monkeypatch, capsys):
+    monkeypatch.setattr("sys.stdin.isatty", lambda: True)
+    monkeypatch.setattr("builtins.input", lambda: "31")
+    assert I.NIN(R.a)(cpu) == 31
+    assert capsys.readouterr().err == I.INPUT_PROMPT
+
+
+def test_prompted_input_not_tty(cpu, monkeypatch, capsys):
+    monkeypatch.setattr("sys.stdin.isatty", lambda: False)
+    monkeypatch.setattr("builtins.input", lambda: "31")
+    assert I.NIN(R.a)(cpu) == 31
+    assert capsys.readouterr().err == ""
+
+
 def test_snin_success(cpu, monkeypatch):
     assert repr(I.SNIN(M[10], R.b)) == "SNIN(out=M[10], status=R.b)"
     assert str(I.SNIN(M[10], R.b)) == "SNIN [10], R.b"
