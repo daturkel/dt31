@@ -1201,6 +1201,16 @@ def test_next_wraps_around_when_enabled():
     assert cpu_wrap.get_register("a") == 2
 
 
+def test_next_wraps_around_finds_nothing():
+    # wrap_memory enabled, but no zero anywhere in memory
+    cpu_wrap = DT31(wrap_memory=True)
+    for i in range(cpu_wrap.memory_size):
+        cpu_wrap.set_memory(i, 100)
+
+    I.NEXT(10, R.a)(cpu_wrap)
+    assert cpu_wrap.get_register("a") == -1
+
+
 def test_next_no_wrap_returns_negative_one(cpu):
     # Put zero at index 5, but start searching from index 10
     cpu.set_memory(5, 0)

@@ -996,6 +996,25 @@ def test_dump_on_error_includes_traceback(temp_dt_file, tmp_path, capsys):
     assert len(dump_data["error"]["traceback"]) > 0
 
 
+def test_dump_cpu_state_no_program_loaded(tmp_path):
+    """dump_cpu_state with no instructions loaded omits the instruction field."""
+    from dt31 import DT31
+    from dt31.cli import dump_cpu_state
+
+    cpu = DT31()
+    dump_path = tmp_path / "empty_crash.json"
+
+    dump_cpu_state(cpu, str(dump_path), error=ValueError("boom"))
+
+    import json
+
+    with open(dump_path) as f:
+        dump_data = json.load(f)
+
+    assert dump_data["error"]["type"] == "ValueError"
+    assert "instruction" not in dump_data["error"]
+
+
 def test_dump_on_error_write_failure(temp_dt_file, tmp_path, capsys):
     """Test handling of write failure when dumping crash state."""
     assembly = """
