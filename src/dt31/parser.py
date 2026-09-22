@@ -318,9 +318,19 @@ def parse_operand(token: str) -> Operand | Label:
             reg_name = m.group(1)
             return getattr(R, reg_name)
 
+        # Looks like a memory reference or register but didn't match in full
+        case str() if token.startswith(("[", "M[")):
+            raise ParserError(f"Invalid memory reference '{token}'.")
+
+        case str() if token.startswith("R."):
+            raise ParserError(f"Invalid register reference '{token}'.")
+
         # Numeric literal: 42 or -5
         case str() if token.lstrip("-").isdigit():
-            return L[int(token)]
+            try:
+                return L[int(token)]
+            except ValueError:
+                raise ParserError(f"Invalid numeric literal '{token}'.")
 
         # Bare identifier: always treated as a label
         # Registers must use R.name syntax
@@ -343,5 +353,5 @@ TOKEN_PATTERN = re.compile(
     """,
     re.VERBOSE,
 )
-MEMORY_PATTERN = re.compile(r"M?\[(.+)\]")
-REGISTER_PREFIX_PATTERN = re.compile(r"R\.(\w+)")
+MEMORY_PATTERN = re.compile(r"M?\[(.+)\]\Z")
+REGISTER_PREFIX_PATTERN = re.compile(r"R\.(\w+)\Z")

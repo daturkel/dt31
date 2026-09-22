@@ -135,6 +135,13 @@ def test_memory_pattern_no_match():
     assert MEMORY_PATTERN.match("'A'") is None
 
 
+def test_memory_pattern_rejects_trailing_characters():
+    """Test that the pattern is anchored at both ends."""
+    assert MEMORY_PATTERN.match("[1]junk") is None
+    assert MEMORY_PATTERN.match("M[1]junk") is None
+    assert MEMORY_PATTERN.match("[R.a] ") is None
+
+
 # --------------------------------- Register pattern --------------------------------- #
 
 
@@ -173,6 +180,13 @@ def test_register_pattern_no_match():
     assert REGISTER_PREFIX_PATTERN.match("100") is None
     assert REGISTER_PREFIX_PATTERN.match("M[100]") is None
     assert REGISTER_PREFIX_PATTERN.match("'A'") is None
+
+
+def test_register_pattern_rejects_trailing_characters():
+    """Test that the pattern is anchored at both ends."""
+    assert REGISTER_PREFIX_PATTERN.match("R.a-b") is None
+    assert REGISTER_PREFIX_PATTERN.match("R.a.c") is None
+    assert REGISTER_PREFIX_PATTERN.match("R.a!") is None
 
 
 # --------------------------------- _find_unquoted -------------------------------- #
@@ -964,6 +978,30 @@ def test_empty_comment():
     program = parse_program(text)
 
     assert program[0].comment == ""
+
+
+@pytest.mark.parametrize(
+    "token",
+    ["[1]junk", "M[1]junk", "[", "M[1", "[1]]extra"],
+)
+def test_malformed_memory_reference_raises(token):
+    """Test that a token that looks like a memory reference must be one."""
+    with pytest.raises(ParserError, match="Invalid memory reference"):
+        parse_program(f"CP 5, {token}")
+
+
+@pytest.mark.parametrize("token", ["R.a-b", "R.a.c", "R.a!", "R."])
+def test_malformed_register_reference_raises(token):
+    """Test that a token that looks like a register reference must be one."""
+    with pytest.raises(ParserError, match="Invalid register reference"):
+        parse_program(f"CP 5, {token}")
+
+
+@pytest.mark.parametrize("token", ["--5", "---1"])
+def test_malformed_numeric_literal_raises(token):
+    """Test that a malformed numeric literal raises ParserError, not ValueError."""
+    with pytest.raises(ParserError, match="Invalid numeric literal"):
+        parse_program(f"CP {token}, R.a")
 
 
 def test_semicolon_character_literal():
