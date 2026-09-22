@@ -73,7 +73,7 @@ def test_as_op():
     o3 = as_op(R.a)
     assert isinstance(o3, RegisterReference)
     assert o3.register == "a"
-    with pytest.raises(ValueError):
+    with pytest.raises(TypeError):
         as_op("asd")  # type: ignore
 
 
@@ -232,12 +232,12 @@ def test_label_equality():
 def test_register_name_validation_valid():
     """Test that valid register names are accepted."""
     # Valid identifiers
-    R.a
-    R.b
-    R.my_register
-    R.reg123
-    R._private
-    R.CamelCase
+    assert R.a.register == "a"
+    assert R.b.register == "b"
+    assert R.my_register.register == "my_register"
+    assert R.reg123.register == "reg123"
+    assert R._private.register == "_private"
+    assert R.CamelCase.register == "CamelCase"
 
     # Direct construction
     RegisterReference("valid_name")

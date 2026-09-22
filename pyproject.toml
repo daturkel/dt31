@@ -48,3 +48,22 @@ dev = [
     "pdoc>=14.7.0",
     "prek>=0.2.13",
 ]
+
+[tool.ruff.lint]
+# Ruff 0.16 dropped most of pycodestyle from its default rule set, including E402
+# (import not at top of file), E711 and E712 (`== None`, `== True`), E721
+# (`type(x) == type(y)`) and E741 (ambiguous names `l`, `I`, `O`) — all worth keeping
+# on their own merits.
+extend-select = ["E"]
+# E501: line length, already enforced by the formatter.
+ignore = ["E501"]
+
+[tool.ruff.lint.per-file-ignores]
+# BLE001 (`except Exception`): top-level command handlers catch everything so the CLI
+# can print a message and exit.
+"src/dt31/cli.py" = ["BLE001"]
+# BLE001 (`except Exception`): runs standalone against a built wheel, reporting each
+# check as pass or fail.
+"tests/smoke_test.py" = ["BLE001"]
+# S102 (`exec` detected): exercises the documented custom-instruction loader.
+"tests/test_formatter.py" = ["S102"]

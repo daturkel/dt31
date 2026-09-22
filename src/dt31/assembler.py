@@ -1,7 +1,7 @@
 from copy import deepcopy
 
 from dt31.exceptions import AssemblyError
-from dt31.instructions import Instruction, RelativeJumpMixin
+from dt31.instructions import Instruction, Jump, RelativeJumpMixin
 from dt31.operands import (
     Label,
     MemoryReference,
@@ -95,7 +95,7 @@ def assemble(
 
     # Second pass to replace label references
     for ip, inst in enumerate(new_program):
-        if hasattr(inst, "dest") and isinstance(inst.dest, Label):
+        if isinstance(inst, Jump) and isinstance(inst.dest, Label):
             try:
                 target_ip = label_to_ip[inst.dest.name]
             except KeyError:

@@ -13,7 +13,6 @@ from typing import Literal
 
 from dt31.assembler import extract_registers_from_program
 from dt31.instructions import Instruction, Jump, RelativeJumpMixin
-from dt31.operands import Literal as OperandLiteral
 from dt31.operands import (
     Label,
     MemoryReference,
@@ -21,6 +20,7 @@ from dt31.operands import (
     RegisterReference,
     validate_register_name,
 )
+from dt31.operands import Literal as OperandLiteral
 from dt31.parser import BlankLine, Comment
 
 

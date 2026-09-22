@@ -256,7 +256,7 @@ class NullaryOperation(Instruction):
         """
         super().__init__(name)
         if not isinstance(out, Reference):
-            raise ValueError("argument `out` must be a Reference")
+            raise TypeError("argument `out` must be a Reference")
         self.out = out
 
     def __call__(self, cpu: DT31) -> int:
@@ -283,13 +283,13 @@ class UnaryOperation(Instruction):
         super().__init__(name)
         self.a = as_op(a)
         if not isinstance(out, (type(None), Reference)):
-            raise ValueError("argument `out` must be a Reference or None")
+            raise TypeError("argument `out` must be a Reference or None")
         if out is not None:
             self.out = out
         elif isinstance(self.a, Reference):
             self.out = self.a
         else:
-            raise ValueError(
+            raise TypeError(
                 f"{self.name} must be called with a reference as operand `out` or a reference as operand `a`"
             )
 
@@ -340,13 +340,13 @@ class BinaryOperation(Instruction):
         self.a = as_op(a)
         self.b = as_op(b)
         if not isinstance(out, (type(None), Reference)):
-            raise ValueError("argument `out` must be a Reference or None")
+            raise TypeError("argument `out` must be a Reference or None")
         if isinstance(out, Reference):
             self.out = out
         elif isinstance(self.a, Reference):
             self.out = self.a
         else:
-            raise ValueError(
+            raise TypeError(
                 f"{self.name} must be called with a reference as operand `out` or a reference as operand `a`"
             )
 
@@ -1306,7 +1306,7 @@ class POP(Instruction):
         """
         super().__init__("POP")
         if not isinstance(out, (type(None), Reference)):
-            raise ValueError("argument `out` must be a Reference or None")
+            raise TypeError("argument `out` must be a Reference or None")
         self.out = out
 
     def _calc(self, cpu: DT31) -> int:
@@ -1355,7 +1355,7 @@ class CP(Instruction):
         super().__init__("CP")
         self.a = as_op(a)
         if not isinstance(b, Reference):
-            raise ValueError("argument `b` must be a Reference")
+            raise TypeError("argument `b` must be a Reference")
         self.b = b
 
     def _calc(self, cpu: DT31) -> int:
@@ -1465,7 +1465,7 @@ class NIN(Instruction):
         super().__init__("NIN")
         self.is_blocking = True
         if not isinstance(out, Reference):
-            raise ValueError("argument `out` must be a Reference")
+            raise TypeError("argument `out` must be a Reference")
         self.out = out
 
     def _calc(self, cpu: DT31) -> int:
@@ -1503,9 +1503,9 @@ class SNIN(Instruction):
         super().__init__("SNIN")
         self.is_blocking = True
         if not isinstance(out, Reference):
-            raise ValueError("argument `out` must be a Reference")
+            raise TypeError("argument `out` must be a Reference")
         if not isinstance(status, Reference):
-            raise ValueError("argument `status` must be a Reference")
+            raise TypeError("argument `status` must be a Reference")
         self.out = out
         self.status = status
 
@@ -1544,7 +1544,7 @@ class CIN(Instruction):
         super().__init__("CIN")
         self.is_blocking = True
         if not isinstance(out, Reference):
-            raise ValueError("argument `out` must be a Reference")
+            raise TypeError("argument `out` must be a Reference")
         self.out = out
 
     def _calc(self, cpu: DT31) -> int:
@@ -1585,9 +1585,9 @@ class SCIN(Instruction):
         super().__init__("SCIN")
         self.is_blocking = True
         if not isinstance(out, Reference):
-            raise ValueError("argument `out` must be a Reference")
+            raise TypeError("argument `out` must be a Reference")
         if not isinstance(status, Reference):
-            raise ValueError("argument `status` must be a Reference")
+            raise TypeError("argument `status` must be a Reference")
         self.out = out
         self.status = status
 
@@ -1627,7 +1627,7 @@ class STRIN(Instruction):
         super().__init__("STRIN")
         self.is_blocking = True
         if not isinstance(out, MemoryReference):
-            raise ValueError(
+            raise TypeError(
                 f"STRIN can only be used with a memory reference, got {out}"
             )
         self.out = out
@@ -1676,7 +1676,7 @@ class SSTRIN(Instruction):
         super().__init__("SSTRIN")
         self.is_blocking = True
         if not isinstance(out, MemoryReference):
-            raise ValueError(
+            raise TypeError(
                 f"SSTRIN can only be used with a memory reference, got {out}"
             )
         self.out = out
@@ -1724,9 +1724,7 @@ class STROUT(Instruction):
         """
         super().__init__("STROUT")
         if not isinstance(a, MemoryReference):
-            raise ValueError(
-                f"STROUT can only be used with a memory reference, got {a}"
-            )
+            raise TypeError(f"STROUT can only be used with a memory reference, got {a}")
         self.a = a
         self.b = as_op(b)
 
@@ -1783,7 +1781,7 @@ class NEXT(Instruction):
         super().__init__("NEXT")
         self.a = as_op(a)
         if not isinstance(out, Reference):
-            raise ValueError("argument `out` must be a Reference")
+            raise TypeError("argument `out` must be a Reference")
         self.out = out
 
     def _calc(self, cpu: DT31) -> int:

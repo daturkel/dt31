@@ -142,8 +142,6 @@ class L(metaclass=_MetaLiteral):
         L[0]   # Creates Literal(0)
     """
 
-    pass
-
 
 class _MetaCharLiteral(type):
     """Metaclass enabling bracket syntax for creating character Literal operands."""
@@ -172,8 +170,6 @@ class LC(metaclass=_MetaCharLiteral):
         LC['A']  # Creates Literal(65)
         LC['z']  # Creates Literal(122)
     """
-
-    pass
 
 
 class MemoryReference(Operand):
@@ -246,8 +242,6 @@ class M(metaclass=_MetaMemory):
         M[R.a]      # Indirect memory access using register 'a' as address
         M[M[50]]    # Double indirect addressing
     """
-
-    pass
 
 
 def validate_register_name(name: str) -> None:
@@ -368,8 +362,6 @@ class R(metaclass=_MetaRegister):
         R.123       # SyntaxError - identifiers cannot start with digits
     """
 
-    pass
-
 
 Reference = RegisterReference | MemoryReference
 
@@ -386,14 +378,14 @@ def as_op(arg: int | Operand):
         An Operand instance (either the input operand or a new Literal).
 
     Raises:
-        ValueError: If the argument cannot be coerced into an operand.
+        TypeError: If the argument cannot be coerced into an operand.
     """
     if isinstance(arg, Operand):
         return arg
     elif isinstance(arg, int):
         return Literal(arg)
     else:
-        raise ValueError(f"can't coerce value {arg} into operand")
+        raise TypeError(f"can't coerce value {arg} into operand")
 
 
 class Label:

@@ -208,13 +208,12 @@ def parse_program(
                 labels_found.append(label_name)
 
         # Add all found labels to program
-        for label_name in labels_found:
-            label = Label(label_name)
-            program.append(label)
+        labels = [Label(label_name) for label_name in labels_found]
+        program.extend(labels)
 
         # Attach comment only to the last label (if any labels were found)
-        if comment_text and labels_found:
-            program[-1].comment = comment_text
+        if comment_text and labels:
+            labels[-1].comment = comment_text
 
         if not line:
             continue
@@ -244,7 +243,7 @@ def parse_program(
         # Type checker can't verify operand types for dynamically looked up instructions.
         # Labels are valid for jump/call instructions (Destination = Label | Operand | int).
         try:
-            instruction = inst_func(*operands)  # type: ignore[arg-type]
+            instruction = inst_func(*operands)  # ty: ignore[invalid-argument-type]
         except (TypeError, ValueError) as e:
             raise ParserError(
                 f"Line {line_num}: Error creating instruction '{inst_name}': {e}"
@@ -289,7 +288,7 @@ def parse_operand(token: str) -> Operand | Label:
             try:
                 # Use 'unicode_escape' to handle common escape sequences
                 decoded_char = char.encode().decode("unicode_escape")
-            except Exception as e:
+            except Exception as e:  # noqa: BLE001 (`except Exception`) - any decode failure is a ParserError
                 raise ParserError(
                     f"Invalid escape sequence in character literal {token}: {e}"
                 )

@@ -12,14 +12,17 @@ repos:
       - id: check-toml
   - repo: https://github.com/astral-sh/ruff-pre-commit
     # Ruff version.
-    rev: v0.14.4
+    rev: v0.16.8
     hooks:
       - id: ruff-check
         args: [--fix]
       - id: ruff-format
+        # The hook covers Markdown as of v0.16; the README's snippets are
+        # hand-laid-out and the formatter undoes that.
+        exclude: \.md$
   - repo: https://github.com/astral-sh/uv-pre-commit
     # uv version.
-    rev: 0.9.8
+    rev: 0.12.17
     hooks:
       - id: uv-lock
   - repo: local
@@ -42,7 +45,7 @@ repos:
         stages: [pre-push]
       - id: ty
         name: Run type checks with ty
-        entry: uvx --with ty==0.0.1-alpha.26 ty check src/dt31
+        entry: uvx --with ty==0.0.83 ty check src/dt31
         language: system
         pass_filenames: false
         stages: [pre-push]

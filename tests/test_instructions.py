@@ -43,7 +43,7 @@ def test_nullary_operation_writes_register(cpu):
 
 
 def test_nullary_operation_validates_types(cpu):
-    with pytest.raises(ValueError) as e1:
+    with pytest.raises(TypeError) as e1:
         I.RND(L[1])  # type: ignore
     assert str(e1.value).endswith("must be a Reference")
 
@@ -71,10 +71,10 @@ def test_unary_operation_writes_register(cpu):
 
 
 def test_unary_operation_validates_types(cpu):
-    with pytest.raises(ValueError) as e1:
+    with pytest.raises(TypeError) as e1:
         I.BNOT(1, L[1])  # type: ignore
     assert "must be a Reference or None" in str(e1.value)
-    with pytest.raises(ValueError) as e2:
+    with pytest.raises(TypeError) as e2:
         I.BNOT(1)  # type: ignore
     assert "must be called with a reference as" in str(e2.value)
 
@@ -114,10 +114,10 @@ def test_binary_operation_writes_register(cpu):
 
 
 def test_binary_operation_validates_types(cpu):
-    with pytest.raises(ValueError) as e1:
+    with pytest.raises(TypeError) as e1:
         I.ADD(1, 1, L[1])  # type: ignore
     assert "must be a Reference or None" in str(e1.value)
-    with pytest.raises(ValueError) as e2:
+    with pytest.raises(TypeError) as e2:
         I.ADD(1, 1)
     assert "must be called with a reference as" in str(e2.value)
 
@@ -509,7 +509,7 @@ def test_cp(cpu):
 
 
 def test_cp_validates_b_is_reference():
-    with pytest.raises(ValueError) as e:
+    with pytest.raises(TypeError) as e:
         I.CP(5, L[10])  # type: ignore
     assert "argument `b` must be a Reference" in str(e.value)
 
@@ -1045,7 +1045,7 @@ def test_strin(cpu, monkeypatch):
     for i, char in enumerate("Foobar"):
         assert chr(cpu.get_memory(10 + i)) == char
     assert cpu.get_memory(11 + i) == 0
-    with pytest.raises(ValueError) as e:
+    with pytest.raises(TypeError) as e:
         I.STRIN(1)  # type: ignore
     assert str(e.value).endswith("got 1")
 
@@ -1103,7 +1103,7 @@ def test_sstrin_success(cpu, monkeypatch):
         assert chr(cpu.get_memory(10 + i)) == char
     assert cpu.get_memory(16) == 0
     assert cpu.get_register("b") == 1
-    with pytest.raises(ValueError) as e:
+    with pytest.raises(TypeError) as e:
         I.SSTRIN(1, R.b)  # type: ignore
     assert str(e.value).endswith("got 1")
 
@@ -1141,7 +1141,7 @@ def test_sstrin_eof(cpu, monkeypatch):
 
 
 def test_strout_no_newline(cpu, capsys):
-    with pytest.raises(ValueError) as e:
+    with pytest.raises(TypeError) as e:
         I.STROUT(1)  # type: ignore
     assert str(e.value).endswith("got 1")
     assert repr(I.STROUT(M[0])) == "STROUT(a=M[0], b=0)"
@@ -1248,6 +1248,6 @@ def test_next_representations():
 )
 def test_output_operand_must_be_a_reference(factory, argument):
     """Test that instructions writing to an operand reject non-References."""
-    with pytest.raises(ValueError) as e:
+    with pytest.raises(TypeError) as e:
         factory()  # type: ignore[arg-type]
     assert f"argument `{argument}` must be a Reference" in str(e.value)

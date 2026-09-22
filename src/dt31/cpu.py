@@ -104,14 +104,14 @@ class DT31:
         """Time spent in waiting for blocking instructions in nanoseconds."""
 
     @property
-    def state(self):
+    def state(self) -> dict[str, int | list[int]]:
         """Get a dictionary representation of the CPU's current state.
 
         Returns:
             dict: Contains non-zero memory locations (M[addr]), all registers (R.name),
                 and the stack contents.
         """
-        state = {}
+        state: dict[str, int | list[int]] = {}
         for k, v in enumerate(self.memory):
             if v != 0:
                 state[f"M[{k}]"] = v
@@ -164,12 +164,12 @@ class DT31:
             int: The value at the specified location.
 
         Raises:
-            ValueError: If arg is not a MemoryReference or RegisterReference.
+            TypeError: If arg is not a MemoryReference or RegisterReference.
         """
         if isinstance(arg, (MemoryReference, RegisterReference)):
             return arg.resolve(self)
         else:
-            raise ValueError(f"can't get item with type {type(arg)}")
+            raise TypeError(f"can't get item with type {type(arg)}")
 
     def __setitem__(self, arg: Operand, value: int):
         """Set a value in memory or a register using operand syntax.
@@ -179,14 +179,14 @@ class DT31:
             value: The integer value to set.
 
         Raises:
-            ValueError: If arg is not a MemoryReference or RegisterReference.
+            TypeError: If arg is not a MemoryReference or RegisterReference.
         """
         if isinstance(arg, MemoryReference):
             self.set_memory(arg.resolve_address(self), value)
         elif isinstance(arg, RegisterReference):
             self.set_register(arg.register, value)
         else:
-            raise ValueError(f"can't get item with type {type(arg)}")
+            raise TypeError(f"can't get item with type {type(arg)}")
 
     def get_memory(self, index: int) -> int:
         """Get a value from memory at the specified index.
@@ -326,7 +326,7 @@ class DT31:
         """
         registers_used = extract_registers_from_program(program)
         # Filter out 'ip' from CPU registers for comparison (it's always present)
-        cpu_user_registers = [r for r in self.registers.keys() if r != "ip"]
+        cpu_user_registers = [r for r in self.registers if r != "ip"]
 
         missing = set(registers_used) - set(self.registers.keys())
         if missing:
@@ -485,7 +485,7 @@ class DT31:
                 raise ValueError(f"State dict missing required field: {field}")
 
         # Extract register names (excluding 'ip')
-        register_names = [r for r in state["registers"].keys() if r != "ip"]
+        register_names = [r for r in state["registers"] if r != "ip"]
 
         # Create CPU with same config
         cpu = cls(
