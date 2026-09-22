@@ -1811,8 +1811,8 @@ class BRK(Instruction):
 
     def _calc(self, cpu: DT31) -> int:
         # Print in debug format: instruction -> result, then state
-        print(f"{self.name} -> 0")
-        print(cpu.state)
+        print(f"{self.name} -> 0", file=sys.stderr)
+        print(cpu.state, file=sys.stderr)
         input()
         return 0
 
@@ -1825,8 +1825,8 @@ class BRKD(Instruction):
 
     def _calc(self, cpu: DT31) -> int:
         # Print in debug format: instruction -> result, then state
-        print(f"{self.name} -> 0")
-        print(cpu.state)
+        print(f"{self.name} -> 0", file=sys.stderr)
+        print(cpu.state, file=sys.stderr)
         # Switch to debug mode - run() will handle waiting for input
         cpu.debug_mode = True
         return 0

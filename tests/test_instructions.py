@@ -892,9 +892,10 @@ def test_brk_displays_state_and_waits(cpu, capsys, monkeypatch):
 
     # Check that state was printed (state is printed as dict representation)
     captured = capsys.readouterr()
-    assert "BRK -> 0" in captured.out
-    assert "'R.a': 42" in captured.out
-    assert "'M[10]': 100" in captured.out
+    assert captured.out == ""
+    assert "BRK -> 0" in captured.err
+    assert "'R.a': 42" in captured.err
+    assert "'M[10]': 100" in captured.err
 
     # Check IP advanced
     assert cpu.get_register("ip") == 1
@@ -915,9 +916,10 @@ def test_brk_in_program(cpu, capsys, monkeypatch):
     cpu.run(program)
 
     captured = capsys.readouterr()
-    # Should see BRK output
-    assert "BRK -> 0" in captured.out
-    # Should see final output
+    # BRK output should go to stderr, not stdout
+    assert "BRK -> 0" in captured.err
+    assert "BRK -> 0" not in captured.out
+    # Should see final output on stdout
     assert "6" in captured.out
 
 
@@ -944,15 +946,16 @@ def test_brkd_switches_to_debug_mode(cpu, capsys, monkeypatch):
 
     captured = capsys.readouterr()
 
-    # Should see BRKD output
-    assert "BRKD -> 0" in captured.out
+    # Should see BRKD output on stderr, not stdout
+    assert "BRKD -> 0" in captured.err
+    assert "BRKD -> 0" not in captured.out
 
-    # Should see debug output for instructions after BRKD
-    assert "ADD(a=R.a, b=1, out=R.a) -> 2" in captured.out
-    assert "ADD(a=R.a, b=1, out=R.a) -> 3" in captured.out
-    assert "NOUT(a=R.a, b=1) -> 0" in captured.out
+    # Should see debug output for instructions after BRKD on stderr
+    assert "ADD(a=R.a, b=1, out=R.a) -> 2" in captured.err
+    assert "ADD(a=R.a, b=1, out=R.a) -> 3" in captured.err
+    assert "NOUT(a=R.a, b=1) -> 0" in captured.err
 
-    # Should see final output
+    # Should see final output on stdout
     assert "3" in captured.out
 
     # Verify input was called for BRKD and each subsequent instruction

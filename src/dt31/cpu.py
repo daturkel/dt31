@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import sys
 import time
 from collections import deque
 from typing import TYPE_CHECKING
@@ -425,8 +426,8 @@ class DT31:
             output_str = repr(instruction) + " -> " + str(output)
             if hasattr(instruction, "comment") and instruction.comment:
                 output_str += f"  ; {instruction.comment}"
-            print(output_str)
-            print(self.state)
+            print(output_str, file=sys.stderr)
+            print(self.state, file=sys.stderr)
 
     def dump(self) -> dict:
         """Serialize complete CPU state for later resumption.
