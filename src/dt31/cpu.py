@@ -104,14 +104,14 @@ class DT31:
         """Time spent in waiting for blocking instructions in nanoseconds."""
 
     @property
-    def state(self):
+    def state(self) -> dict[str, int | list[int]]:
         """Get a dictionary representation of the CPU's current state.
 
         Returns:
             dict: Contains non-zero memory locations (M[addr]), all registers (R.name),
                 and the stack contents.
         """
-        state = {}
+        state: dict[str, int | list[int]] = {}
         for k, v in enumerate(self.memory):
             if v != 0:
                 state[f"M[{k}]"] = v

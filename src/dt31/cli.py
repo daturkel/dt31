@@ -229,7 +229,7 @@ import sys
 import traceback
 from datetime import datetime
 from pathlib import Path
-from typing import cast
+from typing import Any, cast
 
 from dt31 import DT31
 from dt31.assembler import extract_registers_from_program
@@ -475,7 +475,7 @@ def run_command(args: argparse.Namespace) -> None:
     registers_used = extract_registers_from_program(program)
 
     # Create CPU with custom configuration
-    cpu_kwargs = {}
+    cpu_kwargs: dict[str, Any] = {}
     if args.memory is not None:
         cpu_kwargs["memory_size"] = args.memory
     if args.stack_size is not None:
@@ -525,7 +525,7 @@ def run_command(args: argparse.Namespace) -> None:
             # Print registers (keys starting with R.)
             registers = {k: v for k, v in state.items() if k.startswith("R.")}
             print(f"  Registers: {registers}", file=sys.stderr)
-            print(f"  Stack size: {len(state['stack'])}", file=sys.stderr)
+            print(f"  Stack size: {len(cpu.stack)}", file=sys.stderr)
 
         # Dump CPU state to file if requested
         if args.dump in ("error", "all"):
