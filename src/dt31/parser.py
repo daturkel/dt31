@@ -289,7 +289,7 @@ def parse_operand(token: str) -> Operand | Label:
             try:
                 # Use 'unicode_escape' to handle common escape sequences
                 decoded_char = char.encode().decode("unicode_escape")
-            except Exception as e:  # noqa: BLE001
+            except Exception as e:  # noqa: BLE001 (`except Exception`) - any decode failure is a ParserError
                 raise ParserError(
                     f"Invalid escape sequence in character literal {token}: {e}"
                 )

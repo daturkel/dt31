@@ -50,16 +50,20 @@ dev = [
 ]
 
 [tool.ruff.lint]
-# Ruff 0.16 dropped most of pycodestyle from the default rule set. E402, E711, E712,
-# E721 and E741 are still worth having, and existing `noqa` comments depend on them.
+# Ruff 0.16 dropped most of pycodestyle from its default rule set. Re-select it for
+# E402 (import not at top of file), E711 and E712 (`== None`, `== True`), E721
+# (`type(x) == type(y)`) and E741 (ambiguous names `l`, `I`, `O`). Existing `noqa`
+# comments depend on these, and ruff deletes a `noqa` for a rule that isn't enabled.
 extend-select = ["E"]
-# Line length is the formatter's job.
+# E501: line length, already enforced by the formatter.
 ignore = ["E501"]
 
 [tool.ruff.lint.per-file-ignores]
-# Top-level command handlers catch everything so the CLI can print a message and exit.
+# BLE001 (`except Exception`): top-level command handlers catch everything so the CLI
+# can print a message and exit.
 "src/dt31/cli.py" = ["BLE001"]
-# Runs standalone against a built wheel, reporting each check as pass/fail.
+# BLE001 (`except Exception`): runs standalone against a built wheel, reporting each
+# check as pass or fail.
 "tests/smoke_test.py" = ["BLE001"]
-# Exercises the documented custom-instruction loader, which uses `exec`.
+# S102 (`exec` detected): exercises the documented custom-instruction loader.
 "tests/test_formatter.py" = ["S102"]

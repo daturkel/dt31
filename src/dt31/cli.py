@@ -1156,7 +1156,8 @@ def generate_dump_path(program_file: str, user_path: str | None, suffix: str) ->
 
     # Auto-generate filename from program name
     program_name = Path(program_file).stem
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")  # noqa: DTZ005 (local time)
+    # Local time, which is what reads right in a filename.
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")  # noqa: DTZ005 (naive datetime)
     return f"{program_name}_{suffix}_{timestamp}.json"
 
 
@@ -1195,7 +1196,7 @@ def dump_cpu_state(cpu: DT31, file_path: str, error: Exception | None = None) ->
                     "repr": repr(instruction),
                     "str": str(instruction),
                 }
-        except Exception:  # noqa: S110 (a failed dump is worse than a partial one)
+        except Exception:  # noqa: S110 (`try`-`except`-`pass`) - a failed dump beats no dump
             pass
 
         dump_data["error"] = error_info
