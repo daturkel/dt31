@@ -1606,7 +1606,7 @@ def test_format_align_comments(temp_dt_file, capsys):
     formatted = Path(file_path).read_text()
     # Both instructions are short enough to align at column 40
     # Check that comments are aligned (both at same column)
-    lines = [l for l in formatted.split("\n") if ";" in l]  # noqa: E741
+    lines = [line for line in formatted.split("\n") if ";" in line]
     comment_positions = [line.index(";") for line in lines]
 
     # All comments should be at the same position
@@ -1660,7 +1660,7 @@ def test_format_auto_align_comments(temp_dt_file, capsys):
     from pathlib import Path
 
     formatted = Path(file_path).read_text()
-    lines = [l for l in formatted.split("\n") if ";" in l]  # noqa: E741
+    lines = [line for line in formatted.split("\n") if ";" in line]
 
     # Both comments should be aligned at the same position
     comment_positions = [line.index(";") for line in lines]
@@ -1695,7 +1695,7 @@ def test_format_comment_margin(temp_dt_file, capsys):
     from pathlib import Path
 
     formatted = Path(file_path).read_text()
-    lines = [l for l in formatted.split("\n") if ";" in l]  # noqa: E741
+    lines = [line for line in formatted.split("\n") if ";" in line]
 
     # Comments should be aligned with margin of 4
     # Longest line is "    CP 6, R.b" = 13 chars
