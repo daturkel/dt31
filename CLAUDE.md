@@ -87,4 +87,4 @@ See [examples/custom_instructions.py](examples/custom_instructions.py) and [READ
 
 ## Roadmap
 
-See the [README.md](README.md) roadmap section for current priorities. When implementing roadmap items, discuss the approach before making significant architectural changes.
+Priorities are tracked as [GitHub issues](https://github.com/daturkel/dt31/issues), not in the README. When implementing a roadmap item, discuss the approach before making significant architectural changes.
