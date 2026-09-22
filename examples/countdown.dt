@@ -2,7 +2,7 @@
 ; Demonstrates basic loops and conditional jumps
 ; Run with: dt31 countdown.dt
 
-CP 5, R.a             ; Copy 5 into register a
+    CP 5, R.a         ; Copy 5 into register a
 loop:
     NOUT R.a, 1       ; Output register a with newline
     SUB R.a, 1        ; Decrement a

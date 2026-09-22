@@ -79,9 +79,9 @@ Create a file `hello.dt`
 
 ```nasm
 ; Output "Hi!"
-COUT 'H', 0
-COUT 'i', 0
-COUT '!', 0
+COUT 'H'
+COUT 'i'
+COUT '!'
 ```
 
 and run it with the `dt31` interpreter
@@ -123,16 +123,16 @@ Save as `count.dt` and run: `dt31 count.dt` to output `1 2 3 4 5 6 7 8 9 10`.
 CP 3, R.a           ; Counter: print 3 times
 print_loop:
     CALL greet      ; Call the greeting function
-    SUB R.a, 1.     ; R.a -= 1
+    SUB R.a, 1      ; R.a -= 1
     JGT print_loop, R.a, 0 ; loop if R.a > 0
 JMP end
 
 greet:
     ; Reusable greeting function
-    COUT 'H', 0
-    COUT 'i', 0
-    COUT '!', 0
-    COUT ' ', 0
+    COUT 'H'
+    COUT 'i'
+    COUT '!'
+    COUT ' '
     RET
 
 end:
@@ -485,7 +485,7 @@ The assembly text syntax differs from Python syntax:
 | Operand Type | Assembly Syntax | Python Syntax | Example |
 |--------------|---------------|-------------|---------|
 | **Numeric Literal** | `42`, `-5` | `L[42]`, `L[-5]` | `CP 42, R.a` |
-| **Character Literal** | `'A'` | `LC["A"]` | `COUT 'H', 0` |
+| **Character Literal** | `'A'` | `LC["A"]` | `COUT 'H'` |
 | **Register** | `R.a` | `R.a` | `ADD R.a, R.b` |
 | **Memory (direct)** | `[100]` or `M[100]` | `M[100]` | `CP 42, [100]` |
 | **Memory (indirect)** | `[R.a]` or `M[R.a]` | `M[R.a]` | `CP [R.a], R.b` |

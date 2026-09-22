@@ -15,7 +15,9 @@ def test(c, html=False, ci=False):
 @task
 def coverage_badge(c):
     """Generate coverage badge from coverage.xml"""
-    c.run("genbadge coverage -i coverage.xml -o coverage-badge.svg", pty=True)
+    # --local renders from genbadge's bundled template instead of the shields.io
+    # API, so the output doesn't change when that service retemplates its badges.
+    c.run("genbadge coverage -i coverage.xml -o coverage-badge.svg --local", pty=True)
 
 
 @task

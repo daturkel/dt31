@@ -41,7 +41,7 @@ build-backend = "uv_build"
 
 [dependency-groups]
 dev = [
-    "invoke==2.2.0",
+    "invoke==3.0.3",
     "pytest>=8.3.4",
     "pytest-cov>=5.0.0",
     "genbadge[coverage]>=1.1.0",

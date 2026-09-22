@@ -25,16 +25,16 @@ xo_in:
 
 ; x->X, o->O
 to_upper:
-    SUB R.a, 32  ; make x/o uppercase
+    SUB R.a, 32                 ; make x/o uppercase
 
 ; primary game loop
 game:
-    RJEQ 3, R.a, 'O' ; skip to CPU turn if player is O
+    RJEQ 3, R.a, 'O'            ; skip to CPU turn if player is O
     CALL player_turn
     CALL check_win
     CALL cpu_turn
     CALL check_win
-    JEQ game, R.a, 'X' ; restart loop if player is X
+    JEQ game, R.a, 'X'          ; restart loop if player is X
     CALL player_turn
     CALL check_win
     JMP game

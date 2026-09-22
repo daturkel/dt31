@@ -2,16 +2,16 @@
 ; Demonstrates character output
 ; Run with: dt31 hello.dt
 
-COUT 'H', 0
-COUT 'e', 0
-COUT 'l', 0
-COUT 'l', 0
-COUT 'o', 0
-COUT ' ', 0
-COUT 'W', 0
-COUT 'o', 0
-COUT 'r', 0
-COUT 'l', 0
-COUT 'd', 0
-COUT '!', 0
-COUT 10, 0    ; Newline character
+    COUT 'H'
+    COUT 'e'
+    COUT 'l'
+    COUT 'l'
+    COUT 'o'
+    COUT ' '
+    COUT 'W'
+    COUT 'o'
+    COUT 'r'
+    COUT 'l'
+    COUT 'd'
+    COUT '!'
+    COUT 10   ; Newline character

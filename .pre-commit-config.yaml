@@ -24,6 +24,11 @@ repos:
       - id: uv-lock
   - repo: local
     hooks:
+      - id: format-examples
+        name: Check example formatting
+        entry: uv run dt31 format --check --align-comments
+        language: system
+        files: ^examples/.*\.dt$
       - id: generate-docs
         name: Generate documentation
         entry: uv run inv docs
