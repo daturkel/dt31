@@ -474,7 +474,8 @@ INSTRUCTION operand1, operand2, operand3
 - Instructions are case-insensitive (`ADD`, `add`, and `Add` are all valid)
 - Register names and label names are case-*sensitive*
 - Operands are separated by commas (spaces around commas are optional)
-- Comments start with `;` and continue to end of line
+- Comments start with `;` and continue to end of line (a `;` inside a character
+  literal, as in `COUT ';'`, is not a comment)
 - Blank lines and indentation are ignored
 
 ### Operand Types

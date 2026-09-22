@@ -1227,3 +1227,27 @@ def test_next_representations():
     assert str(I.NEXT(5, R.a)) == "NEXT 5, R.a"
     assert repr(I.NEXT(M[10], M[20])) == "NEXT(a=M[10], out=M[20])"
     assert str(I.NEXT(M[10], M[20])) == "NEXT [10], [20]"
+
+
+# ---------------------------- output reference validation --------------------------- #
+
+
+@pytest.mark.parametrize(
+    ("factory", "argument"),
+    [
+        (lambda: I.POP(L[5]), "out"),
+        (lambda: I.SEMP(L[5]), "out"),
+        (lambda: I.NIN(L[5]), "out"),
+        (lambda: I.SNIN(L[5], R.a), "out"),
+        (lambda: I.SNIN(R.a, L[5]), "status"),
+        (lambda: I.CIN(L[5]), "out"),
+        (lambda: I.SCIN(L[5], R.a), "out"),
+        (lambda: I.SCIN(R.a, L[5]), "status"),
+        (lambda: I.NEXT(0, L[5]), "out"),
+    ],
+)
+def test_output_operand_must_be_a_reference(factory, argument):
+    """Test that instructions writing to an operand reject non-References."""
+    with pytest.raises(ValueError) as e:
+        factory()  # type: ignore[arg-type]
+    assert f"argument `{argument}` must be a Reference" in str(e.value)

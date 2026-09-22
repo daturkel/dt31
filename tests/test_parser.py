@@ -13,7 +13,7 @@ from dt31.parser import (
     BlankLine,
     Comment,
     ParserError,
-    _find_label_colon,
+    _find_unquoted,
     parse_operand,
     parse_program,
 )
@@ -135,6 +135,13 @@ def test_memory_pattern_no_match():
     assert MEMORY_PATTERN.match("'A'") is None
 
 
+def test_memory_pattern_rejects_trailing_characters():
+    """Test that the pattern is anchored at both ends."""
+    assert MEMORY_PATTERN.match("[1]junk") is None
+    assert MEMORY_PATTERN.match("M[1]junk") is None
+    assert MEMORY_PATTERN.match("[R.a] ") is None
+
+
 # --------------------------------- Register pattern --------------------------------- #
 
 
@@ -175,41 +182,53 @@ def test_register_pattern_no_match():
     assert REGISTER_PREFIX_PATTERN.match("'A'") is None
 
 
-# ------------------------------- _find_label_colon ------------------------------ #
+def test_register_pattern_rejects_trailing_characters():
+    """Test that the pattern is anchored at both ends."""
+    assert REGISTER_PREFIX_PATTERN.match("R.a-b") is None
+    assert REGISTER_PREFIX_PATTERN.match("R.a.c") is None
+    assert REGISTER_PREFIX_PATTERN.match("R.a!") is None
 
 
-def test_find_label_colon_simple():
-    """Test finding colon in simple cases."""
-    assert _find_label_colon("loop:") == 4
-    assert _find_label_colon("loop: CP 5, R.a") == 4
-    assert _find_label_colon("start: end: CP 1, R.a") == 5
+# --------------------------------- _find_unquoted -------------------------------- #
 
 
-def test_find_label_colon_no_colon():
-    """Test when no colon exists."""
-    assert _find_label_colon("CP 5, R.a") == -1
-    assert _find_label_colon("ADD R.a, R.b") == -1
+def test_find_unquoted_simple():
+    """Test finding the target character in simple cases."""
+    assert _find_unquoted("loop:", ":") == 4
+    assert _find_unquoted("loop: CP 5, R.a", ":") == 4
+    assert _find_unquoted("start: end: CP 1, R.a", ":") == 5
+    assert _find_unquoted("CP 5, R.a ; note", ";") == 10
 
 
-def test_find_label_colon_in_quotes():
-    """Test that colons inside quotes are ignored."""
-    assert _find_label_colon("COUT ':'") == -1
-    assert _find_label_colon("COUT ':', 0") == -1
-    assert _find_label_colon("loop: COUT ':'") == 4
+def test_find_unquoted_not_present():
+    """Test when the target character doesn't exist."""
+    assert _find_unquoted("CP 5, R.a", ":") == -1
+    assert _find_unquoted("ADD R.a, R.b", ":") == -1
+    assert _find_unquoted("ADD R.a, R.b", ";") == -1
 
 
-def test_find_label_colon_escaped_quote():
+def test_find_unquoted_in_quotes():
+    """Test that characters inside quotes are ignored."""
+    assert _find_unquoted("COUT ':'", ":") == -1
+    assert _find_unquoted("COUT ':', 0", ":") == -1
+    assert _find_unquoted("loop: COUT ':'", ":") == 4
+    assert _find_unquoted("COUT ';'", ";") == -1
+    assert _find_unquoted("COUT ';', 0  ; note", ";") == 13
+
+
+def test_find_unquoted_escaped_quote():
     """Test that escaped quotes are handled correctly."""
     # String '\'' contains an escaped quote, colon after should be found
-    assert _find_label_colon(r"COUT '\''") == -1
-    assert _find_label_colon(r"loop: COUT '\''") == 4
+    assert _find_unquoted(r"COUT '\''", ":") == -1
+    assert _find_unquoted(r"loop: COUT '\''", ":") == 4
 
 
-def test_find_label_colon_multiple_quotes():
+def test_find_unquoted_multiple_quotes():
     """Test with multiple quoted strings."""
-    assert _find_label_colon("COUT 'a', 'b'") == -1
-    assert _find_label_colon("loop: COUT 'a', 'b'") == 4
-    assert _find_label_colon("COUT ':', ':'") == -1
+    assert _find_unquoted("COUT 'a', 'b'", ":") == -1
+    assert _find_unquoted("loop: COUT 'a', 'b'", ":") == 4
+    assert _find_unquoted("COUT ':', ':'", ":") == -1
+    assert _find_unquoted("COUT ';', ';'", ";") == -1
 
 
 # --------------------------------- parse_operand -------------------------------- #
@@ -959,6 +978,64 @@ def test_empty_comment():
     program = parse_program(text)
 
     assert program[0].comment == ""
+
+
+@pytest.mark.parametrize(
+    "token",
+    ["[1]junk", "M[1]junk", "[", "M[1", "[1]]extra"],
+)
+def test_malformed_memory_reference_raises(token):
+    """Test that a token that looks like a memory reference must be one."""
+    with pytest.raises(ParserError, match="Invalid memory reference"):
+        parse_program(f"CP 5, {token}")
+
+
+@pytest.mark.parametrize("token", ["R.a-b", "R.a.c", "R.a!", "R."])
+def test_malformed_register_reference_raises(token):
+    """Test that a token that looks like a register reference must be one."""
+    with pytest.raises(ParserError, match="Invalid register reference"):
+        parse_program(f"CP 5, {token}")
+
+
+@pytest.mark.parametrize("token", ["--5", "---1"])
+def test_malformed_numeric_literal_raises(token):
+    """Test that a malformed numeric literal raises ParserError, not ValueError."""
+    with pytest.raises(ParserError, match="Invalid numeric literal"):
+        parse_program(f"CP {token}, R.a")
+
+
+def test_semicolon_character_literal():
+    """Test that a semicolon inside a character literal isn't read as a comment."""
+    program = parse_program("COUT ';', 1")
+
+    assert len(program) == 1
+    assert program[0].a == LC[";"]
+    assert program[0].comment == ""
+
+
+def test_semicolon_character_literal_with_comment():
+    """Test that a comment after a semicolon literal is still extracted."""
+    program = parse_program("COUT ';', 1  ; prints a semicolon")
+
+    assert program[0].a == LC[";"]
+    assert program[0].comment == "prints a semicolon"
+
+
+def test_semicolon_character_literal_after_label():
+    """Test a semicolon literal on a line that also defines a label."""
+    program = parse_program("loop: COUT ';', 0  ; note")
+
+    assert len(program) == 2
+    assert isinstance(program[0], Label)
+    assert program[1].a == LC[";"]
+    assert program[1].comment == "note"
+
+
+def test_semicolon_character_literal_round_trips():
+    """Test that a semicolon literal survives a text round trip."""
+    program = parse_program("COUT ';', 1  ; prints a semicolon")
+
+    assert parse_program(program_to_text(program)) == program
 
 
 def test_label_and_instruction_same_line_with_comment():

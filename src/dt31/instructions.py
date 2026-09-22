@@ -1305,10 +1305,9 @@ class POP(Instruction):
                 is popped but not stored.
         """
         super().__init__("POP")
-        if out is not None:
-            self.out = as_op(out)
-        else:
-            self.out = None
+        if not isinstance(out, (type(None), Reference)):
+            raise ValueError("argument `out` must be a Reference or None")
+        self.out = out
 
     def _calc(self, cpu: DT31) -> int:
         value = as_op(cpu.pop()).resolve(cpu)
@@ -1327,7 +1326,7 @@ class POP(Instruction):
         return "POP"
 
 
-class SEMP(Instruction):
+class SEMP(NullaryOperation):
     """Check if stack is empty and store result."""
 
     def __init__(self, out: Reference):
@@ -1335,24 +1334,10 @@ class SEMP(Instruction):
         Args:
             out: Output reference to store the result (1 if empty, 0 if not empty).
         """
-        super().__init__("SEMP")
-        self.out = as_op(out)
+        super().__init__("SEMP", out)
 
     def _calc(self, cpu: DT31) -> int:
-        if cpu.stack:
-            value = 0
-        else:
-            value = 1
-        cpu[self.out] = value
-        return value
-
-    def __repr__(self) -> str:
-        """Return Python API representation."""
-        return f"SEMP(out={self.out!r})"
-
-    def __str__(self) -> str:
-        """Return assembly text representation."""
-        return f"SEMP {self.out}"
+        return 0 if cpu.stack else 1
 
 
 # ---------------------------------------- I/O --------------------------------------- #
@@ -1479,7 +1464,9 @@ class NIN(Instruction):
         """
         super().__init__("NIN")
         self.is_blocking = True
-        self.out = as_op(out)
+        if not isinstance(out, Reference):
+            raise ValueError("argument `out` must be a Reference")
+        self.out = out
 
     def _calc(self, cpu: DT31) -> int:
         val = _prompted_input()
@@ -1515,8 +1502,12 @@ class SNIN(Instruction):
         """
         super().__init__("SNIN")
         self.is_blocking = True
-        self.out = as_op(out)
-        self.status = as_op(status)
+        if not isinstance(out, Reference):
+            raise ValueError("argument `out` must be a Reference")
+        if not isinstance(status, Reference):
+            raise ValueError("argument `status` must be a Reference")
+        self.out = out
+        self.status = status
 
     def _calc(self, cpu: DT31) -> int:
         try:
@@ -1552,7 +1543,9 @@ class CIN(Instruction):
         """
         super().__init__("CIN")
         self.is_blocking = True
-        self.out = as_op(out)
+        if not isinstance(out, Reference):
+            raise ValueError("argument `out` must be a Reference")
+        self.out = out
 
     def _calc(self, cpu: DT31) -> int:
         val = _prompted_input()
@@ -1591,8 +1584,12 @@ class SCIN(Instruction):
         """
         super().__init__("SCIN")
         self.is_blocking = True
-        self.out = as_op(out)
-        self.status = as_op(status)
+        if not isinstance(out, Reference):
+            raise ValueError("argument `out` must be a Reference")
+        if not isinstance(status, Reference):
+            raise ValueError("argument `status` must be a Reference")
+        self.out = out
+        self.status = status
 
     def _calc(self, cpu: DT31) -> int:
         try:
@@ -1785,6 +1782,8 @@ class NEXT(Instruction):
         """
         super().__init__("NEXT")
         self.a = as_op(a)
+        if not isinstance(out, Reference):
+            raise ValueError("argument `out` must be a Reference")
         self.out = out
 
     def _calc(self, cpu: DT31) -> int:
