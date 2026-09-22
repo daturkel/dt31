@@ -176,10 +176,12 @@ See the [instructions documentation](https://daturkel.github.io/dt31/dt31/instru
 
 The DT31 CPU includes:
 
-- **Registers**: General-purpose registers (default: `a`, `b`, and `c`)
-- **Memory**: Fixed-size byte array (default: 256 slots)
+- **Registers**: General-purpose registers (default: `a`, `b`, and `c`), plus `ip`
+- **Memory**: Fixed-size array of slots (default: 256), each holding a Python int
 - **Stack**: For temporary values and function calls (default: 256 slots)
-- **Instruction Pointer**: Tracks current instruction in register `ip`
+- **Instruction Pointer**: Tracks the current instruction in register `ip`. `ip` is
+  user-writable at your own risk. All instructions other than jumps will
+  advance `ip` by 1.
 
 See the [CPU documentation](https://daturkel.github.io/dt31/dt31/cpu.html) for API details.
 
@@ -195,6 +197,16 @@ dt31 check program.dt       # Validate syntax
 dt31 format program.dt      # Format file in-place
 dt31 to-python program.dt   # Convert to a standalone Python source file
 ```
+
+`check` and `format` accept multiple files and glob patterns (quote the pattern so
+your shell doesn't expand it first):
+
+```shell
+dt31 check "*.dt"           # Validate every .dt file in the current directory
+dt31 format "**/*.dt"       # Format every .dt file recursively
+```
+
+`run` and `to-python` take exactly one file each.
 
 ### CLI Options
 
