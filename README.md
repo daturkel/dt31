@@ -177,13 +177,11 @@ See the [instructions documentation](https://daturkel.github.io/dt31/dt31/instru
 The DT31 CPU includes:
 
 - **Registers**: General-purpose registers (default: `a`, `b`, and `c`), plus `ip`
-- **Memory**: Fixed-size array of slots (default: 256), each holding an arbitrary-precision
-  Python int rather than a byte — nothing clamps a value to 0-255
+- **Memory**: Fixed-size array of slots (default: 256), each holding a Python int
 - **Stack**: For temporary values and function calls (default: 256 slots)
-- **Instruction Pointer**: Tracks the current instruction in register `ip`. `ip` is a
-  writable register like any other, so `CP 5, R.ip` is a valid computed jump — but
-  every instruction still advances `ip` by 1 after it runs, so a direct write to `ip`
-  lands one past the value written (`CP 5, R.ip` jumps to instruction 6, not 5).
+- **Instruction Pointer**: Tracks the current instruction in register `ip`. `ip` is
+  user-writable at your own risk. All instructions other than jumps will
+  advance `ip` by 1.
 
 See the [CPU documentation](https://daturkel.github.io/dt31/dt31/cpu.html) for API details.
 
