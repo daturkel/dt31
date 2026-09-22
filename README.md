@@ -206,8 +206,7 @@ dt31 check "*.dt"           # Validate every .dt file in the current directory
 dt31 format "**/*.dt"       # Format every .dt file recursively
 ```
 
-`run` and `to-python` take exactly one file each — `run` executes a single program,
-and `to-python` with `-o` is inherently one file in, one file out.
+`run` and `to-python` take exactly one file each.
 
 ### CLI Options
 
