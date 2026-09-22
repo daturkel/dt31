@@ -8,23 +8,23 @@
 ; M[i] = ith sample
 
 ; Get n
-NIN R.n
+    NIN R.n
 
 ; Generate i samples
 sample_loop:
-    CP 0, R.cc ; restart the get_sample counter
-    CP 0, R.s  ; zero out the sample
+    CP 0, R.cc                 ; restart the get_sample counter
+    CP 0, R.s                  ; zero out the sample
     CALL get_sample
-    ADD R.avg, M[R.c] ; accumulate the running sum
+    ADD R.avg, [R.c]           ; accumulate the running sum
     ADD R.c, 1
-    JEQ end R.c, 100 ; loop until we have 100 samples
+    JEQ end, R.c, 100          ; loop until we have 100 samples
     JMP sample_loop
 
 get_sample:
-    RND R.r                   ; get random bit
-    ADD M[R.c], R.r           ; add to M[R.c]
-    ADD R.cc, 1               ; increment counter
-    JGT get_sample, R.n, R.cc ; loop if inner counter < n
+    RND R.r                    ; get random bit
+    ADD [R.c], R.r             ; add to M[R.c]
+    ADD R.cc, 1                ; increment counter
+    JGT get_sample, R.n, R.cc  ; loop if inner counter < n
     RET
 
 end:
