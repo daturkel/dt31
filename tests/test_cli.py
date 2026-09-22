@@ -30,9 +30,11 @@ def test_cli_auto_detects_registers(temp_dt_file, capsys):
     """
     file_path = temp_dt_file(assembly)
 
-    with patch.object(sys, "argv", ["dt31", "run", file_path]):
-        with pytest.raises(SystemExit) as exc_info:
-            main()
+    with (
+        patch.object(sys, "argv", ["dt31", "run", file_path]),
+        pytest.raises(SystemExit) as exc_info,
+    ):
+        main()
 
     assert exc_info.value.code == 0
     captured = capsys.readouterr()
@@ -47,9 +49,11 @@ def test_cli_user_provided_registers_validated(temp_dt_file, capsys):
     file_path = temp_dt_file(assembly)
 
     # Provide registers that don't include 'y'
-    with patch.object(sys, "argv", ["dt31", "run", "--registers", "x,z", file_path]):
-        with pytest.raises(SystemExit) as exc_info:
-            main()
+    with (
+        patch.object(sys, "argv", ["dt31", "run", "--registers", "x,z", file_path]),
+        pytest.raises(SystemExit) as exc_info,
+    ):
+        main()
 
     assert exc_info.value.code == 1
     captured = capsys.readouterr()
@@ -65,9 +69,11 @@ def test_check_valid_file(temp_dt_file, capsys):
     """
     file_path = temp_dt_file(assembly)
 
-    with patch.object(sys, "argv", ["dt31", "check", file_path]):
-        with pytest.raises(SystemExit) as exc_info:
-            main()
+    with (
+        patch.object(sys, "argv", ["dt31", "check", file_path]),
+        pytest.raises(SystemExit) as exc_info,
+    ):
+        main()
 
     assert exc_info.value.code == 0
     captured = capsys.readouterr()
@@ -75,9 +81,11 @@ def test_check_valid_file(temp_dt_file, capsys):
 
 
 def test_cli_file_not_found(capsys):
-    with patch.object(sys, "argv", ["dt31", "run", "nonexistent.dt"]):
-        with pytest.raises(SystemExit) as exc_info:
-            main()
+    with (
+        patch.object(sys, "argv", ["dt31", "run", "nonexistent.dt"]),
+        pytest.raises(SystemExit) as exc_info,
+    ):
+        main()
 
     assert exc_info.value.code == 1
     captured = capsys.readouterr()
@@ -88,9 +96,11 @@ def test_cli_parse_error(temp_dt_file, capsys):
     assembly = "INVALID_INSTRUCTION R.x"
     file_path = temp_dt_file(assembly)
 
-    with patch.object(sys, "argv", ["dt31", "run", file_path]):
-        with pytest.raises(SystemExit) as exc_info:
-            main()
+    with (
+        patch.object(sys, "argv", ["dt31", "run", file_path]),
+        pytest.raises(SystemExit) as exc_info,
+    ):
+        main()
 
     assert exc_info.value.code == 1
     captured = capsys.readouterr()
@@ -104,9 +114,11 @@ def test_cli_no_registers_uses_defaults(temp_dt_file, capsys):
     """
     file_path = temp_dt_file(assembly)
 
-    with patch.object(sys, "argv", ["dt31", "run", file_path]):
-        with pytest.raises(SystemExit) as exc_info:
-            main()
+    with (
+        patch.object(sys, "argv", ["dt31", "run", file_path]),
+        pytest.raises(SystemExit) as exc_info,
+    ):
+        main()
 
     assert exc_info.value.code == 0
     captured = capsys.readouterr()
@@ -120,9 +132,11 @@ def test_cli_custom_memory_size(temp_dt_file, capsys):
     """
     file_path = temp_dt_file(assembly)
 
-    with patch.object(sys, "argv", ["dt31", "run", "--memory", "1024", file_path]):
-        with pytest.raises(SystemExit) as exc_info:
-            main()
+    with (
+        patch.object(sys, "argv", ["dt31", "run", "--memory", "1024", file_path]),
+        pytest.raises(SystemExit) as exc_info,
+    ):
+        main()
 
     assert exc_info.value.code == 0
     captured = capsys.readouterr()
@@ -139,9 +153,11 @@ def test_cli_custom_stack_size(temp_dt_file, capsys):
     """
     file_path = temp_dt_file(assembly)
 
-    with patch.object(sys, "argv", ["dt31", "run", "--stack-size", "512", file_path]):
-        with pytest.raises(SystemExit) as exc_info:
-            main()
+    with (
+        patch.object(sys, "argv", ["dt31", "run", "--stack-size", "512", file_path]),
+        pytest.raises(SystemExit) as exc_info,
+    ):
+        main()
 
     assert exc_info.value.code == 0
     captured = capsys.readouterr()
@@ -156,9 +172,11 @@ def test_cli_user_registers_superset_ok(temp_dt_file, capsys):
     file_path = temp_dt_file(assembly)
 
     # Provide extra registers beyond what's needed
-    with patch.object(sys, "argv", ["dt31", "run", "--registers", "x,y,z", file_path]):
-        with pytest.raises(SystemExit) as exc_info:
-            main()
+    with (
+        patch.object(sys, "argv", ["dt31", "run", "--registers", "x,y,z", file_path]),
+        pytest.raises(SystemExit) as exc_info,
+    ):
+        main()
 
     assert exc_info.value.code == 0
     captured = capsys.readouterr()
@@ -174,12 +192,14 @@ def test_cli_io_error_reading_file(tmp_path, capsys):
     # Mock Path.read_text to raise IOError
     with patch("dt31.cli.Path") as mock_path:
         mock_path_instance = MagicMock()
-        mock_path_instance.read_text.side_effect = IOError("Permission denied")
+        mock_path_instance.read_text.side_effect = OSError("Permission denied")
         mock_path.return_value = mock_path_instance
 
-        with patch.object(sys, "argv", ["dt31", "run", str(file_path)]):
-            with pytest.raises(SystemExit) as exc_info:
-                main()
+        with (
+            patch.object(sys, "argv", ["dt31", "run", str(file_path)]),
+            pytest.raises(SystemExit) as exc_info,
+        ):
+            main()
 
     assert exc_info.value.code == 1
     captured = capsys.readouterr()
@@ -195,9 +215,11 @@ def test_cli_cpu_creation_error(temp_dt_file, capsys):
     file_path = temp_dt_file(assembly)
 
     # Pass invalid memory size to trigger real error
-    with patch.object(sys, "argv", ["dt31", "run", "--memory", "0", file_path]):
-        with pytest.raises(SystemExit) as exc_info:
-            main()
+    with (
+        patch.object(sys, "argv", ["dt31", "run", "--memory", "0", file_path]),
+        pytest.raises(SystemExit) as exc_info,
+    ):
+        main()
 
     assert exc_info.value.code == 1
     captured = capsys.readouterr()
@@ -218,9 +240,11 @@ def test_cli_keyboard_interrupt(temp_dt_file, capsys):
         mock_cpu.run.side_effect = KeyboardInterrupt()
         mock_dt31_class.return_value = mock_cpu
 
-        with patch.object(sys, "argv", ["dt31", "run", file_path]):
-            with pytest.raises(SystemExit) as exc_info:
-                main()
+        with (
+            patch.object(sys, "argv", ["dt31", "run", file_path]),
+            pytest.raises(SystemExit) as exc_info,
+        ):
+            main()
 
     assert exc_info.value.code == 130
     captured = capsys.readouterr()
@@ -237,9 +261,11 @@ def test_cli_runtime_error_without_debug(temp_dt_file, capsys):
     file_path = temp_dt_file(assembly)
 
     # Trigger real division by zero error
-    with patch.object(sys, "argv", ["dt31", "run", file_path]):
-        with pytest.raises(SystemExit) as exc_info:
-            main()
+    with (
+        patch.object(sys, "argv", ["dt31", "run", file_path]),
+        pytest.raises(SystemExit) as exc_info,
+    ):
+        main()
 
     assert exc_info.value.code == 1
     captured = capsys.readouterr()
@@ -257,9 +283,11 @@ def test_cli_runtime_error_with_debug(temp_dt_file, capsys):
     file_path = temp_dt_file(assembly)
 
     # Trigger real memory access error (address 999 is out of bounds)
-    with patch.object(sys, "argv", ["dt31", "run", "--debug", file_path]):
-        with pytest.raises(SystemExit) as exc_info:
-            main()
+    with (
+        patch.object(sys, "argv", ["dt31", "run", "--debug", file_path]),
+        pytest.raises(SystemExit) as exc_info,
+    ):
+        main()
 
     assert exc_info.value.code == 1
     captured = capsys.readouterr()
@@ -304,13 +332,21 @@ NOUT R.a, 1
     )
 
     # Run CLI
-    with patch.object(
-        sys,
-        "argv",
-        ["dt31", "run", "--custom-instructions", str(custom_file), str(program_file)],
+    with (
+        patch.object(
+            sys,
+            "argv",
+            [
+                "dt31",
+                "run",
+                "--custom-instructions",
+                str(custom_file),
+                str(program_file),
+            ],
+        ),
+        pytest.raises(SystemExit) as exc_info,
     ):
-        with pytest.raises(SystemExit) as exc_info:
-            main()
+        main()
 
     assert exc_info.value.code == 0
     captured = capsys.readouterr()
@@ -322,13 +358,21 @@ def test_custom_instructions_file_not_found(tmp_path, capsys) -> None:
     program_file = tmp_path / "program.dt"
     program_file.write_text("CP 1, R.a")
 
-    with patch.object(
-        sys,
-        "argv",
-        ["dt31", "run", "--custom-instructions", "nonexistent.py", str(program_file)],
+    with (
+        patch.object(
+            sys,
+            "argv",
+            [
+                "dt31",
+                "run",
+                "--custom-instructions",
+                "nonexistent.py",
+                str(program_file),
+            ],
+        ),
+        pytest.raises(SystemExit) as exc_info,
     ):
-        with pytest.raises(SystemExit) as exc_info:
-            main()
+        main()
 
     assert exc_info.value.code == 1
     captured = capsys.readouterr()
@@ -357,13 +401,21 @@ class MYINST(Instruction):
     program_file = tmp_path / "program.dt"
     program_file.write_text("CP 1, R.a")
 
-    with patch.object(
-        sys,
-        "argv",
-        ["dt31", "run", "--custom-instructions", str(custom_file), str(program_file)],
+    with (
+        patch.object(
+            sys,
+            "argv",
+            [
+                "dt31",
+                "run",
+                "--custom-instructions",
+                str(custom_file),
+                str(program_file),
+            ],
+        ),
+        pytest.raises(SystemExit) as exc_info,
     ):
-        with pytest.raises(SystemExit) as exc_info:
-            main()
+        main()
 
     assert exc_info.value.code == 1
     captured = capsys.readouterr()
@@ -386,13 +438,21 @@ INSTRUCTIONS = {"BAD": NotAnInstruction}
     program_file = tmp_path / "program.dt"
     program_file.write_text("CP 1, R.a")
 
-    with patch.object(
-        sys,
-        "argv",
-        ["dt31", "run", "--custom-instructions", str(custom_file), str(program_file)],
+    with (
+        patch.object(
+            sys,
+            "argv",
+            [
+                "dt31",
+                "run",
+                "--custom-instructions",
+                str(custom_file),
+                str(program_file),
+            ],
+        ),
+        pytest.raises(SystemExit) as exc_info,
     ):
-        with pytest.raises(SystemExit) as exc_info:
-            main()
+        main()
 
     assert exc_info.value.code == 1
     captured = capsys.readouterr()
@@ -412,13 +472,21 @@ INSTRUCTIONS = ["not", "a", "dict"]
     program_file = tmp_path / "program.dt"
     program_file.write_text("CP 1, R.a")
 
-    with patch.object(
-        sys,
-        "argv",
-        ["dt31", "run", "--custom-instructions", str(custom_file), str(program_file)],
+    with (
+        patch.object(
+            sys,
+            "argv",
+            [
+                "dt31",
+                "run",
+                "--custom-instructions",
+                str(custom_file),
+                str(program_file),
+            ],
+        ),
+        pytest.raises(SystemExit) as exc_info,
     ):
-        with pytest.raises(SystemExit) as exc_info:
-            main()
+        main()
 
     assert exc_info.value.code == 1
     captured = capsys.readouterr()
@@ -464,13 +532,21 @@ NOUT R.b, 1
 """
     )
 
-    with patch.object(
-        sys,
-        "argv",
-        ["dt31", "run", "--custom-instructions", str(custom_file), str(program_file)],
+    with (
+        patch.object(
+            sys,
+            "argv",
+            [
+                "dt31",
+                "run",
+                "--custom-instructions",
+                str(custom_file),
+                str(program_file),
+            ],
+        ),
+        pytest.raises(SystemExit) as exc_info,
     ):
-        with pytest.raises(SystemExit) as exc_info:
-            main()
+        main()
 
     assert exc_info.value.code == 0
     captured = capsys.readouterr()
@@ -508,13 +584,21 @@ NOUT R.a, 1
 """
     )
 
-    with patch.object(
-        sys,
-        "argv",
-        ["dt31", "run", "--custom-instructions", str(custom_file), str(program_file)],
+    with (
+        patch.object(
+            sys,
+            "argv",
+            [
+                "dt31",
+                "run",
+                "--custom-instructions",
+                str(custom_file),
+                str(program_file),
+            ],
+        ),
+        pytest.raises(SystemExit) as exc_info,
     ):
-        with pytest.raises(SystemExit) as exc_info:
-            main()
+        main()
 
     assert exc_info.value.code == 0
     captured = capsys.readouterr()
@@ -552,19 +636,21 @@ NOUT R.a, 1
 """
     )
 
-    with patch.object(
-        sys,
-        "argv",
-        [
-            "dt31",
-            "check",
-            "--custom-instructions",
-            str(custom_file),
-            str(program_file),
-        ],
+    with (
+        patch.object(
+            sys,
+            "argv",
+            [
+                "dt31",
+                "check",
+                "--custom-instructions",
+                str(custom_file),
+                str(program_file),
+            ],
+        ),
+        pytest.raises(SystemExit) as exc_info,
     ):
-        with pytest.raises(SystemExit) as exc_info:
-            main()
+        main()
 
     assert exc_info.value.code == 0
     captured = capsys.readouterr()
@@ -576,9 +662,11 @@ def test_check_parse_error(temp_dt_file, capsys) -> None:
     assembly = "INVALID_INSTRUCTION R.x"
     file_path = temp_dt_file(assembly)
 
-    with patch.object(sys, "argv", ["dt31", "check", file_path]):
-        with pytest.raises(SystemExit) as exc_info:
-            main()
+    with (
+        patch.object(sys, "argv", ["dt31", "check", file_path]),
+        pytest.raises(SystemExit) as exc_info,
+    ):
+        main()
 
     assert exc_info.value.code == 1
     captured = capsys.readouterr()
@@ -587,9 +675,11 @@ def test_check_parse_error(temp_dt_file, capsys) -> None:
 
 def test_check_file_not_found(capsys) -> None:
     """Test check command with nonexistent file."""
-    with patch.object(sys, "argv", ["dt31", "check", "nonexistent.dt"]):
-        with pytest.raises(SystemExit) as exc_info:
-            main()
+    with (
+        patch.object(sys, "argv", ["dt31", "check", "nonexistent.dt"]),
+        pytest.raises(SystemExit) as exc_info,
+    ):
+        main()
 
     assert exc_info.value.code == 1
     captured = capsys.readouterr()
@@ -601,13 +691,21 @@ def test_check_custom_instructions_error(tmp_path, capsys) -> None:
     program_file = tmp_path / "program.dt"
     program_file.write_text("CP 5, R.a")
 
-    with patch.object(
-        sys,
-        "argv",
-        ["dt31", "check", "--custom-instructions", "nonexistent.py", str(program_file)],
+    with (
+        patch.object(
+            sys,
+            "argv",
+            [
+                "dt31",
+                "check",
+                "--custom-instructions",
+                "nonexistent.py",
+                str(program_file),
+            ],
+        ),
+        pytest.raises(SystemExit) as exc_info,
     ):
-        with pytest.raises(SystemExit) as exc_info:
-            main()
+        main()
 
     assert exc_info.value.code == 1
     captured = capsys.readouterr()
@@ -623,12 +721,14 @@ def test_check_io_error_reading_file(tmp_path, capsys) -> None:
     # Mock Path.read_text to raise IOError
     with patch("dt31.cli.Path") as mock_path:
         mock_path_instance = MagicMock()
-        mock_path_instance.read_text.side_effect = IOError("Permission denied")
+        mock_path_instance.read_text.side_effect = OSError("Permission denied")
         mock_path.return_value = mock_path_instance
 
-        with patch.object(sys, "argv", ["dt31", "check", str(file_path)]):
-            with pytest.raises(SystemExit) as exc_info:
-                main()
+        with (
+            patch.object(sys, "argv", ["dt31", "check", str(file_path)]),
+            pytest.raises(SystemExit) as exc_info,
+        ):
+            main()
 
     assert exc_info.value.code == 1
     captured = capsys.readouterr()
@@ -672,20 +772,22 @@ INSTRUCTIONS = {"DOUBLE": DOUBLE, "TRIPLE": TRIPLE}
         mock_cpu.run.return_value = None
         mock_dt31_class.return_value = mock_cpu
 
-        with patch.object(
-            sys,
-            "argv",
-            [
-                "dt31",
-                "run",
-                "--debug",
-                "--custom-instructions",
-                str(custom_file),
-                str(program_file),
-            ],
+        with (
+            patch.object(
+                sys,
+                "argv",
+                [
+                    "dt31",
+                    "run",
+                    "--debug",
+                    "--custom-instructions",
+                    str(custom_file),
+                    str(program_file),
+                ],
+            ),
+            pytest.raises(SystemExit) as exc_info,
         ):
-            with pytest.raises(SystemExit) as exc_info:
-                main()
+            main()
 
     assert exc_info.value.code == 0
     captured = capsys.readouterr()
@@ -707,19 +809,21 @@ def test_custom_instructions_import_error(tmp_path, capsys) -> None:
     with patch("dt31.cli.importlib.util.spec_from_file_location") as mock_spec:
         mock_spec.return_value = None
 
-        with patch.object(
-            sys,
-            "argv",
-            [
-                "dt31",
-                "run",
-                "--custom-instructions",
-                str(custom_file),
-                str(program_file),
-            ],
+        with (
+            patch.object(
+                sys,
+                "argv",
+                [
+                    "dt31",
+                    "run",
+                    "--custom-instructions",
+                    str(custom_file),
+                    str(program_file),
+                ],
+            ),
+            pytest.raises(SystemExit) as exc_info,
         ):
-            with pytest.raises(SystemExit) as exc_info:
-                main()
+            main()
 
     assert exc_info.value.code == 1
     captured = capsys.readouterr()
@@ -737,13 +841,23 @@ def test_dump_on_error_with_explicit_path(temp_dt_file, tmp_path, capsys):
     file_path = temp_dt_file(assembly)
     dump_path = tmp_path / "my_crash.json"
 
-    with patch.object(
-        sys,
-        "argv",
-        ["dt31", "run", "--dump", "error", "--dump-file", str(dump_path), file_path],
+    with (
+        patch.object(
+            sys,
+            "argv",
+            [
+                "dt31",
+                "run",
+                "--dump",
+                "error",
+                "--dump-file",
+                str(dump_path),
+                file_path,
+            ],
+        ),
+        pytest.raises(SystemExit) as exc_info,
     ):
-        with pytest.raises(SystemExit) as exc_info:
-            main()
+        main()
 
     assert exc_info.value.code == 1
     captured = capsys.readouterr()
@@ -779,9 +893,11 @@ def test_dump_on_error_auto_generate_filename(
     monkeypatch.chdir(tmp_path)
 
     # Use -- to separate flag from positional argument
-    with patch.object(sys, "argv", ["dt31", "run", "--dump", "error", "--", file_path]):
-        with pytest.raises(SystemExit) as exc_info:
-            main()
+    with (
+        patch.object(sys, "argv", ["dt31", "run", "--dump", "error", "--", file_path]),
+        pytest.raises(SystemExit) as exc_info,
+    ):
+        main()
 
     assert exc_info.value.code == 1
     captured = capsys.readouterr()
@@ -812,13 +928,23 @@ def test_dump_on_error_not_triggered_on_success(temp_dt_file, tmp_path, capsys):
     file_path = temp_dt_file(assembly)
     dump_path = tmp_path / "should_not_exist.json"
 
-    with patch.object(
-        sys,
-        "argv",
-        ["dt31", "run", "--dump", "error", "--dump-file", str(dump_path), file_path],
+    with (
+        patch.object(
+            sys,
+            "argv",
+            [
+                "dt31",
+                "run",
+                "--dump",
+                "error",
+                "--dump-file",
+                str(dump_path),
+                file_path,
+            ],
+        ),
+        pytest.raises(SystemExit) as exc_info,
     ):
-        with pytest.raises(SystemExit) as exc_info:
-            main()
+        main()
 
     assert exc_info.value.code == 0
     captured = capsys.readouterr()
@@ -839,13 +965,23 @@ def test_dump_on_error_includes_traceback(temp_dt_file, tmp_path, capsys):
     file_path = temp_dt_file(assembly)
     dump_path = tmp_path / "stack_underflow.json"
 
-    with patch.object(
-        sys,
-        "argv",
-        ["dt31", "run", "--dump", "error", "--dump-file", str(dump_path), file_path],
+    with (
+        patch.object(
+            sys,
+            "argv",
+            [
+                "dt31",
+                "run",
+                "--dump",
+                "error",
+                "--dump-file",
+                str(dump_path),
+                file_path,
+            ],
+        ),
+        pytest.raises(SystemExit) as exc_info,
     ):
-        with pytest.raises(SystemExit) as exc_info:
-            main()
+        main()
 
     assert exc_info.value.code == 1
 
@@ -870,13 +1006,15 @@ def test_dump_on_error_write_failure(temp_dt_file, tmp_path, capsys):
     file_path = temp_dt_file(assembly)
     dump_path = "/invalid/path/crash.json"
 
-    with patch.object(
-        sys,
-        "argv",
-        ["dt31", "run", "--dump", "error", "--dump-file", dump_path, file_path],
+    with (
+        patch.object(
+            sys,
+            "argv",
+            ["dt31", "run", "--dump", "error", "--dump-file", dump_path, file_path],
+        ),
+        pytest.raises(SystemExit) as exc_info,
     ):
-        with pytest.raises(SystemExit) as exc_info:
-            main()
+        main()
 
     assert exc_info.value.code == 1
     captured = capsys.readouterr()
@@ -896,13 +1034,23 @@ def test_dump_on_error_with_program_loaded(temp_dt_file, tmp_path, capsys):
     file_path = temp_dt_file(assembly)
     dump_path = tmp_path / "program_dump.json"
 
-    with patch.object(
-        sys,
-        "argv",
-        ["dt31", "run", "--dump", "error", "--dump-file", str(dump_path), file_path],
+    with (
+        patch.object(
+            sys,
+            "argv",
+            [
+                "dt31",
+                "run",
+                "--dump",
+                "error",
+                "--dump-file",
+                str(dump_path),
+                file_path,
+            ],
+        ),
+        pytest.raises(SystemExit) as exc_info,
     ):
-        with pytest.raises(SystemExit) as exc_info:
-            main()
+        main()
 
     assert exc_info.value.code == 1
 
@@ -927,13 +1075,23 @@ def test_dump_on_exit_with_explicit_path(temp_dt_file, tmp_path, capsys):
     file_path = temp_dt_file(assembly)
     dump_path = tmp_path / "final_state.json"
 
-    with patch.object(
-        sys,
-        "argv",
-        ["dt31", "run", "--dump", "success", "--dump-file", str(dump_path), file_path],
+    with (
+        patch.object(
+            sys,
+            "argv",
+            [
+                "dt31",
+                "run",
+                "--dump",
+                "success",
+                "--dump-file",
+                str(dump_path),
+                file_path,
+            ],
+        ),
+        pytest.raises(SystemExit) as exc_info,
     ):
-        with pytest.raises(SystemExit) as exc_info:
-            main()
+        main()
 
     assert exc_info.value.code == 0
     captured = capsys.readouterr()
@@ -964,11 +1122,13 @@ def test_dump_on_exit_auto_generate_filename(
     # Change to temp directory so auto-generated file goes there
     monkeypatch.chdir(tmp_path)
 
-    with patch.object(
-        sys, "argv", ["dt31", "run", "--dump", "success", "--", file_path]
+    with (
+        patch.object(
+            sys, "argv", ["dt31", "run", "--dump", "success", "--", file_path]
+        ),
+        pytest.raises(SystemExit) as exc_info,
     ):
-        with pytest.raises(SystemExit) as exc_info:
-            main()
+        main()
 
     assert exc_info.value.code == 0
     captured = capsys.readouterr()
@@ -1039,13 +1199,23 @@ def test_dump_on_exit_with_successful_program(temp_dt_file, tmp_path, capsys):
     file_path = temp_dt_file(assembly)
     dump_path = tmp_path / "final.json"
 
-    with patch.object(
-        sys,
-        "argv",
-        ["dt31", "run", "--dump", "success", "--dump-file", str(dump_path), file_path],
+    with (
+        patch.object(
+            sys,
+            "argv",
+            [
+                "dt31",
+                "run",
+                "--dump",
+                "success",
+                "--dump-file",
+                str(dump_path),
+                file_path,
+            ],
+        ),
+        pytest.raises(SystemExit) as exc_info,
     ):
-        with pytest.raises(SystemExit) as exc_info:
-            main()
+        main()
 
     assert exc_info.value.code == 0
 
@@ -1066,13 +1236,15 @@ def test_dump_on_exit_write_failure(temp_dt_file, capsys):
     file_path = temp_dt_file(assembly)
     dump_path = "/invalid/path/final.json"
 
-    with patch.object(
-        sys,
-        "argv",
-        ["dt31", "run", "--dump", "success", "--dump-file", dump_path, file_path],
+    with (
+        patch.object(
+            sys,
+            "argv",
+            ["dt31", "run", "--dump", "success", "--dump-file", dump_path, file_path],
+        ),
+        pytest.raises(SystemExit) as exc_info,
     ):
-        with pytest.raises(SystemExit) as exc_info:
-            main()
+        main()
 
     # Should still exit successfully even if dump fails
     assert exc_info.value.code == 0
@@ -1113,9 +1285,11 @@ def test_dump_error_with_ip_past_end(temp_dt_file, tmp_path, capsys):
             # Raise an error
             raise RuntimeError("Simulated error with IP past end")
 
-        with patch.object(DT31, "run", run_with_error):
-            with pytest.raises(SystemExit) as exc_info:
-                main()
+        with (
+            patch.object(DT31, "run", run_with_error),
+            pytest.raises(SystemExit) as exc_info,
+        ):
+            main()
 
     assert exc_info.value.code == 1
 
@@ -1157,9 +1331,11 @@ def test_dump_error_instruction_retrieval_fails(temp_dt_file, tmp_path, capsys):
                 raise RuntimeError("Cannot get IP")
             return original_get_register(self, name)
 
-        with patch.object(DT31, "get_register", failing_get_register):
-            with pytest.raises(SystemExit) as exc_info:
-                main()
+        with (
+            patch.object(DT31, "get_register", failing_get_register),
+            pytest.raises(SystemExit) as exc_info,
+        ):
+            main()
 
     assert exc_info.value.code == 1
 
@@ -1182,9 +1358,11 @@ def test_format_basic(temp_dt_file, capsys):
     assembly = "CP 5,R.a\nNOUT R.a,1"  # Unformatted
     file_path = temp_dt_file(assembly)
 
-    with patch.object(sys, "argv", ["dt31", "format", file_path]):
-        with pytest.raises(SystemExit) as exc_info:
-            main()
+    with (
+        patch.object(sys, "argv", ["dt31", "format", file_path]),
+        pytest.raises(SystemExit) as exc_info,
+    ):
+        main()
 
     assert exc_info.value.code == 0
     captured = capsys.readouterr()
@@ -1205,9 +1383,11 @@ def test_format_already_formatted(temp_dt_file, capsys):
     )
     file_path = temp_dt_file(assembly)
 
-    with patch.object(sys, "argv", ["dt31", "format", file_path]):
-        with pytest.raises(SystemExit) as exc_info:
-            main()
+    with (
+        patch.object(sys, "argv", ["dt31", "format", file_path]),
+        pytest.raises(SystemExit) as exc_info,
+    ):
+        main()
 
     assert exc_info.value.code == 0
     captured = capsys.readouterr()
@@ -1219,9 +1399,11 @@ def test_format_check_needs_formatting(temp_dt_file, capsys):
     assembly = "CP 5,R.a"  # Unformatted
     file_path = temp_dt_file(assembly)
 
-    with patch.object(sys, "argv", ["dt31", "format", "--check", file_path]):
-        with pytest.raises(SystemExit) as exc_info:
-            main()
+    with (
+        patch.object(sys, "argv", ["dt31", "format", "--check", file_path]),
+        pytest.raises(SystemExit) as exc_info,
+    ):
+        main()
 
     assert exc_info.value.code == 1  # Exit with error code
     captured = capsys.readouterr()
@@ -1239,9 +1421,11 @@ def test_format_check_already_formatted(temp_dt_file, capsys):
     assembly = "    CP 5, R.a\n"  # With trailing newline
     file_path = temp_dt_file(assembly)
 
-    with patch.object(sys, "argv", ["dt31", "format", "--check", file_path]):
-        with pytest.raises(SystemExit) as exc_info:
-            main()
+    with (
+        patch.object(sys, "argv", ["dt31", "format", "--check", file_path]),
+        pytest.raises(SystemExit) as exc_info,
+    ):
+        main()
 
     assert exc_info.value.code == 0
     captured = capsys.readouterr()
@@ -1253,9 +1437,11 @@ def test_format_diff_shows_changes(temp_dt_file, capsys):
     assembly = "CP 5,R.a"
     file_path = temp_dt_file(assembly)
 
-    with patch.object(sys, "argv", ["dt31", "format", "--diff", file_path]):
-        with pytest.raises(SystemExit) as exc_info:
-            main()
+    with (
+        patch.object(sys, "argv", ["dt31", "format", "--diff", file_path]),
+        pytest.raises(SystemExit) as exc_info,
+    ):
+        main()
 
     assert exc_info.value.code == 0
     captured = capsys.readouterr()
@@ -1277,9 +1463,11 @@ def test_format_diff_no_changes(temp_dt_file, capsys):
     assembly = "    CP 5, R.a\n"  # With trailing newline
     file_path = temp_dt_file(assembly)
 
-    with patch.object(sys, "argv", ["dt31", "format", "--diff", file_path]):
-        with pytest.raises(SystemExit) as exc_info:
-            main()
+    with (
+        patch.object(sys, "argv", ["dt31", "format", "--diff", file_path]),
+        pytest.raises(SystemExit) as exc_info,
+    ):
+        main()
 
     assert exc_info.value.code == 0
     captured = capsys.readouterr()
@@ -1292,9 +1480,11 @@ def test_format_check_and_diff(temp_dt_file, capsys):
     assembly = "CP 5,R.a"
     file_path = temp_dt_file(assembly)
 
-    with patch.object(sys, "argv", ["dt31", "format", "--check", "--diff", file_path]):
-        with pytest.raises(SystemExit) as exc_info:
-            main()
+    with (
+        patch.object(sys, "argv", ["dt31", "format", "--check", "--diff", file_path]),
+        pytest.raises(SystemExit) as exc_info,
+    ):
+        main()
 
     assert exc_info.value.code == 1  # Should fail check
     captured = capsys.readouterr()
@@ -1308,9 +1498,11 @@ def test_format_indent_size(temp_dt_file, capsys):
     assembly = "CP 5, R.a"
     file_path = temp_dt_file(assembly)
 
-    with patch.object(sys, "argv", ["dt31", "format", "--indent-size", "2", file_path]):
-        with pytest.raises(SystemExit) as exc_info:
-            main()
+    with (
+        patch.object(sys, "argv", ["dt31", "format", "--indent-size", "2", file_path]),
+        pytest.raises(SystemExit) as exc_info,
+    ):
+        main()
 
     assert exc_info.value.code == 0
 
@@ -1327,11 +1519,13 @@ CP 5, R.a ; Initialize
 """
     file_path = temp_dt_file(assembly)
 
-    with patch.object(
-        sys, "argv", ["dt31", "format", "--comment-margin", "3", file_path]
+    with (
+        patch.object(
+            sys, "argv", ["dt31", "format", "--comment-margin", "3", file_path]
+        ),
+        pytest.raises(SystemExit) as exc_info,
     ):
-        with pytest.raises(SystemExit) as exc_info:
-            main()
+        main()
 
     assert exc_info.value.code == 0
 
@@ -1349,9 +1543,11 @@ CP 5, R.a
 """
     file_path = temp_dt_file(assembly)
 
-    with patch.object(sys, "argv", ["dt31", "format", "--label-inline", file_path]):
-        with pytest.raises(SystemExit) as exc_info:
-            main()
+    with (
+        patch.object(sys, "argv", ["dt31", "format", "--label-inline", file_path]),
+        pytest.raises(SystemExit) as exc_info,
+    ):
+        main()
 
     assert exc_info.value.code == 0
 
@@ -1370,11 +1566,13 @@ ADD R.a, 1
 """
     file_path = temp_dt_file(assembly)
 
-    with patch.object(
-        sys, "argv", ["dt31", "format", "--blank-lines", "none", file_path]
+    with (
+        patch.object(
+            sys, "argv", ["dt31", "format", "--blank-lines", "none", file_path]
+        ),
+        pytest.raises(SystemExit) as exc_info,
     ):
-        with pytest.raises(SystemExit) as exc_info:
-            main()
+        main()
 
     assert exc_info.value.code == 0
 
@@ -1391,13 +1589,15 @@ def test_format_align_comments(temp_dt_file, capsys):
     assembly = "CP 5, R.a ; Test1\nCP 6, R.b ; Test2"
     file_path = temp_dt_file(assembly)
 
-    with patch.object(
-        sys,
-        "argv",
-        ["dt31", "format", "--align-comments", "--comment-column", "40", file_path],
+    with (
+        patch.object(
+            sys,
+            "argv",
+            ["dt31", "format", "--align-comments", "--comment-column", "40", file_path],
+        ),
+        pytest.raises(SystemExit) as exc_info,
     ):
-        with pytest.raises(SystemExit) as exc_info:
-            main()
+        main()
 
     assert exc_info.value.code == 0
 
@@ -1424,13 +1624,15 @@ def test_format_comment_column(temp_dt_file, capsys):
     assembly = "CP 5, R.a ; Test\n"  # No leading newline
     file_path = temp_dt_file(assembly)
 
-    with patch.object(
-        sys,
-        "argv",
-        ["dt31", "format", "--align-comments", "--comment-column", "30", file_path],
+    with (
+        patch.object(
+            sys,
+            "argv",
+            ["dt31", "format", "--align-comments", "--comment-column", "30", file_path],
+        ),
+        pytest.raises(SystemExit) as exc_info,
     ):
-        with pytest.raises(SystemExit) as exc_info:
-            main()
+        main()
 
     assert exc_info.value.code == 0
 
@@ -1447,9 +1649,11 @@ def test_format_auto_align_comments(temp_dt_file, capsys):
     file_path = temp_dt_file(assembly)
 
     # Use --align-comments without --comment-column to trigger auto-calculation
-    with patch.object(sys, "argv", ["dt31", "format", "--align-comments", file_path]):
-        with pytest.raises(SystemExit) as exc_info:
-            main()
+    with (
+        patch.object(sys, "argv", ["dt31", "format", "--align-comments", file_path]),
+        pytest.raises(SystemExit) as exc_info,
+    ):
+        main()
 
     assert exc_info.value.code == 0
 
@@ -1476,13 +1680,15 @@ def test_format_comment_margin(temp_dt_file, capsys):
     file_path = temp_dt_file(assembly)
 
     # Use custom margin of 4 with auto-align
-    with patch.object(
-        sys,
-        "argv",
-        ["dt31", "format", "--align-comments", "--comment-margin", "4", file_path],
+    with (
+        patch.object(
+            sys,
+            "argv",
+            ["dt31", "format", "--align-comments", "--comment-margin", "4", file_path],
+        ),
+        pytest.raises(SystemExit) as exc_info,
     ):
-        with pytest.raises(SystemExit) as exc_info:
-            main()
+        main()
 
     assert exc_info.value.code == 0
 
@@ -1506,11 +1712,11 @@ NOUT R.a
 """
     file_path = temp_dt_file(assembly)
 
-    with patch.object(
-        sys, "argv", ["dt31", "format", "--show-default-args", file_path]
+    with (
+        patch.object(sys, "argv", ["dt31", "format", "--show-default-args", file_path]),
+        pytest.raises(SystemExit) as exc_info,
     ):
-        with pytest.raises(SystemExit) as exc_info:
-            main()
+        main()
 
     assert exc_info.value.code == 0
 
@@ -1530,12 +1736,14 @@ def test_format_io_error_reading_file(tmp_path, capsys):
     # Mock Path.read_text to raise IOError
     with patch("dt31.cli.Path") as mock_path:
         mock_path_instance = MagicMock()
-        mock_path_instance.read_text.side_effect = IOError("Permission denied")
+        mock_path_instance.read_text.side_effect = OSError("Permission denied")
         mock_path.return_value = mock_path_instance
 
-        with patch.object(sys, "argv", ["dt31", "format", str(file_path)]):
-            with pytest.raises(SystemExit) as exc_info:
-                main()
+        with (
+            patch.object(sys, "argv", ["dt31", "format", str(file_path)]),
+            pytest.raises(SystemExit) as exc_info,
+        ):
+            main()
 
     assert exc_info.value.code == 1
     captured = capsys.readouterr()
@@ -1545,9 +1753,11 @@ def test_format_io_error_reading_file(tmp_path, capsys):
 
 def test_format_file_not_found(capsys):
     """Test format with nonexistent file."""
-    with patch.object(sys, "argv", ["dt31", "format", "nonexistent.dt"]):
-        with pytest.raises(SystemExit) as exc_info:
-            main()
+    with (
+        patch.object(sys, "argv", ["dt31", "format", "nonexistent.dt"]),
+        pytest.raises(SystemExit) as exc_info,
+    ):
+        main()
 
     assert exc_info.value.code == 1
     captured = capsys.readouterr()
@@ -1559,9 +1769,11 @@ def test_format_parse_error(temp_dt_file, capsys):
     assembly = "INVALID_INSTRUCTION R.x"
     file_path = temp_dt_file(assembly)
 
-    with patch.object(sys, "argv", ["dt31", "format", file_path]):
-        with pytest.raises(SystemExit) as exc_info:
-            main()
+    with (
+        patch.object(sys, "argv", ["dt31", "format", file_path]),
+        pytest.raises(SystemExit) as exc_info,
+    ):
+        main()
 
     assert exc_info.value.code == 1
     captured = capsys.readouterr()
@@ -1578,9 +1790,11 @@ loop:     ; label comment
 """
     file_path = temp_dt_file(assembly)
 
-    with patch.object(sys, "argv", ["dt31", "format", file_path]):
-        with pytest.raises(SystemExit) as exc_info:
-            main()
+    with (
+        patch.object(sys, "argv", ["dt31", "format", file_path]),
+        pytest.raises(SystemExit) as exc_info,
+    ):
+        main()
 
     assert exc_info.value.code == 0
 
@@ -1616,19 +1830,21 @@ INSTRUCTIONS = {"DOUBLE": DOUBLE}
     program_file = tmp_path / "program.dt"
     program_file.write_text("CP 5,R.a\nDOUBLE R.a")
 
-    with patch.object(
-        sys,
-        "argv",
-        [
-            "dt31",
-            "format",
-            "--custom-instructions",
-            str(custom_file),
-            str(program_file),
-        ],
+    with (
+        patch.object(
+            sys,
+            "argv",
+            [
+                "dt31",
+                "format",
+                "--custom-instructions",
+                str(custom_file),
+                str(program_file),
+            ],
+        ),
+        pytest.raises(SystemExit) as exc_info,
     ):
-        with pytest.raises(SystemExit) as exc_info:
-            main()
+        main()
 
     assert exc_info.value.code == 0
 
@@ -1643,19 +1859,21 @@ def test_format_custom_instructions_error(tmp_path, capsys):
     program_file = tmp_path / "program.dt"
     program_file.write_text("CP 5, R.a")
 
-    with patch.object(
-        sys,
-        "argv",
-        [
-            "dt31",
-            "format",
-            "--custom-instructions",
-            "nonexistent.py",
-            str(program_file),
-        ],
+    with (
+        patch.object(
+            sys,
+            "argv",
+            [
+                "dt31",
+                "format",
+                "--custom-instructions",
+                "nonexistent.py",
+                str(program_file),
+            ],
+        ),
+        pytest.raises(SystemExit) as exc_info,
     ):
-        with pytest.raises(SystemExit) as exc_info:
-            main()
+        main()
 
     assert exc_info.value.code == 1
     captured = capsys.readouterr()
@@ -1666,9 +1884,11 @@ def test_format_empty_file(temp_dt_file, capsys):
     """Test formatting an empty file."""
     file_path = temp_dt_file("")
 
-    with patch.object(sys, "argv", ["dt31", "format", file_path]):
-        with pytest.raises(SystemExit) as exc_info:
-            main()
+    with (
+        patch.object(sys, "argv", ["dt31", "format", file_path]),
+        pytest.raises(SystemExit) as exc_info,
+    ):
+        main()
 
     assert exc_info.value.code == 0
     captured = capsys.readouterr()
@@ -1690,14 +1910,16 @@ def test_format_io_error_writing_file(tmp_path, capsys):
         mock_path.read_text.return_value = "CP 5,R.a"
 
         # write_text should raise IOError
-        mock_path.write_text.side_effect = IOError("Permission denied")
+        mock_path.write_text.side_effect = OSError("Permission denied")
 
         # Make Path() constructor return our mock
         mock_path_class.return_value = mock_path
 
-        with patch.object(sys, "argv", ["dt31", "format", str(file_path)]):
-            with pytest.raises(SystemExit) as exc_info:
-                main()
+        with (
+            patch.object(sys, "argv", ["dt31", "format", str(file_path)]),
+            pytest.raises(SystemExit) as exc_info,
+        ):
+            main()
 
     assert exc_info.value.code == 1
     captured = capsys.readouterr()
@@ -1732,9 +1954,11 @@ def test_check_multiple_files(temp_dt_file, capsys):
     file1 = temp_dt_file("CP 10, R.a", "file1.dt")
     file2 = temp_dt_file("CP 20, R.b", "file2.dt")
 
-    with patch.object(sys, "argv", ["dt31", "check", file1, file2]):
-        with pytest.raises(SystemExit) as exc_info:
-            main()
+    with (
+        patch.object(sys, "argv", ["dt31", "check", file1, file2]),
+        pytest.raises(SystemExit) as exc_info,
+    ):
+        main()
 
     assert exc_info.value.code == 0
     captured = capsys.readouterr()
@@ -1752,11 +1976,13 @@ def test_check_multiple_files_with_errors(tmp_path, capsys):
     old_cwd = os.getcwd()
     os.chdir(tmp_path)
     try:
-        with patch.object(
-            sys, "argv", ["dt31", "check", "file1.dt", "file2.dt", "file3.dt"]
+        with (
+            patch.object(
+                sys, "argv", ["dt31", "check", "file1.dt", "file2.dt", "file3.dt"]
+            ),
+            pytest.raises(SystemExit) as exc_info,
         ):
-            with pytest.raises(SystemExit) as exc_info:
-                main()
+            main()
     finally:
         os.chdir(old_cwd)
 
@@ -1778,9 +2004,11 @@ def test_check_glob_pattern(tmp_path, capsys):
     old_cwd = os.getcwd()
     os.chdir(tmp_path)
     try:
-        with patch.object(sys, "argv", ["dt31", "check", "*.dt"]):
-            with pytest.raises(SystemExit) as exc_info:
-                main()
+        with (
+            patch.object(sys, "argv", ["dt31", "check", "*.dt"]),
+            pytest.raises(SystemExit) as exc_info,
+        ):
+            main()
     finally:
         os.chdir(old_cwd)
 
@@ -1797,9 +2025,11 @@ def test_format_multiple_files(temp_dt_file, capsys):
     file1 = temp_dt_file("CP 10,R.a", "file1.dt")
     file2 = temp_dt_file("CP 20,R.b", "file2.dt")
 
-    with patch.object(sys, "argv", ["dt31", "format", file1, file2]):
-        with pytest.raises(SystemExit) as exc_info:
-            main()
+    with (
+        patch.object(sys, "argv", ["dt31", "format", file1, file2]),
+        pytest.raises(SystemExit) as exc_info,
+    ):
+        main()
 
     assert exc_info.value.code == 0
     captured = capsys.readouterr()
@@ -1813,9 +2043,11 @@ def test_format_multiple_files_check_mode(temp_dt_file, capsys):
     file1 = temp_dt_file("CP 10,R.a", "file1.dt")  # Needs formatting
     file2 = temp_dt_file("    CP 20, R.b\n", "file2.dt")  # Already formatted
 
-    with patch.object(sys, "argv", ["dt31", "format", "--check", file1, file2]):
-        with pytest.raises(SystemExit) as exc_info:
-            main()
+    with (
+        patch.object(sys, "argv", ["dt31", "format", "--check", file1, file2]),
+        pytest.raises(SystemExit) as exc_info,
+    ):
+        main()
 
     assert exc_info.value.code == 1  # Should fail since file1 needs formatting
     captured = capsys.readouterr()
@@ -1833,9 +2065,11 @@ def test_format_glob_pattern(tmp_path, capsys):
     old_cwd = os.getcwd()
     os.chdir(tmp_path)
     try:
-        with patch.object(sys, "argv", ["dt31", "format", "*.dt"]):
-            with pytest.raises(SystemExit) as exc_info:
-                main()
+        with (
+            patch.object(sys, "argv", ["dt31", "format", "*.dt"]),
+            pytest.raises(SystemExit) as exc_info,
+        ):
+            main()
     finally:
         os.chdir(old_cwd)
 
@@ -1850,9 +2084,11 @@ def test_check_no_files_match_pattern(tmp_path, capsys):
     old_cwd = os.getcwd()
     os.chdir(tmp_path)
     try:
-        with patch.object(sys, "argv", ["dt31", "check", "*.dt"]):
-            with pytest.raises(SystemExit) as exc_info:
-                main()
+        with (
+            patch.object(sys, "argv", ["dt31", "check", "*.dt"]),
+            pytest.raises(SystemExit) as exc_info,
+        ):
+            main()
     finally:
         os.chdir(old_cwd)
 
@@ -1865,9 +2101,11 @@ def test_format_no_files_match_pattern(tmp_path, capsys):
     old_cwd = os.getcwd()
     os.chdir(tmp_path)
     try:
-        with patch.object(sys, "argv", ["dt31", "format", "*.dt"]):
-            with pytest.raises(SystemExit) as exc_info:
-                main()
+        with (
+            patch.object(sys, "argv", ["dt31", "format", "*.dt"]),
+            pytest.raises(SystemExit) as exc_info,
+        ):
+            main()
     finally:
         os.chdir(old_cwd)
 
@@ -1890,9 +2128,11 @@ def test_check_recursive_glob(tmp_path, capsys):
     old_cwd = os.getcwd()
     os.chdir(tmp_path)
     try:
-        with patch.object(sys, "argv", ["dt31", "check", "**/*.dt"]):
-            with pytest.raises(SystemExit) as exc_info:
-                main()
+        with (
+            patch.object(sys, "argv", ["dt31", "check", "**/*.dt"]),
+            pytest.raises(SystemExit) as exc_info,
+        ):
+            main()
     finally:
         os.chdir(old_cwd)
 
@@ -1906,9 +2146,11 @@ def test_format_multiple_files_already_formatted(temp_dt_file, capsys):
     file1 = temp_dt_file("    CP 10, R.a\n", "file1.dt")  # Already formatted
     file2 = temp_dt_file("    CP 20, R.b\n", "file2.dt")  # Already formatted
 
-    with patch.object(sys, "argv", ["dt31", "format", file1, file2]):
-        with pytest.raises(SystemExit) as exc_info:
-            main()
+    with (
+        patch.object(sys, "argv", ["dt31", "format", file1, file2]),
+        pytest.raises(SystemExit) as exc_info,
+    ):
+        main()
 
     assert exc_info.value.code == 0
     captured = capsys.readouterr()
@@ -1919,9 +2161,11 @@ def test_format_multiple_files_check_mode_all_formatted(temp_dt_file, capsys):
     file1 = temp_dt_file("    CP 10, R.a\n", "file1.dt")  # Already formatted
     file2 = temp_dt_file("    CP 20, R.b\n", "file2.dt")  # Already formatted
 
-    with patch.object(sys, "argv", ["dt31", "format", "--check", file1, file2]):
-        with pytest.raises(SystemExit) as exc_info:
-            main()
+    with (
+        patch.object(sys, "argv", ["dt31", "format", "--check", file1, file2]),
+        pytest.raises(SystemExit) as exc_info,
+    ):
+        main()
 
     assert exc_info.value.code == 0
     captured = capsys.readouterr()
@@ -1932,9 +2176,11 @@ def test_format_multiple_files_check_mode_all_formatted(temp_dt_file, capsys):
 
 
 def test_version(capsys):
-    with patch.object(sys, "argv", ["dt31", "--version"]):
-        with pytest.raises(SystemExit) as exc_info:
-            main()
+    with (
+        patch.object(sys, "argv", ["dt31", "--version"]),
+        pytest.raises(SystemExit) as exc_info,
+    ):
+        main()
 
     assert exc_info.value.code == 0
     captured = capsys.readouterr()
@@ -1971,9 +2217,11 @@ def test_verbose_flag_shows_statistics(tmp_path, capsys):
     test_file = tmp_path / "test.dt"
     test_file.write_text("CP 5, R.a\nADD R.a, 1\nNOUT R.a, 1")
 
-    with patch.object(sys, "argv", ["dt31", "run", "--verbose", str(test_file)]):
-        with pytest.raises(SystemExit) as exc_info:
-            main()
+    with (
+        patch.object(sys, "argv", ["dt31", "run", "--verbose", str(test_file)]),
+        pytest.raises(SystemExit) as exc_info,
+    ):
+        main()
 
     assert exc_info.value.code == 0
     captured = capsys.readouterr()
@@ -1997,9 +2245,11 @@ def test_verbose_short_flag(tmp_path, capsys):
     test_file = tmp_path / "test.dt"
     test_file.write_text("CP 10, R.a")
 
-    with patch.object(sys, "argv", ["dt31", "run", "-v", str(test_file)]):
-        with pytest.raises(SystemExit) as exc_info:
-            main()
+    with (
+        patch.object(sys, "argv", ["dt31", "run", "-v", str(test_file)]),
+        pytest.raises(SystemExit) as exc_info,
+    ):
+        main()
 
     assert exc_info.value.code == 0
     captured = capsys.readouterr()
@@ -2014,9 +2264,11 @@ def test_verbose_not_shown_without_flag(tmp_path, capsys):
     test_file = tmp_path / "test.dt"
     test_file.write_text("CP 5, R.a")
 
-    with patch.object(sys, "argv", ["dt31", "run", str(test_file)]):
-        with pytest.raises(SystemExit) as exc_info:
-            main()
+    with (
+        patch.object(sys, "argv", ["dt31", "run", str(test_file)]),
+        pytest.raises(SystemExit) as exc_info,
+    ):
+        main()
 
     assert exc_info.value.code == 0
     captured = capsys.readouterr()
@@ -2034,9 +2286,11 @@ def test_verbose_shows_on_error(tmp_path, capsys):
     # Division by zero error
     test_file.write_text("CP 10, R.a\nCP 0, R.b\nDIV R.a, R.b")
 
-    with patch.object(sys, "argv", ["dt31", "run", "--verbose", str(test_file)]):
-        with pytest.raises(SystemExit) as exc_info:
-            main()
+    with (
+        patch.object(sys, "argv", ["dt31", "run", "--verbose", str(test_file)]),
+        pytest.raises(SystemExit) as exc_info,
+    ):
+        main()
 
     assert exc_info.value.code == 1
     captured = capsys.readouterr()
@@ -2052,9 +2306,11 @@ def test_verbose_with_exit_instruction(tmp_path, capsys):
     test_file = tmp_path / "test.dt"
     test_file.write_text("CP 5, R.a\nEXIT 42")
 
-    with patch.object(sys, "argv", ["dt31", "run", "--verbose", str(test_file)]):
-        with pytest.raises(SystemExit) as exc_info:
-            main()
+    with (
+        patch.object(sys, "argv", ["dt31", "run", "--verbose", str(test_file)]),
+        pytest.raises(SystemExit) as exc_info,
+    ):
+        main()
 
     assert exc_info.value.code == 42
     captured = capsys.readouterr()
@@ -2069,9 +2325,11 @@ def test_verbose_with_exit_no_code(tmp_path, capsys):
     test_file = tmp_path / "test.dt"
     test_file.write_text("CP 5, R.a\nEXIT")
 
-    with patch.object(sys, "argv", ["dt31", "run", "--verbose", str(test_file)]):
-        with pytest.raises(SystemExit) as exc_info:
-            main()
+    with (
+        patch.object(sys, "argv", ["dt31", "run", "--verbose", str(test_file)]),
+        pytest.raises(SystemExit) as exc_info,
+    ):
+        main()
 
     assert exc_info.value.code == 0
     captured = capsys.readouterr()
@@ -2085,9 +2343,11 @@ def test_to_python_prints_to_stdout(temp_dt_file, capsys):
     """Test to-python command with no -o prints generated source to stdout."""
     file_path = temp_dt_file("CP 5, R.a\nNOUT R.a, 1\n", filename="add.dt")
 
-    with patch.object(sys, "argv", ["dt31", "to-python", file_path]):
-        with pytest.raises(SystemExit) as exc_info:
-            main()
+    with (
+        patch.object(sys, "argv", ["dt31", "to-python", file_path]),
+        pytest.raises(SystemExit) as exc_info,
+    ):
+        main()
 
     assert exc_info.value.code == 0
     captured = capsys.readouterr()
@@ -2110,11 +2370,13 @@ def test_to_python_writes_output_file(temp_dt_file, tmp_path, capsys):
     file_path = temp_dt_file("CP 5, R.a\nNOUT R.a, 1\n", filename="add.dt")
     output_path = tmp_path / "add.py"
 
-    with patch.object(
-        sys, "argv", ["dt31", "to-python", file_path, "-o", str(output_path)]
+    with (
+        patch.object(
+            sys, "argv", ["dt31", "to-python", file_path, "-o", str(output_path)]
+        ),
+        pytest.raises(SystemExit) as exc_info,
     ):
-        with pytest.raises(SystemExit) as exc_info:
-            main()
+        main()
 
     assert exc_info.value.code == 0
     captured = capsys.readouterr()
@@ -2139,22 +2401,24 @@ def test_to_python_cpu_config_flags(temp_dt_file, capsys):
     same as the equivalent run flags."""
     file_path = temp_dt_file("CP 5, R.a\n", filename="add.dt")
 
-    with patch.object(
-        sys,
-        "argv",
-        [
-            "dt31",
-            "to-python",
-            file_path,
-            "--memory",
-            "1024",
-            "--stack-size",
-            "64",
-            "--debug",
-        ],
+    with (
+        patch.object(
+            sys,
+            "argv",
+            [
+                "dt31",
+                "to-python",
+                file_path,
+                "--memory",
+                "1024",
+                "--stack-size",
+                "64",
+                "--debug",
+            ],
+        ),
+        pytest.raises(SystemExit) as exc_info,
     ):
-        with pytest.raises(SystemExit) as exc_info:
-            main()
+        main()
 
     assert exc_info.value.code == 0
     captured = capsys.readouterr()
@@ -2176,11 +2440,13 @@ def test_to_python_registers_flag_overrides_auto_detection(temp_dt_file, capsys)
     long as it covers every register the program uses."""
     file_path = temp_dt_file("CP 5, R.a\n", filename="add.dt")
 
-    with patch.object(
-        sys, "argv", ["dt31", "to-python", file_path, "--registers", "a,b,c"]
+    with (
+        patch.object(
+            sys, "argv", ["dt31", "to-python", file_path, "--registers", "a,b,c"]
+        ),
+        pytest.raises(SystemExit) as exc_info,
     ):
-        with pytest.raises(SystemExit) as exc_info:
-            main()
+        main()
 
     assert exc_info.value.code == 0
     captured = capsys.readouterr()
@@ -2202,11 +2468,13 @@ def test_to_python_registers_flag_missing_used_register(temp_dt_file, capsys):
     run's own validation."""
     file_path = temp_dt_file("CP 5, R.a\n", filename="add.dt")
 
-    with patch.object(
-        sys, "argv", ["dt31", "to-python", file_path, "--registers", "b,c"]
+    with (
+        patch.object(
+            sys, "argv", ["dt31", "to-python", file_path, "--registers", "b,c"]
+        ),
+        pytest.raises(SystemExit) as exc_info,
     ):
-        with pytest.raises(SystemExit) as exc_info:
-            main()
+        main()
 
     assert exc_info.value.code == 1
     captured = capsys.readouterr()
@@ -2222,11 +2490,13 @@ def test_to_python_registers_flag_rejects_invalid_name(temp_dt_file, capsys):
     validation, since the generated source interpolates them unescaped."""
     file_path = temp_dt_file("CP 5, R.a\n", filename="add.dt")
 
-    with patch.object(
-        sys, "argv", ["dt31", "to-python", file_path, "--registers", "1bad"]
+    with (
+        patch.object(
+            sys, "argv", ["dt31", "to-python", file_path, "--registers", "1bad"]
+        ),
+        pytest.raises(SystemExit) as exc_info,
     ):
-        with pytest.raises(SystemExit) as exc_info:
-            main()
+        main()
 
     assert exc_info.value.code == 1
     captured = capsys.readouterr()
@@ -2239,9 +2509,11 @@ def test_to_python_registers_flag_rejects_invalid_name(temp_dt_file, capsys):
 
 def test_to_python_file_not_found(capsys):
     """Test to-python command with nonexistent file."""
-    with patch.object(sys, "argv", ["dt31", "to-python", "nonexistent.dt"]):
-        with pytest.raises(SystemExit) as exc_info:
-            main()
+    with (
+        patch.object(sys, "argv", ["dt31", "to-python", "nonexistent.dt"]),
+        pytest.raises(SystemExit) as exc_info,
+    ):
+        main()
 
     assert exc_info.value.code == 1
     captured = capsys.readouterr()
@@ -2252,9 +2524,11 @@ def test_to_python_parse_error(temp_dt_file, capsys):
     """Test to-python command with a file that fails to parse."""
     file_path = temp_dt_file("NOTANINSTRUCTION 1, 2\n", filename="bad.dt")
 
-    with patch.object(sys, "argv", ["dt31", "to-python", file_path]):
-        with pytest.raises(SystemExit) as exc_info:
-            main()
+    with (
+        patch.object(sys, "argv", ["dt31", "to-python", file_path]),
+        pytest.raises(SystemExit) as exc_info,
+    ):
+        main()
 
     assert exc_info.value.code == 1
     captured = capsys.readouterr()
@@ -2270,12 +2544,14 @@ def test_to_python_io_error_reading_file(tmp_path, capsys):
 
     with patch("dt31.cli.Path") as mock_path:
         mock_path_instance = MagicMock()
-        mock_path_instance.read_text.side_effect = IOError("Permission denied")
+        mock_path_instance.read_text.side_effect = OSError("Permission denied")
         mock_path.return_value = mock_path_instance
 
-        with patch.object(sys, "argv", ["dt31", "to-python", str(file_path)]):
-            with pytest.raises(SystemExit) as exc_info:
-                main()
+        with (
+            patch.object(sys, "argv", ["dt31", "to-python", str(file_path)]),
+            pytest.raises(SystemExit) as exc_info,
+        ):
+            main()
 
     assert exc_info.value.code == 1
     captured = capsys.readouterr()
@@ -2292,15 +2568,15 @@ def test_to_python_output_write_io_error(temp_dt_file, capsys):
         p = real_path(arg)
         if str(arg).endswith("out.py"):
             p = MagicMock(wraps=p)
-            p.write_text.side_effect = IOError("Permission denied")
+            p.write_text.side_effect = OSError("Permission denied")
         return p
 
-    with patch("dt31.cli.Path", side_effect=fake_path):
-        with patch.object(
-            sys, "argv", ["dt31", "to-python", file_path, "-o", "out.py"]
-        ):
-            with pytest.raises(SystemExit) as exc_info:
-                main()
+    with (
+        patch("dt31.cli.Path", side_effect=fake_path),
+        patch.object(sys, "argv", ["dt31", "to-python", file_path, "-o", "out.py"]),
+        pytest.raises(SystemExit) as exc_info,
+    ):
+        main()
 
     assert exc_info.value.code == 1
     captured = capsys.readouterr()
@@ -2315,9 +2591,11 @@ def test_track_step_time_off_by_default(temp_dt_file):
         mock_cpu = MagicMock()
         mock_dt31_class.return_value = mock_cpu
 
-        with patch.object(sys, "argv", ["dt31", "run", file_path]):
-            with pytest.raises(SystemExit):
-                main()
+        with (
+            patch.object(sys, "argv", ["dt31", "run", file_path]),
+            pytest.raises(SystemExit),
+        ):
+            main()
 
     assert mock_dt31_class.call_args.kwargs["track_step_time"] is False
 
@@ -2334,8 +2612,10 @@ def test_verbose_enables_track_step_time(temp_dt_file):
         mock_cpu.step_count = 1
         mock_dt31_class.return_value = mock_cpu
 
-        with patch.object(sys, "argv", ["dt31", "run", "--verbose", file_path]):
-            with pytest.raises(SystemExit):
-                main()
+        with (
+            patch.object(sys, "argv", ["dt31", "run", "--verbose", file_path]),
+            pytest.raises(SystemExit),
+        ):
+            main()
 
     assert mock_dt31_class.call_args.kwargs["track_step_time"] is True
