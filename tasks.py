@@ -3,7 +3,7 @@ from invoke.tasks import task
 
 @task
 def test(c, html=False, ci=False):
-    command = "pytest --cov=dt31"
+    command = "pytest --cov=dt31 --cov-branch"
     if html:
         command += " --cov-report html"
     if ci:
