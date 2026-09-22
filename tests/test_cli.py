@@ -1,14 +1,17 @@
 """Tests for the CLI."""
 
+import argparse
 import json
 import os
+import re
 import sys
+from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
 
 from dt31 import DT31
-from dt31.cli import dump_cpu_state, main
+from dt31.cli import dump_cpu_state, format_time, main
 
 
 @pytest.fixture
@@ -868,7 +871,6 @@ def test_dump_on_error_with_explicit_path(temp_dt_file, tmp_path, capsys):
 
     # Verify dump file was created and contains expected data
     assert dump_path.exists()
-    import json
 
     with open(dump_path) as f:
         dump_data = json.load(f)
@@ -911,8 +913,6 @@ def test_dump_on_error_auto_generate_filename(
     assert len(dump_files) == 1
 
     # Verify dump file contains expected data
-    import json
-
     with open(dump_files[0]) as f:
         dump_data = json.load(f)
 
@@ -988,8 +988,6 @@ def test_dump_on_error_includes_traceback(temp_dt_file, tmp_path, capsys):
     assert exc_info.value.code == 1
 
     # Verify dump contains traceback
-    import json
-
     with open(dump_path) as f:
         dump_data = json.load(f)
 
@@ -1071,8 +1069,6 @@ def test_dump_on_error_with_program_loaded(temp_dt_file, tmp_path, capsys):
     assert exc_info.value.code == 1
 
     # Verify dump includes program
-    import json
-
     with open(dump_path) as f:
         dump_data = json.load(f)
 
@@ -1115,7 +1111,6 @@ def test_dump_on_exit_with_explicit_path(temp_dt_file, tmp_path, capsys):
 
     # Verify dump file was created and contains expected data
     assert dump_path.exists()
-    import json
 
     with open(dump_path) as f:
         dump_data = json.load(f)
@@ -1155,8 +1150,6 @@ def test_dump_on_exit_auto_generate_filename(
     assert len(dump_files) == 1
 
     # Verify dump file contains expected data
-    import json
-
     with open(dump_files[0]) as f:
         dump_data = json.load(f)
 
@@ -1187,8 +1180,6 @@ def test_dump_all_mode_on_error(temp_dt_file, tmp_path, capsys):
         ],
     ):
         # Change to temp directory for auto-generated file
-        import os
-
         old_cwd = os.getcwd()
         os.chdir(tmp_path)
         try:
@@ -1236,8 +1227,6 @@ def test_dump_on_exit_with_successful_program(temp_dt_file, tmp_path, capsys):
     assert exc_info.value.code == 0
 
     # Verify final state
-    import json
-
     with open(dump_path) as f:
         dump_data = json.load(f)
 
@@ -1277,7 +1266,6 @@ def test_dump_error_with_ip_past_end(temp_dt_file, tmp_path, capsys):
     dump_path = tmp_path / "past_end.json"
 
     # Mock CPU to raise error after IP increments past end
-
     original_main = main
 
     def patched_main():
@@ -1291,8 +1279,6 @@ def test_dump_error_with_ip_past_end(temp_dt_file, tmp_path, capsys):
         ["dt31", "run", "--dump", "error", "--dump-file", str(dump_path), file_path],
     ):
         # Patch the CPU run to simulate EndOfProgram error with IP past end
-        from dt31 import DT31
-
         def run_with_error(self, *args, **kwargs):
             # Execute normally first
             self.load(args[0] if args else kwargs.get("program"))
@@ -1310,8 +1296,6 @@ def test_dump_error_with_ip_past_end(temp_dt_file, tmp_path, capsys):
     assert exc_info.value.code == 1
 
     # Verify dump contains the last instruction
-    import json
-
     with open(dump_path) as f:
         dump_data = json.load(f)
 
@@ -1338,8 +1322,6 @@ def test_dump_error_instruction_retrieval_fails(temp_dt_file, tmp_path, capsys):
         ["dt31", "run", "--dump", "error", "--dump-file", str(dump_path), file_path],
     ):
         # Patch get_register to raise an exception
-        from dt31 import DT31
-
         original_get_register = DT31.get_register
 
         def failing_get_register(self, name):
@@ -1356,8 +1338,6 @@ def test_dump_error_instruction_retrieval_fails(temp_dt_file, tmp_path, capsys):
     assert exc_info.value.code == 1
 
     # Verify dump was created despite instruction retrieval failure
-    import json
-
     with open(dump_path) as f:
         dump_data = json.load(f)
 
@@ -1385,8 +1365,6 @@ def test_format_basic(temp_dt_file, capsys):
     assert f"✓ Formatted {file_path}" in captured.err
 
     # Read formatted file
-    from pathlib import Path
-
     formatted = Path(file_path).read_text()
     assert "    CP 5, R.a" in formatted
     assert "    NOUT R.a, 1" in formatted
@@ -1426,8 +1404,6 @@ def test_format_check_needs_formatting(temp_dt_file, capsys):
     assert f"✗ {file_path} would be reformatted" in captured.err
 
     # Verify file was NOT modified
-    from pathlib import Path
-
     unchanged = Path(file_path).read_text()
     assert unchanged == "CP 5,R.a"
 
@@ -1468,8 +1444,6 @@ def test_format_diff_shows_changes(temp_dt_file, capsys):
     assert "+    CP 5, R.a" in captured.out
 
     # File should NOT be modified
-    from pathlib import Path
-
     unchanged = Path(file_path).read_text()
     assert unchanged == "CP 5,R.a"
 
@@ -1522,8 +1496,6 @@ def test_format_indent_size(temp_dt_file, capsys):
 
     assert exc_info.value.code == 0
 
-    from pathlib import Path
-
     formatted = Path(file_path).read_text()
     assert "  CP 5, R.a" in formatted  # 2 spaces, not 4
 
@@ -1545,8 +1517,6 @@ CP 5, R.a ; Initialize
 
     assert exc_info.value.code == 0
 
-    from pathlib import Path
-
     formatted = Path(file_path).read_text()
     assert "    CP 5, R.a   ; Initialize" in formatted  # 3 spaces before ;
 
@@ -1566,8 +1536,6 @@ CP 5, R.a
         main()
 
     assert exc_info.value.code == 0
-
-    from pathlib import Path
 
     formatted = Path(file_path).read_text()
     assert "loop: CP 5, R.a" in formatted  # Label on same line
@@ -1592,8 +1560,6 @@ ADD R.a, 1
 
     assert exc_info.value.code == 0
 
-    from pathlib import Path
-
     formatted = Path(file_path).read_text()
     lines = formatted.strip().split("\n")
     # Should NOT have blank line between instruction and label
@@ -1616,8 +1582,6 @@ def test_format_align_comments(temp_dt_file, capsys):
         main()
 
     assert exc_info.value.code == 0
-
-    from pathlib import Path
 
     formatted = Path(file_path).read_text()
     # Both instructions are short enough to align at column 40
@@ -1652,8 +1616,6 @@ def test_format_comment_column(temp_dt_file, capsys):
 
     assert exc_info.value.code == 0
 
-    from pathlib import Path
-
     formatted = Path(file_path).read_text()
     # Comment should start at column 30
     assert formatted.index(";") == 30
@@ -1672,8 +1634,6 @@ def test_format_auto_align_comments(temp_dt_file, capsys):
         main()
 
     assert exc_info.value.code == 0
-
-    from pathlib import Path
 
     formatted = Path(file_path).read_text()
     lines = [line for line in formatted.split("\n") if ";" in line]
@@ -1708,8 +1668,6 @@ def test_format_comment_margin(temp_dt_file, capsys):
 
     assert exc_info.value.code == 0
 
-    from pathlib import Path
-
     formatted = Path(file_path).read_text()
     lines = [line for line in formatted.split("\n") if ";" in line]
 
@@ -1735,8 +1693,6 @@ NOUT R.a
         main()
 
     assert exc_info.value.code == 0
-
-    from pathlib import Path
 
     formatted = Path(file_path).read_text()
     assert "    ADD R.a, R.b, R.a" in formatted  # Default out shown
@@ -1813,8 +1769,6 @@ loop:     ; label comment
         main()
 
     assert exc_info.value.code == 0
-
-    from pathlib import Path
 
     formatted = Path(file_path).read_text()
     assert "; This is a standalone comment" in formatted
@@ -1946,8 +1900,6 @@ def test_format_io_error_writing_file(tmp_path, capsys):
 def test_cli_unknown_command(capsys):
     """Test behavior with unknown/invalid command."""
     # Directly test the else branch by patching parse_args to return invalid command
-    import argparse
-
     with patch("dt31.cli.argparse.ArgumentParser.parse_args") as mock_parse_args:
         # Create a mock args object with an unexpected command
         mock_args = argparse.Namespace(command="unknown")
@@ -2140,7 +2092,6 @@ def test_check_recursive_glob(tmp_path, capsys):
     (tmp_path / "subdir2" / "prog3.dt").write_text("CP 3, R.c")
 
     # Change to temp directory for glob to work
-
     old_cwd = os.getcwd()
     os.chdir(tmp_path)
     try:
@@ -2208,8 +2159,6 @@ def test_version(capsys):
 
 def test_format_time():
     """Test format_time function with different scales."""
-    from dt31.cli import format_time
-
     # Test microseconds (< 1ms)
     assert format_time(0) == "0.00µs"
     assert format_time(500) == "0.50µs"
@@ -2247,8 +2196,6 @@ def test_verbose_flag_shows_statistics(tmp_path, capsys):
     assert "Steps:" in captured.err
 
     # Check format (should have a time unit: s, ms, or µs)
-    import re
-
     assert re.search(r"Wall time: [\d.]+(?:s|ms|µs)", captured.err)
     assert "Steps: 3" in captured.err
 
