@@ -21,9 +21,5 @@ jobs:
       - name: Install the project
         run: uv sync --frozen --group dev
       - uses: j178/prek-action@v1
-      - name: Run type checks
-        run: uvx --with ty==0.0.1-alpha.26 ty check src/dt31
-      - name: Run tests
-        run: uv run inv test --ci
-      - name: Generate coverage badge
-        run: uv run inv coverage-badge
+        with:
+          extra-args: --all-files --hook-stage pre-push
