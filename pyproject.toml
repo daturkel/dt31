@@ -53,9 +53,7 @@ dev = [
 # Ruff 0.16 dropped most of pycodestyle from its default rule set, including E402
 # (import not at top of file), E711 and E712 (`== None`, `== True`), E721
 # (`type(x) == type(y)`) and E741 (ambiguous names `l`, `I`, `O`) — all worth keeping
-# on their own merits. Re-select them; leaving them off would also have silently
-# deleted the `noqa` comments that depend on them, since ruff removes a `noqa` for
-# a rule that isn't enabled.
+# on their own merits.
 extend-select = ["E"]
 # E501: line length, already enforced by the formatter.
 ignore = ["E501"]
