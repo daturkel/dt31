@@ -94,14 +94,15 @@ class BlankLine:
         return type(self) is type(other)
 
 
-def _find_label_colon(line: str) -> int:
-    """Find the first ':' that's not inside a quoted string.
+def _find_unquoted(line: str, target: str) -> int:
+    """Find the first occurrence of `target` that's not inside a character literal.
 
     Args:
         line: The line to search.
+        target: The character to search for.
 
     Returns:
-        The position of the first label colon, or -1 if none found.
+        The position of the first unquoted occurrence, or -1 if none found.
     """
     in_quote = False
     i = 0
@@ -112,7 +113,7 @@ def _find_label_colon(line: str) -> int:
         elif char == "\\" and in_quote and i + 1 < len(line):
             # Skip the next character if we're in a quote and this is a backslash
             i += 1
-        elif char == ":" and not in_quote:
+        elif char == target and not in_quote:
             return i
         i += 1
     return -1
@@ -163,11 +164,12 @@ def parse_program(
     program = []
 
     for line_num, line in enumerate(text.splitlines(), start=1):
-        # Extract comment (everything after semicolon)
+        # Extract comment (everything after the first unquoted semicolon)
         comment_text = None
-        if ";" in line:
-            line, comment_part = line.split(";", 1)
-            comment_text = comment_part.strip()
+        semicolon_pos = _find_unquoted(line, ";")
+        if semicolon_pos != -1:
+            comment_text = line[semicolon_pos + 1 :].strip()
+            line = line[:semicolon_pos]
 
         line = line.strip()
 
@@ -187,7 +189,7 @@ def parse_program(
         labels_found = []
         while ":" in line:
             # Find the first ':' that's not inside a quoted string
-            colon_pos = _find_label_colon(line)
+            colon_pos = _find_unquoted(line, ":")
             if colon_pos == -1:
                 break  # No label colon found (all colons are in quotes)
 
