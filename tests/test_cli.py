@@ -347,6 +347,105 @@ def test_cli_runtime_error_omits_line_when_unavailable(temp_dt_file, capsys):
     assert captured.err == "\nRuntime error: boom\n"
 
 
+def test_cli_max_steps_exceeded(temp_dt_file, capsys):
+    """--max-steps raises StepLimitExceeded on an infinite loop and reports it
+    the same way as any other DT31RuntimeError."""
+    assembly = """
+    loop:
+        JMP loop
+    """
+    file_path = temp_dt_file(assembly)
+
+    with (
+        patch.object(sys, "argv", ["dt31", "run", "--max-steps", "100", file_path]),
+        pytest.raises(SystemExit) as exc_info,
+    ):
+        main()
+
+    assert exc_info.value.code == 1
+    captured = capsys.readouterr()
+    assert captured.err == "\nLine 3: Runtime error: Execution exceeded max_steps=100\n"
+
+
+def test_cli_max_steps_dump_error(temp_dt_file, tmp_path, capsys):
+    """--max-steps together with --dump error produces a well-formed dump."""
+    assembly = """
+    loop:
+        JMP loop
+    """
+    file_path = temp_dt_file(assembly)
+    dump_path = tmp_path / "step_limit_crash.json"
+
+    with (
+        patch.object(
+            sys,
+            "argv",
+            [
+                "dt31",
+                "run",
+                "--max-steps",
+                "10",
+                "--dump",
+                "error",
+                "--dump-file",
+                str(dump_path),
+                file_path,
+            ],
+        ),
+        pytest.raises(SystemExit) as exc_info,
+    ):
+        main()
+
+    assert exc_info.value.code == 1
+    captured = capsys.readouterr()
+    assert f"CPU state dumped to: {dump_path}" in captured.err
+
+    with open(dump_path) as f:
+        dump_data = json.load(f)
+
+    assert dump_data["error"]["type"] == "StepLimitExceeded"
+    assert dump_data["error"]["message"] == "Execution exceeded max_steps=10"
+    assert dump_data["error"]["instruction"]["line"] == 3
+
+
+def test_cli_max_steps_not_exceeded(temp_dt_file, capsys):
+    """A program that finishes within max_steps runs normally."""
+    assembly = """
+    CP 5, R.a
+    NOUT R.a, 0
+    """
+    file_path = temp_dt_file(assembly)
+
+    with (
+        patch.object(sys, "argv", ["dt31", "run", "--max-steps", "100", file_path]),
+        pytest.raises(SystemExit) as exc_info,
+    ):
+        main()
+
+    assert exc_info.value.code == 0
+    captured = capsys.readouterr()
+    assert captured.out == "5"
+
+
+def test_cli_max_steps_default_is_unlimited(temp_dt_file, capsys):
+    """Omitting --max-steps runs without any step limit (args.max_steps is None)."""
+    assembly = """
+    CP 5, R.a
+    NOUT R.a, 0
+    """
+    file_path = temp_dt_file(assembly)
+
+    with (
+        patch.object(sys, "argv", ["dt31", "run", file_path]),
+        pytest.raises(SystemExit) as exc_info,
+    ):
+        main()
+
+    assert exc_info.value.code == 0
+    captured = capsys.readouterr()
+    assert captured.out == "5"
+
+
 def test_custom_instructions_basic(tmp_path, capsys) -> None:
     """Test loading and using basic custom instruction."""
     # Create custom instruction file

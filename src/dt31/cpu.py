@@ -13,6 +13,7 @@ from dt31.exceptions import (
     MemoryOutOfBounds,
     StackOverflow,
     StackUnderflow,
+    StepLimitExceeded,
 )
 from dt31.formatter import program_to_text
 from dt31.operands import (
@@ -269,6 +270,7 @@ class DT31:
         self,
         instructions: list[Instruction | Label | Comment | BlankLine] | None = None,
         debug: bool = False,
+        max_steps: int | None = None,
     ):
         """Load and execute instructions, or continue from current instruction pointer.
 
@@ -279,10 +281,16 @@ class DT31:
                 execution from the current instruction pointer without loading.
             debug: If True, prints each instruction result and waits for user input
                 before continuing to the next instruction.
+            max_steps: If set, the maximum number of instructions this call may
+                execute before raising `StepLimitExceeded`. Scoped to this single
+                `run()` call (unlike `step_count`, which accumulates across
+                calls). `None` (the default) means unlimited.
 
         Raises:
             RuntimeError: If no instructions provided and no program is loaded.
             EndOfProgram: When execution completes normally (caught internally).
+            StepLimitExceeded: If `max_steps` instructions have already executed
+                in this call and another instruction is about to run.
         """
         if instructions is not None:
             self.load(instructions)
@@ -292,6 +300,11 @@ class DT31:
             )
 
         self.debug_mode = debug
+        # step_count accumulates across run() calls (see its docstring), so
+        # max_steps is tracked as a delta from the count at the start of this
+        # call rather than a fresh counter, keeping the fast and slow paths
+        # (which both increment step_count) in agreement for free.
+        start_step_count = self.step_count
         wall_start = time.perf_counter_ns()
         try:
             if not debug and not self.track_step_time:
@@ -311,6 +324,15 @@ class DT31:
                         reached_end = True
                         break
                     instruction = loaded[ip]
+                    if (
+                        max_steps is not None
+                        and self.step_count - start_step_count >= max_steps
+                    ):
+                        exc = StepLimitExceeded(
+                            f"Execution exceeded max_steps={max_steps}"
+                        )
+                        self._attach_error_context(exc, instruction)
+                        raise exc
                     try:
                         instruction(self)
                     except DT31RuntimeError as exc:
@@ -320,21 +342,38 @@ class DT31:
                     if self.debug_mode:
                         input()
                 if not reached_end:
-                    self._run_with_step()
+                    self._run_with_step(max_steps, start_step_count)
             else:
-                self._run_with_step()
+                self._run_with_step(max_steps, start_step_count)
         finally:
             wall_end = time.perf_counter_ns()
             self.wall_time_ns += wall_end - wall_start
 
-    def _run_with_step(self):
+    def _run_with_step(self, max_steps: int | None = None, start_step_count: int = 0):
         """Execute the loaded program via `step()` until `EndOfProgram`.
 
         This is the slow path used for debug mode, timing-tracked runs, and
         as a fallback once an instruction (e.g. `BRKD`) switches on
         `debug_mode` partway through a fast-path `run()`.
+
+        Args:
+            max_steps: If set, the maximum number of instructions the calling
+                `run()` invocation may execute in total (fast path plus this
+                loop), counted from `start_step_count`.
+            start_step_count: `self.step_count` at the start of the calling
+                `run()` invocation, used to compute this call's step budget.
         """
         while True:
+            ip = self.registers["ip"]
+            if (
+                0 <= ip < self._program_length
+                and max_steps is not None
+                and self.step_count - start_step_count >= max_steps
+            ):
+                instruction = self.instructions[ip]
+                exc = StepLimitExceeded(f"Execution exceeded max_steps={max_steps}")
+                self._attach_error_context(exc, instruction)
+                raise exc
             try:
                 self.step()
                 if self.debug_mode:

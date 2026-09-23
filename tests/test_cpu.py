@@ -9,6 +9,7 @@ from dt31.exceptions import (
     MemoryOutOfBounds,
     StackOverflow,
     StackUnderflow,
+    StepLimitExceeded,
 )
 from dt31.operands import L, M, R
 from dt31.parser import parse_program
@@ -685,3 +686,127 @@ def test_dt31_runtime_error_is_common_base():
     assert issubclass(StackOverflow, DT31RuntimeError)
     assert issubclass(MemoryOutOfBounds, DT31RuntimeError)
     assert issubclass(InvalidOperand, DT31RuntimeError)
+    assert issubclass(StepLimitExceeded, DT31RuntimeError)
+
+
+# ===== max_steps =====
+
+
+def _infinite_loop_program():
+    """A tight infinite loop: `loop: JMP loop`."""
+    jmp = I.JMP(0)
+    return [jmp]
+
+
+def test_max_steps_none_is_unlimited(cpu):
+    """max_steps=None (the default) behaves identically to omitting it."""
+    program = [I.CP(5, R.a), I.ADD(R.a, L[1]), I.NOOP()]
+    cpu.run(program, max_steps=None)
+    assert cpu.get_register("a") == 6
+    assert cpu.step_count == 3
+
+
+def test_max_steps_raises_after_exact_count_fast_path():
+    """Exactly max_steps instructions execute, then the next raises via the
+    fast path (no debug, no track_step_time)."""
+    cpu = DT31()
+    program = _infinite_loop_program()
+
+    with pytest.raises(StepLimitExceeded) as e:
+        cpu.run(program, max_steps=5)
+
+    assert str(e.value) == "Execution exceeded max_steps=5"
+    assert cpu.step_count == 5
+    assert e.value.ip == 0
+    assert e.value.instruction is cpu.instructions[0]
+
+
+def test_max_steps_raises_after_exact_count_slow_path(monkeypatch):
+    """Exactly max_steps instructions execute, then the next raises via the
+    slow (debug) path."""
+    monkeypatch.setattr("builtins.input", lambda: None)
+    cpu = DT31()
+    program = _infinite_loop_program()
+
+    with pytest.raises(StepLimitExceeded) as e:
+        cpu.run(program, debug=True, max_steps=5)
+
+    assert str(e.value) == "Execution exceeded max_steps=5"
+    assert cpu.step_count == 5
+    assert e.value.ip == 0
+    assert e.value.instruction is cpu.instructions[0]
+
+
+def test_max_steps_raises_after_exact_count_track_step_time_path():
+    """Exactly max_steps instructions execute, then the next raises via the
+    slow (track_step_time) path."""
+    cpu = DT31(track_step_time=True)
+    program = _infinite_loop_program()
+
+    with pytest.raises(StepLimitExceeded) as e:
+        cpu.run(program, max_steps=5)
+
+    assert str(e.value) == "Execution exceeded max_steps=5"
+    assert cpu.step_count == 5
+    assert e.value.ip == 0
+    assert e.value.instruction is cpu.instructions[0]
+
+
+def test_max_steps_fast_and_slow_paths_agree(monkeypatch):
+    """The fast path and both slow paths (debug, track_step_time) hit
+    StepLimitExceeded at the same step_count for the same max_steps."""
+    monkeypatch.setattr("builtins.input", lambda: None)
+    program = _infinite_loop_program()
+
+    fast_cpu = DT31()
+    with pytest.raises(StepLimitExceeded):
+        fast_cpu.run(program, max_steps=7)
+
+    debug_cpu = DT31()
+    with pytest.raises(StepLimitExceeded):
+        debug_cpu.run(program, debug=True, max_steps=7)
+
+    timing_cpu = DT31(track_step_time=True)
+    with pytest.raises(StepLimitExceeded):
+        timing_cpu.run(program, max_steps=7)
+
+    assert fast_cpu.step_count == debug_cpu.step_count == timing_cpu.step_count == 7
+    assert (
+        fast_cpu.get_register("ip")
+        == debug_cpu.get_register("ip")
+        == timing_cpu.get_register("ip")
+        == 0
+    )
+
+
+def test_max_steps_budget_is_per_run_call():
+    """max_steps is scoped to a single run() call, not lifetime step_count:
+    calling run() twice with the same max_steps gives each call a full budget."""
+    cpu = DT31()
+    program = _infinite_loop_program()
+
+    with pytest.raises(StepLimitExceeded):
+        cpu.run(program, max_steps=4)
+    assert cpu.step_count == 4
+
+    cpu.set_register("ip", 0)
+    with pytest.raises(StepLimitExceeded):
+        cpu.run(max_steps=4)
+    assert cpu.step_count == 8
+
+
+def test_max_steps_does_not_fire_when_program_ends_first(cpu):
+    """When the program halts before reaching max_steps, no error is raised."""
+    program = [I.CP(5, R.a), I.NOOP()]
+    cpu.run(program, max_steps=100)
+    assert cpu.step_count == 2
+
+
+def test_max_steps_does_not_misfire_at_end_of_program_slow_path(monkeypatch):
+    """A program that ends exactly as max_steps is reached halts normally
+    rather than raising, on the slow path too."""
+    monkeypatch.setattr("builtins.input", lambda: None)
+    cpu = DT31()
+    program = [I.CP(5, R.a), I.NOOP()]
+    cpu.run(program, debug=True, max_steps=2)
+    assert cpu.step_count == 2
