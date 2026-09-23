@@ -14,6 +14,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `[100 - R.i]`, `[R.c - 'a']` in assembly and `M[R.a + 5]` etc. in Python, via the
   new `Offset` operand. Spaces are now allowed inside memory brackets. (#69)
 
+### Fixed
+
+- Invalid register names such as `R.1a` or `R.__x` raise `ParserError` with the line
+  number, instead of a raw `ValueError` or `AttributeError`. (#69)
+
 ## [0.12.0] - 2026-09-23
 
 ### Added

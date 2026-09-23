@@ -9,25 +9,25 @@ from dt31.operands import LC, L, Label, M, Offset, R
 from dt31.parser import (
     MEMORY_PATTERN,
     REGISTER_PREFIX_PATTERN,
-    TOKEN_PATTERN,
     BlankLine,
     Comment,
     ParserError,
     _find_unquoted,
     parse_operand,
     parse_program,
+    tokenize,
 )
 
-# ----------------------------------- Token pattern ---------------------------------- #
+# ------------------------------------- Tokenize ------------------------------------- #
 
 
-def test_token_pattern_raw_basic():
-    assert TOKEN_PATTERN.findall("CP 5, R.a") == ["CP", "5", "R.a"]
-    assert TOKEN_PATTERN.findall("ADD a, b, c") == ["ADD", "a", "b", "c"]
+def test_tokenize_raw_basic():
+    assert tokenize("CP 5, R.a") == ["CP", "5", "R.a"]
+    assert tokenize("ADD a, b, c") == ["ADD", "a", "b", "c"]
 
 
-def test_token_pattern_no_space():
-    assert TOKEN_PATTERN.findall("XXX 5,R.a,',',' '") == [
+def test_tokenize_no_space():
+    assert tokenize("XXX 5,R.a,',',' '") == [
         "XXX",
         "5",
         "R.a",
@@ -36,27 +36,27 @@ def test_token_pattern_no_space():
     ]
 
 
-def test_token_pattern_memory_references():
-    assert TOKEN_PATTERN.findall("M[100]") == ["M[100]"]
-    assert TOKEN_PATTERN.findall("[100]") == ["[100]"]
-    assert TOKEN_PATTERN.findall("M[R.a]") == ["M[R.a]"]
+def test_tokenize_memory_references():
+    assert tokenize("M[100]") == ["M[100]"]
+    assert tokenize("[100]") == ["[100]"]
+    assert tokenize("M[R.a]") == ["M[R.a]"]
 
 
-def test_token_pattern_character_literals():
-    assert TOKEN_PATTERN.findall("'H'") == ["'H'"]
-    assert TOKEN_PATTERN.findall("COUT 'A'") == ["COUT", "'A'"]
-    assert TOKEN_PATTERN.findall("CP 'x', R.a") == ["CP", "'x'", "R.a"]
-    assert TOKEN_PATTERN.findall("CP 'x',R.a") == ["CP", "'x'", "R.a"]
+def test_tokenize_character_literals():
+    assert tokenize("'H'") == ["'H'"]
+    assert tokenize("COUT 'A'") == ["COUT", "'A'"]
+    assert tokenize("CP 'x', R.a") == ["CP", "'x'", "R.a"]
+    assert tokenize("CP 'x',R.a") == ["CP", "'x'", "R.a"]
 
 
-def test_token_pattern_register_syntax():
-    assert TOKEN_PATTERN.findall("CP R.a, R.B") == ["CP", "R.a", "R.B"]
-    assert TOKEN_PATTERN.findall("CP R.foo,R.x") == ["CP", "R.foo", "R.x"]
-    assert TOKEN_PATTERN.findall("R.my_reg") == ["R.my_reg"]
+def test_tokenize_register_syntax():
+    assert tokenize("CP R.a, R.B") == ["CP", "R.a", "R.B"]
+    assert tokenize("CP R.foo,R.x") == ["CP", "R.foo", "R.x"]
+    assert tokenize("R.my_reg") == ["R.my_reg"]
 
 
-def test_token_pattern_complex_line():
-    assert TOKEN_PATTERN.findall("ADD M[100], R.a, [R.b]") == [
+def test_tokenize_complex_line():
+    assert tokenize("ADD M[100], R.a, [R.b]") == [
         "ADD",
         "M[100]",
         "R.a",
@@ -64,19 +64,19 @@ def test_token_pattern_complex_line():
     ]
 
 
-def test_token_pattern_negative_numbers():
-    assert TOKEN_PATTERN.findall("CP -5, R.a") == ["CP", "-5", "R.a"]
-    assert TOKEN_PATTERN.findall("ADD a, -10") == ["ADD", "a", "-10"]
+def test_tokenize_negative_numbers():
+    assert tokenize("CP -5, R.a") == ["CP", "-5", "R.a"]
+    assert tokenize("ADD a, -10") == ["ADD", "a", "-10"]
 
 
-def test_token_pattern_labels():
-    assert TOKEN_PATTERN.findall("loop") == ["loop"]
-    assert TOKEN_PATTERN.findall("JMP start") == ["JMP", "start"]
+def test_tokenize_labels():
+    assert tokenize("loop") == ["loop"]
+    assert tokenize("JMP start") == ["JMP", "start"]
 
 
-def test_token_pattern_whitespace_handling():
-    assert TOKEN_PATTERN.findall("  CP   5  ,  R.a  ") == ["CP", "5", "R.a"]
-    assert TOKEN_PATTERN.findall("\tADD\ta,\tb") == ["ADD", "a", "b"]
+def test_tokenize_whitespace_handling():
+    assert tokenize("  CP   5  ,  R.a  ") == ["CP", "5", "R.a"]
+    assert tokenize("\tADD\ta,\tb") == ["ADD", "a", "b"]
 
 
 # ---------------------------------- Memory pattern ---------------------------------- #
@@ -348,16 +348,16 @@ def test_parse_operand_memory_nested():
     assert result == M[M[R.a]]
 
 
-def test_token_pattern_memory_offsets():
-    assert TOKEN_PATTERN.findall("CP [R.a+5], R.b") == ["CP", "[R.a+5]", "R.b"]
-    assert TOKEN_PATTERN.findall("CP [R.a + 5],R.b") == ["CP", "[R.a + 5]", "R.b"]
-    assert TOKEN_PATTERN.findall("CP M[ R.a - R.b ] R.b") == [
+def test_tokenize_memory_offsets():
+    assert tokenize("CP [R.a+5], R.b") == ["CP", "[R.a+5]", "R.b"]
+    assert tokenize("CP [R.a + 5],R.b") == ["CP", "[R.a + 5]", "R.b"]
+    assert tokenize("CP M[ R.a - R.b ] R.b") == [
         "CP",
         "M[ R.a - R.b ]",
         "R.b",
     ]
-    assert TOKEN_PATTERN.findall("CP [[R.a]], [1]junk") == ["CP", "[[R.a]]", "[1]junk"]
-    assert TOKEN_PATTERN.findall("CP [R.a+','], [R.a + ']']") == [
+    assert tokenize("CP [[R.a]], [1]junk") == ["CP", "[[R.a]]", "[1]junk"]
+    assert tokenize("CP [R.a+','], [R.a + ']']") == [
         "CP",
         "[R.a+',']",
         "[R.a + ']']",
@@ -411,6 +411,134 @@ def test_parse_operand_invalid_memory_offset(token):
         "characters joined by + or -, at least one of them a register, e.g. "
         "[R.a + 5] or [100 + R.i]."
     )
+
+
+@pytest.mark.parametrize(
+    ("line", "expected"),
+    [
+        ("CP [[R.a + 5]], R.b", ["CP", "[[R.a + 5]]", "R.b"]),
+        ("CP [[[R.a - 1]]],R.b", ["CP", "[[[R.a - 1]]]", "R.b"]),
+        ("CP M[ [R.a] + 2 ], R.b", ["CP", "M[ [R.a] + 2 ]", "R.b"]),
+        ("CP [R.a + ' '], R.b", ["CP", "[R.a + ' ']", "R.b"]),
+        ("CP [R.a + '['], R.b", ["CP", "[R.a + '[']", "R.b"]),
+        (r"CP [R.a + '\''], R.b", ["CP", r"[R.a + '\'']", "R.b"]),
+        (r"CP [R.a + '\\'], R.b", ["CP", r"[R.a + '\\']", "R.b"]),
+        ("COUT ']', 1", ["COUT", "']'", "1"]),
+        ("CP\t[R.a +\t5] ,\t R.b,", ["CP", "[R.a +\t5]", "R.b"]),
+        ("CP ]], R.b", ["CP", "]]", "R.b"]),
+    ],
+)
+def test_tokenize_brackets_and_quotes(line, expected):
+    assert tokenize(line) == expected
+
+
+@pytest.mark.parametrize(
+    ("token", "expected"),
+    [
+        ("[R.a+05]", M[Offset(R.a, 5)]),
+        ("[R.a\t+\t5]", M[Offset(R.a, 5)]),
+        ("[-5-R.a]", M[Offset(-5, R.a, subtract=True)]),
+        ("[R.a+99999999999999999999]", M[Offset(R.a, 99999999999999999999)]),
+        (r"[R.a+'\x41']", M[Offset(R.a, LC["A"])]),
+        (r"[R.a+'\\']", M[Offset(R.a, LC["\\"])]),
+        ("[R.a+R.a]", M[Offset(R.a, R.a)]),
+    ],
+)
+def test_parse_operand_memory_offset_edge_cases(token, expected):
+    assert parse_operand(token) == expected
+
+
+@pytest.mark.parametrize(
+    "token",
+    [
+        "[R.a++5]",
+        "[+5+R.a]",
+        "[-R.a+5]",
+        "[--5+R.a]",
+        "[R.a+label]",
+        "[label+5]",
+        "[r.a+5]",
+        "[R.+5]",
+        "[R.a+R.]",
+        "[R.a+'']",
+    ],
+)
+def test_parse_operand_more_invalid_memory_offsets(token):
+    with pytest.raises(ParserError) as e:
+        parse_operand(token)
+    assert str(e.value) == (
+        f"Invalid memory offset '{token}'. Offsets must be two registers, integers or "
+        "characters joined by + or -, at least one of them a register, e.g. "
+        "[R.a + 5] or [100 + R.i]."
+    )
+
+
+def test_parse_operand_memory_offset_multi_character_literal():
+    with pytest.raises(ParserError) as e:
+        parse_operand("[R.a+'ab']")
+    assert str(e.value) == (
+        "Invalid character literal 'ab'. "
+        "Character literals must contain exactly one character."
+    )
+
+
+BAD_IDENTIFIER_MESSAGE = (
+    "Invalid register name '1a'. Register names must be valid Python identifiers "
+    "(letters, digits, underscores; cannot start with a digit)."
+)
+DUNDER_MESSAGE = (
+    "Invalid register name '__x'. Register names cannot start with double "
+    "underscores (reserved for dunder methods)."
+)
+
+
+@pytest.mark.parametrize(
+    ("token", "message"),
+    [
+        ("R.1a", BAD_IDENTIFIER_MESSAGE),
+        ("R.__x", DUNDER_MESSAGE),
+        ("[R.1a+5]", BAD_IDENTIFIER_MESSAGE),
+        ("[5-R.__x]", DUNDER_MESSAGE),
+    ],
+)
+def test_parse_operand_invalid_register_name(token, message):
+    with pytest.raises(ParserError) as e:
+        parse_operand(token)
+    assert str(e.value) == message
+
+
+def test_parse_program_invalid_register_name_has_line_number():
+    with pytest.raises(ParserError) as e:
+        parse_program("NOOP\nCP R.1a, R.b")
+    assert str(e.value) == f"Line 2: {BAD_IDENTIFIER_MESSAGE}"
+
+
+@pytest.mark.parametrize(
+    "operand",
+    [
+        "[R.a+5]",
+        "[100-R.i]",
+        "[-5+R.a]",
+        "[R.a-R.b]",
+        "[[R.a+5]]",
+        "[[[R.a-1]]]",
+        "M[[R.a]]",
+        "[R.c-'a']",
+        "[R.c+',']",
+        "[R.c+']']",
+        "[R.c+'[']",
+        "[R.c+';']",
+        "[R.c+' ']",
+        r"[R.c+'\'']",
+        r"[R.c+'\\']",
+        r"[R.c+'\n']",
+    ],
+)
+def test_memory_offset_format_round_trip(operand):
+    program = parse_program(f"CP {operand}, R.b ; note")
+    text = program_to_text(program)
+    assert parse_program(text) == program
+    assert program_to_text(parse_program(text)) == text
 
 
 def test_parse_operand_offset_outside_memory_reference():
