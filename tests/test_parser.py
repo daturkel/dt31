@@ -1208,3 +1208,49 @@ def test_blank_line_inequality_with_other_types():
     assert blank != Label("test")
     assert blank != Comment("test")
     assert blank != I.CP(5, R.a)
+
+
+# ----------------------------------- Instruction line numbers ----------------------- #
+
+
+def test_parse_program_sets_instruction_line_numbers():
+    text = """CP 5, R.a
+loop:
+    NOUT R.a, 1
+    SUB R.a, 1
+    JGT loop, R.a, 0
+"""
+    program = parse_program(text)
+    instructions = [item for item in program if isinstance(item, Instruction)]
+    assert [inst.line for inst in instructions] == [1, 3, 4, 5]
+
+
+def test_parse_program_line_numbers_with_blank_lines_and_comments():
+    text = """; leading comment
+CP 5, R.a
+
+; another comment
+ADD R.a, 1
+
+loop:
+    NOUT R.a, 1
+"""
+    program = parse_program(text)
+    instructions = [item for item in program if isinstance(item, Instruction)]
+    assert [inst.line for inst in instructions] == [2, 5, 8]
+
+
+def test_parse_program_line_number_with_inline_label():
+    text = "start: CP 0, R.a\nNOUT R.a, 1\n"
+    program = parse_program(text)
+    instructions = [item for item in program if isinstance(item, Instruction)]
+    assert [inst.line for inst in instructions] == [1, 2]
+
+
+def test_python_api_program_instructions_have_no_line():
+    program = [
+        I.CP(5, R.a),
+        I.ADD(R.a, L[1]),
+        I.NOUT(R.a, L[1]),
+    ]
+    assert all(inst.line is None for inst in program)

@@ -211,7 +211,8 @@ Example error dump structure:
     "message": "integer division or modulo by zero",
     "instruction": {
       "repr": "DIV(a=R.a, b=R.b, out=R.a)",
-      "str": "DIV R.a, R.b, R.a"
+      "str": "DIV R.a, R.b, R.a",
+      "line": 3
     },
     "traceback": "..."
   }
@@ -518,7 +519,14 @@ def run_command(args: argparse.Namespace) -> None:
         # Catch SystemExit to display verbose stats before re-raising
         exit_code = e.code if isinstance(e.code, int) else 1
     except Exception as e:
-        print(f"\nRuntime error: {e}", file=sys.stderr)
+        failing_instruction = _get_failing_instruction(cpu)
+        if failing_instruction is not None and failing_instruction.line is not None:
+            print(
+                f"\nLine {failing_instruction.line}: Runtime error: {e}",
+                file=sys.stderr,
+            )
+        else:
+            print(f"\nRuntime error: {e}", file=sys.stderr)
         if args.debug:
             state = cpu.state
             print("\nCPU state at error:", file=sys.stderr)
@@ -1163,6 +1171,28 @@ def generate_dump_path(program_file: str, user_path: str | None, suffix: str) ->
     return f"{program_name}_{suffix}_{timestamp}.json"
 
 
+def _get_failing_instruction(cpu: DT31) -> Instruction | None:
+    """Find the instruction that was executing (or about to execute) on error.
+
+    Args:
+        cpu: The DT31 CPU instance after a runtime error.
+
+    Returns:
+        The failing `Instruction`, or `None` if it can't be determined.
+    """
+    try:
+        ip = cpu.get_register("ip")
+    except Exception:
+        return None
+
+    if 0 <= ip < len(cpu.instructions):
+        return cpu.instructions[ip]
+    elif ip >= len(cpu.instructions) and len(cpu.instructions) > 0:
+        # IP went past end, show last instruction
+        return cpu.instructions[-1]
+    return None
+
+
 def dump_cpu_state(cpu: DT31, file_path: str, error: Exception | None = None) -> None:
     """Dump CPU state to JSON file, optionally with error info.
 
@@ -1177,7 +1207,7 @@ def dump_cpu_state(cpu: DT31, file_path: str, error: Exception | None = None) ->
     dump_data = {"cpu_state": cpu.dump()}
 
     if error is not None:
-        error_info: dict[str, str | dict[str, str]] = {
+        error_info: dict[str, str | dict[str, str | int | None]] = {
             "type": type(error).__name__,
             "message": str(error),
             "traceback": traceback.format_exc(),
@@ -1185,18 +1215,13 @@ def dump_cpu_state(cpu: DT31, file_path: str, error: Exception | None = None) ->
 
         # Include the last instruction that was executed (or attempted)
         try:
-            ip = cpu.get_register("ip")
-            instruction = None
-            if 0 <= ip < len(cpu.instructions):
-                instruction = cpu.instructions[ip]
-            elif ip >= len(cpu.instructions) and len(cpu.instructions) > 0:
-                # IP went past end, show last instruction
-                instruction = cpu.instructions[-1]
+            instruction = _get_failing_instruction(cpu)
 
             if instruction is not None:
                 error_info["instruction"] = {
                     "repr": repr(instruction),
                     "str": str(instruction),
+                    "line": instruction.line,
                 }
         except Exception:  # noqa: S110 (`try`-`except`-`pass`) - a failed dump beats no dump
             pass

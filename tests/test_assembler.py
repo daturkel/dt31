@@ -7,6 +7,7 @@ from dt31.assembler import (
     extract_registers_from_program,
 )
 from dt31.operands import L, Label, Literal, M, R
+from dt31.parser import parse_program
 
 # ============================================================================
 # Basic Assembly
@@ -325,6 +326,15 @@ def test_undefined_label_in_relative_jump():
     assert "missing" in str(exc_info.value)
 
 
+def test_undefined_label_error_includes_line_from_parsed_program():
+    """Undefined label error should include the source line when parsed from text."""
+    program = parse_program("NOOP\nJMP nonexistent\n")
+    with pytest.raises(AssemblyError) as exc_info:
+        assemble(program)
+    assert "Line 2" in str(exc_info.value)
+    assert "nonexistent" in str(exc_info.value)
+
+
 def test_multiple_undefined_labels():
     """Should report first undefined label encountered."""
     program = [
@@ -451,6 +461,16 @@ def test_original_program_unchanged():
     assert original_dest.name == "start"
     # Result should have Literal
     assert isinstance(result[1].dest, Literal)
+
+
+def test_assemble_preserves_instruction_line_numbers():
+    """Line numbers set during parsing should survive assemble()'s deepcopy."""
+    text = "CP 5, R.a\nJMP end\nNOOP\nend:\n    NOUT R.a, 1\n"
+    program = parse_program(text)
+
+    result = assemble(program)
+
+    assert [inst.line for inst in result] == [1, 2, 3, 5]
 
 
 def test_resolved_labels_show_in_debug_output():
