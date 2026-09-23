@@ -52,6 +52,8 @@ See @README.md for project overview, features, usage examples, and user-facing d
   - Summary: 2-4 bullet points covering key changes
   - Test plan: Short checklist of what was tested
   - Avoid verbose explanations unless complexity requires it
+- **Changelog**: PRs with user-facing changes add an entry under `## [Unreleased]` in [CHANGELOG.md](CHANGELOG.md) ([Keep a Changelog](https://keepachangelog.com/en/1.1.0/) format, PR number in parentheses). CI, tooling, and docs-only changes don't need one.
+- **Releases**: `uv run invoke bump <level>` on `main` moves the Unreleased entries under the new version, commits, and pushes the tag. Then publish a GitHub Release on that tag with the version's changelog section as its body, which triggers the PyPI publish.
 
 ## Instruction Set Guidelines
 
