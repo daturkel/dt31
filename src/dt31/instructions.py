@@ -124,10 +124,13 @@ class Instruction:
             is_blocking: If True, this instruction blocks on user input.
                 Set this in subclass `__init__` for instructions like NIN, CIN, STRIN, BRK
                 that wait for user input. This allows timing metrics to exclude I/O wait time.
+            line: The 1-indexed source line this instruction was parsed from, or
+                `None` for instructions built via the Python API (no source text).
         """
         self.name = name
         self.comment: str = ""
         self.is_blocking: bool = False
+        self.line: int | None = None
 
     def _calc(self, cpu: DT31) -> int:
         """Perform the instruction's operation and return a result value.
@@ -227,9 +230,11 @@ class Instruction:
     def __eq__(self, other):
         if type(self) is not type(other):
             return False
-        # Exclude comment from equality check
-        self_dict = {k: v for k, v in self.__dict__.items() if k != "comment"}
-        other_dict = {k: v for k, v in other.__dict__.items() if k != "comment"}
+        # Exclude comment and line from equality check: both are metadata about where
+        # an instruction came from, not part of its behavior.
+        excluded = {"comment", "line"}
+        self_dict = {k: v for k, v in self.__dict__.items() if k not in excluded}
+        other_dict = {k: v for k, v in other.__dict__.items() if k not in excluded}
         return self_dict == other_dict
 
 

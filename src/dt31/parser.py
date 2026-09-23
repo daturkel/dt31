@@ -253,6 +253,8 @@ def parse_program(
         if comment_text:
             instruction.comment = comment_text
 
+        instruction.line = line_num
+
         program.append(instruction)
 
     return program

@@ -99,6 +99,10 @@ def assemble(
             try:
                 target_ip = label_to_ip[inst.dest.name]
             except KeyError:
+                if inst.line is not None:
+                    raise AssemblyError(
+                        f"Line {inst.line}: Undefined label: {inst.dest.name}"
+                    )
                 raise AssemblyError(f"Undefined label: {inst.dest.name}")
 
             if isinstance(inst, RelativeJumpMixin):

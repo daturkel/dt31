@@ -11,6 +11,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from dt31 import DT31
+from dt31 import instructions as I
 from dt31.cli import dump_cpu_state, format_time, main
 
 
@@ -301,6 +302,53 @@ def test_cli_runtime_error_with_debug(temp_dt_file, capsys):
     assert "CPU state at error" in captured.err
     assert "Registers:" in captured.err
     assert "Stack size:" in captured.err
+
+
+def test_cli_runtime_error_includes_line_number(temp_dt_file, capsys):
+    """Runtime error message should include the source line of the failing instruction."""
+    assembly = """
+    CP 10, R.a
+    CP 0, R.b
+    DIV R.a, R.b
+    """
+    file_path = temp_dt_file(assembly)
+
+    with (
+        patch.object(sys, "argv", ["dt31", "run", file_path]),
+        pytest.raises(SystemExit) as exc_info,
+    ):
+        main()
+
+    assert exc_info.value.code == 1
+    captured = capsys.readouterr()
+    try:
+        _ = 10 // 0
+    except ZeroDivisionError as zero_division_error:
+        expected_message = str(zero_division_error)
+    assert captured.err == f"\nLine 4: Runtime error: {expected_message}\n"
+
+
+def test_cli_runtime_error_omits_line_when_unavailable(temp_dt_file, capsys):
+    """Runtime error message should not mention a line when instruction.line is None."""
+    assembly = """
+    CP 10, R.a
+    """
+    file_path = temp_dt_file(assembly)
+
+    def run_with_error(self, *args, **kwargs):
+        self.load([I.NOOP(), I.NOOP()])
+        raise RuntimeError("boom")
+
+    with (
+        patch.object(sys, "argv", ["dt31", "run", file_path]),
+        patch.object(DT31, "run", run_with_error),
+        pytest.raises(SystemExit) as exc_info,
+    ):
+        main()
+
+    assert exc_info.value.code == 1
+    captured = capsys.readouterr()
+    assert captured.err == "\nRuntime error: boom\n"
 
 
 def test_custom_instructions_basic(tmp_path, capsys) -> None:
@@ -1077,6 +1125,57 @@ def test_dump_on_error_with_program_loaded(temp_dt_file, tmp_path, capsys):
     assert "DIV R.x, R.z" in dump_data["cpu_state"]["program"]
 
 
+def test_dump_on_error_instruction_includes_line(temp_dt_file, tmp_path, capsys):
+    """Test that dump's error instruction includes the source line number."""
+    assembly = """
+    CP 5, R.x
+    CP 3, R.y
+    CP 0, R.z
+    DIV R.x, R.z
+    """
+    file_path = temp_dt_file(assembly)
+    dump_path = tmp_path / "line_dump.json"
+
+    with (
+        patch.object(
+            sys,
+            "argv",
+            [
+                "dt31",
+                "run",
+                "--dump",
+                "error",
+                "--dump-file",
+                str(dump_path),
+                file_path,
+            ],
+        ),
+        pytest.raises(SystemExit) as exc_info,
+    ):
+        main()
+
+    assert exc_info.value.code == 1
+
+    with open(dump_path) as f:
+        dump_data = json.load(f)
+
+    assert dump_data["error"]["instruction"]["line"] == 5
+
+
+def test_dump_cpu_state_python_api_instruction_line_is_none(tmp_path):
+    """dump_cpu_state should record a null line for Python-API-built instructions."""
+    cpu = DT31()
+    cpu.load([I.NOOP(), I.NOOP()])
+    dump_path = tmp_path / "no_line.json"
+
+    dump_cpu_state(cpu, str(dump_path), error=ValueError("boom"))
+
+    with open(dump_path) as f:
+        dump_data = json.load(f)
+
+    assert dump_data["error"]["instruction"]["line"] is None
+
+
 def test_dump_on_exit_with_explicit_path(temp_dt_file, tmp_path, capsys):
     """Test --dump-on-exit with explicit file path."""
     assembly = """
@@ -1342,6 +1441,26 @@ def test_dump_error_instruction_retrieval_fails(temp_dt_file, tmp_path, capsys):
         dump_data = json.load(f)
 
     # Should still have error info, just no instruction
+    assert "error" in dump_data
+    assert "instruction" not in dump_data["error"]
+
+
+def test_dump_cpu_state_instruction_serialization_fails(tmp_path):
+    """dump_cpu_state should succeed even if serializing the instruction fails."""
+
+    class UnreprableInstruction(I.NOOP):
+        def __repr__(self):
+            raise RuntimeError("cannot repr")
+
+    cpu = DT31()
+    cpu.load([UnreprableInstruction()])
+    dump_path = tmp_path / "unreprable.json"
+
+    dump_cpu_state(cpu, str(dump_path), error=ValueError("boom"))
+
+    with open(dump_path) as f:
+        dump_data = json.load(f)
+
     assert "error" in dump_data
     assert "instruction" not in dump_data["error"]
 
