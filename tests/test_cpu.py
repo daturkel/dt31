@@ -539,7 +539,7 @@ def test_division_by_zero_via_step_python_api():
     with pytest.raises(DivisionByZero) as e:
         cpu.step()
 
-    assert str(e.value) == "DIV by zero"
+    assert str(e.value) == "DIV by zero; got a=0, b=0"
     assert e.value.ip == 0
     assert e.value.instruction is cpu.instructions[0]
     assert e.value.line is None
@@ -583,7 +583,7 @@ def test_mod_by_zero_raises_division_by_zero():
     with pytest.raises(DivisionByZero) as e:
         cpu.run(program)
 
-    assert str(e.value) == "MOD by zero"
+    assert str(e.value) == "MOD by zero; got a=0, b=0"
 
 
 def test_division_by_zero_line_from_parsed_program():

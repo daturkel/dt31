@@ -462,7 +462,7 @@ class DIV(BinaryOperation):
         a = self.a.resolve(cpu)
         b = self.b.resolve(cpu)
         if b == 0:
-            raise DivisionByZero("DIV by zero")
+            raise DivisionByZero(f"DIV by zero; got {a=}, {b=}")
         return a // b
 
 
@@ -485,7 +485,7 @@ class MOD(BinaryOperation):
         a = self.a.resolve(cpu)
         b = self.b.resolve(cpu)
         if b == 0:
-            raise DivisionByZero("MOD by zero")
+            raise DivisionByZero(f"MOD by zero; got {a=}, {b=}")
         return a % b
 
 
