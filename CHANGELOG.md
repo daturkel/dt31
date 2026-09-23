@@ -10,9 +10,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Offset addressing for memory references: two registers, integers or characters
-  joined by `+` or `-`, at least one of them a register, e.g. `[R.a+5]`, `[100-R.i]`,
-  `[R.c-'a']` in assembly and `M[R.a + 5]` etc. in Python, via the new `Offset`
-  operand. Spaces are now allowed inside memory brackets. (#69)
+  joined by `+` or `-`, at least one of them a register, e.g. `[R.a + 5]`,
+  `[100 - R.i]`, `[R.c - 'a']` in assembly and `M[R.a + 5]` etc. in Python, via the
+  new `Offset` operand. Spaces are now allowed inside memory brackets. (#69)
 
 ## [0.12.0] - 2026-09-23
 

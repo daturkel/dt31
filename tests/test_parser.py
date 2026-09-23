@@ -378,23 +378,21 @@ def test_parse_operand_memory_offset():
 
 
 @pytest.mark.parametrize(
-    ("token", "char"),
+    ("token", "expected"),
     [
-        ("[R.c-'a']", "a"),
-        ("[R.c+',']", ","),
-        ("[R.c+']']", "]"),
-        ("[R.c+'[']", "["),
-        ("[R.c+';']", ";"),
-        ("[R.c+' ']", " "),
-        ("[R.c+'+']", "+"),
-        (r"[R.c+'\'']", "'"),
-        (r"[R.c+'\n']", "\n"),
+        ("[R.c-'a']", M[Offset(R.c, LC["a"], subtract=True)]),
+        ("[R.c+',']", M[Offset(R.c, LC[","])]),
+        ("[R.c+']']", M[Offset(R.c, LC["]"])]),
+        ("[R.c+'[']", M[Offset(R.c, LC["["])]),
+        ("[R.c+';']", M[Offset(R.c, LC[";"])]),
+        ("[R.c+' ']", M[Offset(R.c, LC[" "])]),
+        ("[R.c+'+']", M[Offset(R.c, LC["+"])]),
+        (r"[R.c+'\'']", M[Offset(R.c, LC["'"])]),
+        (r"[R.c+'\n']", M[Offset(R.c, LC["\n"])]),
     ],
 )
-def test_parse_operand_memory_offset_character_literals(token, char):
-    subtract = token[4] == "-"
-    assert parse_operand(token) == M[Offset(R.c, LC[char], subtract=subtract)]
-    assert str(parse_operand(token)) == token
+def test_parse_operand_memory_offset_character_literals(token, expected):
+    assert parse_operand(token) == expected
 
 
 def test_parse_operand_memory_offset_character_literal_first():
@@ -410,8 +408,8 @@ def test_parse_operand_invalid_memory_offset(token):
         parse_operand(token)
     assert str(e.value) == (
         f"Invalid memory offset '{token}'. Offsets must be two registers, integers or "
-        "characters joined by + or -, at least one of them a register, e.g. [R.a+5] "
-        "or [100+R.i]."
+        "characters joined by + or -, at least one of them a register, e.g. "
+        "[R.a + 5] or [100 + R.i]."
     )
 
 

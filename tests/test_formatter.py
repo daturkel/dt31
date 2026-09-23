@@ -1455,7 +1455,9 @@ def test_program_to_text_memory_offsets():
         "CP [ R.a + 5 ], M[R.a-R.b]\nNOUT [100 - R.a], 1\nCOUT [R.c + ','], 1"
     )
     assert program_to_text(program) == (
-        "    CP [R.a+5], [R.a-R.b]\n    NOUT [100-R.a], 1\n    COUT [R.c+','], 1\n"
+        "    CP [R.a + 5], [R.a - R.b]\n"
+        "    NOUT [100 - R.a], 1\n"
+        "    COUT [R.c + ','], 1\n"
     )
 
 
@@ -1465,9 +1467,9 @@ def test_program_to_python_memory_offsets():
         "from dt31 import DT31, LC, I, M, R\n"
         "\n"
         "program = [\n"
-        "    I.CP(a=1, b=M[R.a+5]),\n"
-        "    I.CP(a=M[100-R.b], b=R.c),\n"
-        '    I.CP(a=2, b=M[R.c-LC["a"]]),\n'
+        "    I.CP(a=1, b=M[R.a + 5]),\n"
+        "    I.CP(a=M[100 - R.b], b=R.c),\n"
+        '    I.CP(a=2, b=M[R.c - LC["a"]]),\n'
         "]\n"
         "\n"
         'if __name__ == "__main__":\n'

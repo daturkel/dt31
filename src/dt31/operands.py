@@ -347,16 +347,17 @@ class RegisterReference(Operand):
 class Offset(Operand):
     """The sum or difference of two operands, at least one of them a register.
 
-    Used as the address of a memory reference: `[R.a+5]`, `[100+R.i]`, `[R.a-R.b]`,
-    `[R.c-'a']` in assembly text, or `M[R.a + 5]`, `M[100 + R.i]` etc. in Python.
+    Used as the address of a memory reference: `[R.a + 5]`, `[100 + R.i]`,
+    `[R.a - R.b]`, `[R.c - 'a']` in assembly text, or `M[R.a + 5]`, `M[100 + R.i]` etc.
+    in Python.
     Operand order is kept as written.
 
     Examples:
-        Offset(R.a, 5)                 # R.a+5
-        Offset(100, R.i)               # 100+R.i
-        Offset(R.a, 5, subtract=True)  # R.a-5
-        Offset(R.a, -5)                # R.a-5
-        Offset(R.c, LC["a"], subtract=True)  # R.c-'a'
+        Offset(R.a, 5)                 # R.a + 5
+        Offset(100, R.i)               # 100 + R.i
+        Offset(R.a, 5, subtract=True)  # R.a - 5
+        Offset(R.a, -5)                # R.a - 5
+        Offset(R.c, LC["a"], subtract=True)  # R.c - 'a'
     """
 
     def __init__(
@@ -368,7 +369,7 @@ class Offset(Operand):
         """Initialize an offset operand.
 
         A negative non-character literal on the right is stored as its absolute value
-        with `subtract` flipped, so it formats as `R.a-5` rather than `R.a+-5`.
+        with `subtract` flipped, so it formats as `R.a - 5` rather than `R.a + -5`.
 
         Args:
             left: The left operand.
@@ -415,12 +416,12 @@ class Offset(Operand):
     def __repr__(self) -> str:
         """Return Python API representation."""
         sign = "-" if self.subtract else "+"
-        return f"{self.left!r}{sign}{self.right!r}"
+        return f"{self.left!r} {sign} {self.right!r}"
 
     def __str__(self) -> str:
         """Return assembly text representation."""
         sign = "-" if self.subtract else "+"
-        return f"{self.left}{sign}{self.right}"
+        return f"{self.left} {sign} {self.right}"
 
 
 class _MetaRegister(type):

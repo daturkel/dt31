@@ -355,20 +355,20 @@ def test_offset_as_memory_address(cpu):
 def test_offset_negative_right_literal_flips_sign():
     assert Offset(R.a, -5) == Offset(R.a, 5, subtract=True)
     assert Offset(R.a, L[-5], subtract=True) == Offset(R.a, 5)
-    assert str(Offset(R.a, -5)) == "R.a-5"
-    assert str(Offset(-5, R.a)) == "-5+R.a"
+    assert str(Offset(R.a, -5)) == "R.a - 5"
+    assert str(Offset(-5, R.a)) == "-5 + R.a"
 
 
 def test_offset_str_and_repr():
-    assert str(Offset(R.a, 5)) == "R.a+5"
-    assert str(Offset(100, R.a)) == "100+R.a"
-    assert str(Offset(R.a, R.b, subtract=True)) == "R.a-R.b"
-    assert str(Offset(R.c, LC["a"], subtract=True)) == "R.c-'a'"
-    assert str(Offset(LC[","], R.c)) == "','+R.c"
-    assert repr(Offset(R.a, 5)) == "R.a+5"
-    assert repr(Offset(R.c, LC["a"], subtract=True)) == 'R.c-LC["a"]'
-    assert str(M[Offset(R.a, 5)]) == "[R.a+5]"
-    assert repr(M[Offset(100, R.b)]) == "M[100+R.b]"
+    assert str(Offset(R.a, 5)) == "R.a + 5"
+    assert str(Offset(100, R.a)) == "100 + R.a"
+    assert str(Offset(R.a, R.b, subtract=True)) == "R.a - R.b"
+    assert str(Offset(R.c, LC["a"], subtract=True)) == "R.c - 'a'"
+    assert str(Offset(LC[","], R.c)) == "',' + R.c"
+    assert repr(Offset(R.a, 5)) == "R.a + 5"
+    assert repr(Offset(R.c, LC["a"], subtract=True)) == 'R.c - LC["a"]'
+    assert str(M[Offset(R.a, 5)]) == "[R.a + 5]"
+    assert repr(M[Offset(100, R.b)]) == "M[100 + R.b]"
 
 
 def test_offset_register_operators():

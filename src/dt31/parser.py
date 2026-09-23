@@ -270,7 +270,7 @@ def parse_operand(token: str) -> Operand | Label:
     - Character literals: 'H', 'a'
     - Registers: R.a, R.b, R.c (must use R. prefix)
     - Memory: [100], M[100], [R.a], M[R.a]
-    - Memory with offset: [R.a+5], [100+R.i], [R.a-R.b], [R.c-'a']
+    - Memory with offset: [R.a + 5], [100 + R.i], [R.a - R.b], [R.c - 'a']
     - Labels: loop, end, start (any bare identifier not matching above)
 
     Args:
@@ -308,7 +308,7 @@ def parse_operand(token: str) -> Operand | Label:
                 )
             return LC[decoded_char]
 
-        # Memory reference: [100] or M[100] or [a] or M[R.a] or [R.a+5]
+        # Memory reference: [100] or M[100] or [a] or M[R.a] or [R.a + 5]
         case str() if m := MEMORY_PATTERN.match(token):
             inner = m.group(1).strip()
             if offset_match := OFFSET_PATTERN.match(inner):
@@ -329,7 +329,7 @@ def parse_operand(token: str) -> Operand | Label:
                 raise ParserError(
                     f"Invalid memory offset '{token}'. Offsets must be two registers, "
                     "integers or characters joined by + or -, at least one of them a "
-                    "register, e.g. [R.a+5] or [100+R.i]."
+                    "register, e.g. [R.a + 5] or [100 + R.i]."
                 )
             inner_operand = parse_operand(inner)  # Recursive
             # Labels cannot be used as memory addresses
@@ -375,10 +375,19 @@ TOKEN_PATTERN = re.compile(
         [^']    # Any non-quote character
     )
     '           # Closing quote
-    |           # OR
-    M?\[(?:'(?:\\.|[^'])'|[^\[\]',])*\](?![^\s,])  # Un-nested memory reference, which
-                                              # may contain spaces and character literals
-    |           # OR (for other tokens)
+    |           # OR (for un-nested memory references, which may contain spaces
+                # and character literals, e.g. [R.a + ','])
+    M?\[        # Optional M prefix and opening bracket
+    (?:         # Zero or more of:
+        '(?:\\.|[^'])'  # A character literal (same as above), which may contain
+                        # brackets, commas or spaces
+        |               # OR
+        [^\[\]',]       # Any character except a bracket, quote or comma
+    )*
+    \]          # Closing bracket
+    (?![^\s,])  # Followed by whitespace, a comma or the end of the line, so that
+                # e.g. [1]junk falls through to the next alternative as one token
+    |           # OR (for other tokens, including nested memory references)
     [^\s,]+     # Any sequence of non-whitespace, non-comma characters
     """,
     re.VERBOSE,
@@ -386,8 +395,22 @@ TOKEN_PATTERN = re.compile(
 MEMORY_PATTERN = re.compile(r"M?\[(.+)\]\Z")
 REGISTER_PREFIX_PATTERN = re.compile(r"R\.(\w+)\Z")
 CHAR_LITERAL_PATTERN = re.compile(r"'(?:\\.|[^'])'")
-_OFFSET_OPERAND = r"R\.\w+|\d+|'(?:\\.|[^'])'"
+# One side of an offset: a register, a non-negative integer or a character literal.
+_OFFSET_OPERAND = r"R\.\w+ | \d+ | '(?:\\.|[^'])'"
+# The contents of an offset memory reference, e.g. `R.a + 5` from `[R.a + 5]`.
+# Whether either side is a register is checked by `Offset`, not here.
 OFFSET_PATTERN = re.compile(
-    rf"(?P<left>-?\d+|{_OFFSET_OPERAND})\s*(?P<sign>[+-])\s*(?P<right>{_OFFSET_OPERAND})\Z"
+    rf"""
+    (?P<left>-?\d+ | {_OFFSET_OPERAND})  # Left side; may also be a negative integer
+    \s*
+    (?P<sign>[+-])
+    \s*
+    (?P<right>{_OFFSET_OPERAND})         # Right side
+    \Z
+    """,
+    re.VERBOSE,
 )
+# Memory reference contents that look like an attempted offset (a + or - after at
+# least one character) but didn't match OFFSET_PATTERN. Applied after character
+# literals are replaced with a bare quote, so e.g. ['+'] isn't flagged.
 INVALID_OFFSET_PATTERN = re.compile(r"[^\[\]]+[+-]")

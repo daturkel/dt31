@@ -506,7 +506,7 @@ The assembly text syntax differs from Python syntax:
 | **Register** | `R.a` | `R.a` | `ADD R.a, R.b` |
 | **Memory (direct)** | `[100]` or `M[100]` | `M[100]` | `CP 42, [100]` |
 | **Memory (indirect)** | `[R.a]` or `M[R.a]` | `M[R.a]` | `CP [R.a], R.b` |
-| **Memory (offset)** | `[R.a+5]`, `[100-R.i]`, `[R.c-'a']` | `M[R.a + 5]`, `M[100 - R.i]`, `M[R.c - LC["a"]]` | `CP [R.a+1], R.b` |
+| **Memory (offset)** | `[R.a + 5]`, `[100 - R.i]`, `[R.c - 'a']` | `M[R.a + 5]`, `M[100 - R.i]`, `M[R.c - LC["a"]]` | `CP [R.a + 1], R.b` |
 | **Label** | `loop` | `Label("loop")` | `JMP loop` |
 
 **Key Differences:**
@@ -515,8 +515,9 @@ The assembly text syntax differs from Python syntax:
 2. **Characters**: Use single quotes `'A'` instead of `LC["A"]`
 3. **Memory**: The `M` prefix is optional (both `[100]` and `M[100]` work). An
    address can be two registers, integers or characters joined by `+` or `-`, at
-   least one of them a register (`[R.a+5]`, `[100-R.i]`, `[R.a+R.b]`, `[R.c-'a']`).
-   Order is kept as written, and spaces inside the brackets are allowed
+   least one of them a register (`[R.a + 5]`, `[100 - R.i]`, `[R.a + R.b]`,
+   `[R.c - 'a']`). Order is kept as written. Spacing inside the brackets is optional;
+   `dt31 format` puts one space on each side of the `+` or `-`
 4. **Labels**: Bare identifiers are labels (no `Label(...)` constructor needed)
 5. **Registers**: **Must** use `R.` prefix in both syntaxes
 
