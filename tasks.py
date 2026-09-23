@@ -1,3 +1,7 @@
+import re
+from datetime import datetime
+from pathlib import Path
+
 from invoke.tasks import task
 
 
@@ -38,6 +42,24 @@ def sync(c):
     c.run("uv sync --locked --group dev")
 
 
+def release_changelog(version: str, changelog: Path = Path("CHANGELOG.md")) -> None:
+    """Move CHANGELOG.md's Unreleased entries under a heading for `version`."""
+    text = changelog.read_text()
+    text = text.replace(
+        "## [Unreleased]\n",
+        f"## [Unreleased]\n\n## [{version}] - {datetime.now().astimezone().date()}\n",
+        1,
+    )
+    text = re.sub(
+        r"^\[Unreleased\]: (.*)/compare/(.*)\.\.\.HEAD$",
+        rf"[Unreleased]: \1/compare/{version}...HEAD\n[{version}]: \1/compare/\2...{version}",
+        text,
+        count=1,
+        flags=re.MULTILINE,
+    )
+    changelog.write_text(text)
+
+
 @task
 def bump(c, level, dry_run=False):
     """Bump version, commit, tag, and push.
@@ -67,7 +89,10 @@ def bump(c, level, dry_run=False):
         version = output.split("=>")[-1].strip()
         print(f"[DRY RUN] Would bump version to {version}")
         print(
-            f'[DRY RUN] Would commit pyproject.toml and uv.lock with message "bump to {version}"'
+            f"[DRY RUN] Would move Unreleased entries in CHANGELOG.md under {version}"
+        )
+        print(
+            f'[DRY RUN] Would commit pyproject.toml, uv.lock and CHANGELOG.md with message "bump to {version}"'
         )
         print("[DRY RUN] Would push commit")
         print(f"[DRY RUN] Would create and push tag {version}")
@@ -83,8 +108,10 @@ def bump(c, level, dry_run=False):
     version = output.split("=>")[-1].strip()
     print(f"Bumped version to {version}")
 
+    release_changelog(version)
+
     # Git commit
-    c.run("git add pyproject.toml uv.lock", pty=True)
+    c.run("git add pyproject.toml uv.lock CHANGELOG.md", pty=True)
     c.run(f'git commit -m "bump to {version}"', pty=True)
 
     # Git push
