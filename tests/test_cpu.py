@@ -659,6 +659,26 @@ def test_invalid_operand_context_attached():
     assert e.value.instruction is cpu.instructions[0]
 
 
+def test_attach_error_context_does_not_overwrite_existing_values():
+    """`_attach_error_context` leaves ip/instruction/line untouched when already set,
+    e.g. when an error crosses a second `step()` boundary (nested run/resume)."""
+    cpu = DT31()
+    div_instruction = I.DIV(R.a, L[0])
+    other_instruction = I.POP(R.a)
+    cpu.load([div_instruction])
+
+    exc = DivisionByZero("integer division or modulo by zero")
+    exc.ip = 5
+    exc.instruction = other_instruction
+    exc.line = 7
+
+    cpu._attach_error_context(exc, div_instruction)
+
+    assert exc.ip == 5
+    assert exc.instruction is other_instruction
+    assert exc.line == 7
+
+
 def test_dt31_runtime_error_is_common_base():
     """All new runtime error types share the DT31RuntimeError base."""
     from dt31.exceptions import DT31RuntimeError
