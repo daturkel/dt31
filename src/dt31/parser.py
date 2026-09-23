@@ -355,25 +355,23 @@ def parse_operand(token: str) -> Operand | Label:
         case str() if m := MEMORY_PATTERN.match(token):
             inner = m.group(1).strip()
             if offset_match := OFFSET_PATTERN.match(inner):
-                try:
-                    # Offset operands are never labels, given OFFSET_PATTERN.
-                    return M[
-                        Offset(
-                            parse_operand(offset_match["left"]),  # ty: ignore[invalid-argument-type]
-                            parse_operand(offset_match["right"]),  # ty: ignore[invalid-argument-type]
-                            subtract=offset_match["sign"] == "-",
-                        )
-                    ]
-                except TypeError:
-                    pass  # No register; reported below.
-            if offset_match or INVALID_OFFSET_PATTERN.match(
-                CHAR_LITERAL_PATTERN.sub("'", inner)
-            ):
-                raise ParserError(
-                    f"Invalid memory offset '{token}'. Offsets must be two registers, "
-                    "integers or characters joined by + or -, at least one of them a "
-                    "register, e.g. [R.a + 5] or [100 + R.i]."
-                )
+                left = parse_operand(offset_match["left"])
+                right = parse_operand(offset_match["right"])
+                if not isinstance(left, RegisterReference) and not isinstance(
+                    right, RegisterReference
+                ):
+                    raise ParserError(
+                        f"Invalid memory offset '{token}': at least one side must be "
+                        "a register."
+                    )
+                # Offset operands are never labels, given OFFSET_PATTERN.
+                return M[
+                    Offset(
+                        left,  # ty: ignore[invalid-argument-type]
+                        right,  # ty: ignore[invalid-argument-type]
+                        subtract=offset_match["sign"] == "-",
+                    )
+                ]
             inner_operand = parse_operand(inner)  # Recursive
             # Labels cannot be used as memory addresses
             if isinstance(inner_operand, Label):
@@ -413,13 +411,12 @@ def parse_operand(token: str) -> Operand | Label:
 # Precompiled regex patterns for parsing
 MEMORY_PATTERN = re.compile(r"M?\[(.+)\]\Z")
 REGISTER_PREFIX_PATTERN = re.compile(r"R\.(\w+)\Z")
-# Quote-delimited text, which may contain escapes such as \' and \x41. Whether it's a
-# single character is checked by `parse_operand`, not here.
-CHAR_LITERAL_PATTERN = re.compile(r"'(?:\\.|[^'\\])+'")
 # One side of an offset: a register, a non-negative integer or a character literal.
-_OFFSET_OPERAND = rf"R\.\w+ | \d+ | {CHAR_LITERAL_PATTERN.pattern}"
+# Character literals may contain escapes such as \' and \x41; whether one is a single
+# character is checked by `parse_operand`, not here.
+_OFFSET_OPERAND = r"R\.\w+ | \d+ | '(?:\\.|[^'\\])+'"
 # The contents of an offset memory reference, e.g. `R.a + 5` from `[R.a + 5]`.
-# Whether either side is a register is checked by `Offset`, not here.
+# Whether either side is a register is checked by `parse_operand`, not here.
 OFFSET_PATTERN = re.compile(
     rf"""
     (?P<left>-?\d+ | {_OFFSET_OPERAND})  # Left side; may also be a negative integer
@@ -431,7 +428,3 @@ OFFSET_PATTERN = re.compile(
     """,
     re.VERBOSE,
 )
-# Memory reference contents that look like an attempted offset (a + or - after at
-# least one character) but didn't match OFFSET_PATTERN. Applied after character
-# literals are replaced with a bare quote, so e.g. ['+'] isn't flagged.
-INVALID_OFFSET_PATTERN = re.compile(r"[^\[\]]+[+-]")

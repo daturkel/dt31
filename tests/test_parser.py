@@ -399,18 +399,44 @@ def test_parse_operand_memory_offset_character_literal_first():
     assert parse_operand("['a'+R.c]") == M[Offset(LC["a"], R.c)]
 
 
+def _label_address_message(token: str) -> str:
+    return (
+        "Invalid memory reference: Labels cannot be used as memory addresses. "
+        f"Found label '{token[1:-1]}' in memory reference '{token}'"
+    )
+
+
 @pytest.mark.parametrize(
-    "token",
-    ["[1+2]", "['a'+'b']", "[R.a+-5]", "[R.a+R.b+1]", "[R.a+]", "M[R.a*2+1]"],
+    ("token", "message"),
+    [
+        (
+            "[1+2]",
+            "Invalid memory offset '[1+2]': at least one side must be a register.",
+        ),
+        (
+            "['a'+'b']",
+            "Invalid memory offset '['a'+'b']': at least one side must be a register.",
+        ),
+        ("[R.a+-5]", "Invalid register reference 'R.a+-5'."),
+        ("[R.a+R.b+1]", "Invalid register reference 'R.a+R.b+1'."),
+        ("[R.a+]", "Invalid register reference 'R.a+'."),
+        ("M[R.a*2+1]", "Invalid register reference 'R.a*2+1'."),
+        ("[R.a++5]", "Invalid register reference 'R.a++5'."),
+        ("[R.a+label]", "Invalid register reference 'R.a+label'."),
+        ("[R.+5]", "Invalid register reference 'R.+5'."),
+        ("[R.a+R.]", "Invalid register reference 'R.a+R.'."),
+        ("[R.a+'']", "Invalid register reference 'R.a+'''."),
+        ("[+5+R.a]", _label_address_message("[+5+R.a]")),
+        ("[-R.a+5]", _label_address_message("[-R.a+5]")),
+        ("[--5+R.a]", _label_address_message("[--5+R.a]")),
+        ("[label+5]", _label_address_message("[label+5]")),
+        ("[r.a+5]", _label_address_message("[r.a+5]")),
+    ],
 )
-def test_parse_operand_invalid_memory_offset(token):
+def test_parse_operand_invalid_memory_offset(token, message):
     with pytest.raises(ParserError) as e:
         parse_operand(token)
-    assert str(e.value) == (
-        f"Invalid memory offset '{token}'. Offsets must be two registers, integers or "
-        "characters joined by + or -, at least one of them a register, e.g. "
-        "[R.a + 5] or [100 + R.i]."
-    )
+    assert str(e.value) == message
 
 
 @pytest.mark.parametrize(
@@ -446,31 +472,6 @@ def test_tokenize_brackets_and_quotes(line, expected):
 )
 def test_parse_operand_memory_offset_edge_cases(token, expected):
     assert parse_operand(token) == expected
-
-
-@pytest.mark.parametrize(
-    "token",
-    [
-        "[R.a++5]",
-        "[+5+R.a]",
-        "[-R.a+5]",
-        "[--5+R.a]",
-        "[R.a+label]",
-        "[label+5]",
-        "[r.a+5]",
-        "[R.+5]",
-        "[R.a+R.]",
-        "[R.a+'']",
-    ],
-)
-def test_parse_operand_more_invalid_memory_offsets(token):
-    with pytest.raises(ParserError) as e:
-        parse_operand(token)
-    assert str(e.value) == (
-        f"Invalid memory offset '{token}'. Offsets must be two registers, integers or "
-        "characters joined by + or -, at least one of them a register, e.g. "
-        "[R.a + 5] or [100 + R.i]."
-    )
 
 
 def test_parse_operand_memory_offset_multi_character_literal():
