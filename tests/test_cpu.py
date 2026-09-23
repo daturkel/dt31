@@ -539,7 +539,7 @@ def test_division_by_zero_via_step_python_api():
     with pytest.raises(DivisionByZero) as e:
         cpu.step()
 
-    assert str(e.value) == "integer division or modulo by zero"
+    assert str(e.value) == "DIV by zero"
     assert e.value.ip == 0
     assert e.value.instruction is cpu.instructions[0]
     assert e.value.line is None
@@ -580,8 +580,10 @@ def test_mod_by_zero_raises_division_by_zero():
     cpu = DT31()
     program = [I.CP(0, R.b), I.MOD(R.a, R.b)]
 
-    with pytest.raises(DivisionByZero):
+    with pytest.raises(DivisionByZero) as e:
         cpu.run(program)
+
+    assert str(e.value) == "MOD by zero"
 
 
 def test_division_by_zero_line_from_parsed_program():
@@ -662,7 +664,7 @@ def test_attach_error_context_does_not_overwrite_existing_values():
     other_instruction = I.POP(R.a)
     cpu.load([div_instruction])
 
-    exc = DivisionByZero("integer division or modulo by zero")
+    exc = DivisionByZero("DIV by zero")
     exc.ip = 5
     exc.instruction = other_instruction
     exc.line = 7

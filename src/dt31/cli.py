@@ -208,7 +208,7 @@ Example error dump structure:
   },
   "error": {
     "type": "DivisionByZero",
-    "message": "integer division or modulo by zero",
+    "message": "DIV by zero",
     "instruction": {
       "repr": "DIV(a=R.a, b=R.b, out=R.a)",
       "str": "DIV R.a, R.b, R.a",

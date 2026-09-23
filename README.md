@@ -466,7 +466,7 @@ Error dumps include both `repr` and `str` formats of the failing instruction for
   },
   "error": {
     "type": "DivisionByZero",
-    "message": "integer division or modulo by zero",
+    "message": "DIV by zero",
     "instruction": {
       "repr": "DIV(a=R.a, b=R.b, out=R.a)",
       "str": "DIV R.a, R.b, R.a",

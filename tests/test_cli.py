@@ -321,9 +321,7 @@ def test_cli_runtime_error_includes_line_number(temp_dt_file, capsys):
 
     assert exc_info.value.code == 1
     captured = capsys.readouterr()
-    assert (
-        captured.err == "\nLine 4: Runtime error: integer division or modulo by zero\n"
-    )
+    assert captured.err == "\nLine 4: Runtime error: DIV by zero\n"
 
 
 def test_cli_runtime_error_omits_line_when_unavailable(temp_dt_file, capsys):
