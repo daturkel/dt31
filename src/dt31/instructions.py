@@ -5,6 +5,7 @@ import random
 import sys
 from typing import TYPE_CHECKING
 
+from dt31.exceptions import DivisionByZero, InvalidOperand
 from dt31.operands import (
     Destination,
     L,
@@ -458,7 +459,11 @@ class DIV(BinaryOperation):
         super().__init__("DIV", a, b, out)
 
     def _calc(self, cpu: DT31) -> int:
-        return self.a.resolve(cpu) // self.b.resolve(cpu)
+        a = self.a.resolve(cpu)
+        b = self.b.resolve(cpu)
+        if b == 0:
+            raise DivisionByZero(f"DIV by zero; got {a=}, {b=}")
+        return a // b
 
 
 class MOD(BinaryOperation):
@@ -477,7 +482,11 @@ class MOD(BinaryOperation):
         super().__init__("MOD", a, b, out)
 
     def _calc(self, cpu: DT31) -> int:
-        return self.a.resolve(cpu) % self.b.resolve(cpu)
+        a = self.a.resolve(cpu)
+        b = self.b.resolve(cpu)
+        if b == 0:
+            raise DivisionByZero(f"MOD by zero; got {a=}, {b=}")
+        return a % b
 
 
 class BSL(BinaryOperation):
@@ -1909,6 +1918,8 @@ class RINT(BinaryOperation):
         a = self.a.resolve(cpu)
         b = self.b.resolve(cpu)
         if b < a:
-            raise ValueError(f"RINT argument b must be ≥ argument a; got {a=}, {b=}")
+            raise InvalidOperand(
+                f"RINT argument b must be ≥ argument a; got {a=}, {b=}"
+            )
 
         return random.randint(a, b)

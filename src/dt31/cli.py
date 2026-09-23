@@ -207,8 +207,8 @@ Example error dump structure:
     "config": {...}
   },
   "error": {
-    "type": "ZeroDivisionError",
-    "message": "integer division or modulo by zero",
+    "type": "DivisionByZero",
+    "message": "DIV by zero; got a=10, b=0",
     "instruction": {
       "repr": "DIV(a=R.a, b=R.b, out=R.a)",
       "str": "DIV R.a, R.b, R.a",
@@ -234,6 +234,8 @@ from typing import Any, cast
 
 from dt31 import DT31
 from dt31.assembler import extract_registers_from_program
+from dt31.cpu import _get_failing_instruction
+from dt31.exceptions import DT31RuntimeError
 from dt31.formatter import program_to_python, program_to_text
 from dt31.instructions import Instruction
 from dt31.operands import validate_register_name
@@ -519,10 +521,16 @@ def run_command(args: argparse.Namespace) -> None:
         # Catch SystemExit to display verbose stats before re-raising
         exit_code = e.code if isinstance(e.code, int) else 1
     except Exception as e:
-        failing_instruction = _get_failing_instruction(cpu)
-        if failing_instruction is not None and failing_instruction.line is not None:
+        if isinstance(e, DT31RuntimeError):
+            failing_line = e.line
+        else:
+            failing_instruction = _get_failing_instruction(cpu)
+            failing_line = (
+                failing_instruction.line if failing_instruction is not None else None
+            )
+        if failing_line is not None:
             print(
-                f"\nLine {failing_instruction.line}: Runtime error: {e}",
+                f"\nLine {failing_line}: Runtime error: {e}",
                 file=sys.stderr,
             )
         else:
@@ -1171,28 +1179,6 @@ def generate_dump_path(program_file: str, user_path: str | None, suffix: str) ->
     return f"{program_name}_{suffix}_{timestamp}.json"
 
 
-def _get_failing_instruction(cpu: DT31) -> Instruction | None:
-    """Find the instruction that was executing (or about to execute) on error.
-
-    Args:
-        cpu: The DT31 CPU instance after a runtime error.
-
-    Returns:
-        The failing `Instruction`, or `None` if it can't be determined.
-    """
-    try:
-        ip = cpu.get_register("ip")
-    except Exception:
-        return None
-
-    if 0 <= ip < len(cpu.instructions):
-        return cpu.instructions[ip]
-    elif ip >= len(cpu.instructions) and len(cpu.instructions) > 0:
-        # IP went past end, show last instruction
-        return cpu.instructions[-1]
-    return None
-
-
 def dump_cpu_state(cpu: DT31, file_path: str, error: Exception | None = None) -> None:
     """Dump CPU state to JSON file, optionally with error info.
 
@@ -1215,13 +1201,18 @@ def dump_cpu_state(cpu: DT31, file_path: str, error: Exception | None = None) ->
 
         # Include the last instruction that was executed (or attempted)
         try:
-            instruction = _get_failing_instruction(cpu)
+            if isinstance(error, DT31RuntimeError) and error.instruction is not None:
+                instruction = error.instruction
+                line = error.line
+            else:
+                instruction = _get_failing_instruction(cpu)
+                line = instruction.line if instruction is not None else None
 
             if instruction is not None:
                 error_info["instruction"] = {
                     "repr": repr(instruction),
                     "str": str(instruction),
-                    "line": instruction.line,
+                    "line": line,
                 }
         except Exception:  # noqa: S110 (`try`-`except`-`pass`) - a failed dump beats no dump
             pass

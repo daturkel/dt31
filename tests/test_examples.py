@@ -5,6 +5,7 @@ from unittest.mock import patch
 import pytest
 
 from dt31 import DT31
+from dt31.exceptions import DivisionByZero
 from dt31.parser import parse_program
 
 # Add the examples directory to the path so we can import from it
@@ -276,7 +277,7 @@ def test_dt_file(dt_file, capsys):
 
 
 def test_crash_dt():
-    """Test that crash.dt raises a ZeroDivisionError as expected."""
+    """Test that crash.dt raises a DivisionByZero as expected."""
     dt_path = examples_dir / "crash.dt"
 
     with open(dt_path) as f:
@@ -286,7 +287,7 @@ def test_crash_dt():
     cpu = DT31()
 
     # The crash.dt program divides by zero
-    with pytest.raises(ZeroDivisionError):
+    with pytest.raises(DivisionByZero):
         cpu.run(program, debug=False)
 
 
