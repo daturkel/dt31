@@ -5,7 +5,7 @@ from dt31 import DT31
 from dt31.assembler import extract_registers_from_program
 from dt31.formatter import program_to_text
 from dt31.instructions import Instruction
-from dt31.operands import LC, L, Label, M, R
+from dt31.operands import LC, L, Label, M, Offset, R
 from dt31.parser import (
     MEMORY_PATTERN,
     REGISTER_PREFIX_PATTERN,
@@ -346,6 +346,61 @@ def test_parse_operand_memory_nested():
 
     result = parse_operand("[M[R.a]]")
     assert result == M[M[R.a]]
+
+
+def test_token_pattern_memory_offsets():
+    assert TOKEN_PATTERN.findall("CP [R.a+5], R.b") == ["CP", "[R.a+5]", "R.b"]
+    assert TOKEN_PATTERN.findall("CP [R.a + 5],R.b") == ["CP", "[R.a + 5]", "R.b"]
+    assert TOKEN_PATTERN.findall("CP M[ R.a - R.b ] R.b") == [
+        "CP",
+        "M[ R.a - R.b ]",
+        "R.b",
+    ]
+    assert TOKEN_PATTERN.findall("CP [[R.a]], [1]junk") == ["CP", "[[R.a]]", "[1]junk"]
+
+
+def test_parse_operand_memory_offset():
+    assert parse_operand("[R.a+5]") == M[Offset(R.a, 5)]
+    assert parse_operand("[R.a-5]") == M[Offset(R.a, 5, subtract=True)]
+    assert parse_operand("[R.a+R.b]") == M[Offset(R.a, R.b)]
+    assert parse_operand("M[R.a-R.b]") == M[Offset(R.a, R.b, subtract=True)]
+    assert parse_operand("[ R.a + 5 ]") == M[Offset(R.a, 5)]
+    assert parse_operand("[[R.a+5]]") == M[M[Offset(R.a, 5)]]
+    assert parse_operand("[ 100 ]") == M[100]
+
+
+@pytest.mark.parametrize(
+    "token", ["[R.a+-5]", "[5+R.a]", "[R.a+R.b+1]", "[R.a+]", "M[R.a*2+1]"]
+)
+def test_parse_operand_invalid_memory_offset(token):
+    with pytest.raises(ParserError) as e:
+        parse_operand(token)
+    assert str(e.value) == (
+        f"Invalid memory offset '{token}'. Offsets must be a register plus or minus "
+        "a register or non-negative integer, e.g. [R.a+5]."
+    )
+
+
+def test_parse_operand_offset_outside_memory_reference():
+    with pytest.raises(ParserError) as e:
+        parse_operand("R.a+5")
+    assert str(e.value) == "Invalid register reference 'R.a+5'."
+
+
+def test_parse_program_memory_offsets_run(capsys):
+    program = parse_program(
+        "CP 10, R.a\n"
+        "CP 3, R.b\n"
+        "CP 7, [R.a + 5]\n"
+        "CP 8, [R.a-R.b]\n"
+        "NOUT [R.a+5], 1\n"
+        "NOUT M[R.a - 3], 1\n"
+    )
+    cpu = DT31()
+    cpu.run(program)
+    assert capsys.readouterr().out == "7\n8\n"
+    assert cpu.get_memory(15) == 7
+    assert cpu.get_memory(7) == 8
 
 
 def test_parse_operand_memory_with_label_error():

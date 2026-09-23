@@ -240,6 +240,8 @@ class M(metaclass=_MetaMemory):
     Examples:
         M[100]      # Direct memory access at address 100
         M[R.a]      # Indirect memory access using register 'a' as address
+        M[R.a + 5]  # Register plus constant offset (see `Offset`)
+        M[R.a - R.b]  # Register minus register offset
         M[M[50]]    # Double indirect addressing
     """
 
@@ -321,6 +323,88 @@ class RegisterReference(Operand):
     def __str__(self) -> str:
         """Return assembly text representation."""
         return f"R.{self.register}"
+
+    def __add__(self, other: int | Literal | RegisterReference) -> Offset:
+        """Return `Offset(self, other)`, for use as a memory address: `M[R.a + 5]`."""
+        return Offset(self, other)
+
+    def __sub__(self, other: int | Literal | RegisterReference) -> Offset:
+        """Return `Offset(self, other, subtract=True)`, for use as a memory address:
+        `M[R.a - 5]`."""
+        return Offset(self, other, subtract=True)
+
+
+class Offset(Operand):
+    """A register plus or minus a literal or another register.
+
+    Used as the address of a memory reference for base + displacement addressing:
+    `[R.a+5]`, `[R.a-5]`, `[R.a+R.b]` and `[R.a-R.b]` in assembly text, or
+    `M[R.a + 5]` etc. in Python.
+
+    Examples:
+        Offset(R.a, 5)                 # R.a+5
+        Offset(R.a, 5, subtract=True)  # R.a-5
+        Offset(R.a, -5)                # R.a-5
+        Offset(R.a, R.b)               # R.a+R.b
+    """
+
+    def __init__(
+        self,
+        base: RegisterReference,
+        offset: int | Literal | RegisterReference,
+        subtract: bool = False,
+    ):
+        """Initialize an offset operand.
+
+        A negative literal offset is stored as its absolute value with `subtract`
+        flipped, so it formats as `R.a-5` rather than `R.a+-5`.
+
+        Args:
+            base: The base register.
+            offset: The amount to add to or subtract from `base`.
+            subtract: Whether to subtract `offset` from `base` instead of adding it.
+
+        Raises:
+            TypeError: If `base` is not a register, or `offset` is not an int,
+                literal or register.
+        """
+        if not isinstance(base, RegisterReference):
+            raise TypeError(f"Offset base must be a register, got {base!r}")
+        if isinstance(offset, int):
+            offset = Literal(offset)
+        if isinstance(offset, Literal):
+            if offset.value < 0:
+                subtract = not subtract
+            offset = Literal(abs(offset.value))
+        elif not isinstance(offset, RegisterReference):
+            raise TypeError(
+                f"Offset must be an int, literal or register, got {offset!r}"
+            )
+        self.base = base
+        self.offset = offset
+        self.subtract = subtract
+
+    def resolve(self, cpu: DT31) -> int:
+        """Return `base + offset`, or `base - offset` if `subtract` is set.
+
+        Args:
+            cpu: The DT31 CPU instance providing register access.
+
+        Returns:
+            The computed value.
+        """
+        if self.subtract:
+            return self.base.resolve(cpu) - self.offset.resolve(cpu)
+        return self.base.resolve(cpu) + self.offset.resolve(cpu)
+
+    def __repr__(self) -> str:
+        """Return Python API representation."""
+        return str(self)
+
+    def __str__(self) -> str:
+        """Return assembly text representation."""
+        sign = "-" if self.subtract else "+"
+        return f"{self.base}{sign}{self.offset}"
 
 
 class _MetaRegister(type):

@@ -1322,6 +1322,7 @@ def test_program_to_python_comments_and_blank_lines():
         "JMP M\nM:\nCP 5, [1]\nNOUT [1], 1",
         "JMP I\nI:\nNOUT 1, 1",
         "JMP program\nprogram:\nNOUT 1, 1",
+        "CP 10, R.a\nCP 3, R.b\nCP 7, [R.a + 5]\nCP 8, [R.a-R.b]\nNOUT [R.a+5], 1\nNOUT [R.a-3], 1",
         # Comments ride along as `.with_comment(...)` calls.
         "CP 5, R.a  ; init\nloop:  ; top\nNOUT R.a, 1\nSUB R.a, 1\nJGT loop, R.a, 0  ; again",
     ],
@@ -1446,3 +1447,26 @@ def test_program_to_python_imports_lc_for_a_nested_char_literal():
     still detected."""
     out = program_to_python([I.CP(1, M[LC["A"]])])
     assert out.startswith("from dt31 import DT31, LC, I, M\n")
+
+
+def test_program_to_text_memory_offsets():
+    program = parse_program("CP [ R.a + 5 ], M[R.a-R.b]\nNOUT [R.a-3], 1")
+    assert program_to_text(program) == (
+        "    CP [R.a+5], [R.a-R.b]\n    NOUT [R.a-3], 1\n"
+    )
+
+
+def test_program_to_python_memory_offsets():
+    program = parse_program("CP 1, [R.a+5]\nCP [R.a-R.b], R.c")
+    assert program_to_python(program) == (
+        "from dt31 import DT31, I, M, R\n"
+        "\n"
+        "program = [\n"
+        "    I.CP(a=1, b=M[R.a+5]),\n"
+        "    I.CP(a=M[R.a-R.b], b=R.c),\n"
+        "]\n"
+        "\n"
+        'if __name__ == "__main__":\n'
+        '    cpu = DT31(registers=["a", "b", "c"])\n'
+        "    cpu.run(program, debug=False)\n"
+    )

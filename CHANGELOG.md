@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Register offset addressing for memory references: `[R.a+5]`, `[R.a-5]`,
+  `[R.a+R.b]` and `[R.a-R.b]` in assembly, `M[R.a + 5]` etc. in Python, via the new
+  `Offset` operand. Spaces are now allowed inside memory brackets. (#PR)
+
 ## [0.12.0] - 2026-09-23
 
 ### Added

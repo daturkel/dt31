@@ -7,6 +7,7 @@ from dt31.operands import (
     Literal,
     M,
     MemoryReference,
+    Offset,
     Operand,
     R,
     RegisterReference,
@@ -333,3 +334,57 @@ def test_lc_escape_sequences_repr():
     assert repr(LC["\\"]) == 'LC["\\\\"]'
     assert repr(LC["'"]) == 'LC["\'"]'
     assert repr(LC["A"]) == 'LC["A"]'
+
+
+def test_offset_resolve(cpu):
+    assert Offset(R.a, 5).resolve(cpu) == 35
+    assert Offset(R.a, 5, subtract=True).resolve(cpu) == 25
+    assert Offset(R.a, R.b).resolve(cpu) == 70
+    assert Offset(R.a, R.b, subtract=True).resolve(cpu) == -10
+
+
+def test_offset_as_memory_address(cpu):
+    cpu.set_memory(35, 7)
+    assert M[Offset(R.a, 5)].resolve(cpu) == 7
+    assert M[Offset(R.a, 5)].resolve_address(cpu) == 35
+
+
+def test_offset_negative_literal_flips_sign():
+    assert Offset(R.a, -5) == Offset(R.a, 5, subtract=True)
+    assert Offset(R.a, L[-5], subtract=True) == Offset(R.a, 5)
+    assert str(Offset(R.a, -5)) == "R.a-5"
+
+
+def test_offset_str_and_repr():
+    assert str(Offset(R.a, 5)) == "R.a+5"
+    assert str(Offset(R.a, R.b, subtract=True)) == "R.a-R.b"
+    assert repr(Offset(R.a, 5)) == "R.a+5"
+    assert str(M[Offset(R.a, 5)]) == "[R.a+5]"
+    assert repr(M[Offset(R.a, R.b)]) == "M[R.a+R.b]"
+
+
+def test_offset_register_operators():
+    assert R.a + 5 == Offset(R.a, 5)
+    assert R.a + L[5] == Offset(R.a, 5)
+    assert R.a - 5 == Offset(R.a, 5, subtract=True)
+    assert R.a + R.b == Offset(R.a, R.b)
+    assert R.a - R.b == Offset(R.a, R.b, subtract=True)
+    assert M[R.a + 5] == M[Offset(R.a, 5)]
+
+
+def test_offset_equality():
+    assert Offset(R.a, 5) == Offset(R.a, 5)
+    assert Offset(R.a, 5) != Offset(R.a, 6)
+    assert Offset(R.a, 5) != Offset(R.b, 5)
+    assert Offset(R.a, 5) != Offset(R.a, 5, subtract=True)
+    assert Offset(R.a, R.b) != Offset(R.a, 5)
+
+
+def test_offset_invalid_types():
+    with pytest.raises(TypeError) as e:
+        Offset(L[1], 5)  # ty: ignore[invalid-argument-type]
+    assert str(e.value) == "Offset base must be a register, got 1"
+
+    with pytest.raises(TypeError) as e:
+        Offset(R.a, M[1])  # ty: ignore[invalid-argument-type]
+    assert str(e.value) == "Offset must be an int, literal or register, got M[1]"
