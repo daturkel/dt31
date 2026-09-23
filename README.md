@@ -513,11 +513,9 @@ The assembly text syntax differs from Python syntax:
 
 1. **Literals**: In text syntax, bare numbers are literals (no `L[...]` wrapper needed)
 2. **Characters**: Use single quotes `'A'` instead of `LC["A"]`
-3. **Memory**: The `M` prefix is optional (both `[100]` and `M[100]` work). An
-   address can be two registers, integers or characters joined by `+` or `-`, at
-   least one of them a register (`[R.a + 5]`, `[100 - R.i]`, `[R.a + R.b]`,
-   `[R.c - 'a']`). Order is kept as written. Spacing inside the brackets is optional;
-   `dt31 format` puts one space on each side of the `+` or `-`
+3. **Memory**: The `M` prefix is optional (`[100]` and `M[100]` are equivalent). An
+   address can also be a register plus or minus a register, integer or character, in
+   either order: `[R.a + 5]`, `[100 - R.i]`, `[R.c - 'a']`
 4. **Labels**: Bare identifiers are labels (no `Label(...)` constructor needed)
 5. **Registers**: **Must** use `R.` prefix in both syntaxes
 
