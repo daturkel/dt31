@@ -222,6 +222,7 @@ dt31 format "**/*.dt"       # Format every .dt file recursively
 - `--dump {none,error,success,all}`: When to dump CPU state (default: none)
 - `--dump-file FILE`: File path for CPU state dump (auto-generates timestamped filename if not specified)
 - `--verbose` or `-v`: Show runtime statistics (wall time, instruction time, execution time, and step count)
+- `--max-steps N`: Maximum number of instructions to execute before raising an error (default: unlimited); useful for catching accidental infinite loops
 
 #### Check Command
 
@@ -555,6 +556,10 @@ cpu.run(program)
 # 42
 # 100
 ```
+
+`run()` also accepts `max_steps` to cap the number of instructions this call may
+execute (e.g. `cpu.run(program, max_steps=10_000)`), raising `StepLimitExceeded`
+if the program hasn't finished by then. Like `debug`, it's scoped to this call.
 
 ### Parsing Assembly from Python
 

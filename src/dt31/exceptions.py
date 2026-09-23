@@ -79,3 +79,7 @@ class InvalidOperand(DT31RuntimeError):
 
     Raised by the `RINT` instruction when its high bound is less than its low bound.
     """
+
+
+class StepLimitExceeded(DT31RuntimeError):
+    """Raised when a program executes more than `max_steps` instructions in a single `run()` call."""

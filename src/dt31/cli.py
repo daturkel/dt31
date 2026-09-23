@@ -384,6 +384,15 @@ examples:
         help="Show runtime statistics (wall time, execution time, and step count).",
     )
 
+    run_parser.add_argument(
+        "--max-steps",
+        type=int,
+        default=None,
+        metavar="N",
+        help="Maximum number of instructions to execute before raising an error "
+        "(default: unlimited)",
+    )
+
 
 def _create_check_parser(subparsers) -> None:
     """Create the 'check' subcommand parser.
@@ -512,7 +521,7 @@ def run_command(args: argparse.Namespace) -> None:
     # Execute the program
     exit_code = 0
     try:
-        cpu.run(program, debug=args.debug)
+        cpu.run(program, debug=args.debug, max_steps=args.max_steps)
     except (EOFError, KeyboardInterrupt):
         # Handle interrupt gracefully (e.g., Ctrl+C during debug mode input)
         print("\n\nExecution interrupted", file=sys.stderr)
