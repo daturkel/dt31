@@ -399,7 +399,7 @@ def test_offset_invalid_types():
     assert str(e.value) == "Offset needs at least one register, got 1 and 5"
 
     with pytest.raises(TypeError) as e:
-        Offset(R.a, M[1])  # ty: ignore[invalid-argument-type]
+        Offset(R.a, M[1])
     assert str(e.value) == (
         "Offset operands must be ints, literals or registers, got M[1]"
     )
