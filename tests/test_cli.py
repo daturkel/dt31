@@ -925,7 +925,7 @@ def test_dump_on_error_with_explicit_path(temp_dt_file, tmp_path, capsys):
 
     assert "cpu_state" in dump_data
     assert "error" in dump_data
-    assert dump_data["error"]["type"] == "ZeroDivisionError"
+    assert dump_data["error"]["type"] == "DivisionByZero"
     assert "instruction" in dump_data["error"]  # New: includes last instruction
     assert dump_data["cpu_state"]["registers"]["a"] == 10
     assert dump_data["cpu_state"]["registers"]["b"] == 0
@@ -1406,19 +1406,44 @@ def test_dump_error_with_ip_past_end(temp_dt_file, tmp_path, capsys):
 
 
 def test_dump_error_instruction_retrieval_fails(temp_dt_file, tmp_path, capsys):
-    """Test that dump succeeds even if instruction retrieval fails."""
-    assembly = """
-    CP 10, R.a
-    CP 0, R.b
-    DIV R.a, R.b
+    """Test that dump succeeds even if instruction retrieval fails.
+
+    Uses a custom instruction that raises a plain (non-DT31RuntimeError)
+    exception, so the CLI falls back to `_get_failing_instruction(cpu)` (which
+    calls `get_register`) instead of reading context off the exception itself.
     """
+    custom_instructions_path = tmp_path / "custom_instructions.py"
+    custom_instructions_path.write_text(
+        "from dt31.instructions import Instruction\n"
+        "\n"
+        "class BOOM(Instruction):\n"
+        "    def __init__(self):\n"
+        "        super().__init__('BOOM')\n"
+        "\n"
+        "    def _calc(self, cpu):\n"
+        "        raise RuntimeError('boom')\n"
+        "\n"
+        "INSTRUCTIONS = {'BOOM': BOOM}\n"
+    )
+
+    assembly = "BOOM\n"
     file_path = temp_dt_file(assembly)
     dump_path = tmp_path / "retrieval_fails.json"
 
     with patch.object(
         sys,
         "argv",
-        ["dt31", "run", "--dump", "error", "--dump-file", str(dump_path), file_path],
+        [
+            "dt31",
+            "run",
+            "--dump",
+            "error",
+            "--dump-file",
+            str(dump_path),
+            "--custom-instructions",
+            str(custom_instructions_path),
+            file_path,
+        ],
     ):
         # Patch get_register to raise an exception
         original_get_register = DT31.get_register

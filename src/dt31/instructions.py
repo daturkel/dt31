@@ -5,6 +5,7 @@ import random
 import sys
 from typing import TYPE_CHECKING
 
+from dt31.exceptions import InvalidOperand
 from dt31.operands import (
     Destination,
     L,
@@ -1909,6 +1910,8 @@ class RINT(BinaryOperation):
         a = self.a.resolve(cpu)
         b = self.b.resolve(cpu)
         if b < a:
-            raise ValueError(f"RINT argument b must be ≥ argument a; got {a=}, {b=}")
+            raise InvalidOperand(
+                f"RINT argument b must be ≥ argument a; got {a=}, {b=}"
+            )
 
         return random.randint(a, b)

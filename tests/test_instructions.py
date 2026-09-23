@@ -6,6 +6,7 @@ import pytest
 
 from dt31 import DT31
 from dt31 import instructions as I
+from dt31.exceptions import InvalidOperand
 from dt31.operands import LC, L, M, MemoryReference, R
 
 
@@ -988,7 +989,7 @@ def test_rint(cpu):
     for i in cpu.memory[:100]:
         assert i in range(4, 11)
 
-    with pytest.raises(ValueError) as e:
+    with pytest.raises(InvalidOperand) as e:
         I.RINT(5, 1, M[101])(cpu)
     assert "got a=5, b=1" in str(e.value)
 

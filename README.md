@@ -465,7 +465,7 @@ Error dumps include both `repr` and `str` formats of the failing instruction for
     "config": {"memory_size": 256, "stack_size": 256, "wrap_memory": false}
   },
   "error": {
-    "type": "ZeroDivisionError",
+    "type": "DivisionByZero",
     "message": "integer division or modulo by zero",
     "instruction": {
       "repr": "DIV(a=R.a, b=R.b, out=R.a)",

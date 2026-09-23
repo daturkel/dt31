@@ -6,7 +6,15 @@ from collections import deque
 from typing import TYPE_CHECKING
 
 from dt31.assembler import assemble, extract_registers_from_program
-from dt31.exceptions import AssemblyError, EndOfProgram
+from dt31.exceptions import (
+    AssemblyError,
+    DivisionByZero,
+    DT31RuntimeError,
+    EndOfProgram,
+    MemoryOutOfBounds,
+    StackOverflow,
+    StackUnderflow,
+)
 from dt31.formatter import program_to_text
 from dt31.operands import (
     Label,
@@ -136,10 +144,10 @@ class DT31:
             int: The value popped from the top of the stack.
 
         Raises:
-            RuntimeError: If the stack is empty (stack underflow).
+            StackUnderflow: If the stack is empty (stack underflow).
         """
         if len(self.stack) == 0:
-            raise RuntimeError("stack underflow")
+            raise StackUnderflow("stack underflow")
         return self.stack.pop()
 
     def push(self, value: int):
@@ -149,10 +157,10 @@ class DT31:
             value: The integer value to push onto the stack.
 
         Raises:
-            RuntimeError: If the stack is at maximum capacity (stack overflow).
+            StackOverflow: If the stack is at maximum capacity (stack overflow).
         """
         if len(self.stack) == self.stack_size:
-            raise RuntimeError("stack overflow")
+            raise StackOverflow("stack overflow")
         self.stack.append(value)
 
     def __getitem__(self, arg: Operand) -> int:
@@ -199,12 +207,12 @@ class DT31:
             int: The value at the specified memory address.
 
         Raises:
-            IndexError: If index is out of bounds and wrap_memory is False.
+            MemoryOutOfBounds: If index is out of bounds and wrap_memory is False.
         """
         if self.wrap_memory:
             return self.memory[index % self.memory_size]
         elif not (0 <= index < len(self.memory)):
-            raise IndexError(f"memory has no index {index}")
+            raise MemoryOutOfBounds(f"memory has no index {index}")
         return self.memory[index]
 
     def set_memory(self, index: int, value: int):
@@ -215,12 +223,12 @@ class DT31:
             value: The integer value to store.
 
         Raises:
-            IndexError: If index is out of bounds and wrap_memory is False.
+            MemoryOutOfBounds: If index is out of bounds and wrap_memory is False.
         """
         if self.wrap_memory:
             self.memory[index % self.memory_size] = value
         elif not (0 <= index < len(self.memory)):
-            raise IndexError(f"memory has no index {index}")
+            raise MemoryOutOfBounds(f"memory has no index {index}")
         else:
             self.memory[index] = value
 
@@ -303,7 +311,16 @@ class DT31:
                     if ip >= program_length or ip < 0:
                         reached_end = True
                         break
-                    loaded[ip](self)
+                    instruction = loaded[ip]
+                    try:
+                        instruction(self)
+                    except ZeroDivisionError as exc:
+                        new_exc = DivisionByZero(str(exc))
+                        self._attach_error_context(new_exc, instruction)
+                        raise new_exc from exc
+                    except DT31RuntimeError as exc:
+                        self._attach_error_context(exc, instruction)
+                        raise
                     self.step_count += 1
                     if self.debug_mode:
                         input()
@@ -394,6 +411,9 @@ class DT31:
 
         Raises:
             EndOfProgram: If the instruction pointer is out of bounds.
+            DT31RuntimeError: If the instruction fails during execution (e.g.
+                division by zero, stack under/overflow, out-of-bounds memory
+                access, or an invalid operand).
         """
         if debug is None:
             debug = self.debug_mode
@@ -408,18 +428,26 @@ class DT31:
             raise EndOfProgram("Cannot load negative instructions")
         instruction = self.instructions[ip]
 
-        if self.track_step_time:
-            # Track instruction timing
-            t0 = time.perf_counter_ns()
-            output = instruction(self)
-            t1 = time.perf_counter_ns()
-            elapsed = t1 - t0
+        try:
+            if self.track_step_time:
+                # Track instruction timing
+                t0 = time.perf_counter_ns()
+                output = instruction(self)
+                t1 = time.perf_counter_ns()
+                elapsed = t1 - t0
 
-            self.instruction_time_ns += elapsed
-            if instruction.is_blocking:
-                self.blocking_time_ns += elapsed
-        else:
-            output = instruction(self)
+                self.instruction_time_ns += elapsed
+                if instruction.is_blocking:
+                    self.blocking_time_ns += elapsed
+            else:
+                output = instruction(self)
+        except ZeroDivisionError as exc:
+            new_exc = DivisionByZero(str(exc))
+            self._attach_error_context(new_exc, instruction)
+            raise new_exc from exc
+        except DT31RuntimeError as exc:
+            self._attach_error_context(exc, instruction)
+            raise
 
         self.step_count += 1
         if debug:
@@ -428,6 +456,22 @@ class DT31:
                 output_str += f"  ; {instruction.comment}"
             print(output_str, file=sys.stderr)
             print(self.state, file=sys.stderr)
+
+    def _attach_error_context(
+        self, exc: DT31RuntimeError, instruction: Instruction
+    ) -> None:
+        """Attach ip/instruction/line context to a `DT31RuntimeError`, if unset.
+
+        Args:
+            exc: The runtime error to annotate.
+            instruction: The instruction that was executing when `exc` was raised.
+        """
+        if exc.ip is None:
+            exc.ip = self.registers["ip"]
+        if exc.instruction is None:
+            exc.instruction = instruction
+        if exc.line is None:
+            exc.line = instruction.line
 
     def dump(self) -> dict:
         """Serialize complete CPU state for later resumption.
@@ -539,3 +583,25 @@ class DT31:
         cpu.stack = deque(state["stack"], maxlen=cpu.stack_size)
 
         return cpu
+
+
+def _get_failing_instruction(cpu: DT31) -> Instruction | None:
+    """Find the instruction that was executing (or about to execute) on error.
+
+    Args:
+        cpu: The DT31 CPU instance after a runtime error.
+
+    Returns:
+        The failing `Instruction`, or `None` if it can't be determined.
+    """
+    try:
+        ip = cpu.get_register("ip")
+    except Exception:  # noqa: BLE001 (blind except) - best-effort lookup for error reporting
+        return None
+
+    if 0 <= ip < len(cpu.instructions):
+        return cpu.instructions[ip]
+    elif ip >= len(cpu.instructions) and len(cpu.instructions) > 0:
+        # IP went past end, show last instruction
+        return cpu.instructions[-1]
+    return None

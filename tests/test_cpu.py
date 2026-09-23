@@ -3,6 +3,13 @@ import pytest
 import dt31.instructions as I
 from dt31.assembler import AssemblyError, extract_registers_from_program
 from dt31.cpu import DT31
+from dt31.exceptions import (
+    DivisionByZero,
+    InvalidOperand,
+    MemoryOutOfBounds,
+    StackOverflow,
+    StackUnderflow,
+)
 from dt31.operands import L, M, R
 from dt31.parser import parse_program
 
@@ -61,17 +68,17 @@ def test_cpu_validates_register_names():
 def test_stack_underflow(cpu):
     cpu.push(2)
     assert cpu.pop() == 2
-    with pytest.raises(RuntimeError) as e:
+    with pytest.raises(StackUnderflow) as e:
         cpu.pop()
-    assert "underflow" in str(e.value)
+    assert str(e.value) == "stack underflow"
 
 
 def test_stack_overflow(cpu):
     for _ in range(256):
         cpu.push(0)
-    with pytest.raises(RuntimeError) as e:
+    with pytest.raises(StackOverflow) as e:
         cpu.push(0)
-    assert "overflow" in str(e.value)
+    assert str(e.value) == "stack overflow"
 
 
 def test_get_unknown_register(cpu):
@@ -106,8 +113,9 @@ def test_get_set_invalid_type(cpu):
 
 def test_get_memory(cpu):
     assert cpu.get_memory(1) == 10
-    with pytest.raises(IndexError):
+    with pytest.raises(MemoryOutOfBounds) as e:
         cpu.get_memory(1000)
+    assert str(e.value) == "memory has no index 1000"
     cpu.wrap_memory = True
     assert cpu.get_memory(257) == 10
 
@@ -115,8 +123,9 @@ def test_get_memory(cpu):
 def test_set_memory(cpu):
     cpu.set_memory(1, 99)
     assert cpu.get_memory(1) == 99
-    with pytest.raises(IndexError):
+    with pytest.raises(MemoryOutOfBounds) as e:
         cpu.set_memory(1000, 0)
+    assert str(e.value) == "memory has no index 1000"
     cpu.wrap_memory = True
     cpu.set_memory(257, 999)
     assert cpu.get_memory(1) == 999
@@ -515,3 +524,147 @@ def test_step_count_matches_instructions():
     cpu.run(program)
 
     assert cpu.step_count == 3
+
+
+# ===== DT31RuntimeError hierarchy =====
+
+
+def test_division_by_zero_via_step_python_api():
+    """DIV by zero via step() raises DivisionByZero with ip/instruction set and
+    line=None for a program built via the Python API."""
+    cpu = DT31()
+    div_instruction = I.DIV(R.a, L[0])
+    cpu.load([div_instruction])
+
+    try:
+        _ = 1 // 0
+    except ZeroDivisionError as original:
+        expected_message = str(original)
+
+    with pytest.raises(DivisionByZero) as e:
+        cpu.step()
+
+    assert str(e.value) == expected_message
+    assert e.value.ip == 0
+    assert e.value.instruction is cpu.instructions[0]
+    assert e.value.line is None
+    assert isinstance(e.value.__cause__, ZeroDivisionError)
+
+
+def test_division_by_zero_via_run_fast_path():
+    """DIV by zero raises DivisionByZero via run()'s fast path (no debug, no
+    step-time tracking)."""
+    cpu = DT31()
+    program = [I.CP(0, R.b), I.DIV(R.a, R.b)]
+
+    with pytest.raises(DivisionByZero) as e:
+        cpu.run(program)
+
+    assert e.value.ip == 1
+    assert e.value.instruction is cpu.instructions[1]
+    assert isinstance(e.value.__cause__, ZeroDivisionError)
+
+
+def test_division_by_zero_via_step_slow_path(capsys):
+    """DIV by zero raises DivisionByZero via step()'s debug (slow) path too."""
+    cpu = DT31()
+    program = [I.CP(0, R.b), I.DIV(R.a, R.b)]
+    cpu.load(program)
+    cpu.step(debug=True)  # CP 0, R.b
+
+    with pytest.raises(DivisionByZero) as e:
+        cpu.step(debug=True)  # DIV R.a, R.b
+
+    assert e.value.ip == 1
+    assert e.value.instruction is cpu.instructions[1]
+    assert isinstance(e.value.__cause__, ZeroDivisionError)
+
+
+def test_mod_by_zero_raises_division_by_zero():
+    """MOD by zero also raises DivisionByZero."""
+    cpu = DT31()
+    program = [I.CP(0, R.b), I.MOD(R.a, R.b)]
+
+    with pytest.raises(DivisionByZero):
+        cpu.run(program)
+
+
+def test_division_by_zero_line_from_parsed_program():
+    """DivisionByZero.line reflects the source line for a parsed program."""
+    assembly = """
+    CP 10, R.a
+    CP 0, R.b
+    DIV R.a, R.b
+    """
+    cpu = DT31()
+    program = parse_program(assembly)
+
+    with pytest.raises(DivisionByZero) as e:
+        cpu.run(program)
+
+    assert e.value.line == 4
+
+
+def test_stack_underflow_context_attached_via_step():
+    """StackUnderflow raised by pop() gets ip/instruction/line attached by step()."""
+    cpu = DT31()
+    pop_instruction = I.POP(R.a)
+    cpu.load([pop_instruction])
+
+    with pytest.raises(StackUnderflow) as e:
+        cpu.step()
+
+    assert str(e.value) == "stack underflow"
+    assert e.value.ip == 0
+    assert e.value.instruction is cpu.instructions[0]
+    assert e.value.line is None
+
+
+def test_stack_overflow_context_attached_via_run():
+    """StackOverflow raised by push() gets ip/instruction/line attached via run()."""
+    cpu = DT31(stack_size=1)
+    program = [I.PUSH(1), I.PUSH(2)]
+
+    with pytest.raises(StackOverflow) as e:
+        cpu.run(program)
+
+    assert str(e.value) == "stack overflow"
+    assert e.value.ip == 1
+    assert e.value.instruction is cpu.instructions[1]
+
+
+def test_memory_out_of_bounds_context_attached():
+    """MemoryOutOfBounds raised by an instruction gets ip/instruction/line attached."""
+    cpu = DT31(memory_size=4)
+    program = [I.CP(10, M[100])]
+
+    with pytest.raises(MemoryOutOfBounds) as e:
+        cpu.run(program)
+
+    assert str(e.value) == "memory has no index 100"
+    assert e.value.ip == 0
+    assert e.value.instruction is cpu.instructions[0]
+
+
+def test_invalid_operand_context_attached():
+    """InvalidOperand raised by RINT gets ip/instruction/line attached."""
+    cpu = DT31()
+    program = [I.RINT(5, 1, R.a)]
+
+    with pytest.raises(InvalidOperand) as e:
+        cpu.run(program)
+
+    assert "got a=5, b=1" in str(e.value)
+    assert e.value.ip == 0
+    assert e.value.instruction is cpu.instructions[0]
+
+
+def test_dt31_runtime_error_is_common_base():
+    """All new runtime error types share the DT31RuntimeError base."""
+    from dt31.exceptions import DT31RuntimeError
+
+    assert issubclass(DivisionByZero, DT31RuntimeError)
+    assert issubclass(StackUnderflow, DT31RuntimeError)
+    assert issubclass(StackOverflow, DT31RuntimeError)
+    assert issubclass(MemoryOutOfBounds, DT31RuntimeError)
+    assert issubclass(InvalidOperand, DT31RuntimeError)
