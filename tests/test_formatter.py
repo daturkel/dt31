@@ -1323,6 +1323,7 @@ def test_program_to_python_comments_and_blank_lines():
         "JMP I\nI:\nNOUT 1, 1",
         "JMP program\nprogram:\nNOUT 1, 1",
         "CP 10, R.a\nCP 3, R.b\nCP 7, [R.a + 5]\nCP 8, [R.a-R.b]\nNOUT [R.a+5], 1\nNOUT [R.a-3], 1",
+        "CP 97, R.c\nCP 5, [R.c-'a']\nCP 6, [100-R.c]\nNOUT [0], 1\nNOUT [3], 1\nNOUT [R.c+','], 1",
         # Comments ride along as `.with_comment(...)` calls.
         "CP 5, R.a  ; init\nloop:  ; top\nNOUT R.a, 1\nSUB R.a, 1\nJGT loop, R.a, 0  ; again",
     ],
@@ -1450,20 +1451,23 @@ def test_program_to_python_imports_lc_for_a_nested_char_literal():
 
 
 def test_program_to_text_memory_offsets():
-    program = parse_program("CP [ R.a + 5 ], M[R.a-R.b]\nNOUT [R.a-3], 1")
+    program = parse_program(
+        "CP [ R.a + 5 ], M[R.a-R.b]\nNOUT [100 - R.a], 1\nCOUT [R.c + ','], 1"
+    )
     assert program_to_text(program) == (
-        "    CP [R.a+5], [R.a-R.b]\n    NOUT [R.a-3], 1\n"
+        "    CP [R.a+5], [R.a-R.b]\n    NOUT [100-R.a], 1\n    COUT [R.c+','], 1\n"
     )
 
 
 def test_program_to_python_memory_offsets():
-    program = parse_program("CP 1, [R.a+5]\nCP [R.a-R.b], R.c")
+    program = parse_program("CP 1, [R.a+5]\nCP [100-R.b], R.c\nCP 2, [R.c-'a']")
     assert program_to_python(program) == (
-        "from dt31 import DT31, I, M, R\n"
+        "from dt31 import DT31, LC, I, M, R\n"
         "\n"
         "program = [\n"
         "    I.CP(a=1, b=M[R.a+5]),\n"
-        "    I.CP(a=M[R.a-R.b], b=R.c),\n"
+        "    I.CP(a=M[100-R.b], b=R.c),\n"
+        '    I.CP(a=2, b=M[R.c-LC["a"]]),\n'
         "]\n"
         "\n"
         'if __name__ == "__main__":\n'

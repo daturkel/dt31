@@ -341,6 +341,9 @@ def test_offset_resolve(cpu):
     assert Offset(R.a, 5, subtract=True).resolve(cpu) == 25
     assert Offset(R.a, R.b).resolve(cpu) == 70
     assert Offset(R.a, R.b, subtract=True).resolve(cpu) == -10
+    assert Offset(100, R.a).resolve(cpu) == 130
+    assert Offset(100, R.a, subtract=True).resolve(cpu) == 70
+    assert Offset(R.a, LC["a"], subtract=True).resolve(cpu) == -67
 
 
 def test_offset_as_memory_address(cpu):
@@ -349,18 +352,23 @@ def test_offset_as_memory_address(cpu):
     assert M[Offset(R.a, 5)].resolve_address(cpu) == 35
 
 
-def test_offset_negative_literal_flips_sign():
+def test_offset_negative_right_literal_flips_sign():
     assert Offset(R.a, -5) == Offset(R.a, 5, subtract=True)
     assert Offset(R.a, L[-5], subtract=True) == Offset(R.a, 5)
     assert str(Offset(R.a, -5)) == "R.a-5"
+    assert str(Offset(-5, R.a)) == "-5+R.a"
 
 
 def test_offset_str_and_repr():
     assert str(Offset(R.a, 5)) == "R.a+5"
+    assert str(Offset(100, R.a)) == "100+R.a"
     assert str(Offset(R.a, R.b, subtract=True)) == "R.a-R.b"
+    assert str(Offset(R.c, LC["a"], subtract=True)) == "R.c-'a'"
+    assert str(Offset(LC[","], R.c)) == "','+R.c"
     assert repr(Offset(R.a, 5)) == "R.a+5"
+    assert repr(Offset(R.c, LC["a"], subtract=True)) == 'R.c-LC["a"]'
     assert str(M[Offset(R.a, 5)]) == "[R.a+5]"
-    assert repr(M[Offset(R.a, R.b)]) == "M[R.a+R.b]"
+    assert repr(M[Offset(100, R.b)]) == "M[100+R.b]"
 
 
 def test_offset_register_operators():
@@ -369,6 +377,10 @@ def test_offset_register_operators():
     assert R.a - 5 == Offset(R.a, 5, subtract=True)
     assert R.a + R.b == Offset(R.a, R.b)
     assert R.a - R.b == Offset(R.a, R.b, subtract=True)
+    assert 100 + R.a == Offset(100, R.a)
+    assert 100 - R.a == Offset(100, R.a, subtract=True)
+    assert L[100] + R.a == Offset(100, R.a)
+    assert R.c - LC["a"] == Offset(R.c, LC["a"], subtract=True)
     assert M[R.a + 5] == M[Offset(R.a, 5)]
 
 
@@ -377,14 +389,17 @@ def test_offset_equality():
     assert Offset(R.a, 5) != Offset(R.a, 6)
     assert Offset(R.a, 5) != Offset(R.b, 5)
     assert Offset(R.a, 5) != Offset(R.a, 5, subtract=True)
+    assert Offset(R.a, 5) != Offset(5, R.a)
     assert Offset(R.a, R.b) != Offset(R.a, 5)
 
 
 def test_offset_invalid_types():
     with pytest.raises(TypeError) as e:
-        Offset(L[1], 5)  # ty: ignore[invalid-argument-type]
-    assert str(e.value) == "Offset base must be a register, got 1"
+        Offset(1, 5)
+    assert str(e.value) == "Offset needs at least one register, got 1 and 5"
 
     with pytest.raises(TypeError) as e:
         Offset(R.a, M[1])  # ty: ignore[invalid-argument-type]
-    assert str(e.value) == "Offset must be an int, literal or register, got M[1]"
+    assert str(e.value) == (
+        "Offset operands must be ints, literals or registers, got M[1]"
+    )

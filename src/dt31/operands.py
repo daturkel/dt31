@@ -240,8 +240,9 @@ class M(metaclass=_MetaMemory):
     Examples:
         M[100]      # Direct memory access at address 100
         M[R.a]      # Indirect memory access using register 'a' as address
-        M[R.a + 5]  # Register plus constant offset (see `Offset`)
-        M[R.a - R.b]  # Register minus register offset
+        M[R.a + 5]  # Register plus constant (see `Offset`)
+        M[100 + R.i]  # Constant plus register
+        M[R.a - R.b]  # Register minus register
         M[M[50]]    # Double indirect addressing
     """
 
@@ -328,64 +329,78 @@ class RegisterReference(Operand):
         """Return `Offset(self, other)`, for use as a memory address: `M[R.a + 5]`."""
         return Offset(self, other)
 
+    def __radd__(self, other: int | Literal) -> Offset:
+        """Return `Offset(other, self)`, for use as a memory address: `M[5 + R.a]`."""
+        return Offset(other, self)
+
     def __sub__(self, other: int | Literal | RegisterReference) -> Offset:
         """Return `Offset(self, other, subtract=True)`, for use as a memory address:
         `M[R.a - 5]`."""
         return Offset(self, other, subtract=True)
 
+    def __rsub__(self, other: int | Literal) -> Offset:
+        """Return `Offset(other, self, subtract=True)`, for use as a memory address:
+        `M[5 - R.a]`."""
+        return Offset(other, self, subtract=True)
+
 
 class Offset(Operand):
-    """A register plus or minus a literal or another register.
+    """The sum or difference of two operands, at least one of them a register.
 
-    Used as the address of a memory reference for base + displacement addressing:
-    `[R.a+5]`, `[R.a-5]`, `[R.a+R.b]` and `[R.a-R.b]` in assembly text, or
-    `M[R.a + 5]` etc. in Python.
+    Used as the address of a memory reference: `[R.a+5]`, `[100+R.i]`, `[R.a-R.b]`,
+    `[R.c-'a']` in assembly text, or `M[R.a + 5]`, `M[100 + R.i]` etc. in Python.
+    Operand order is kept as written.
 
     Examples:
         Offset(R.a, 5)                 # R.a+5
+        Offset(100, R.i)               # 100+R.i
         Offset(R.a, 5, subtract=True)  # R.a-5
         Offset(R.a, -5)                # R.a-5
-        Offset(R.a, R.b)               # R.a+R.b
+        Offset(R.c, LC["a"], subtract=True)  # R.c-'a'
     """
 
     def __init__(
         self,
-        base: RegisterReference,
-        offset: int | Literal | RegisterReference,
+        left: int | Literal | RegisterReference,
+        right: int | Literal | RegisterReference,
         subtract: bool = False,
     ):
         """Initialize an offset operand.
 
-        A negative literal offset is stored as its absolute value with `subtract`
-        flipped, so it formats as `R.a-5` rather than `R.a+-5`.
+        A negative non-character literal on the right is stored as its absolute value
+        with `subtract` flipped, so it formats as `R.a-5` rather than `R.a+-5`.
 
         Args:
-            base: The base register.
-            offset: The amount to add to or subtract from `base`.
-            subtract: Whether to subtract `offset` from `base` instead of adding it.
+            left: The left operand.
+            right: The operand to add to or subtract from `left`.
+            subtract: Whether to compute `left - right` instead of `left + right`.
 
         Raises:
-            TypeError: If `base` is not a register, or `offset` is not an int,
-                literal or register.
+            TypeError: If either operand is not an int, literal or register, or
+                neither is a register.
         """
-        if not isinstance(base, RegisterReference):
-            raise TypeError(f"Offset base must be a register, got {base!r}")
-        if isinstance(offset, int):
-            offset = Literal(offset)
-        if isinstance(offset, Literal):
-            if offset.value < 0:
-                subtract = not subtract
-            offset = Literal(abs(offset.value))
-        elif not isinstance(offset, RegisterReference):
+        left = Literal(left) if isinstance(left, int) else left
+        right = Literal(right) if isinstance(right, int) else right
+        for operand in (left, right):
+            if not isinstance(operand, (Literal, RegisterReference)):
+                raise TypeError(
+                    f"Offset operands must be ints, literals or registers, got {operand!r}"
+                )
+        if not isinstance(left, RegisterReference) and not isinstance(
+            right, RegisterReference
+        ):
             raise TypeError(
-                f"Offset must be an int, literal or register, got {offset!r}"
+                f"Offset needs at least one register, got {left!r} and {right!r}"
             )
-        self.base = base
-        self.offset = offset
+        if isinstance(right, Literal) and not right.is_char and right.value < 0:
+            right = Literal(-right.value)
+            subtract = not subtract
+        self.left = left
+        self.right = right
         self.subtract = subtract
 
     def resolve(self, cpu: DT31) -> int:
-        """Return `base + offset`, or `base - offset` if `subtract` is set.
+        """Return `left + right`, or `left - right` if `subtract` is set.
 
         Args:
             cpu: The DT31 CPU instance providing register access.
@@ -394,17 +409,18 @@ class Offset(Operand):
             The computed value.
         """
         if self.subtract:
-            return self.base.resolve(cpu) - self.offset.resolve(cpu)
-        return self.base.resolve(cpu) + self.offset.resolve(cpu)
+            return self.left.resolve(cpu) - self.right.resolve(cpu)
+        return self.left.resolve(cpu) + self.right.resolve(cpu)
 
     def __repr__(self) -> str:
         """Return Python API representation."""
-        return str(self)
+        sign = "-" if self.subtract else "+"
+        return f"{self.left!r}{sign}{self.right!r}"
 
     def __str__(self) -> str:
         """Return assembly text representation."""
         sign = "-" if self.subtract else "+"
-        return f"{self.base}{sign}{self.offset}"
+        return f"{self.left}{sign}{self.right}"
 
 
 class _MetaRegister(type):

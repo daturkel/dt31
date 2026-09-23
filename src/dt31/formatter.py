@@ -371,8 +371,8 @@ def _collect_symbols(
             symbols.add("M")
             visit(operand.address)
         elif isinstance(operand, Offset):
-            visit(operand.base)
-            visit(operand.offset)
+            visit(operand.left)
+            visit(operand.right)
         elif isinstance(operand, RegisterReference):
             symbols.add("R")
         elif isinstance(operand, Label):

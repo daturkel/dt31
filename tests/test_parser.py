@@ -357,6 +357,11 @@ def test_token_pattern_memory_offsets():
         "R.b",
     ]
     assert TOKEN_PATTERN.findall("CP [[R.a]], [1]junk") == ["CP", "[[R.a]]", "[1]junk"]
+    assert TOKEN_PATTERN.findall("CP [R.a+','], [R.a + ']']") == [
+        "CP",
+        "[R.a+',']",
+        "[R.a + ']']",
+    ]
 
 
 def test_parse_operand_memory_offset():
@@ -364,20 +369,49 @@ def test_parse_operand_memory_offset():
     assert parse_operand("[R.a-5]") == M[Offset(R.a, 5, subtract=True)]
     assert parse_operand("[R.a+R.b]") == M[Offset(R.a, R.b)]
     assert parse_operand("M[R.a-R.b]") == M[Offset(R.a, R.b, subtract=True)]
+    assert parse_operand("[100+R.i]") == M[Offset(100, R.i)]
+    assert parse_operand("[100-R.i]") == M[Offset(100, R.i, subtract=True)]
+    assert parse_operand("[-5+R.i]") == M[Offset(-5, R.i)]
     assert parse_operand("[ R.a + 5 ]") == M[Offset(R.a, 5)]
     assert parse_operand("[[R.a+5]]") == M[M[Offset(R.a, 5)]]
     assert parse_operand("[ 100 ]") == M[100]
 
 
 @pytest.mark.parametrize(
-    "token", ["[R.a+-5]", "[5+R.a]", "[R.a+R.b+1]", "[R.a+]", "M[R.a*2+1]"]
+    ("token", "char"),
+    [
+        ("[R.c-'a']", "a"),
+        ("[R.c+',']", ","),
+        ("[R.c+']']", "]"),
+        ("[R.c+'[']", "["),
+        ("[R.c+';']", ";"),
+        ("[R.c+' ']", " "),
+        ("[R.c+'+']", "+"),
+        (r"[R.c+'\'']", "'"),
+        (r"[R.c+'\n']", "\n"),
+    ],
+)
+def test_parse_operand_memory_offset_character_literals(token, char):
+    subtract = token[4] == "-"
+    assert parse_operand(token) == M[Offset(R.c, LC[char], subtract=subtract)]
+    assert str(parse_operand(token)) == token
+
+
+def test_parse_operand_memory_offset_character_literal_first():
+    assert parse_operand("['a'+R.c]") == M[Offset(LC["a"], R.c)]
+
+
+@pytest.mark.parametrize(
+    "token",
+    ["[1+2]", "['a'+'b']", "[R.a+-5]", "[R.a+R.b+1]", "[R.a+]", "M[R.a*2+1]"],
 )
 def test_parse_operand_invalid_memory_offset(token):
     with pytest.raises(ParserError) as e:
         parse_operand(token)
     assert str(e.value) == (
-        f"Invalid memory offset '{token}'. Offsets must be a register plus or minus "
-        "a register or non-negative integer, e.g. [R.a+5]."
+        f"Invalid memory offset '{token}'. Offsets must be two registers, integers or "
+        "characters joined by + or -, at least one of them a register, e.g. [R.a+5] "
+        "or [100+R.i]."
     )
 
 
@@ -393,14 +427,21 @@ def test_parse_program_memory_offsets_run(capsys):
         "CP 3, R.b\n"
         "CP 7, [R.a + 5]\n"
         "CP 8, [R.a-R.b]\n"
+        "CP 9, [100-R.a]\n"
+        "CP 97, R.c\n"
+        "CP 6, [R.c-'a']\n"
         "NOUT [R.a+5], 1\n"
         "NOUT M[R.a - 3], 1\n"
+        "NOUT [90], 1\n"
+        "NOUT [R.c + ','], 1  ; comment\n"
     )
     cpu = DT31()
     cpu.run(program)
-    assert capsys.readouterr().out == "7\n8\n"
+    assert capsys.readouterr().out == "7\n8\n9\n0\n"
     assert cpu.get_memory(15) == 7
     assert cpu.get_memory(7) == 8
+    assert cpu.get_memory(90) == 9
+    assert cpu.get_memory(0) == 6
 
 
 def test_parse_operand_memory_with_label_error():

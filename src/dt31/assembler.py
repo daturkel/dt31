@@ -152,8 +152,8 @@ def extract_registers_from_program(
             # Memory references can contain nested operands (e.g., M[R.a])
             extract_from_operand(operand.address)
         elif isinstance(operand, Offset):
-            extract_from_operand(operand.base)
-            extract_from_operand(operand.offset)
+            extract_from_operand(operand.left)
+            extract_from_operand(operand.right)
 
     for item in program:
         if isinstance(item, (Label, Comment, BlankLine)):
