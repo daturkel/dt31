@@ -331,8 +331,7 @@ def test_undefined_label_error_includes_line_from_parsed_program():
     program = parse_program("NOOP\nJMP nonexistent\n")
     with pytest.raises(AssemblyError) as exc_info:
         assemble(program)
-    assert "Line 2" in str(exc_info.value)
-    assert "nonexistent" in str(exc_info.value)
+    assert str(exc_info.value) == "Line 2: Undefined label: nonexistent"
 
 
 def test_multiple_undefined_labels():

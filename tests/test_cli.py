@@ -321,7 +321,9 @@ def test_cli_runtime_error_includes_line_number(temp_dt_file, capsys):
 
     assert exc_info.value.code == 1
     captured = capsys.readouterr()
-    assert "Line 4: Runtime error" in captured.err
+    assert (
+        captured.err == "\nLine 4: Runtime error: integer division or modulo by zero\n"
+    )
 
 
 def test_cli_runtime_error_omits_line_when_unavailable(temp_dt_file, capsys):
@@ -344,8 +346,7 @@ def test_cli_runtime_error_omits_line_when_unavailable(temp_dt_file, capsys):
 
     assert exc_info.value.code == 1
     captured = capsys.readouterr()
-    assert "Runtime error: boom" in captured.err
-    assert "Line" not in captured.err
+    assert captured.err == "\nRuntime error: boom\n"
 
 
 def test_custom_instructions_basic(tmp_path, capsys) -> None:
