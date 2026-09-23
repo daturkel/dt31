@@ -301,9 +301,7 @@ class DT31:
 
         self.debug_mode = debug
         # step_count accumulates across run() calls (see its docstring), so
-        # max_steps is tracked as a delta from the count at the start of this
-        # call rather than a fresh counter, keeping the fast and slow paths
-        # (which both increment step_count) in agreement for free.
+        # max_steps is tracked as a delta from the starting count
         start_step_count = self.step_count
         wall_start = time.perf_counter_ns()
         try:
