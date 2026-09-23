@@ -8,7 +8,6 @@ from typing import TYPE_CHECKING
 from dt31.assembler import assemble, extract_registers_from_program
 from dt31.exceptions import (
     AssemblyError,
-    DivisionByZero,
     DT31RuntimeError,
     EndOfProgram,
     MemoryOutOfBounds,
@@ -314,10 +313,6 @@ class DT31:
                     instruction = loaded[ip]
                     try:
                         instruction(self)
-                    except ZeroDivisionError as exc:
-                        new_exc = DivisionByZero(str(exc))
-                        self._attach_error_context(new_exc, instruction)
-                        raise new_exc from exc
                     except DT31RuntimeError as exc:
                         self._attach_error_context(exc, instruction)
                         raise
@@ -441,10 +436,6 @@ class DT31:
                     self.blocking_time_ns += elapsed
             else:
                 output = instruction(self)
-        except ZeroDivisionError as exc:
-            new_exc = DivisionByZero(str(exc))
-            self._attach_error_context(new_exc, instruction)
-            raise new_exc from exc
         except DT31RuntimeError as exc:
             self._attach_error_context(exc, instruction)
             raise

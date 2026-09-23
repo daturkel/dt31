@@ -536,19 +536,14 @@ def test_division_by_zero_via_step_python_api():
     div_instruction = I.DIV(R.a, L[0])
     cpu.load([div_instruction])
 
-    try:
-        _ = 1 // 0
-    except ZeroDivisionError as original:
-        expected_message = str(original)
-
     with pytest.raises(DivisionByZero) as e:
         cpu.step()
 
-    assert str(e.value) == expected_message
+    assert str(e.value) == "integer division or modulo by zero"
     assert e.value.ip == 0
     assert e.value.instruction is cpu.instructions[0]
     assert e.value.line is None
-    assert isinstance(e.value.__cause__, ZeroDivisionError)
+    assert e.value.__cause__ is None
 
 
 def test_division_by_zero_via_run_fast_path():
@@ -562,7 +557,7 @@ def test_division_by_zero_via_run_fast_path():
 
     assert e.value.ip == 1
     assert e.value.instruction is cpu.instructions[1]
-    assert isinstance(e.value.__cause__, ZeroDivisionError)
+    assert e.value.__cause__ is None
 
 
 def test_division_by_zero_via_step_slow_path(capsys):
@@ -577,7 +572,7 @@ def test_division_by_zero_via_step_slow_path(capsys):
 
     assert e.value.ip == 1
     assert e.value.instruction is cpu.instructions[1]
-    assert isinstance(e.value.__cause__, ZeroDivisionError)
+    assert e.value.__cause__ is None
 
 
 def test_mod_by_zero_raises_division_by_zero():

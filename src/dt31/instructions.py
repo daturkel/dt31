@@ -5,7 +5,7 @@ import random
 import sys
 from typing import TYPE_CHECKING
 
-from dt31.exceptions import InvalidOperand
+from dt31.exceptions import DivisionByZero, InvalidOperand
 from dt31.operands import (
     Destination,
     L,
@@ -459,7 +459,11 @@ class DIV(BinaryOperation):
         super().__init__("DIV", a, b, out)
 
     def _calc(self, cpu: DT31) -> int:
-        return self.a.resolve(cpu) // self.b.resolve(cpu)
+        a = self.a.resolve(cpu)
+        b = self.b.resolve(cpu)
+        if b == 0:
+            raise DivisionByZero("integer division or modulo by zero")
+        return a // b
 
 
 class MOD(BinaryOperation):
@@ -478,7 +482,11 @@ class MOD(BinaryOperation):
         super().__init__("MOD", a, b, out)
 
     def _calc(self, cpu: DT31) -> int:
-        return self.a.resolve(cpu) % self.b.resolve(cpu)
+        a = self.a.resolve(cpu)
+        b = self.b.resolve(cpu)
+        if b == 0:
+            raise DivisionByZero("integer division or modulo by zero")
+        return a % b
 
 
 class BSL(BinaryOperation):
