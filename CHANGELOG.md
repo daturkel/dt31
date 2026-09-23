@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.12.0] - 2026-09-23
+
 ### Added
 
 - `dt31 to-python` command, which converts a `.dt` file into a standalone Python
@@ -51,5 +53,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 See [GitHub Releases](https://github.com/daturkel/dt31/releases).
 
-[Unreleased]: https://github.com/daturkel/dt31/compare/0.11.0...HEAD
+[Unreleased]: https://github.com/daturkel/dt31/compare/0.12.0...HEAD
+[0.12.0]: https://github.com/daturkel/dt31/compare/0.11.0...0.12.0
 [0.11.0]: https://github.com/daturkel/dt31/releases/tag/0.11.0
