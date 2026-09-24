@@ -17,6 +17,19 @@ PYTHONUNBUFFERED=1 dt31 run --memory 2048 sudoku.dt < sudoku_hardest.txt
 output only reaches the terminal at each newline. `sudoku_hardest.txt` takes about
 14,000 placements; `sudoku_easy.txt` solves with no backtracking.
 
+## Language detection
+
+`langid.dt` trains a character-level Markov chain for each language, then labels
+each input line with the most probable language and generates a line of text from
+each model. Probabilities are kept as exact fractions in unbounded integer
+registers, so there are no logarithms and no rounding. `langid_input.txt` trains on
+the Universal Declaration of Human Rights in six languages, from the
+[UDHR in Unicode](https://github.com/eric-muller/udhr) project.
+
+```shell
+dt31 run --memory 130000 langid.dt < langid_input.txt
+```
+
 ## Quine
 
 `quine.dt` prints its own source exactly. Line 1 loads a 1,213-digit number that

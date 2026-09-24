@@ -1,0 +1,246 @@
+; Language detection and text generation with character Markov chains.
+;
+; Input, on stdin:
+;   #name        starts a language's training text (one paragraph per line)
+;   %            ends training; each later line is classified
+;
+; Each language is a second-order Markov chain over 27 symbols (space and a-z,
+; with accented Latin-1 letters folded to their base letter). Training counts
+; every trigram and the two-symbol context before it. A line is scored as
+;
+;   P(line | language) = product of (trigram count + 1) / (context count + 27)
+;
+; kept as an exact fraction: registers hold unbounded integers, so the numerator
+; and denominator are multiplied out in full and two languages are compared by
+; cross-multiplying. No logarithms and no rounding.
+;
+; After the input ends, each language generates a line of text by sampling the
+; next symbol in proportion to the trigram counts for the current context.
+;
+; Run with:
+;   dt31 run --memory 130000 langid.dt < langid_input.txt
+;
+; Memory:
+;   [10..1999]     input line
+;   [2000..3999]   the line as symbols (0 = space, 1-26 = a-z), ended by -1
+;   [4000..4063]   fold table: [4000 + c - 192] is the symbol for Latin-1 c
+;   [5000 + 20600 * L] language L:
+;       +0       trigram counts, indexed by context * 27 + symbol
+;       +19700   context counts, indexed by the two previous symbols
+;       +20450   name
+;
+; Registers:
+;   R.nl  number of languages      R.l  current language
+;   R.base, R.ctxs, R.name  addresses of language R.l's tables and name
+;   R.ctx  the two previous symbols, as one base-27 number
+;   R.num, R.den  a line's probability under R.l, as a fraction
+;   R.bestnum, R.bestden, R.best  the best fraction so far and its name
+
+    JMP main
+
+; ------------------------------------------------------------------------------
+; Subroutines
+; ------------------------------------------------------------------------------
+
+; R.l -> R.base, R.ctxs, R.name
+select:
+    MUL R.l, 20600, R.base
+    ADD R.base, 5000
+    ADD R.base, 19700, R.ctxs
+    ADD R.base, 20450, R.name
+    RET
+
+; Unpack 16 base-27 digits of R.t into the fold table, starting at entry R.i
+unpack16:
+    ADD R.i, 16, R.u
+up_loop:
+    MOD R.t, 27, [4000 + R.i]
+    DIV R.t, 27
+    ADD R.i, 1
+    JLT up_loop, R.i, R.u
+    RET
+
+; Convert the line at [10] to symbols at [2000], collapsing runs of spaces and
+; ending the last word with a space
+symbolize:
+    CP 0, R.i
+    CP 0, R.j
+    CP 0, R.prev
+sy_loop:
+    CP [10 + R.i], R.c
+    JEQ sy_end, R.c, 0
+    ADD R.i, 1
+    CP 0, R.s
+    JLT sy_emit, R.c, 'A'
+    JLE sy_upper, R.c, 'Z'
+    JLT sy_emit, R.c, 'a'
+    JLE sy_lower, R.c, 'z'
+    JLT sy_emit, R.c, 192
+    JGT sy_emit, R.c, 255
+    CP [R.c + 3808], R.s             ; 3808 = 4000 - 192
+    JMP sy_emit
+sy_upper:
+    SUB R.c, 64, R.s                 ; 'A' -> 1
+    JMP sy_emit
+sy_lower:
+    SUB R.c, 96, R.s                 ; 'a' -> 1
+sy_emit:
+    JNE sy_store, R.s, 0
+    JEQ sy_loop, R.prev, 0           ; a space after a space
+sy_store:
+    CP R.s, [2000 + R.j]
+    ADD R.j, 1
+    CP R.s, R.prev
+    JMP sy_loop
+sy_end:
+    JEQ sy_done, R.prev, 0
+    CP 0, [2000 + R.j]
+    ADD R.j, 1
+sy_done:
+    CP -1, [2000 + R.j]
+    RET
+
+; Count the symbols at [2000] into language R.l's tables
+train:
+    CP 0, R.ctx
+    CP 2000, R.j
+tr_loop:
+    CP [R.j], R.s
+    JLT tr_done, R.s, 0
+    ADD [R.ctxs + R.ctx], 1
+    MUL R.ctx, 27, R.k
+    ADD R.k, R.s                     ; trigram = context * 27 + symbol
+    ADD [R.base + R.k], 1
+    MOD R.k, 729, R.ctx              ; drop the oldest symbol
+    ADD R.j, 1
+    JMP tr_loop
+tr_done:
+    RET
+
+; R.num / R.den = P(symbols at [2000] | language R.l)
+score:
+    CP 1, R.num
+    CP 1, R.den
+    CP 0, R.ctx
+    CP 2000, R.j
+sc_loop:
+    CP [R.j], R.s
+    JLT sc_done, R.s, 0
+    MUL R.ctx, 27, R.k
+    ADD R.k, R.s
+    ADD [R.base + R.k], 1, R.t
+    MUL R.num, R.t
+    ADD [R.ctxs + R.ctx], 27, R.t
+    MUL R.den, R.t
+    MOD R.k, 729, R.ctx
+    ADD R.j, 1
+    JMP sc_loop
+sc_done:
+    RET
+
+; ------------------------------------------------------------------------------
+; Main
+; ------------------------------------------------------------------------------
+
+main:
+    ; fold table for Latin-1 192-255, 16 entries per number:
+    ; ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏ ÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞß àáâãäåæçèéêëìíîï ðñòóôõö÷øùúûüýþÿ
+    CP 0, R.i
+    CP 27611437973566370038246, R.t
+    CALL unpack16
+    CP 58424908301628495551284, R.t
+    CALL unpack16
+    CP 27611437973566370038246, R.t
+    CALL unpack16
+    CP 76150784540933497743142, R.t
+    CALL unpack16
+
+    ; training
+    CP 0, R.nl
+read:
+    SSTRIN [10], R.st
+    JEQ generate, R.st, 0
+    JEQ new_language, [10], '#'
+    JEQ detect, [10], '%'
+    JEQ read, R.nl, 0                ; text before the first language
+    CALL symbolize
+    CALL train
+    JMP read
+new_language:
+    CP R.nl, R.l
+    CALL select
+    ADD R.nl, 1
+    CP 0, R.i
+nl_copy:
+    CP [11 + R.i], [R.name + R.i]
+    ADD R.i, 1
+    JNE nl_copy, [10 + R.i], 0
+    JMP read
+
+; detection: print the most probable language before each line
+detect:
+    SSTRIN [10], R.st
+    JEQ generate, R.st, 0
+    JEQ detect, [10], 0
+    CALL symbolize
+    CP 0, R.bestnum
+    CP 1, R.bestden
+    CP 0, R.l
+det_lang:
+    CALL select
+    CALL score
+    ; num / den > bestnum / bestden, cross-multiplied
+    MUL R.num, R.bestden, R.t
+    MUL R.bestnum, R.den, R.u
+    JLE det_next, R.t, R.u
+    CP R.num, R.bestnum
+    CP R.den, R.bestden
+    CP R.name, R.best
+det_next:
+    ADD R.l, 1
+    JLT det_lang, R.l, R.nl
+    STROUT [R.best]
+    COUT 9
+    STROUT [10], 1
+    JMP detect
+
+; generation: one line per language, stopping at the first space after 60 symbols
+generate:
+    COUT 10
+    CP 0, R.l
+gen_lang:
+    JGE done, R.l, R.nl
+    CALL select
+    STROUT [R.name]
+    COUT 9
+    CP 0, R.ctx
+    CP 0, R.n
+gen_symbol:
+    CP [R.ctxs + R.ctx], R.total
+    JGT gen_pick, R.total, 0
+    CP 0, R.ctx                      ; a context never continued in training
+    JMP gen_symbol
+gen_pick:
+    ; walk the context's trigram counts until they pass a random r in 1..total
+    RINT 1, R.total, R.r
+    MUL R.ctx, 27, R.k
+gen_walk:
+    SUB R.r, [R.base + R.k]
+    JLE gen_found, R.r, 0
+    ADD R.k, 1
+    JMP gen_walk
+gen_found:
+    MOD R.k, 27, R.s
+    MOD R.k, 729, R.ctx
+    ADD R.n, 1
+    JEQ gen_space, R.s, 0
+    ADD R.s, 96, R.c                 ; 1 -> 'a'
+    COUT R.c
+    JMP gen_symbol
+gen_space:
+    COUT ' '
+    JLT gen_symbol, R.n, 60
+    COUT 10
+    ADD R.l, 1
+    JMP gen_lang
+done:

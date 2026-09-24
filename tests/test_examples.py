@@ -476,6 +476,19 @@ def test_advanced_quine(capsys):
     assert capsys.readouterr().out == source
 
 
+@pytest.mark.slow
+def test_advanced_langid(capsys, monkeypatch):
+    cpu, program = load_advanced_example(
+        "langid.dt", "langid_input.txt", 130000, monkeypatch
+    )
+    cpu.run(program)
+    detected, generated = capsys.readouterr().out.split("\n\n")
+    languages = ["english", "french", "german", "spanish", "italian", "dutch"]
+    # Two test sentences per language, in the same order twice
+    assert [line.split("\t")[0] for line in detected.splitlines()] == languages * 2
+    assert [line.split("\t")[0] for line in generated.splitlines()] == languages
+
+
 def test_all_advanced_examples_are_tested():
     all_example_files = sorted(f.name for f in advanced_dir.glob("*.dt"))
 
@@ -483,6 +496,7 @@ def test_all_advanced_examples_are_tested():
         "aoc2021_day9.dt",
         "aoc2022_day11.dt",
         "aoc2023_day8.dt",
+        "langid.dt",
         "quine.dt",
         "sudoku.dt",
     ]
