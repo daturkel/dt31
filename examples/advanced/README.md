@@ -10,11 +10,11 @@ using row, column and box bitmasks plus a popcount table. The input is 81 cells 
 any layout: digits are givens, and `.` or `0` is an empty cell.
 
 ```shell
-PYTHONUNBUFFERED=1 dt31 run --memory 2048 sudoku.dt < sudoku_hardest.txt
+PYTHONUNBUFFERED=1 dt31 run --memory 2048 sudoku.dt < sudoku_hard.txt
 ```
 
 `PYTHONUNBUFFERED=1` makes each cell update show up as it happens. Without it,
-output only reaches the terminal at each newline. `sudoku_hardest.txt` takes about
+output only reaches the terminal at each newline. `sudoku_hard.txt` takes about
 14,000 placements; `sudoku_easy.txt` solves with no backtracking.
 
 ## Language detection

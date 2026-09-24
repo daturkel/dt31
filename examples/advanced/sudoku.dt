@@ -8,7 +8,7 @@
 ; single 81-character line and a bordered 9x9 grid both work.
 ;
 ; Run with:
-;   PYTHONUNBUFFERED=1 dt31 run --memory 2048 sudoku.dt < sudoku_hardest.txt
+;   PYTHONUNBUFFERED=1 dt31 run --memory 2048 sudoku.dt < sudoku_hard.txt
 ;
 ; Algorithm:
 ;   - Row, column and box contents are 9-bit masks (bit d set = digit d used),
