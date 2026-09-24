@@ -9,8 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- `dt31 format` / `program_to_text` indent a standalone comment that sits directly
-  above an instruction, instead of always putting it at column 0. (#70)
+- `dt31 format` / `program_to_text` indent every standalone comment in the block
+  directly above an indented instruction, instead of always putting comments at
+  column 0. (#70)
 
 ### Fixed
 

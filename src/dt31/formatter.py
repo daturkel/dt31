@@ -42,8 +42,8 @@ def program_to_text(
     Converts a list of instructions, labels, and comments (whether created programmatically
     in Python or parsed from text) into human-readable assembly text syntax.
 
-    A standalone comment directly above an instruction is indented to match it; any
-    other standalone comment starts at column 0.
+    Standalone comments in the block directly above an indented instruction are
+    indented to match it; all other standalone comments start at column 0.
 
     Args:
         program: List of instructions, labels, comments, and blank lines in source order.
