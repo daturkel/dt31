@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.13.0] - 2026-09-24
+
 ### Added
 
 - Offset addressing for memory references: two registers, integers or characters
@@ -65,6 +67,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 See [GitHub Releases](https://github.com/daturkel/dt31/releases).
 
-[Unreleased]: https://github.com/daturkel/dt31/compare/0.12.0...HEAD
+[Unreleased]: https://github.com/daturkel/dt31/compare/0.13.0...HEAD
+[0.13.0]: https://github.com/daturkel/dt31/compare/0.12.0...0.13.0
 [0.12.0]: https://github.com/daturkel/dt31/compare/0.11.0...0.12.0
 [0.11.0]: https://github.com/daturkel/dt31/releases/tag/0.11.0
