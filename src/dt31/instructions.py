@@ -56,7 +56,8 @@ def _decode_escape_sequences(val: str) -> str:
         The decoded text, or `val` unchanged if it isn't valid escaped text.
     """
     try:
-        return val.encode().decode("unicode_escape")
+        # unicode_escape reads bytes as Latin-1; characters above 255 become \u escapes
+        return val.encode("latin-1", "backslashreplace").decode("unicode_escape")
     except UnicodeDecodeError:
         return val
 

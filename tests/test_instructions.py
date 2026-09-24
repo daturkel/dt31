@@ -651,6 +651,13 @@ def test_cin_escape_sequences(cpu, monkeypatch):
         I.CIN(R.a)(cpu)
 
 
+def test_cin_non_ascii(cpu, monkeypatch):
+    monkeypatch.setattr("builtins.input", lambda: "é")
+    assert I.CIN(R.a)(cpu) == 233
+    monkeypatch.setattr("builtins.input", lambda: "€")
+    assert I.CIN(R.a)(cpu) == 8364
+
+
 def test_scin_success(cpu, monkeypatch):
     assert repr(I.SCIN(M[10], R.b)) == "SCIN(out=M[10], status=R.b)"
     assert str(I.SCIN(M[10], R.b)) == "SCIN [10], R.b"
@@ -1110,6 +1117,16 @@ def test_strin_escape_sequences(cpu, monkeypatch):
     for i, char in enumerate(expected):
         assert cpu.get_memory(40 + i) == ord(char)
     assert cpu.get_memory(40 + len(expected)) == 0
+
+
+def test_strin_non_ascii(cpu, monkeypatch):
+    """Non-ASCII characters pass through unchanged alongside escape sequences."""
+    monkeypatch.setattr("builtins.input", lambda: r"café\tit’s €5 🙂")
+    assert I.STRIN(M[10])(cpu) == 0
+    expected = "café\tit’s €5 🙂"
+    for i, char in enumerate(expected):
+        assert cpu.get_memory(10 + i) == ord(char)
+    assert cpu.get_memory(10 + len(expected)) == 0
 
 
 def test_sstrin_success(cpu, monkeypatch):
