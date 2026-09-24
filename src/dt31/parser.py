@@ -8,8 +8,9 @@ from dt31.operands import (
     L,
     Label,
     M,
+    Offset,
     Operand,
-    R,
+    RegisterReference,
 )
 
 
@@ -119,6 +120,50 @@ def _find_unquoted(line: str, target: str) -> int:
     return -1
 
 
+def tokenize(line: str) -> list[str]:
+    """Split an instruction line into tokens on commas and whitespace.
+
+    Commas and whitespace inside brackets or character literals don't split, so
+    `CP [R.a + ','], R.b` gives `["CP", "[R.a + ',']", "R.b"]`.
+
+    Args:
+        line: An instruction line with labels and comments already removed.
+
+    Returns:
+        The instruction name followed by its operand tokens.
+    """
+    tokens = []
+    current = ""
+    depth = 0  # Bracket nesting depth
+    in_quote = False
+    i = 0
+    while i < len(line):
+        char = line[i]
+        i += 1
+        if depth == 0 and not in_quote and (char == "," or char.isspace()):
+            if current:
+                tokens.append(current)
+            current = ""
+            continue
+        current += char
+        if in_quote:
+            if char == "\\" and i < len(line):
+                # Keep the escaped character, so \' doesn't close the quote
+                current += line[i]
+                i += 1
+            elif char == "'":
+                in_quote = False
+        elif char == "'":
+            in_quote = True
+        elif char == "[":
+            depth += 1
+        elif char == "]":
+            depth = max(depth - 1, 0)
+    if current:
+        tokens.append(current)
+    return tokens
+
+
 def parse_program(
     text: str,
     custom_instructions: dict[str, type[Instruction]] | None = None,
@@ -218,8 +263,7 @@ def parse_program(
         if not line:
             continue
 
-        # Tokenize: preserve brackets, quoted strings, R.name
-        tokens = TOKEN_PATTERN.findall(line)
+        tokens = tokenize(line)
 
         if not tokens:
             continue
@@ -269,6 +313,7 @@ def parse_operand(token: str) -> Operand | Label:
     - Character literals: 'H', 'a'
     - Registers: R.a, R.b, R.c (must use R. prefix)
     - Memory: [100], M[100], [R.a], M[R.a]
+    - Memory with offset: [R.a + 5], [100 + R.i], [R.a - R.b], [R.c - 'a']
     - Labels: loop, end, start (any bare identifier not matching above)
 
     Args:
@@ -276,6 +321,10 @@ def parse_operand(token: str) -> Operand | Label:
 
     Returns:
         An Operand object (Literal, RegisterReference, MemoryReference, or Label)
+
+    Raises:
+        ParserError: If the token is a malformed memory or register reference, or
+            an invalid character or numeric literal.
 
     Note:
         Registers MUST use the R. prefix syntax (e.g., R.a, R.b).
@@ -302,9 +351,27 @@ def parse_operand(token: str) -> Operand | Label:
                 )
             return LC[decoded_char]
 
-        # Memory reference: [100] or M[100] or [a] or M[R.a]
+        # Memory reference: [100] or M[100] or [a] or M[R.a] or [R.a + 5]
         case str() if m := MEMORY_PATTERN.match(token):
-            inner = m.group(1)
+            inner = m.group(1).strip()
+            if offset_match := OFFSET_PATTERN.match(inner):
+                left = parse_operand(offset_match["left"])
+                right = parse_operand(offset_match["right"])
+                if not isinstance(left, RegisterReference) and not isinstance(
+                    right, RegisterReference
+                ):
+                    raise ParserError(
+                        f"Invalid memory offset '{token}': at least one side must be "
+                        "a register."
+                    )
+                # Offset operands are never labels, given OFFSET_PATTERN.
+                return M[
+                    Offset(
+                        left,  # ty: ignore[invalid-argument-type]
+                        right,  # ty: ignore[invalid-argument-type]
+                        subtract=offset_match["sign"] == "-",
+                    )
+                ]
             inner_operand = parse_operand(inner)  # Recursive
             # Labels cannot be used as memory addresses
             if isinstance(inner_operand, Label):
@@ -316,8 +383,10 @@ def parse_operand(token: str) -> Operand | Label:
 
         # Register with prefix: R.a
         case str() if m := REGISTER_PREFIX_PATTERN.match(token):
-            reg_name = m.group(1)
-            return getattr(R, reg_name)
+            try:
+                return RegisterReference(m.group(1))
+            except ValueError as e:
+                raise ParserError(str(e)) from e
 
         # Looks like a memory reference or register but didn't match in full
         case str() if token.startswith(("[", "M[")):
@@ -340,19 +409,22 @@ def parse_operand(token: str) -> Operand | Label:
 
 
 # Precompiled regex patterns for parsing
-TOKEN_PATTERN = re.compile(
-    r"""
-    '           # Opening quote for character literal
-    (?:         # Non-capturing group for character content
-        \\.     # Escaped character (backslash + any char, e.g., \', \n)
-        |       # OR
-        [^']    # Any non-quote character
-    )
-    '           # Closing quote
-    |           # OR (for non-character-literal tokens)
-    [^\s,]+     # Any sequence of non-whitespace, non-comma characters
+MEMORY_PATTERN = re.compile(r"M?\[(.+)\]\Z")
+REGISTER_PREFIX_PATTERN = re.compile(r"R\.(\w+)\Z")
+# One side of an offset: a register, a non-negative integer or a character literal.
+# Character literals may contain escapes such as \' and \x41; whether one is a single
+# character is checked by `parse_operand`, not here.
+_OFFSET_OPERAND = r"R\.\w+ | \d+ | '(?:\\.|[^'\\])+'"
+# The contents of an offset memory reference, e.g. `R.a + 5` from `[R.a + 5]`.
+# Whether either side is a register is checked by `parse_operand`, not here.
+OFFSET_PATTERN = re.compile(
+    rf"""
+    (?P<left>-?\d+ | {_OFFSET_OPERAND})  # Left side; may also be a negative integer
+    \s*
+    (?P<sign>[+-])
+    \s*
+    (?P<right>{_OFFSET_OPERAND})         # Right side
+    \Z
     """,
     re.VERBOSE,
 )
-MEMORY_PATTERN = re.compile(r"M?\[(.+)\]\Z")
-REGISTER_PREFIX_PATTERN = re.compile(r"R\.(\w+)\Z")

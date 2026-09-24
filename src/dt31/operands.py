@@ -240,6 +240,9 @@ class M(metaclass=_MetaMemory):
     Examples:
         M[100]      # Direct memory access at address 100
         M[R.a]      # Indirect memory access using register 'a' as address
+        M[R.a + 5]  # Register plus constant (see `Offset`)
+        M[100 + R.i]  # Constant plus register
+        M[R.a - R.b]  # Register minus register
         M[M[50]]    # Double indirect addressing
     """
 
@@ -321,6 +324,104 @@ class RegisterReference(Operand):
     def __str__(self) -> str:
         """Return assembly text representation."""
         return f"R.{self.register}"
+
+    def __add__(self, other: int | Literal | RegisterReference) -> Offset:
+        """Return `Offset(self, other)`, for use as a memory address: `M[R.a + 5]`."""
+        return Offset(self, other)
+
+    def __radd__(self, other: int | Literal) -> Offset:
+        """Return `Offset(other, self)`, for use as a memory address: `M[5 + R.a]`."""
+        return Offset(other, self)
+
+    def __sub__(self, other: int | Literal | RegisterReference) -> Offset:
+        """Return `Offset(self, other, subtract=True)`, for use as a memory address:
+        `M[R.a - 5]`."""
+        return Offset(self, other, subtract=True)
+
+    def __rsub__(self, other: int | Literal) -> Offset:
+        """Return `Offset(other, self, subtract=True)`, for use as a memory address:
+        `M[5 - R.a]`."""
+        return Offset(other, self, subtract=True)
+
+
+class Offset(Operand):
+    """The sum or difference of two operands, at least one of them a register.
+
+    Used as the address of a memory reference: `[R.a + 5]`, `[100 + R.i]`,
+    `[R.a - R.b]`, `[R.c - 'a']` in assembly text, or `M[R.a + 5]`, `M[100 + R.i]` etc.
+    in Python.
+    Operand order is kept as written.
+
+    Examples:
+        Offset(R.a, 5)                 # R.a + 5
+        Offset(100, R.i)               # 100 + R.i
+        Offset(R.a, 5, subtract=True)  # R.a - 5
+        Offset(R.a, -5)                # R.a - 5
+        Offset(R.c, LC["a"], subtract=True)  # R.c - 'a'
+    """
+
+    def __init__(
+        self,
+        left: int | Literal | RegisterReference,
+        right: int | Literal | RegisterReference,
+        subtract: bool = False,
+    ):
+        """Initialize an offset operand.
+
+        A negative non-character literal on the right is stored as its absolute value
+        with `subtract` flipped, so it formats as `R.a - 5` rather than `R.a + -5`.
+
+        Args:
+            left: The left operand.
+            right: The operand to add to or subtract from `left`.
+            subtract: Whether to compute `left - right` instead of `left + right`.
+
+        Raises:
+            TypeError: If either operand is not an int, literal or register, or
+                neither is a register.
+        """
+        left = Literal(left) if isinstance(left, int) else left
+        right = Literal(right) if isinstance(right, int) else right
+        for operand in (left, right):
+            if not isinstance(operand, (Literal, RegisterReference)):
+                raise TypeError(
+                    f"Offset operands must be ints, literals or registers, got {operand!r}"
+                )
+        if not isinstance(left, RegisterReference) and not isinstance(
+            right, RegisterReference
+        ):
+            raise TypeError(
+                f"Offset needs at least one register, got {left!r} and {right!r}"
+            )
+        if isinstance(right, Literal) and not right.is_char and right.value < 0:
+            right = Literal(-right.value)
+            subtract = not subtract
+        self.left = left
+        self.right = right
+        self.subtract = subtract
+
+    def resolve(self, cpu: DT31) -> int:
+        """Return `left + right`, or `left - right` if `subtract` is set.
+
+        Args:
+            cpu: The DT31 CPU instance providing register access.
+
+        Returns:
+            The computed value.
+        """
+        if self.subtract:
+            return self.left.resolve(cpu) - self.right.resolve(cpu)
+        return self.left.resolve(cpu) + self.right.resolve(cpu)
+
+    def __repr__(self) -> str:
+        """Return Python API representation."""
+        sign = "-" if self.subtract else "+"
+        return f"{self.left!r} {sign} {self.right!r}"
+
+    def __str__(self) -> str:
+        """Return assembly text representation."""
+        sign = "-" if self.subtract else "+"
+        return f"{self.left} {sign} {self.right}"
 
 
 class _MetaRegister(type):

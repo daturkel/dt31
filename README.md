@@ -149,7 +149,8 @@ dt31 provides several operand types for referencing values:
 
 - **Literals**: Constant values `L[42]`, or `LC["a"]` as a shortcut for `L[ord("a")]`
 - **Registers**: CPU registers `R.a`, `R.b`, `R.c`
-- **Memory**: Memory addresses `M[100]`, indirect addressing `M[R.a]`
+- **Memory**: Memory addresses `M[100]`, indirect addressing `M[R.a]`, and offsets
+  `M[R.a + 5]`, `M[100 + R.i]`, `M[R.a - R.b]`
 - **Labels**: Named jump targets `Label("loop")`
 
 See the [operands documentation](https://daturkel.github.io/dt31/dt31/operands.html) for details.
@@ -505,13 +506,16 @@ The assembly text syntax differs from Python syntax:
 | **Register** | `R.a` | `R.a` | `ADD R.a, R.b` |
 | **Memory (direct)** | `[100]` or `M[100]` | `M[100]` | `CP 42, [100]` |
 | **Memory (indirect)** | `[R.a]` or `M[R.a]` | `M[R.a]` | `CP [R.a], R.b` |
+| **Memory (offset)** | `[R.a + 5]`, `[100 - R.i]`, `[R.c - 'a']` | `M[R.a + 5]`, `M[100 - R.i]`, `M[R.c - LC["a"]]` | `CP [R.a + 1], R.b` |
 | **Label** | `loop` | `Label("loop")` | `JMP loop` |
 
 **Key Differences:**
 
 1. **Literals**: In text syntax, bare numbers are literals (no `L[...]` wrapper needed)
 2. **Characters**: Use single quotes `'A'` instead of `LC["A"]`
-3. **Memory**: The `M` prefix is optional (both `[100]` and `M[100]` work)
+3. **Memory**: The `M` prefix is optional (`[100]` and `M[100]` are equivalent). An
+   address can also be a register plus or minus a register, integer or character, in
+   either order: `[R.a + 5]`, `[100 - R.i]`, `[R.c - 'a']`
 4. **Labels**: Bare identifiers are labels (no `Label(...)` constructor needed)
 5. **Registers**: **Must** use `R.` prefix in both syntaxes
 

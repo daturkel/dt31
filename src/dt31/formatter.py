@@ -16,6 +16,7 @@ from dt31.instructions import Instruction, Jump, RelativeJumpMixin
 from dt31.operands import (
     Label,
     MemoryReference,
+    Offset,
     Operand,
     RegisterReference,
     validate_register_name,
@@ -369,6 +370,9 @@ def _collect_symbols(
         if isinstance(operand, MemoryReference):
             symbols.add("M")
             visit(operand.address)
+        elif isinstance(operand, Offset):
+            visit(operand.left)
+            visit(operand.right)
         elif isinstance(operand, RegisterReference):
             symbols.add("R")
         elif isinstance(operand, Label):

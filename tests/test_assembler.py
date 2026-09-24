@@ -618,6 +618,14 @@ def test_extract_registers_with_memory():
     assert registers == ["addr", "value"]
 
 
+def test_extract_registers_with_memory_offset():
+    program = [
+        I.CP(L[1], M[R.base + 5]),
+        I.CP(M[R.base - R.index], R.value),
+    ]
+    assert extract_registers_from_program(program) == ["base", "index", "value"]
+
+
 def test_extract_registers_filters_ip():
     """Test that 'ip' register is filtered out."""
     program = [

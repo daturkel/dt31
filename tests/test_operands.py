@@ -7,6 +7,7 @@ from dt31.operands import (
     Literal,
     M,
     MemoryReference,
+    Offset,
     Operand,
     R,
     RegisterReference,
@@ -333,3 +334,148 @@ def test_lc_escape_sequences_repr():
     assert repr(LC["\\"]) == 'LC["\\\\"]'
     assert repr(LC["'"]) == 'LC["\'"]'
     assert repr(LC["A"]) == 'LC["A"]'
+
+
+def test_offset_resolve(cpu):
+    assert Offset(R.a, 5).resolve(cpu) == 35
+    assert Offset(R.a, 5, subtract=True).resolve(cpu) == 25
+    assert Offset(R.a, R.b).resolve(cpu) == 70
+    assert Offset(R.a, R.b, subtract=True).resolve(cpu) == -10
+    assert Offset(100, R.a).resolve(cpu) == 130
+    assert Offset(100, R.a, subtract=True).resolve(cpu) == 70
+    assert Offset(R.a, LC["a"], subtract=True).resolve(cpu) == -67
+
+
+def test_offset_as_memory_address(cpu):
+    cpu.set_memory(35, 7)
+    assert M[Offset(R.a, 5)].resolve(cpu) == 7
+    assert M[Offset(R.a, 5)].resolve_address(cpu) == 35
+
+
+@pytest.mark.parametrize(
+    ("offset", "expected"),
+    [
+        (Offset(R.a, -5), Offset(R.a, 5, subtract=True)),
+        (Offset(R.a, -5, subtract=True), Offset(R.a, 5)),
+        (Offset(R.a, L[-5]), Offset(R.a, 5, subtract=True)),
+        (Offset(R.a, L[-5], subtract=True), Offset(R.a, 5)),
+    ],
+)
+def test_offset_negative_right_literal_flips_sign(offset, expected):
+    assert offset == expected
+    assert offset.right.value == 5
+    assert offset.subtract == expected.subtract
+
+
+def test_offset_negative_left_literal_is_kept():
+    offset = Offset(-5, R.a, subtract=True)
+    assert offset.left == -5
+    assert offset.subtract is True
+    assert str(offset) == "-5 - R.a"
+
+
+def test_offset_zero_literal():
+    assert str(Offset(R.a, 0)) == "R.a + 0"
+    assert str(Offset(R.a, 0, subtract=True)) == "R.a - 0"
+
+
+def test_offset_char_literal_keeps_is_char():
+    assert Offset(R.a, LC["a"]).right.is_char is True
+    assert Offset(LC["a"], R.a).left.is_char is True
+
+
+@pytest.mark.parametrize(
+    ("left", "right"),
+    [
+        (R.a, 5),
+        (5, R.a),
+        (R.a, L[5]),
+        (L[5], R.a),
+        (R.a, LC["a"]),
+        (LC["a"], R.a),
+        (R.a, R.b),
+        (R.a, R.a),
+        (-5, R.a),
+    ],
+)
+def test_offset_valid_operand_combinations(left, right):
+    offset = Offset(left, right)
+    assert offset.left == left
+    assert offset.right == right
+    assert offset.subtract is False
+
+
+@pytest.mark.parametrize(
+    ("left", "right", "message"),
+    [
+        (1, 5, "Offset needs at least one register, got 1 and 5"),
+        (L[1], L[2], "Offset needs at least one register, got 1 and 2"),
+        (-1, 2, "Offset needs at least one register, got -1 and 2"),
+        (
+            LC["a"],
+            LC["b"],
+            'Offset needs at least one register, got LC["a"] and LC["b"]',
+        ),
+        (LC["a"], 5, 'Offset needs at least one register, got LC["a"] and 5'),
+    ],
+)
+def test_offset_requires_a_register(left, right, message):
+    with pytest.raises(TypeError) as e:
+        Offset(left, right)
+    assert str(e.value) == message
+
+
+@pytest.mark.parametrize(
+    ("bad", "shown"),
+    [
+        (M[1], "M[1]"),
+        (M[R.b], "M[R.b]"),
+        (Offset(R.b, 1), "R.b + 1"),
+        (Label("x"), "x"),
+        ("a", "'a'"),
+        (1.5, "1.5"),
+        (None, "None"),
+    ],
+)
+@pytest.mark.parametrize("side", ["left", "right"])
+def test_offset_rejects_invalid_operand_types(bad, shown, side):
+    args = (bad, R.a) if side == "left" else (R.a, bad)
+    with pytest.raises(TypeError) as e:
+        Offset(*args)
+    assert str(e.value) == (
+        f"Offset operands must be ints, literals or registers, got {shown}"
+    )
+
+
+def test_offset_str_and_repr():
+    assert str(Offset(R.a, 5)) == "R.a + 5"
+    assert str(Offset(100, R.a)) == "100 + R.a"
+    assert str(Offset(R.a, R.b, subtract=True)) == "R.a - R.b"
+    assert str(Offset(R.c, LC["a"], subtract=True)) == "R.c - 'a'"
+    assert str(Offset(LC[","], R.c)) == "',' + R.c"
+    assert repr(Offset(R.a, 5)) == "R.a + 5"
+    assert repr(Offset(R.c, LC["a"], subtract=True)) == 'R.c - LC["a"]'
+    assert str(M[Offset(R.a, 5)]) == "[R.a + 5]"
+    assert repr(M[Offset(100, R.b)]) == "M[100 + R.b]"
+
+
+def test_offset_register_operators():
+    assert R.a + 5 == Offset(R.a, 5)
+    assert R.a + L[5] == Offset(R.a, 5)
+    assert R.a - 5 == Offset(R.a, 5, subtract=True)
+    assert R.a + R.b == Offset(R.a, R.b)
+    assert R.a - R.b == Offset(R.a, R.b, subtract=True)
+    assert 100 + R.a == Offset(100, R.a)
+    assert 100 - R.a == Offset(100, R.a, subtract=True)
+    assert L[100] + R.a == Offset(100, R.a)
+    assert R.c - LC["a"] == Offset(R.c, LC["a"], subtract=True)
+    assert M[R.a + 5] == M[Offset(R.a, 5)]
+
+
+def test_offset_equality():
+    assert Offset(R.a, 5) == Offset(R.a, 5)
+    assert Offset(R.a, 5) != Offset(R.a, 6)
+    assert Offset(R.a, 5) != Offset(R.b, 5)
+    assert Offset(R.a, 5) != Offset(R.a, 5, subtract=True)
+    assert Offset(R.a, 5) != Offset(5, R.a)
+    assert Offset(R.a, R.b) != Offset(R.a, 5)
