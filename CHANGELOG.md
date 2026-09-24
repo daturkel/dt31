@@ -20,7 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - A line containing only `;` parses as an empty comment instead of a blank line, and
   formats back to `;`. (#70)
 - Input instructions (`CIN`, `STRIN`, `SCIN`, `SSTRIN`) no longer garble non-ASCII
-  characters: `é` was read as `Ã©`, and a single non-ASCII character failed `CIN`.
+  characters: `é` was read as `Ã©`, and a single non-ASCII character failed `CIN`. (#71)
 
 ## [0.13.0] - 2026-09-24
 
