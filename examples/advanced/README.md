@@ -17,6 +17,16 @@ PYTHONUNBUFFERED=1 dt31 run --memory 2048 sudoku.dt < sudoku_hard.txt
 output only reaches the terminal at each newline. `sudoku_hard.txt` takes about
 14,000 placements; `sudoku_easy.txt` solves with no backtracking.
 
+## Sudoku explainer
+
+`explainer/` holds an interactive web page that explains `sudoku.dt` and runs it in
+the browser through a small JavaScript port of the dt31 interpreter (`vm.js`).
+`build.py` inlines `sudoku.dt` and the two puzzles into `template.html`:
+
+```shell
+python explainer/build.py   # writes explainer/sudoku-explainer.html
+```
+
 ## Language detection
 
 `langid.dt` trains a character-level Markov chain for each language, then labels
