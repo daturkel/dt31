@@ -17,6 +17,18 @@ PYTHONUNBUFFERED=1 dt31 run --memory 2048 sudoku.dt < sudoku_hardest.txt
 output only reaches the terminal at each newline. `sudoku_hardest.txt` takes about
 14,000 placements; `sudoku_easy.txt` solves with no backtracking.
 
+## Quine
+
+`quine.dt` prints its own source exactly. Line 1 loads a 1,213-digit number that
+packs the rest of the file into base-128 digits. The program prints line 1 around
+that number, then unpacks it to print everything else.
+
+```shell
+dt31 run quine.dt | diff - quine.dt
+```
+
+Editing anything below line 1 means recomputing the number.
+
 ## Advent of Code
 
 Each program prints the answers to part 1 and part 2 on separate lines. Only the

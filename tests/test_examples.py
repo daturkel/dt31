@@ -469,6 +469,13 @@ def test_advanced_sudoku(capsys, monkeypatch):
     assert capsys.readouterr().out.endswith("\x1b[17H\x1b[?25hsolved\n")
 
 
+def test_advanced_quine(capsys):
+    source = (advanced_dir / "quine.dt").read_text()
+    program = parse_program(source)
+    DT31(registers=extract_registers_from_program(program)).run(program)
+    assert capsys.readouterr().out == source
+
+
 def test_all_advanced_examples_are_tested():
     all_example_files = sorted(f.name for f in advanced_dir.glob("*.dt"))
 
@@ -476,5 +483,6 @@ def test_all_advanced_examples_are_tested():
         "aoc2021_day9.dt",
         "aoc2022_day11.dt",
         "aoc2023_day8.dt",
+        "quine.dt",
         "sudoku.dt",
     ]
