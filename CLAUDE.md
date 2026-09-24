@@ -33,7 +33,7 @@ See @README.md for project overview, features, usage examples, and user-facing d
 
 **All commands use `uv` for dependency management.** Common commands from [tasks.py](tasks.py):
 
-- **Testing**: `uv run invoke test` (or `uv run invoke test --ci` for coverage.xml)
+- **Testing**: `uv run invoke test` (or `uv run invoke test --ci` for coverage.xml, `--slow` to include tests marked `slow`)
 - **Documentation**: `uv run invoke docs` to generate, `uv run invoke serve-docs` to serve locally
 - **Dependencies**: `uv run invoke sync` to sync dev dependencies
 - **Pre-commit**: `uv run prek install --install-hooks` to set up, `uv run prek run --all-files` to run checks manually

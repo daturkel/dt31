@@ -6,8 +6,10 @@ from invoke.tasks import task
 
 
 @task
-def test(c, html=False, ci=False):
+def test(c, html=False, ci=False, slow=False):
     command = "pytest --cov=dt31 --cov-branch"
+    if slow:
+        command += ' -m ""'
     if html:
         command += " --cov-report html"
     if ci:

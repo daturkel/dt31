@@ -49,6 +49,10 @@ dev = [
     "prek>=0.2.13",
 ]
 
+[tool.pytest.ini_options]
+markers = ["slow: long-running example programs, skipped unless run with `inv test --slow`"]
+addopts = "-m 'not slow'"
+
 [tool.ruff.lint]
 # Ruff 0.16 dropped most of pycodestyle from its default rule set, including E402
 # (import not at top of file), E711 and E712 (`== None`, `== True`), E721

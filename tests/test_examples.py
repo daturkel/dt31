@@ -434,7 +434,13 @@ def load_advanced_example(dt_file, input_file, memory_size, monkeypatch):
     "dt_file, input_file, memory_size, expected_output",
     [
         ("aoc2021_day9.dt", "aoc2021_day9_example.txt", 40000, "15\n1134\n"),
-        ("aoc2022_day11.dt", "aoc2022_day11_example.txt", 4000, "10605\n2713310158\n"),
+        pytest.param(
+            "aoc2022_day11.dt",
+            "aoc2022_day11_example.txt",
+            4000,
+            "10605\n2713310158\n",
+            marks=pytest.mark.slow,  # 10,000 simulated rounds
+        ),
         ("aoc2023_day8.dt", "aoc2023_day8_example1.txt", 102000, "2\n2\n"),
         ("aoc2023_day8.dt", "aoc2023_day8_example2.txt", 102000, "-1\n6\n"),
     ],
