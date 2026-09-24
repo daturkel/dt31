@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- `dt31 format` / `program_to_text` indent a standalone comment that sits directly
+  above an instruction, instead of always putting it at column 0. (#PR)
+
+### Fixed
+
+- Comments keep their leading whitespace: only the single space after `;` is dropped,
+  so indented text inside a comment survives formatting. (#PR)
+- A line containing only `;` parses as an empty comment instead of a blank line, and
+  formats back to `;`. (#PR)
+
 ## [0.13.0] - 2026-09-24
 
 ### Added

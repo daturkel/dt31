@@ -1213,6 +1213,29 @@ def test_empty_comment():
     assert program[0].comment == ""
 
 
+def test_bare_semicolon_is_standalone_comment():
+    """Test that a line with only a semicolon parses as an empty comment, not a blank line."""
+    program = parse_program(";\n  ;  \n", preserve_newlines=True)
+
+    assert program == [Comment(""), Comment("")]
+
+
+@pytest.mark.parametrize(
+    "text, expected",
+    [
+        ("; foo", "foo"),
+        (";foo", "foo"),
+        (";   - foo", "  - foo"),
+        (";\tfoo", "\tfoo"),
+        ("; foo   ", "foo"),
+    ],
+)
+def test_comment_text_keeps_leading_whitespace(text, expected):
+    """Test that only the single space after the semicolon is dropped from comment text."""
+    assert parse_program(text) == [Comment(expected)]
+    assert parse_program(f"NOOP {text}")[0].comment == expected
+
+
 @pytest.mark.parametrize(
     "token",
     ["[1]junk", "M[1]junk", "[", "M[1", "[1]]extra"],
@@ -1374,6 +1397,11 @@ def test_comment_str():
     """Test Comment __str__ method."""
     comment = Comment("This is a comment")
     assert str(comment) == "; This is a comment"
+
+
+def test_empty_comment_str():
+    """Test that an empty Comment renders as a bare semicolon."""
+    assert str(Comment("")) == ";"
 
 
 def test_comment_repr():

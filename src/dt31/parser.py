@@ -42,9 +42,9 @@ class Comment:
         """Return assembly text representation of the comment.
 
         Returns:
-            The comment formatted as "; text".
+            The comment formatted as "; text", or ";" if the text is empty.
         """
-        return f"; {self.comment}"
+        return f"; {self.comment}" if self.comment else ";"
 
     def __repr__(self) -> str:
         """Return Python API representation of the comment.
@@ -213,13 +213,15 @@ def parse_program(
         comment_text = None
         semicolon_pos = _find_unquoted(line, ";")
         if semicolon_pos != -1:
-            comment_text = line[semicolon_pos + 1 :].strip()
+            comment_text = line[semicolon_pos + 1 :].rstrip()
+            # Drop the one space the formatter writes after `;`; keep the rest
+            comment_text = comment_text.removeprefix(" ")
             line = line[:semicolon_pos]
 
         line = line.strip()
 
         # Standalone comment line (no code, only comment)
-        if not line and comment_text:
+        if not line and comment_text is not None:
             program.append(Comment(comment_text))
             continue
 

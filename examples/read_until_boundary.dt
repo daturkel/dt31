@@ -15,8 +15,8 @@
 
 sum_loop:
     SNIN R.a, R.s
-; A non-numeric line (the blank separator) or true end of input both end
-; the numbers section -- either is fine here.
+    ; A non-numeric line (the blank separator) or true end of input both end
+    ; the numbers section -- either is fine here.
     JEQ sum_done, R.s, -1
     JEQ sum_done, R.s, 0
     ADD R.b, R.a
