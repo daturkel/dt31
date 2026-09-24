@@ -1,0 +1,232 @@
+; Advent of Code 2022 Day 11 -- Monkey in the Middle (parts 1 and 2)
+; usage: dt31 run --memory 4000 --stack-size 1000 aoc2022_day11.dt < input.txt
+;
+; memory map
+;   500+  : line scratch
+;   600+  : integers scanned out of the current line
+;   1000+m: opcode (0 = old+k, 1 = old*k, 2 = old*old)
+;   1020+m: operand k
+;   1040+m: divisor
+;   1060+m: target when divisible
+;   1080+m: target when not
+;   1100+m: initial item count
+;   1200+m*64 : initial items
+;   2000+m: live item count
+;   2100+m*64 : live items
+;   3000+m: inspection count
+
+    ; ---------------- parse ----------------
+    CP 0, R.nm
+parse_loop:
+    SSTRIN [500], R.st
+    JEQ parse_done, R.st, 0
+    JEQ parse_loop, [500], 0                 ; skip blank lines
+
+    SSTRIN [500], R.st                       ; "  Starting items: 79, 98"
+    CP 500, R.ptr
+    CALL scan_ints
+    CP R.nints, [1100 + R.nm]
+    MUL R.nm, 64, R.base
+    ADD R.base, 1200
+    CP 0, R.i
+copy_items:
+    JGE copy_done, R.i, R.nints
+    CP [600 + R.i], [R.base + R.i]
+    ADD R.i, 1
+    JMP copy_items
+copy_done:
+
+    SSTRIN [500], R.st                       ; "  Operation: new = old * 19"
+    CP 500, R.ptr
+    CALL scan_ints
+    CP 500, R.sp
+op_find:
+    CP [R.sp], R.ch
+    JEQ op_is_mul, R.ch, '*'
+    JEQ op_is_add, R.ch, '+'
+    ADD R.sp, 1
+    JMP op_find
+op_is_mul:
+    CP 1, R.opc
+    JNE op_store, R.nints, 0
+    CP 2, R.opc                              ; no literal on the line: old * old
+    JMP op_store
+op_is_add:
+    CP 0, R.opc
+op_store:
+    CP R.opc, [1000 + R.nm]
+    CP [600], [1020 + R.nm]
+
+    SSTRIN [500], R.st                       ; "  Test: divisible by 23"
+    CP 500, R.ptr
+    CALL scan_ints
+    CP [600], [1040 + R.nm]
+
+    SSTRIN [500], R.st                       ; "    If true: throw to monkey 2"
+    CP 500, R.ptr
+    CALL scan_ints
+    CP [600], [1060 + R.nm]
+
+    SSTRIN [500], R.st                       ; "    If false: throw to monkey 3"
+    CP 500, R.ptr
+    CALL scan_ints
+    CP [600], [1080 + R.nm]
+
+    ADD R.nm, 1
+    JMP parse_loop
+parse_done:
+
+    ; product of the divisors, for part 2's modular relief
+    CP 1, R.modp
+    CP 0, R.i
+modp_loop:
+    JGE modp_done, R.i, R.nm
+    MUL R.modp, [1040 + R.i]
+    ADD R.i, 1
+    JMP modp_loop
+modp_done:
+
+    ; ---------------- part 1: 20 rounds, relief = worry / 3 ----------------
+    CP 20, R.rounds
+    CP 1, R.div3
+    CALL simulate
+    CALL top_two
+    NOUT R.ans, 1
+
+    ; ---------------- part 2: 10000 rounds, relief = worry mod prod ----------------
+    CP 10000, R.rounds
+    CP 0, R.div3
+    CALL simulate
+    CALL top_two
+    NOUT R.ans, 1
+    JMP end
+
+; ---------------- simulate R.rounds rounds ----------------
+simulate:
+    CP 0, R.i                                ; reset live state from the parsed input
+reset_loop:
+    JGE reset_done, R.i, R.nm
+    CP [1100 + R.i], [2000 + R.i]
+    CP 0, [3000 + R.i]
+    MUL R.i, 64, R.src
+    ADD R.src, 2100, R.dst
+    ADD R.src, 1200
+    CP 0, R.j
+reset_items:
+    JGE reset_items_done, R.j, [1100 + R.i]
+    CP [R.src + R.j], [R.dst + R.j]
+    ADD R.j, 1
+    JMP reset_items
+reset_items_done:
+    ADD R.i, 1
+    JMP reset_loop
+reset_done:
+
+    CP 0, R.rd
+sim_round:
+    JGE sim_done, R.rd, R.rounds
+    CP 0, R.m
+sim_monkey:
+    JGE sim_round_end, R.m, R.nm
+    CP [2000 + R.m], R.cnt
+    MUL R.m, 64, R.base
+    ADD R.base, 2100
+    CP 0, R.ii
+sim_item:
+    JGE sim_monkey_end, R.ii, R.cnt
+    CP [R.base + R.ii], R.w
+    ADD [3000 + R.m], 1
+
+    CP [1020 + R.m], R.arg
+    JEQ op_do_add, [1000 + R.m], 0
+    JEQ op_do_mul, [1000 + R.m], 1
+    MUL R.w, R.w
+    JMP op_done
+op_do_add:
+    ADD R.w, R.arg
+    JMP op_done
+op_do_mul:
+    MUL R.w, R.arg
+op_done:
+    JEQ no_div, R.div3, 0
+    DIV R.w, 3
+    JMP relieved
+no_div:
+    MOD R.w, R.modp
+relieved:
+    MOD R.w, [1040 + R.m], R.rem
+    JEQ throw_true, R.rem, 0
+    CP [1080 + R.m], R.tgt
+    JMP throw_go
+throw_true:
+    CP [1060 + R.m], R.tgt
+throw_go:
+    CP [2000 + R.tgt], R.tc
+    MUL R.tgt, 64, R.u
+    ADD R.u, 2100
+    CP R.w, [R.u + R.tc]
+    ADD [2000 + R.tgt], 1
+    ADD R.ii, 1
+    JMP sim_item
+sim_monkey_end:
+    CP 0, [2000 + R.m]
+    ADD R.m, 1
+    JMP sim_monkey
+sim_round_end:
+    ADD R.rd, 1
+    JMP sim_round
+sim_done:
+    RET
+
+; ---------------- product of the two largest inspection counts ----------------
+top_two:
+    CP 0, R.a1
+    CP 0, R.a2
+    CP 0, R.i
+tt_loop:
+    JGE tt_done, R.i, R.nm
+    CP [3000 + R.i], R.v
+    JLE tt_maybe2, R.v, R.a1
+    CP R.a1, R.a2
+    CP R.v, R.a1
+    JMP tt_next
+tt_maybe2:
+    JLE tt_next, R.v, R.a2
+    CP R.v, R.a2
+tt_next:
+    ADD R.i, 1
+    JMP tt_loop
+tt_done:
+    MUL R.a1, R.a2, R.ans
+    RET
+
+; ---------------- scan every integer on the line at R.ptr into 600+ ----------------
+scan_ints:
+    CP 0, R.nints
+    CP R.ptr, R.sp
+si_loop:
+    CP [R.sp], R.ch
+    JEQ si_done, R.ch, 0
+    JLT si_adv, R.ch, '0'
+    JGT si_adv, R.ch, '9'
+    CP 0, R.acc
+si_digit:
+    CP [R.sp], R.ch
+    JLT si_store, R.ch, '0'
+    JGT si_store, R.ch, '9'
+    MUL R.acc, 10
+    SUB R.ch, '0'
+    ADD R.acc, R.ch
+    ADD R.sp, 1
+    JMP si_digit
+si_store:
+    CP R.acc, [600 + R.nints]
+    ADD R.nints, 1
+    JMP si_loop
+si_adv:
+    ADD R.sp, 1
+    JMP si_loop
+si_done:
+    RET
+
+end:

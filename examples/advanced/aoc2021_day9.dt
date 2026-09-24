@@ -1,0 +1,173 @@
+; Advent of Code 2021 Day 9 -- Smoke Basin (parts 1 and 2)
+; usage: dt31 run --memory 40000 --stack-size 30000 aoc2021_day9.dt < input.txt
+;
+; memory map
+;   0    : W (width)
+;   1    : H (height)
+;   2    : S (padded stride = W+2)
+;   10+  : line scratch buffer
+;   400+ : padded grid, cell (r,c) at 400 + (r+1)*S + (c+1)
+
+    ; ---------------- read the first line to learn the width ----------------
+    SSTRIN [10], R.st
+    JEQ no_input, R.st, 0
+    NEXT 10, R.w
+    SUB R.w, 10                     ; w = length of first line
+    JEQ no_input, R.w, 0
+    CP R.w, [0]
+    ADD R.w, 2, R.s                 ; stride
+    CP R.s, [2]
+
+    CP 0, R.r
+    CALL copy_row
+
+; ---------------- read the remaining lines ----------------
+read_loop:
+    ADD R.r, 1
+    SSTRIN [10], R.st
+    JEQ read_done, R.st, 0          ; end of input
+    JEQ read_done, [10], 0          ; blank line
+    CALL copy_row
+    JMP read_loop
+read_done:
+    CP R.r, [1]
+    CP R.r, R.h
+
+    ; ---------------- fence the grid with sentinel 58 (> '9') ----------------
+    ADD R.h, 1, R.u
+    MUL R.u, R.s
+    ADD R.u, 400                    ; start of the bottom guard row
+    CP 0, R.i
+border_tb:
+    JGE border_tb_done, R.i, R.s
+    CP 58, [400 + R.i]              ; top guard row
+    CP 58, [R.u + R.i]              ; bottom guard row
+    ADD R.i, 1
+    JMP border_tb
+border_tb_done:
+    ADD 401, R.s, R.t               ; first cell of row 0
+    CP 0, R.i
+border_lr:
+    JGE border_lr_done, R.i, R.h
+    CP 58, [R.t - 1]                ; left guard column
+    CP 58, [R.t + R.w]              ; right guard column
+    ADD R.t, R.s
+    ADD R.i, 1
+    JMP border_lr
+border_lr_done:
+
+    ; ---------------- part 1: sum of risk levels of low points ----------------
+    CP 0, R.risk
+    CP 0, R.i
+p1_row:
+    JGE p1_done, R.i, R.h
+    CP 0, R.j
+p1_col:
+    JGE p1_row_done, R.j, R.w
+    ADD R.i, 1, R.p
+    MUL R.p, R.s
+    ADD R.p, R.j
+    ADD R.p, 401                    ; p = address of (i,j)
+    CP [R.p], R.v
+    JLE p1_next, [R.p - 1], R.v
+    JLE p1_next, [R.p + 1], R.v
+    JLE p1_next, [R.p - R.s], R.v
+    JLE p1_next, [R.p + R.s], R.v
+    SUB R.v, 47, R.t                ; risk = (v - '0') + 1
+    ADD R.risk, R.t
+p1_next:
+    ADD R.j, 1
+    JMP p1_col
+p1_row_done:
+    ADD R.i, 1
+    JMP p1_row
+p1_done:
+    NOUT R.risk, 1
+
+    ; ---------------- part 2: flood fill basins, multiply three largest ----------------
+    CP 0, R.t1
+    CP 0, R.t2
+    CP 0, R.t3
+    CP 0, R.i
+p2_row:
+    JGE p2_done, R.i, R.h
+    CP 0, R.j
+p2_col:
+    JGE p2_row_done, R.j, R.w
+    ADD R.i, 1, R.p
+    MUL R.p, R.s
+    ADD R.p, R.j
+    ADD R.p, 401
+    JGE p2_next, [R.p], 57          ; a 9 or an already-claimed cell
+
+    CP 0, R.n                       ; basin size
+    CP 58, [R.p]                    ; claim it
+    PUSH R.p
+ff_loop:
+    SEMP R.e
+    JIF ff_done, R.e
+    POP R.q
+    ADD R.n, 1
+    SUB R.q, 1, R.k
+    JGE ff_n2, [R.k], 57
+    CP 58, [R.k]
+    PUSH R.k
+ff_n2:
+    ADD R.q, 1, R.k
+    JGE ff_n3, [R.k], 57
+    CP 58, [R.k]
+    PUSH R.k
+ff_n3:
+    SUB R.q, R.s, R.k
+    JGE ff_n4, [R.k], 57
+    CP 58, [R.k]
+    PUSH R.k
+ff_n4:
+    ADD R.q, R.s, R.k
+    JGE ff_loop, [R.k], 57
+    CP 58, [R.k]
+    PUSH R.k
+    JMP ff_loop
+ff_done:
+    JLE p2_next, R.n, R.t3          ; keep a running top three
+    JLE ins3, R.n, R.t2
+    JLE ins2, R.n, R.t1
+    CP R.t2, R.t3
+    CP R.t1, R.t2
+    CP R.n, R.t1
+    JMP p2_next
+ins2:
+    CP R.t2, R.t3
+    CP R.n, R.t2
+    JMP p2_next
+ins3:
+    CP R.n, R.t3
+p2_next:
+    ADD R.j, 1
+    JMP p2_col
+p2_row_done:
+    ADD R.i, 1
+    JMP p2_row
+p2_done:
+    MUL R.t1, R.t2, R.prod
+    MUL R.prod, R.t3
+    NOUT R.prod, 1
+    JMP end
+
+; ---------------- copy scratch line into grid row R.r ----------------
+copy_row:
+    ADD R.r, 1, R.t
+    MUL R.t, R.s
+    ADD R.t, 401, R.dst
+    CP 0, R.ci
+cr_loop:
+    JGE cr_done, R.ci, R.w
+    CP [10 + R.ci], [R.dst + R.ci]
+    ADD R.ci, 1
+    JMP cr_loop
+cr_done:
+    RET
+
+no_input:
+    NOUT -1, 1
+end:

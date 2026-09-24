@@ -1,0 +1,396 @@
+; Animated sudoku solver.
+;
+; Reads a puzzle from stdin, draws the board, then solves it by recursive
+; backtracking, redrawing each cell as it is filled in or backed out.
+;
+; Input: 81 cells in any layout, read line by line. Digits 1-9 are givens,
+; '.' or '0' is an empty cell, and every other character is ignored, so a
+; single 81-character line and a bordered 9x9 grid both work.
+;
+; Run with:
+;   PYTHONUNBUFFERED=1 dt31 run --memory 2048 sudoku.dt < sudoku_hardest.txt
+;
+; Algorithm:
+;   - Row, column and box contents are 9-bit masks (bit d set = digit d used),
+;     so a cell's candidates are one OR of three masks and one XOR.
+;   - Each step picks the empty cell with the fewest candidates (minimum
+;     remaining values), counted with a 1024-entry popcount table built at
+;     startup. A cell with no candidates means a dead end, so the solver
+;     backtracks immediately.
+;
+; Memory:
+;   [0..80]     board, row-major; 0 = empty
+;   [100..108]  row masks
+;   [110..118]  column masks
+;   [120..128]  box masks
+;   [200..]     input line buffer
+;   [1024..2047] popcount table: [1024 + m] = number of set bits in m
+;
+; Screen: the board occupies lines 1-13, the step counter line 15.
+; Cell (r, c) is drawn at line 2 + r + r/3, column 3 + 2*(c + c/3).
+;
+; Registers:
+;   R.i  cell index           R.r, R.c, R.b  row, column, box of R.i
+;   R.m  candidate mask       R.d  digit     R.bit  1 << R.d
+;   R.best, R.min  best cell so far in the scan and its candidate count
+;   R.solved  set to 1 once the board is full
+;   R.tries, R.backs  placement and backtrack counters
+;   R.t, R.u, R.x, R.y  scratch
+
+    CALL build_popcount
+    CALL read_puzzle
+    CALL init_masks
+    CALL draw_board
+    CALL solve
+    CALL goto_end
+    JIF report_solved, R.solved
+    CALL no_solution
+    EXIT 1
+
+report_solved:
+    COUT 's'
+    COUT 'o'
+    COUT 'l'
+    COUT 'v'
+    COUT 'e'
+    COUT 'd', 1
+    EXIT
+
+
+; ------------------------------------------------------------------------------
+; Setup
+; ------------------------------------------------------------------------------
+
+; popcount(m) = popcount(m >> 1) + (m & 1); popcount(0) is already 0
+build_popcount:
+    CP 1, R.m
+bp_loop:
+    BSR R.m, 1, R.t
+    BAND R.m, 1, R.u
+    ADD [1024 + R.t], R.u, [1024 + R.m]
+    ADD R.m, 1
+    JLT bp_loop, R.m, 1024
+    RET
+
+; Fill [0..80] from stdin
+read_puzzle:
+    CP 0, R.i
+rp_line:
+    SSTRIN [200], R.t
+    JEQ too_short, R.t, 0                ; EOF before 81 cells
+    CP 200, R.x                          ; R.x walks the line
+rp_char:
+    CP [R.x], R.t
+    JEQ rp_line, R.t, 0                  ; end of line
+    ADD R.x, 1
+    JEQ rp_empty, R.t, '.'
+    JLT rp_char, R.t, '0'                ; not a digit: skip
+    JGT rp_char, R.t, '9'
+    SUB R.t, '0', [R.i]                  ; '0' becomes 0, i.e. empty
+    JMP rp_next
+rp_empty:
+    CP 0, [R.i]
+rp_next:
+    ADD R.i, 1
+    JLT rp_char, R.i, 81
+    RET
+
+; Record each given in the masks, rejecting givens that conflict
+init_masks:
+    CP 0, R.i
+im_loop:
+    JEQ im_next, [R.i], 0
+    CALL cell_info
+    BSL 1, [R.i], R.bit
+    BAND R.m, R.bit, R.t
+    JEQ conflict, R.t, 0                 ; digit already used in this row/column/box
+    CALL mark
+im_next:
+    ADD R.i, 1
+    JLT im_loop, R.i, 81
+    RET
+
+
+; ------------------------------------------------------------------------------
+; Solver
+; ------------------------------------------------------------------------------
+
+; Fills the board from its current state. Returns with R.solved = 1 on success,
+; or with the board restored on failure.
+solve:
+    ; find the empty cell with the fewest candidates
+    CP -1, R.best
+    CP 10, R.min
+    CP 0, R.i
+scan:
+    JNE scan_next, [R.i], 0
+    CALL cell_info
+    CP [1024 + R.m], R.t
+    JEQ solve_ret, R.t, 0                ; no candidates: this branch can't work
+    JGE scan_next, R.t, R.min
+    CP R.i, R.best
+    CP R.t, R.min
+    JEQ scan_done, R.t, 1                ; a forced cell can't be beaten
+scan_next:
+    ADD R.i, 1
+    JLT scan, R.i, 81
+scan_done:
+    JEQ board_full, R.best, -1
+
+    ; try each candidate digit in that cell
+    CP R.best, R.i
+    CP 0, R.d
+try_next:
+    ADD R.d, 1
+    JGT solve_ret, R.d, 9                ; all digits failed
+    CALL cell_info
+    BSL 1, R.d, R.bit
+    BAND R.m, R.bit, R.t
+    JEQ try_next, R.t, 0
+
+    ; place it
+    CP R.d, [R.i]
+    CALL mark
+    ADD R.tries, 1
+    CALL draw_cell
+
+    ; recurse; registers are global, so save this frame's cell and digit
+    PUSH R.i
+    PUSH R.d
+    CALL solve
+    POP R.d
+    POP R.i
+    JIF solve_ret, R.solved
+
+    ; undo it
+    CALL cell_info
+    BSL 1, R.d, R.bit
+    CALL unmark
+    CP 0, [R.i]
+    ADD R.backs, 1
+    CALL draw_cell
+    JMP try_next
+
+board_full:
+    CP 1, R.solved
+solve_ret:
+    RET
+
+; R.i -> R.r, R.c, R.b and R.m, the digits still allowed in that cell
+cell_info:
+    DIV R.i, 9, R.r
+    MOD R.i, 9, R.c
+    DIV R.r, 3, R.b
+    MUL R.b, 3
+    DIV R.c, 3, R.t
+    ADD R.b, R.t                         ; box = 3 * (r / 3) + c / 3
+    BOR [100 + R.r], [110 + R.c], R.m
+    BOR R.m, [120 + R.b]
+    BXOR R.m, 1022                       ; used digits -> free digits (bits 1..9)
+    RET
+
+; Set or clear R.bit in the masks for R.r, R.c, R.b
+mark:
+    BOR [100 + R.r], R.bit
+    BOR [110 + R.c], R.bit
+    BOR [120 + R.b], R.bit
+    RET
+
+unmark:
+    BXOR [100 + R.r], R.bit
+    BXOR [110 + R.c], R.bit
+    BXOR [120 + R.b], R.bit
+    RET
+
+
+; ------------------------------------------------------------------------------
+; Drawing (ANSI escape codes)
+; ------------------------------------------------------------------------------
+
+; Start an escape sequence: ESC [
+csi:
+    COUT 27
+    COUT '['
+    RET
+
+; Clear the screen, hide the cursor, and draw the board with givens in bold
+draw_board:
+    CALL csi
+    COUT '2'
+    COUT 'J'
+    CALL csi
+    COUT 'H'
+    CALL csi
+    COUT '?'
+    NOUT 25
+    COUT 'l'
+    CP 0, R.i
+db_row:
+    MOD R.i, 27, R.t
+    JNE db_cells, R.t, 0
+    CALL border                          ; every third row
+db_cells:
+    COUT '|'
+db_cell:
+    COUT ' '
+    JEQ db_empty, [R.i], 0
+    CALL csi
+    COUT '1'
+    COUT 'm'
+    NOUT [R.i]
+    CALL csi
+    COUT 'm'
+    JMP db_after
+db_empty:
+    COUT '.'
+db_after:
+    ADD R.i, 1
+    MOD R.i, 3, R.t
+    JNE db_cell, R.t, 0
+    COUT ' '                             ; end of a box
+    MOD R.i, 9, R.t
+    JNE db_cells, R.t, 0
+    COUT '|', 1                          ; end of a row
+    JLT db_row, R.i, 81
+    CALL border
+    RET
+
+; +-------+-------+-------+
+border:
+    COUT '+'
+    CP 0, R.t
+b_dash:
+    COUT '-'
+    ADD R.t, 1
+    MOD R.t, 7, R.u
+    JNE b_dash, R.u, 0
+    JEQ b_end, R.t, 21
+    COUT '+'
+    JMP b_dash
+b_end:
+    COUT '+', 1
+    RET
+
+; Redraw cell R.i (at R.r, R.c) in cyan, or '.' if empty, then the counters
+draw_cell:
+    DIV R.r, 3, R.y
+    ADD R.y, R.r
+    ADD R.y, 2
+    DIV R.c, 3, R.x
+    ADD R.x, R.c
+    MUL R.x, 2
+    ADD R.x, 3
+    CALL csi
+    NOUT R.y
+    COUT ';'
+    NOUT R.x
+    COUT 'H'
+    JEQ dc_empty, [R.i], 0
+    CALL csi
+    NOUT 36
+    COUT 'm'
+    NOUT [R.i]
+    CALL csi
+    COUT 'm'
+    JMP dc_status
+dc_empty:
+    COUT '.'
+dc_status:
+    CALL csi
+    NOUT 15
+    COUT 'H'
+    COUT 't'
+    COUT 'r'
+    COUT 'i'
+    COUT 'e'
+    COUT 's'
+    COUT ' '
+    NOUT R.tries
+    COUT ' '
+    COUT ' '
+    COUT 'b'
+    COUT 'a'
+    COUT 'c'
+    COUT 'k'
+    COUT 't'
+    COUT 'r'
+    COUT 'a'
+    COUT 'c'
+    COUT 'k'
+    COUT 's'
+    COUT ' '
+    NOUT R.backs
+    RET
+
+; Move below the status line and show the cursor again
+goto_end:
+    CALL csi
+    NOUT 17
+    COUT 'H'
+    CALL csi
+    COUT '?'
+    NOUT 25
+    COUT 'h'
+    RET
+
+
+; ------------------------------------------------------------------------------
+; Errors
+; ------------------------------------------------------------------------------
+
+no_solution:
+    COUT 'n'
+    COUT 'o'
+    COUT ' '
+    COUT 's'
+    COUT 'o'
+    COUT 'l'
+    COUT 'u'
+    COUT 't'
+    COUT 'i'
+    COUT 'o'
+    COUT 'n', 1
+    RET
+
+too_short:
+    COUT 'n'
+    COUT 'e'
+    COUT 'e'
+    COUT 'd'
+    COUT ' '
+    NOUT 81
+    COUT ' '
+    COUT 'c'
+    COUT 'e'
+    COUT 'l'
+    COUT 'l'
+    COUT 's', 1
+    EXIT 1
+
+conflict:
+    COUT 'g'
+    COUT 'i'
+    COUT 'v'
+    COUT 'e'
+    COUT 'n'
+    COUT 's'
+    COUT ' '
+    COUT 'c'
+    COUT 'o'
+    COUT 'n'
+    COUT 'f'
+    COUT 'l'
+    COUT 'i'
+    COUT 'c'
+    COUT 't'
+    COUT ' '
+    COUT 'a'
+    COUT 't'
+    COUT ' '
+    COUT 'c'
+    COUT 'e'
+    COUT 'l'
+    COUT 'l'
+    COUT ' '
+    NOUT R.i, 1
+    EXIT 1

@@ -1,0 +1,132 @@
+; Advent of Code 2023 Day 8 -- Haunted Wasteland (parts 1 and 2)
+; usage: dt31 run --memory 102000 --stack-size 1000 aoc2023_day8.dt < input.txt
+;
+; Node names are three alphanumeric characters, so each name is perfect-hashed
+; to base 36: "AAA" -> 13330, giving direct-indexed LEFT/RIGHT tables.
+;
+; memory map
+;   500+   : line scratch
+;   1000+  : the L/R instruction string
+;   2000+  : LEFT[code]   (36^3 = 46656 entries)
+;   50000+ : RIGHT[code]
+;   100000+: list of node codes actually present
+
+    ; ---------------- header: instruction string, then blank line ----------------
+    SSTRIN [1000], R.st
+    NEXT 1000, R.ilen
+    SUB R.ilen, 1000
+    SSTRIN [500], R.st               ; blank separator
+
+    ; ---------------- parse "XXX = (YYY, ZZZ)" lines ----------------
+    CP 0, R.nn
+node_loop:
+    SSTRIN [500], R.st
+    JEQ nodes_done, R.st, 0
+    JEQ nodes_done, [500], 0
+    CP 500, R.ptr
+    CALL encode
+    CP R.code, R.self
+    CP 507, R.ptr                    ; left name
+    CALL encode
+    CP R.code, [2000 + R.self]
+    CP 512, R.ptr                    ; right name
+    CALL encode
+    CP R.code, [50000 + R.self]
+    CP R.self, [100000 + R.nn]
+    ADD R.nn, 1
+    JMP node_loop
+nodes_done:
+
+    ; ---------------- part 1: AAA -> ZZZ ----------------
+    CP 46655, R.target               ; "ZZZ"
+    JEQ no_p1, [2000 + R.target], 0  ; ZZZ absent (the part 2 sample input)
+    CP 13330, R.cur                  ; "AAA"
+    CP 0, R.steps
+    CP 0, R.ii
+p1_loop:
+    JEQ p1_done, R.cur, R.target
+    CALL step
+    JMP p1_loop
+p1_done:
+    NOUT R.steps, 1
+    JMP part2
+no_p1:
+    NOUT -1, 1
+
+; ---------------- part 2: all **A -> all **Z, combined by lcm ----------------
+part2:
+    CP 1, R.lcm
+    CP 0, R.k
+p2_loop:
+    JGE p2_done, R.k, R.nn
+    CP [100000 + R.k], R.cur
+    MOD R.cur, 36, R.m
+    JNE p2_next, R.m, 10             ; 10 == 'A' in base 36
+    CP 0, R.steps
+    CP 0, R.ii
+p2_walk:
+    MOD R.cur, 36, R.m
+    JEQ p2_have, R.m, 35             ; 35 == 'Z'
+    CALL step
+    JMP p2_walk
+p2_have:
+    CALL gcd
+    DIV R.lcm, R.g
+    MUL R.lcm, R.steps
+p2_next:
+    ADD R.k, 1
+    JMP p2_loop
+p2_done:
+    NOUT R.lcm, 1
+    JMP end
+
+; ---------------- one L/R move: R.cur, R.ii, R.steps ----------------
+step:
+    CP [1000 + R.ii], R.ch
+    ADD R.ii, 1
+    JLT step_go, R.ii, R.ilen
+    CP 0, R.ii                       ; wrap around the instruction string
+step_go:
+    ADD R.steps, 1
+    JEQ step_left, R.ch, 'L'
+    CP [50000 + R.cur], R.cur
+    RET
+step_left:
+    CP [2000 + R.cur], R.cur
+    RET
+
+; ---------------- three chars at R.ptr -> base-36 code in R.code ----------------
+encode:
+    CP 0, R.code
+    CP 0, R.ei
+enc_loop:
+    JGE enc_done, R.ei, 3
+    CP [R.ptr + R.ei], R.ch
+    JGT enc_alpha, R.ch, '9'
+    SUB R.ch, '0'                    ; '0'-'9' -> 0-9
+    JMP enc_add
+enc_alpha:
+    SUB R.ch, 55                     ; 'A'-'Z' -> 10-35 (55 = 'A' - 10)
+enc_add:
+    MUL R.code, 36
+    ADD R.code, R.ch
+    ADD R.ei, 1
+    JMP enc_loop
+enc_done:
+    RET
+
+; ---------------- gcd(R.lcm, R.steps) -> R.g ----------------
+gcd:
+    CP R.lcm, R.x
+    CP R.steps, R.y
+gcd_loop:
+    JEQ gcd_done, R.y, 0
+    MOD R.x, R.y, R.z
+    CP R.y, R.x
+    CP R.z, R.y
+    JMP gcd_loop
+gcd_done:
+    CP R.x, R.g
+    RET
+
+end:
