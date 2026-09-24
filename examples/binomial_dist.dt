@@ -7,7 +7,7 @@
 ; R.a  = average
 ; M[i] = ith sample
 
-; Get n
+    ; Get n
     NIN R.n
 
 ; Generate i samples

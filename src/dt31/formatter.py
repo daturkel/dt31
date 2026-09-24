@@ -42,6 +42,9 @@ def program_to_text(
     Converts a list of instructions, labels, and comments (whether created programmatically
     in Python or parsed from text) into human-readable assembly text syntax.
 
+    Standalone comments in the block directly above an indented instruction are
+    indented to match it; all other standalone comments start at column 0.
+
     Args:
         program: List of instructions, labels, comments, and blank lines in source order.
         indent_size: Number of spaces per indentation level (default: 4).
@@ -174,7 +177,6 @@ def program_to_text(
                 lines.append("")
             prev_was_label = False
         elif isinstance(item, Comment):
-            # Standalone comments are never indented or aligned
             if not strip_comments:
                 lines.append(str(item))
             prev_was_label = False
@@ -220,6 +222,11 @@ def program_to_text(
             else:
                 label_prefix = indent
                 comment = "" if strip_comments else item.comment
+                # Indent the standalone comments directly above this instruction
+                comment_idx = len(lines)
+                while comment_idx > 0 and lines[comment_idx - 1].startswith(";"):
+                    comment_idx -= 1
+                    lines[comment_idx] = indent + lines[comment_idx]
 
             instruction_text = item.to_concise_str() if hide_default_args else str(item)
             line = _format_instruction_with_comment(
@@ -452,7 +459,7 @@ def program_to_python(
         if isinstance(item, BlankLine):
             body_lines.append("")
         elif isinstance(item, Comment):
-            body_lines.append(f"    # {item.comment}")
+            body_lines.append(f"    # {item.comment}".rstrip())
         elif isinstance(item, Label):
             body_lines.append(
                 f"    {_label_ref(item, introduced, _comment_suffix(item))},"

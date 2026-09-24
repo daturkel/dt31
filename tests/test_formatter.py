@@ -355,7 +355,7 @@ def test_program_to_text_comment_not_before_label():
     lines = text.split("\n")
     assert len(lines) == 4  # 3 lines + empty string from trailing newline
     assert lines[0] == "    NOOP"
-    assert lines[1] == "; standalone comment"  # no blank line before comment
+    assert lines[1] == "    ; standalone comment"  # no blank line before comment
     assert lines[2] == "    CP 5, R.a"
 
 
@@ -443,7 +443,7 @@ def test_program_to_text_align_comments_standalone_not_aligned():
     lines = text.split("\n")
 
     # Standalone comments should not be aligned
-    assert lines[0] == "; Standalone comment"
+    assert lines[0] == "    ; Standalone comment"
     assert lines[2] == "; Another standalone"
 
     # Inline comment should be aligned
@@ -993,8 +993,76 @@ loop:
 """
     program = parse_program(text, preserve_newlines=True)
     formatted = program_to_text(program, blank_lines="preserve")
-    expected = "; Initialize\n    CP 5, R.a\n\n; Loop\nloop:\n    NOUT R.a, 1\n"
+    expected = "    ; Initialize\n    CP 5, R.a\n\n; Loop\nloop:\n    NOUT R.a, 1\n"
     assert formatted == expected
+
+
+def test_program_to_text_standalone_comment_indentation():
+    """Test that a standalone comment is indented only when directly above an instruction."""
+    text = """; header
+
+; section
+loop:
+; step 1
+; step 2
+    CP 5, R.a
+    ; before blank
+
+    NOUT R.a, 1
+    ; trailing
+"""
+    program = parse_program(text, preserve_newlines=True)
+    expected = """; header
+
+; section
+loop:
+    ; step 1
+    ; step 2
+    CP 5, R.a
+; before blank
+
+    NOUT R.a, 1
+; trailing
+"""
+    assert program_to_text(program) == expected
+
+
+def test_program_to_text_standalone_comment_before_inline_label():
+    """Test that a comment above an inline-labeled instruction stays at column 0."""
+    program = [
+        Label("loop"),
+        Comment("body"),
+        I.NOUT(R.a, L[1]),
+        Comment("next"),
+        I.JMP(Label("loop")),
+    ]
+    expected = "; body\nloop: NOUT R.a, 1\n    ; next\n    JMP loop\n"
+    assert program_to_text(program, label_inline=True) == expected
+
+
+def test_program_to_text_indented_comment_before_label_auto_blank_line():
+    """Test that blank_lines="auto" keeps an indented comment's block together before a label."""
+    program = [
+        I.NOOP(),
+        Comment("note"),
+        Label("loop"),
+        I.NOOP(),
+    ]
+    expected = "    NOOP\n\n; note\nloop:\n    NOOP\n"
+    assert program_to_text(program, blank_lines="auto") == expected
+
+
+def test_format_round_trips_comment_text():
+    """Test that comment spacing and bare semicolons survive formatting."""
+    text = """; Algorithm:
+;   - step one
+;
+;   - step two
+
+    CP 5, R.a  ;   aligned
+"""
+    program = parse_program(text, preserve_newlines=True)
+    assert program_to_text(program) == text
 
 
 def test_preserve_newlines_empty_lines_only():
@@ -1353,6 +1421,22 @@ def test_program_to_python_generated_file_executes_correctly(tmp_path, source):
     )
     assert result.returncode == 0, result.stderr
     assert result.stdout == expected.getvalue()
+
+
+def test_program_to_python_empty_comment():
+    out = program_to_python([Comment(""), I.NOOP()])
+    assert out == (
+        "from dt31 import DT31, I\n"
+        "\n"
+        "program = [\n"
+        "    #\n"
+        "    I.NOOP(),\n"
+        "]\n"
+        "\n"
+        'if __name__ == "__main__":\n'
+        "    cpu = DT31()\n"
+        "    cpu.run(program, debug=False)\n"
+    )
 
 
 def test_program_to_python_preserves_instruction_comments():

@@ -144,47 +144,47 @@ cpu_turn:
 ; for each possible winning line, sum the three values to R.b and run print_winner
 ; then check for a tie by seeing if all positions are nonzero
 check_win:
-; top row
+    ; top row
     CP [0], R.b
     ADD R.b, [1]
     ADD R.b, [2]
     CALL print_winner
-; top left to bottom right
+    ; top left to bottom right
     CP [0], R.b
     ADD R.b, [4]
     ADD R.b, [8]
     CALL print_winner
-; left column
+    ; left column
     CP [0], R.b
     ADD R.b, [3]
     ADD R.b, [6]
     CALL print_winner
-; center row
+    ; center row
     CP [3], R.b
     ADD R.b, [4]
     ADD R.b, [5]
     CALL print_winner
-; center column
+    ; center column
     CP [1], R.b
     ADD R.b, [4]
     ADD R.b, [7]
     CALL print_winner
-; bottom row
+    ; bottom row
     CP [6], R.b
     ADD R.b, [7]
     ADD R.b, [8]
     CALL print_winner
-; right column
+    ; right column
     CP [2], R.b
     ADD R.b, [5]
     ADD R.b, [8]
     CALL print_winner
-; top right to bottom left
+    ; top right to bottom left
     CP [2], R.b
     ADD R.b, [4]
     ADD R.b, [6]
     CALL print_winner
-; tie
+    ; tie
     CP 1, R.b
     AND R.b, [0]
     AND R.b, [1]
