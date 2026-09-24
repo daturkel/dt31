@@ -1,3 +1,4 @@
+import io
 import sys
 from pathlib import Path
 from unittest.mock import patch
@@ -5,11 +6,13 @@ from unittest.mock import patch
 import pytest
 
 from dt31 import DT31
+from dt31.assembler import extract_registers_from_program
 from dt31.exceptions import DivisionByZero
 from dt31.parser import parse_program
 
 # Add the examples directory to the path so we can import from it
 examples_dir = Path(__file__).parent.parent / "examples"
+advanced_dir = examples_dir / "advanced"
 sys.path.insert(0, str(examples_dir))
 
 from bitwise_operations import bitwise_ops  # type: ignore # noqa: E402
@@ -411,3 +414,61 @@ def test_all_asm_examples_are_tested():
     all_example_files = sorted([f.name for f in examples_dir.glob("*.dt")])
 
     assert sorted(TESTED_ASSEMBLY_PROGRAMS) == all_example_files
+
+
+def load_advanced_example(dt_file, input_file, memory_size, monkeypatch):
+    """Load an advanced example and feed one of its sample inputs through stdin."""
+    program = parse_program((advanced_dir / dt_file).read_text())
+    monkeypatch.setattr(
+        "sys.stdin", io.StringIO((advanced_dir / input_file).read_text())
+    )
+    cpu = DT31(
+        registers=extract_registers_from_program(program),
+        memory_size=memory_size,
+        stack_size=30000,
+    )
+    return cpu, program
+
+
+@pytest.mark.parametrize(
+    "dt_file, input_file, memory_size, expected_output",
+    [
+        ("aoc2021_day9.dt", "aoc2021_day9_example.txt", 40000, "15\n1134\n"),
+        ("aoc2022_day11.dt", "aoc2022_day11_example.txt", 4000, "10605\n2713310158\n"),
+        ("aoc2023_day8.dt", "aoc2023_day8_example1.txt", 102000, "2\n2\n"),
+        ("aoc2023_day8.dt", "aoc2023_day8_example2.txt", 102000, "-1\n6\n"),
+    ],
+)
+def test_advanced_aoc_example(
+    dt_file, input_file, memory_size, expected_output, capsys, monkeypatch
+):
+    cpu, program = load_advanced_example(dt_file, input_file, memory_size, monkeypatch)
+    cpu.run(program)
+    assert capsys.readouterr().out == expected_output
+
+
+def test_advanced_sudoku(capsys, monkeypatch):
+    cpu, program = load_advanced_example(
+        "sudoku.dt", "sudoku_easy.txt", 2048, monkeypatch
+    )
+    with pytest.raises(SystemExit) as exc_info:
+        cpu.run(program)
+    assert exc_info.value.code == 0
+    board = "".join(str(cpu.get_memory(i)) for i in range(81))
+    assert board == (
+        "534678912672195348198342567859761423426853791"
+        "713924856961537284287419635345286179"
+    )
+    # The rest of the output is the ANSI animation
+    assert capsys.readouterr().out.endswith("\x1b[17H\x1b[?25hsolved\n")
+
+
+def test_all_advanced_examples_are_tested():
+    all_example_files = sorted(f.name for f in advanced_dir.glob("*.dt"))
+
+    assert all_example_files == [
+        "aoc2021_day9.dt",
+        "aoc2022_day11.dt",
+        "aoc2023_day8.dt",
+        "sudoku.dt",
+    ]
