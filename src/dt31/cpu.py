@@ -190,10 +190,8 @@ class DT31:
         Raises:
             TypeError: If arg is not a MemoryReference or RegisterReference.
         """
-        if isinstance(arg, MemoryReference):
-            self.set_memory(arg.resolve_address(self), value)
-        elif isinstance(arg, RegisterReference):
-            self.set_register(arg.register, value)
+        if isinstance(arg, (MemoryReference, RegisterReference)):
+            arg.store(self, value)
         else:
             raise TypeError(f"can't get item with type {type(arg)}")
 

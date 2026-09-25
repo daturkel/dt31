@@ -160,9 +160,8 @@ def extract_registers_from_program(
             continue
 
         # Instructions store operands as attributes
-        # Walk through all attributes to find operands
         for attr_value in item.__dict__.values():
-            if isinstance(attr_value, (RegisterReference, MemoryReference)):
+            if isinstance(attr_value, Operand):
                 extract_from_operand(attr_value)
 
     return sorted(registers_used)

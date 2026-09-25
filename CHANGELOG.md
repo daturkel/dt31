@@ -9,12 +9,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Instructions read and write registers and the instruction pointer directly instead
+  of going through `get_register()`/`set_register()` and `cpu[...]`, which should make
+  programs run faster. (#73)
 - `dt31 format` / `program_to_text` indent every standalone comment in the block
   directly above an indented instruction, instead of always putting comments at
   column 0. (#70)
 
 ### Fixed
 
+- Registers used only inside an offset operand outside `M[...]` (e.g.
+  `I.CP(R.a + R.x, R.b)`) are now checked when a program is loaded. (#73)
 - Comments keep their leading whitespace: only the single space after `;` is dropped,
   so indented text inside a comment survives formatting. (#70)
 - A line containing only `;` parses as an empty comment instead of a blank line, and

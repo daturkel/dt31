@@ -199,6 +199,15 @@ class MemoryReference(Operand):
         """
         return cpu.get_memory(self.resolve_address(cpu))
 
+    def store(self, cpu: DT31, value: int):
+        """Write `value` to the memory address this reference points to.
+
+        Args:
+            cpu: The DT31 CPU instance providing memory access.
+            value: The integer value to store.
+        """
+        cpu.set_memory(self.resolve_address(cpu), value)
+
     def resolve_address(self, cpu: DT31) -> int:
         """Resolve the address of this memory reference.
 
@@ -314,8 +323,28 @@ class RegisterReference(Operand):
 
         Returns:
             The value currently stored in the referenced register.
+
+        Raises:
+            ValueError: If the CPU has no such register.
         """
-        return cpu.get_register(self.register)
+        try:
+            return cpu.registers[self.register]
+        except KeyError:
+            raise ValueError(f"unknown register {self.register}") from None
+
+    def store(self, cpu: DT31, value: int):
+        """Write `value` to the referenced register.
+
+        Args:
+            cpu: The DT31 CPU instance providing register access.
+            value: The integer value to store.
+
+        Raises:
+            ValueError: If the CPU has no such register.
+        """
+        if self.register not in cpu.registers:
+            raise ValueError(f"unknown register {self.register}")
+        cpu.registers[self.register] = value
 
     def __repr__(self) -> str:
         """Return Python API representation."""

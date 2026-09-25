@@ -607,6 +607,13 @@ def test_extract_registers_multiple():
     assert registers == ["x", "y"]
 
 
+def test_extract_registers_with_bare_offset():
+    """Test extracting registers from an offset used outside a memory reference."""
+    program = [I.CP(R.a + R.x, R.b)]
+    registers = extract_registers_from_program(program)
+    assert registers == ["a", "b", "x"]
+
+
 def test_extract_registers_with_memory():
     """Test extracting registers from memory references like M[R.a]."""
     program = [
