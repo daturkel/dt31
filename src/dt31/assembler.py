@@ -161,6 +161,7 @@ def extract_registers_from_program(
 
         # Instructions store operands as attributes
         for attr_value in item.__dict__.values():
-            extract_from_operand(attr_value)
+            if isinstance(attr_value, Operand):
+                extract_from_operand(attr_value)
 
     return sorted(registers_used)
