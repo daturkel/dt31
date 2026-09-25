@@ -270,8 +270,9 @@ class NullaryOperation(Instruction):
         self.out = out
 
     def __call__(self, cpu: DT31) -> int:
-        value = super().__call__(cpu)
-        cpu[self.out] = value
+        value = self._calc(cpu)
+        self._advance(cpu)
+        self.out.store(cpu, value)
         return value
 
     def __repr__(self) -> str:
@@ -304,8 +305,9 @@ class UnaryOperation(Instruction):
             )
 
     def __call__(self, cpu: DT31) -> int:
-        value = super().__call__(cpu)
-        cpu[self.out] = value
+        value = self._calc(cpu)
+        self._advance(cpu)
+        self.out.store(cpu, value)
         return value
 
     def __repr__(self) -> str:
@@ -361,8 +363,9 @@ class BinaryOperation(Instruction):
             )
 
     def __call__(self, cpu: DT31) -> int:
-        value = super().__call__(cpu)
-        cpu[self.out] = value
+        value = self._calc(cpu)
+        self._advance(cpu)
+        self.out.store(cpu, value)
         return value
 
     def __repr__(self) -> str:
@@ -820,9 +823,9 @@ class Jump(Instruction):
 
     def _advance(self, cpu: DT31):
         if self._jump_condition(cpu):
-            cpu.set_register("ip", self._jump_destination(cpu))
+            cpu.registers["ip"] = self._jump_destination(cpu)
         else:
-            cpu.set_register("ip", cpu.get_register("ip") + 1)
+            cpu.registers["ip"] += 1
 
     def __repr__(self) -> str:
         """Return Python API representation."""
@@ -900,7 +903,7 @@ class RelativeJumpMixin(Jump):
     """
 
     def _jump_destination(self, cpu: DT31) -> int:
-        return cpu.get_register("ip") + self.dest.resolve(cpu)
+        return cpu.registers["ip"] + self.dest.resolve(cpu)
 
     def __repr__(self) -> str:
         """Return Python API representation."""
@@ -1227,7 +1230,7 @@ class CALL(ExactJumpMixin, UnconditionalJumpMixin):
 
     def _calc(self, cpu: DT31) -> int:
         # Push return address (next instruction) onto stack
-        cpu.push(cpu.get_register("ip") + 1)
+        cpu.push(cpu.registers["ip"] + 1)
         return 0
 
 
@@ -1243,7 +1246,7 @@ class RCALL(RelativeJumpMixin, UnconditionalJumpMixin):
 
     def _calc(self, cpu: DT31) -> int:
         # Push return address (next instruction) onto stack
-        cpu.push(cpu.get_register("ip") + 1)
+        cpu.push(cpu.registers["ip"] + 1)
         return 0
 
 
@@ -1259,7 +1262,7 @@ class RET(Instruction):
     def _advance(self, cpu: DT31):
         # Pop return address from stack and set IP to it
         return_address = cpu.pop()
-        cpu.set_register("ip", return_address)
+        cpu.registers["ip"] = return_address
 
     def __repr__(self) -> str:
         """Return Python API representation."""
@@ -1362,7 +1365,7 @@ class CP(Instruction):
 
     def _calc(self, cpu: DT31) -> int:
         value = self.a.resolve(cpu)
-        cpu[self.b] = value
+        self.b.store(cpu, value)
         return value
 
     def __repr__(self) -> str:

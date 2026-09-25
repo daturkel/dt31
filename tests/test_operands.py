@@ -192,6 +192,26 @@ def test_label_str():
     assert str(label2) == "loop_begin"
 
 
+def test_memory_reference_store(cpu):
+    M[R.a - 25].store(cpu, 7)
+    assert cpu.get_memory(5) == 7
+
+
+def test_register_reference_store(cpu):
+    R.b.store(cpu, 7)
+    assert cpu.get_register("b") == 7
+
+
+def test_register_reference_unknown_register(cpu):
+    with pytest.raises(ValueError) as e1:
+        R.x.resolve(cpu)
+    assert str(e1.value) == "unknown register x"
+    with pytest.raises(ValueError) as e2:
+        R.x.store(cpu, 1)
+    assert str(e2.value) == "unknown register x"
+    assert "x" not in cpu.registers
+
+
 def test_memory_reference_equality():
     m1 = M[5]
     m2 = M[5]
