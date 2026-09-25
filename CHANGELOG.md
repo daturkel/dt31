@@ -11,7 +11,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Programs run about 18% faster: register reads, jumps and result writes skip
   redundant validation and dispatch in the execution path. (#73)
-
 - `dt31 format` / `program_to_text` indent every standalone comment in the block
   directly above an indented instruction, instead of always putting comments at
   column 0. (#70)
