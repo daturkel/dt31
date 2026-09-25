@@ -18,8 +18,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Registers used only inside a bare offset operand (e.g. `CP R.a + R.x, R.b`) are now
-  checked when a program is loaded. (#73)
+- Registers used only inside an offset operand outside `M[...]` (e.g.
+  `I.CP(R.a + R.x, R.b)`) are now checked when a program is loaded. (#73)
 - Comments keep their leading whitespace: only the single space after `;` is dropped,
   so indented text inside a comment survives formatting. (#70)
 - A line containing only `;` parses as an empty comment instead of a blank line, and
